@@ -10,15 +10,19 @@ export class ApiError extends Error {
   }
 }
 
-const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
+export const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
 
 export async function api<T>(path: string, init: RequestInit = {}, retry = true): Promise<T> {
   const headers = new Headers(init.headers);
   if (init.body && !(init.body instanceof FormData))
     headers.set('content-type', 'application/json');
-  const response = await fetch(`${baseUrl}${path}`, { ...init, headers, credentials: 'include' });
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    ...init,
+    headers,
+    credentials: 'include',
+  });
   if (response.status === 401 && retry && path !== '/auth/refresh') {
-    const refreshed = await fetch(`${baseUrl}/auth/refresh`, {
+    const refreshed = await fetch(`${apiBaseUrl}/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
     });

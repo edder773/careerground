@@ -1,10 +1,9 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   AlertTriangle,
   FileJson,
   History,
-  KeyRound,
   Settings2,
   ShieldCheck,
   Upload,
@@ -77,7 +76,6 @@ export function AdminPage() {
     queryKey: ['daily-challenge'],
     queryFn: () => api<DailyChallenge>('/coding/daily-challenge'),
   });
-  const [inviteEmail, setInviteEmail] = useState('');
   const [jobPayload, setJobPayload] = useState('');
   const [jobFile, setJobFile] = useState<File>();
   const [learningPayload, setLearningPayload] = useState('');
@@ -91,8 +89,6 @@ export function AdminPage() {
   const [levels, setLevels] = useState<number[]>([1, 2]);
   const [repeatDays, setRepeatDays] = useState(60);
   const [allowRelaxation, setAllowRelaxation] = useState(false);
-  const [resetUserId, setResetUserId] = useState('');
-  const [resetPassword, setResetPassword] = useState('');
   const [reselectProblemId, setReselectProblemId] = useState('');
   const [confirmKstDate, setConfirmKstDate] = useState('');
   const [problemUrl, setProblemUrl] = useState('');
@@ -105,18 +101,6 @@ export function AdminPage() {
     setRepeatDays(dailySetting.data.repeatExclusionDays);
     setAllowRelaxation(dailySetting.data.allowRepeatRelaxation);
   }, [dailySetting.data]);
-  const invite = useMutation({
-    mutationFn: () =>
-      api<{ token: string }>('/auth/invites', {
-        method: 'POST',
-        body: json({ email: inviteEmail, role: 'MEMBER' }),
-      }),
-    onSuccess: (data) => {
-      setMessage(`초대 생성 완료: ${data.token}`);
-      setInviteEmail('');
-      client.invalidateQueries({ queryKey: ['admin-overview'] });
-    },
-  });
   const importMutation = useMutation({
     mutationFn: ({ type, commit }: { type: 'jobs' | 'learning'; commit: boolean }) => {
       const raw = type === 'jobs' ? jobPayload : learningPayload;
@@ -147,18 +131,6 @@ export function AdminPage() {
         client.invalidateQueries({ queryKey: ['daily-challenge'] }),
         client.invalidateQueries({ queryKey: ['admin-audit-logs'] }),
       ]);
-    },
-  });
-  const resetPasswordMutation = useMutation({
-    mutationFn: () =>
-      api(`/auth/users/${resetUserId}/reset-password`, {
-        method: 'POST',
-        body: json({ password: resetPassword }),
-      }),
-    onSuccess: async () => {
-      setResetPassword('');
-      setMessage('비밀번호를 재설정하고 해당 사용자의 기존 세션을 해제했습니다.');
-      await client.invalidateQueries({ queryKey: ['admin-audit-logs'] });
     },
   });
   const reselectMutation = useMutation({
@@ -238,10 +210,6 @@ export function AdminPage() {
       await client.invalidateQueries({ queryKey: ['admin-coding-problems'] });
     },
   });
-  const submitInvite = (event: FormEvent) => {
-    event.preventDefault();
-    if (inviteEmail) invite.mutate();
-  };
   return (
     <div>
       <section className="page-heading">
@@ -250,7 +218,7 @@ export function AdminPage() {
             <ShieldCheck size={15} /> 권한이 필요한 작업
           </span>
           <h1>관리자 센터</h1>
-          <p>사용자 초대, 정형 데이터 import, 검토 큐와 감사 로그를 관리합니다.</p>
+          <p>Slack 멤버, 정형 데이터 import, 검토 큐와 감사 로그를 관리합니다.</p>
         </div>
       </section>
       {message && (
@@ -283,24 +251,19 @@ export function AdminPage() {
           <header>
             <UserPlus />
             <div>
-              <h2>멤버 초대</h2>
-              <p>공개 회원가입 없이 초대 토큰을 발급합니다.</p>
+              <h2>Slack 멤버</h2>
+              <p>Slack 로그인을 마친 멤버만 자동 등록됩니다.</p>
             </div>
           </header>
-          <form onSubmit={submitInvite}>
-            <label>
-              허용 이메일
-              <input
-                type="email"
-                value={inviteEmail}
-                onChange={(event) => setInviteEmail(event.target.value)}
-                required
-              />
-            </label>
-            <button className="primary-button compact" disabled={invite.isPending}>
-              초대 생성
-            </button>
-          </form>
+          <div className="member-list" aria-label="Slack 멤버 목록">
+            {users.data?.map((user) => (
+              <div key={user.id}>
+                <strong>{user.displayName}</strong>
+                <span>{user.email}</span>
+                <small>{user.role}</small>
+              </div>
+            ))}
+          </div>
         </section>
         <section className="admin-card warning">
           <header>
@@ -532,49 +495,6 @@ export function AdminPage() {
               disabled={!reselectProblemId || !confirmKstDate || reselectMutation.isPending}
             >
               확인 후 재선정
-            </button>
-          </form>
-        </section>
-        <section className="admin-card">
-          <header>
-            <KeyRound />
-            <div>
-              <h2>사용자 비밀번호 재설정</h2>
-              <p>재설정 즉시 해당 사용자의 기존 세션을 모두 해제합니다.</p>
-            </div>
-          </header>
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (resetUserId && resetPassword.length >= 12) resetPasswordMutation.mutate();
-            }}
-          >
-            <label>
-              사용자
-              <select value={resetUserId} onChange={(event) => setResetUserId(event.target.value)}>
-                <option value="">선택하세요</option>
-                {users.data?.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.displayName} · {user.email}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              임시 비밀번호
-              <input
-                type="password"
-                minLength={12}
-                autoComplete="new-password"
-                value={resetPassword}
-                onChange={(event) => setResetPassword(event.target.value)}
-              />
-            </label>
-            <button
-              className="primary-button compact"
-              disabled={!resetUserId || resetPassword.length < 12}
-            >
-              비밀번호 재설정
             </button>
           </form>
         </section>

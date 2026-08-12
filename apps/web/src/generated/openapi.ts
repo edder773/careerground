@@ -36,16 +36,64 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/api/v1/auth/login': {
+  '/api/v1/auth/slack/config': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    get: operations['AuthController_slackConfig'];
     put?: never;
-    post: operations['AuthController_login'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/auth/slack/start': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AuthController_startSlack'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/auth/slack/mock-authorize': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AuthController_mockSlackAuthorize'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/auth/slack/callback': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['AuthController_slackCallback'];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -62,22 +110,6 @@ export interface paths {
     get?: never;
     put?: never;
     post: operations['AuthController_refresh'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/auth/activate': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: operations['AuthController_activate'];
     delete?: never;
     options?: never;
     head?: never;
@@ -116,22 +148,6 @@ export interface paths {
     patch: operations['AuthController_updateProfile'];
     trace?: never;
   };
-  '/api/v1/auth/invites': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: operations['AuthController_invite'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   '/api/v1/auth/users': {
     parameters: {
       query?: never;
@@ -142,22 +158,6 @@ export interface paths {
     get: operations['AuthController_users'];
     put?: never;
     post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/auth/users/{id}/reset-password': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: operations['AuthController_resetPassword'];
     delete?: never;
     options?: never;
     head?: never;
@@ -930,7 +930,7 @@ export interface operations {
       };
     };
   };
-  AuthController_login: {
+  AuthController_slackConfig: {
     parameters: {
       query?: never;
       header?: never;
@@ -939,7 +939,58 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      201: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AuthController_startSlack: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AuthController_mockSlackAuthorize: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AuthController_slackCallback: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
         headers: {
           [name: string]: unknown;
         };
@@ -948,23 +999,6 @@ export interface operations {
     };
   };
   AuthController_refresh: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  AuthController_activate: {
     parameters: {
       query?: never;
       header?: never;
@@ -1032,23 +1066,6 @@ export interface operations {
       };
     };
   };
-  AuthController_invite: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
   AuthController_users: {
     parameters: {
       query?: never;
@@ -1059,25 +1076,6 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  AuthController_resetPassword: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      201: {
         headers: {
           [name: string]: unknown;
         };

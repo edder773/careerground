@@ -5,6 +5,8 @@ CareerGround는 React 웹, Nest REST API, PostgreSQL, 정적 문서 사이트로
 ```mermaid
 flowchart LR
   U["ADMIN / MEMBER"] --> W["React Finder형 Web"]
+  U -->|"Slack OpenID Connect"| SI["Slack"]
+  SI -->|"verified profile callback"| A
   W -->|"httpOnly cookie / REST"| A["NestJS API /api/v1"]
   A --> P[("PostgreSQL")]
   A --> S["Storage interface"]
@@ -20,6 +22,7 @@ flowchart LR
 ## 경계
 
 - 브라우저는 access/refresh token을 읽을 수 없다. 두 token은 `httpOnly` cookie다.
+- Slack은 유일한 로그인 provider다. one-time state와 nonce를 검증하고 Slack access token은 저장하지 않는다.
 - API만 DB, storage, OpenAI key에 접근한다.
 - 채용 사이트와 프로그래머스 페이지를 요청하거나 파싱하는 코드가 없다.
 - import 승인은 checksum과 batch report를 남기는 DB transaction이다.
