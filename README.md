@@ -108,7 +108,7 @@ pnpm troubleshoot:validate --file docs/troubleshooting/2026-08-12-pr-123-evidenc
 
 `apps/web/Dockerfile`, `apps/api/Dockerfile`은 multi-stage production image다. API readiness는 `/api/v1/health/ready`, 웹 health는 `/`로 확인한다. 상세 절차는 `docs/operations/deployment.md`를 따른다. 문서 앱은 GitHub Pages workflow가 배포한다.
 
-OpenAI Sites용 `pnpm sites:build`는 같은 React production build와 SPA fallback Worker를 `dist`에 만든다. `API_ORIGIN`이 설정되면 `/api/v1/*`를 운영 Nest API로 same-origin proxy한다. 아직 API가 없을 때도 Sites 인증 사용자 정보는 읽을 수 있지만, 데이터 기능은 `API_NOT_CONFIGURED`로 명확히 실패한다. Sites 배포가 PostgreSQL/Nest API를 대체하지는 않는다.
+OpenAI Sites용 `pnpm sites:build`는 같은 React production build와 SPA fallback Worker를 `dist`에 만든다. 운영 Sites에서는 `DB` 논리 바인딩으로 전용 D1을 프로비저닝하고 `drizzle/` 마이그레이션을 적용한다. `/api/v1/*`는 OpenAI 사용자 헤더를 서버에서 확인한 뒤 D1에 사용자별 폴더, 노트, 지원 상태, 학습 진도, 풀이와 댓글을 영속 저장한다. 첫 번째 정상 OpenAI 사용자는 bootstrap 관리자이고 이후 사용자는 기본 `MEMBER`로 등록된다. 별도 Nest/PostgreSQL 운영을 선택하면 `API_ORIGIN`과 동일한 `SITES_AUTH_SHARED_SECRET`을 설정해 기존 프록시 경로를 사용할 수 있다.
 
 ## 저장소 운영
 

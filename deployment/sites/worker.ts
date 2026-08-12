@@ -1,7 +1,11 @@
+import { handleD1Api } from './d1-api.js';
+import type { D1Database } from './d1.js';
+
 type Fetcher = { fetch(request: Request): Promise<Response> };
 
 type SitesEnv = {
   ASSETS: Fetcher;
+  DB?: D1Database;
   API_ORIGIN?: string;
   SITES_AUTH_SHARED_SECRET?: string;
   OPENAI_ADMIN_EMAILS?: string;
@@ -51,6 +55,7 @@ function currentOpenAiUser(request: Request, env: SitesEnv) {
 
 async function proxyApi(request: Request, env: SitesEnv) {
   const url = new URL(request.url);
+  if (!env.API_ORIGIN && env.DB) return handleD1Api(request, { ...env, DB: env.DB });
   if (!env.API_ORIGIN) {
     if (url.pathname === '/api/v1/auth/me' && request.method === 'GET') {
       const user = currentOpenAiUser(request, env);
