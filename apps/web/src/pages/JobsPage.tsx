@@ -61,7 +61,19 @@ export function JobsPage() {
   const save = useMutation({
     mutationFn: ({ jobId, status }: { jobId: string; status: string }) =>
       api('/jobs/saved', { method: 'POST', body: json({ jobId, status, memo: '' }) }),
-    onSuccess: () => client.invalidateQueries({ queryKey: ['jobs'] }),
+    onMutate: ({ jobId, status }) => {
+      client.setQueriesData<Job[]>({ queryKey: ['jobs'] }, (current) =>
+        current?.map((job) =>
+          job.id === jobId
+            ? {
+                ...job,
+                savedBy: [{ status, memo: job.savedBy[0]?.memo || '' }],
+              }
+            : job,
+        ),
+      );
+    },
+    onSettled: () => client.invalidateQueries({ queryKey: ['jobs'] }),
   });
   return (
     <div>
