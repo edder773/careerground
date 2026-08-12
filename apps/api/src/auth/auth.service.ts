@@ -75,6 +75,8 @@ export class AuthService {
       email: user.email,
       displayName: user.displayName,
       role: user.role,
+      preferredLanguage: user.preferredLanguage,
+      onboardingCompleted: Boolean(user.onboardingCompletedAt),
     };
   }
 }

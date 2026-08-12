@@ -26,6 +26,7 @@ test('captures responsive home screenshots and has no serious accessibility viol
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.reload();
     await expect(page.getByRole('heading', { name: '내 폴더', level: 1 })).toBeVisible();
+    await expect(page.locator('.today-feature strong')).not.toContainText('준비하는 중');
     await page.screenshot({
       path: `test-results/visual/home-${viewport.name}.png`,
       fullPage: false,
@@ -46,14 +47,32 @@ test('captures core domain screens', async ({ page }) => {
     { href: '/coding', heading: '코딩테스트', name: 'coding' },
     { href: '/jobs', heading: '신입 IT 채용공고', name: 'jobs' },
     { href: '/learning', heading: '학습 라이브러리', name: 'learning' },
-    { href: '/solutions', heading: '공유 풀이', name: 'solutions' },
+    { href: '/solutions', heading: '풀이 기록', name: 'solutions' },
+    { href: '/notes', heading: '개인 노트', name: 'notes' },
   ];
   for (const screen of screens) {
     await page.goto(screen.href);
     await expect(page.getByRole('heading', { name: screen.heading })).toBeVisible();
+    if (screen.name === 'notes') {
+      await page.getByRole('button', { name: '새 노트' }).first().click();
+      await page.getByRole('textbox', { name: '노트 제목' }).fill('이번 주 준비 기록');
+      await page
+        .getByRole('textbox', { name: '노트 내용' })
+        .fill('# 이번 주 준비\n\n- 코딩테스트 복습\n- 지원 공고 정리');
+      await page.getByRole('button', { name: /^저장$/ }).click();
+      await expect(page.getByRole('button', { name: /^저장$/ })).toBeEnabled();
+      await expect(page.getByRole('textbox', { name: '노트 제목' })).toHaveValue(
+        '이번 주 준비 기록',
+      );
+    }
     await page.screenshot({
       path: `test-results/visual/${screen.name}-desktop.png`,
       fullPage: true,
     });
   }
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('/notes');
+  await expect(page.getByRole('heading', { name: '개인 노트' })).toBeVisible();
+  await expect(page.getByRole('textbox', { name: '노트 제목' })).toHaveValue('이번 주 준비 기록');
+  await page.screenshot({ path: 'test-results/visual/notes-mobile-375.png', fullPage: false });
 });

@@ -22,7 +22,7 @@ export function LoginPage() {
         <div className="story-grid">
           <span>학습과 복습</span>
           <span>신입 IT 공고</span>
-          <span>공유 풀이</span>
+          <span>풀이 기록</span>
         </div>
       </section>
       <section className="login-panel">

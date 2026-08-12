@@ -18,7 +18,8 @@ const provider =
 const publicBlog = !process.argv.includes('--no-public-doc');
 const generated = await provider.generate(manifest, { publicBlog });
 const date = new Date().toISOString().slice(0, 10);
-const metadata = `generatedByAI: true\nmodel: ${provider.name}\npr: ${manifest.pr}\ncommit: ${manifest.repository.headSha || 'unknown'}\nevidence: ${path}`;
+const generatedByAI = provider instanceof OpenAIResponsesProvider;
+const metadata = `generatedByAI: ${generatedByAI}\nmodel: ${generatedByAI ? provider.name : 'none'}\npr: ${manifest.pr}\ncommit: ${manifest.repository.headSha || 'unknown'}\nevidence: ${path}`;
 const technical = `---\ntitle: ${generated.title}\ndate: ${date}\ntags: [${generated.tags.join(', ')}]\n${metadata}\n---\n\n${generated.technicalMarkdown}\n`;
 await mkdir('docs/troubleshooting', { recursive: true });
 await writeFile(join('docs/troubleshooting', `${date}-${generated.slug}.md`), technical);

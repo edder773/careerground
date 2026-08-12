@@ -15,6 +15,13 @@
       "when": 1786515857517,
       "tag": "0001_seed",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1786519113909,
+      "tag": "0002_equal_hulk",
+      "breakpoints": true
     }
   ]
 }

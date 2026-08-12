@@ -29,6 +29,8 @@ async function main() {
       email: process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@careerground.local',
       displayName: '데모 관리자',
       role: 'ADMIN',
+      preferredLanguage: 'javascript',
+      onboardingCompletedAt: new Date(),
       rankingOptIn: false,
       preference: { create: {} },
     },
@@ -36,6 +38,8 @@ async function main() {
       displayName: '데모 관리자',
       role: 'ADMIN',
       isActive: true,
+      preferredLanguage: 'javascript',
+      onboardingCompletedAt: new Date(),
     },
   });
   const member = await prisma.user.upsert({
@@ -43,12 +47,15 @@ async function main() {
     create: {
       email: 'member@careerground.local',
       displayName: '김그라운드',
-      preferredLanguage: 'typescript',
+      preferredLanguage: 'javascript',
+      onboardingCompletedAt: new Date(),
       preference: { create: {} },
     },
     update: {
       displayName: '김그라운드',
       isActive: true,
+      preferredLanguage: 'javascript',
+      onboardingCompletedAt: new Date(),
     },
   });
   const member2 = await prisma.user.upsert({
@@ -57,11 +64,14 @@ async function main() {
       email: 'peer@careerground.local',
       displayName: '이플레이어',
       preferredLanguage: 'python',
+      onboardingCompletedAt: new Date(),
       preference: { create: {} },
     },
     update: {
       displayName: '이플레이어',
       isActive: true,
+      preferredLanguage: 'python',
+      onboardingCompletedAt: new Date(),
     },
   });
   const visualMember = await prisma.user.upsert({
@@ -69,7 +79,8 @@ async function main() {
     create: {
       email: 'visual@careerground.local',
       displayName: '박비주얼',
-      preferredLanguage: 'typescript',
+      preferredLanguage: 'javascript',
+      onboardingCompletedAt: new Date(),
       rankingOptIn: false,
       preference: { create: {} },
     },
@@ -77,6 +88,8 @@ async function main() {
       displayName: '박비주얼',
       isActive: true,
       rankingOptIn: false,
+      preferredLanguage: 'javascript',
+      onboardingCompletedAt: new Date(),
     },
   });
 
@@ -193,7 +206,7 @@ async function main() {
         authorId: member.id,
         problemId: problems[0]!.id,
         title: '한 번 순회하는 데모 풀이',
-        language: 'typescript',
+        language: 'javascript',
         code: 'export function demo(values: number[]) {\n  return values.reduce((sum, value) => sum + value, 0);\n}',
         description:
           '배열을 한 번 순회합니다. 외부 문제 원문이나 테스트케이스는 저장하지 않습니다.',

@@ -16,7 +16,8 @@ export const users = sqliteTable(
     isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
     avatarUrl: text('avatar_url'),
     githubUsername: text('github_username'),
-    preferredLanguage: text('preferred_language').notNull().default('typescript'),
+    preferredLanguage: text('preferred_language').notNull().default('javascript'),
+    onboardingCompletedAt: text('onboarding_completed_at'),
     rankingOptIn: integer('ranking_opt_in', { mode: 'boolean' }).notNull().default(true),
     commentNotifications: integer('comment_notifications', { mode: 'boolean' })
       .notNull()

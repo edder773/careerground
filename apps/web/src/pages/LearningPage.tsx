@@ -38,7 +38,7 @@ export function LearningPage() {
             <Brain size={15} /> 근거 anchor 기반 콘텐츠
           </span>
           <h1>학습 라이브러리</h1>
-          <p>관리자가 검토·공개한 요약을 학습하고 이해도를 기록해 다음 복습일을 계산합니다.</p>
+          <p>핵심 내용을 학습하고 이해도를 기록해 다음 복습일을 계산합니다.</p>
         </div>
         <div className="heading-stat">
           <Clock3 />

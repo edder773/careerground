@@ -12,6 +12,8 @@ describe('AuthService', () => {
       email: 'member@example.com',
       displayName: '멤버',
       role: 'MEMBER',
+      preferredLanguage: 'javascript',
+      onboardingCompletedAt: null,
       isActive: true,
       deletedAt: null,
     };
@@ -35,6 +37,8 @@ describe('AuthService', () => {
       email: 'member@example.com',
       displayName: '멤버',
       role: 'MEMBER',
+      preferredLanguage: 'javascript',
+      onboardingCompleted: false,
     });
     expect(prisma.user.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -72,6 +76,8 @@ describe('AuthService', () => {
       email: 'admin@example.com',
       displayName: '데모 관리자',
       role: 'ADMIN',
+      preferredLanguage: 'python',
+      onboardingCompletedAt: new Date('2026-08-12T00:00:00Z'),
       isActive: true,
       deletedAt: null,
     };

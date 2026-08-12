@@ -32,7 +32,7 @@ const navigation = [
   { to: '/notes', label: '노트', icon: FileText },
   { to: '/jobs', label: '채용공고', icon: BriefcaseBusiness },
   { to: '/coding', label: '코딩테스트', icon: Code2 },
-  { to: '/solutions', label: '공유 풀이', icon: Users },
+  { to: '/solutions', label: '풀이 기록', icon: Users },
   { to: '/rankings', label: '랭킹', icon: Trophy },
   { to: '/notifications', label: '알림', icon: Bell },
 ] as const;
@@ -43,7 +43,7 @@ const titles: Record<string, string> = {
   '/notes': '개인 노트',
   '/jobs': '신입 IT 채용공고',
   '/coding': '코딩테스트',
-  '/solutions': '공유 풀이',
+  '/solutions': '풀이 기록',
   '/rankings': '랭킹',
   '/notifications': '알림',
   '/admin': '관리자 센터',

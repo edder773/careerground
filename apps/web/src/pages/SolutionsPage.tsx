@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { GitCompare, MessageCircle, Pencil, Save, Send, ThumbsUp, Users } from 'lucide-react';
@@ -26,7 +27,6 @@ type Solution = {
   spaceComplexity?: string;
   lessons?: string;
   solved: boolean;
-  visibility: 'PRIVATE' | 'MEMBERS';
   currentRev: number;
   canEdit?: boolean;
   revisions: Array<{
@@ -62,7 +62,6 @@ function SolutionRevisionPanel({ solution }: { solution: Solution }) {
           spaceComplexity: solution.spaceComplexity,
           lessons: solution.lessons,
           solved: solution.solved,
-          visibility: solution.visibility,
         }),
       }),
     onSuccess: async () => {
@@ -89,7 +88,7 @@ function SolutionRevisionPanel({ solution }: { solution: Solution }) {
               value={code}
               height="260px"
               onChange={setCode}
-              extensions={[javascript({ typescript: true })]}
+              extensions={solution.language === 'javascript' ? [javascript()] : []}
             />
           </label>
           <label>
@@ -118,7 +117,7 @@ function SolutionRevisionPanel({ solution }: { solution: Solution }) {
               value={solution.code}
               height="220px"
               editable={false}
-              extensions={[javascript({ typescript: true })]}
+              extensions={solution.language === 'javascript' ? [javascript()] : []}
               basicSetup={{ lineNumbers: true }}
             />
           </div>
@@ -166,12 +165,15 @@ function SolutionRevisionPanel({ solution }: { solution: Solution }) {
 
 export function SolutionsPage() {
   const client = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const problemId = searchParams.get('problemId') || '';
   const [commenting, setCommenting] = useState<string>();
   const [replyingTo, setReplyingTo] = useState<string>();
   const [comment, setComment] = useState('');
   const solutions = useQuery({
-    queryKey: ['solutions'],
-    queryFn: () => api<Solution[]>('/coding/solutions'),
+    queryKey: ['solutions', problemId],
+    queryFn: () =>
+      api<Solution[]>(`/coding/solutions${problemId ? `?problemId=${problemId}` : ''}`),
   });
   const react = useMutation({
     mutationFn: (id: string) => api(`/coding/solutions/${id}/reaction`, { method: 'POST' }),
@@ -199,19 +201,24 @@ export function SolutionsPage() {
       <section className="page-heading">
         <div>
           <span className="eyebrow">
-            <Users size={15} /> 팀 지식
+            <Users size={15} /> 함께 보는 코드
           </span>
-          <h1>공유 풀이</h1>
-          <p>같은 문제를 다른 관점으로 풀어본 기록을 비교하고 피드백을 남기세요.</p>
+          <h1>{problemId ? '문제별 풀이 기록' : '풀이 기록'}</h1>
+          <p>기록된 코드를 비교하고 더 나은 접근 방법을 함께 찾아보세요.</p>
         </div>
+        {problemId && (
+          <button className="ghost-button" onClick={() => setSearchParams({})}>
+            전체 풀이 보기
+          </button>
+        )}
       </section>
       {solutions.isLoading && <div className="loading-panel">풀이를 불러오는 중…</div>}
-      {solutions.isError && <div className="error-panel">공유 풀이를 불러오지 못했습니다.</div>}
+      {solutions.isError && <div className="error-panel">풀이 기록을 불러오지 못했습니다.</div>}
       {!solutions.isLoading && !solutions.data?.length && (
         <div className="empty-panel">
           <Users />
-          <h3>공유된 풀이가 없습니다</h3>
-          <p>코딩테스트에서 첫 멤버 공개 풀이를 작성해보세요.</p>
+          <h3>아직 풀이 기록이 없습니다</h3>
+          <p>코딩테스트에서 이 문제의 첫 풀이를 기록해보세요.</p>
         </div>
       )}
       <div className="solutions-feed">

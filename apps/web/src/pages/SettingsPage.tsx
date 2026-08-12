@@ -27,7 +27,7 @@ export function SettingsPage() {
   const [displayName, setDisplayName] = useState('');
   const [githubUsername, setGithubUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
-  const [preferredLanguage, setPreferredLanguage] = useState('typescript');
+  const [preferredLanguage, setPreferredLanguage] = useState('python');
   const [rankingOptIn, setRankingOptIn] = useState(true);
   const [commentNotifications, setCommentNotifications] = useState(true);
   const [deadlineNotifications, setDeadlineNotifications] = useState(true);
@@ -146,10 +146,9 @@ export function SettingsPage() {
               value={preferredLanguage}
               onChange={(event) => setPreferredLanguage(event.target.value)}
             >
-              <option value="typescript">TypeScript</option>
-              <option value="javascript">JavaScript</option>
               <option value="python">Python</option>
               <option value="java">Java</option>
+              <option value="javascript">JavaScript</option>
               <option value="cpp">C++</option>
             </select>
           </label>
@@ -159,7 +158,7 @@ export function SettingsPage() {
               checked={rankingOptIn}
               onChange={(event) => setRankingOptIn(event.target.checked)}
             />
-            자기 보고형 랭킹에 참여
+            코딩 랭킹에 참여
           </label>
           <button className="primary-button compact" disabled={save.isPending}>
             <Save /> 설정 저장

@@ -7,7 +7,7 @@ import {
 import { Cron } from '@nestjs/schedule';
 import sanitizeHtml from 'sanitize-html';
 import type { AuthUser } from '../auth/auth.decorators.js';
-import type { CompanySize, Visibility } from '../generated/prisma/enums.js';
+import type { CompanySize } from '../generated/prisma/enums.js';
 import { PrismaService } from '../common/prisma.service.js';
 import { AuditService } from '../common/audit.service.js';
 
@@ -57,7 +57,7 @@ export class UtilityService {
       this.prisma.note.findMany({
         where: {
           deletedAt: null,
-          OR: [{ userId: user.id }, { visibility: 'MEMBERS' }],
+          userId: user.id,
           AND: [
             {
               OR: [
@@ -132,7 +132,7 @@ export class UtilityService {
 
   notes(user: AuthUser) {
     return this.prisma.note.findMany({
-      where: { deletedAt: null, OR: [{ userId: user.id }, { visibility: 'MEMBERS' }] },
+      where: { deletedAt: null, userId: user.id },
       include: {
         user: { select: { id: true, displayName: true } },
         revisions: { orderBy: { revision: 'desc' }, take: 10 },
@@ -148,7 +148,6 @@ export class UtilityService {
       id?: string;
       title: string;
       markdown: string;
-      visibility: Visibility;
       linkedType?: string;
       linkedId?: string;
     },
@@ -160,7 +159,7 @@ export class UtilityService {
           userId,
           title: data.title.trim(),
           markdown,
-          visibility: data.visibility,
+          visibility: 'PRIVATE',
           linkedType: data.linkedType,
           linkedId: data.linkedId,
           revisions: { create: { revision: 1, markdown } },
@@ -179,13 +178,19 @@ export class UtilityService {
         data: {
           title: data.title.trim(),
           markdown,
-          visibility: data.visibility,
+          visibility: 'PRIVATE',
           linkedType: data.linkedType,
           linkedId: data.linkedId,
           currentRev: current.currentRev + 1,
         },
       });
     });
+  }
+
+  async deleteNote(userId: string, id: string) {
+    const note = await this.prisma.note.findFirst({ where: { id, userId, deletedAt: null } });
+    if (!note) throw new NotFoundException();
+    return this.prisma.note.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
   adminOverview() {
