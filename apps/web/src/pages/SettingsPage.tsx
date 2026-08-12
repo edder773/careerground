@@ -86,10 +86,6 @@ export function SettingsPage() {
       await client.invalidateQueries({ queryKey: ['profile'] });
     },
   });
-  const logoutAll = useMutation({
-    mutationFn: () => api('/auth/logout-all', { method: 'POST' }),
-    onSuccess: () => logout(),
-  });
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (displayName.trim()) save.mutate();
@@ -198,12 +194,12 @@ export function SettingsPage() {
           </label>
           <p>변경한 알림 설정은 왼쪽의 “설정 저장” 버튼으로 함께 저장됩니다.</p>
           <div className="admin-divider" />
-          <h2>개인정보와 세션</h2>
+          <h2>개인정보와 계정</h2>
           <button className="ghost-button" onClick={() => exportData.mutate()}>
             <Download /> 내 데이터 JSON 내보내기
           </button>
-          <button className="ghost-button" onClick={() => logoutAll.mutate()}>
-            <LogOut /> 모든 기기에서 로그아웃
+          <button className="ghost-button" onClick={() => void logout()}>
+            <LogOut /> OpenAI 계정에서 로그아웃
           </button>
           <button
             className="ghost-button danger"

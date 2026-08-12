@@ -218,7 +218,7 @@ export function AdminPage() {
             <ShieldCheck size={15} /> 권한이 필요한 작업
           </span>
           <h1>관리자 센터</h1>
-          <p>Slack 멤버, 정형 데이터 import, 검토 큐와 감사 로그를 관리합니다.</p>
+          <p>OpenAI 멤버, 정형 데이터 import, 검토 큐와 감사 로그를 관리합니다.</p>
         </div>
       </section>
       {message && (
@@ -251,11 +251,11 @@ export function AdminPage() {
           <header>
             <UserPlus />
             <div>
-              <h2>Slack 멤버</h2>
-              <p>Slack 로그인을 마친 멤버만 자동 등록됩니다.</p>
+              <h2>OpenAI 멤버</h2>
+              <p>OpenAI 로그인을 마친 멤버만 자동 등록됩니다.</p>
             </div>
           </header>
-          <div className="member-list" aria-label="Slack 멤버 목록">
+          <div className="member-list" aria-label="OpenAI 멤버 목록">
             {users.data?.map((user) => (
               <div key={user.id}>
                 <strong>{user.displayName}</strong>

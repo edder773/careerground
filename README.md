@@ -14,7 +14,7 @@
 
 ```bash
 cp .env.example .env
-# JWT secret과 Slack App의 client ID/secret/redirect URI를 변경한다.
+# DB URL과 운영 secret을 변경한다.
 corepack enable
 corepack prepare pnpm@11.21.0 --activate
 pnpm install --frozen-lockfile
@@ -30,7 +30,7 @@ pnpm dev
 - OpenAPI JSON: <http://localhost:4000/api/openapi.json>
 - 문서 사이트: `pnpm docs:dev` → <http://localhost:5174>
 
-로그인은 Slack OpenID Connect 한 가지만 사용한다. Slack App의 OAuth & Permissions에 `SLACK_REDIRECT_URI`를 등록하고 `openid profile email` scope를 사용한다. 개발 seed 계정은 실제 Slack 로그인을 완료했을 때 같은 검증 이메일과 연결되며, `visual@careerground.local`은 deterministic 시각 회귀 전용이다. 자동화 테스트는 `SLACK_OIDC_MOCK=true`로 동일한 state/nonce/callback 경계를 검증하지만 production에서는 mock이 항상 비활성화된다.
+로그인은 OpenAI Sites가 제공하는 OpenAI 계정 한 가지만 사용한다. private Site의 dispatcher가 안정적인 사용자 ID와 검증 이메일을 Worker에 전달하고, Worker는 shared secret을 더해 Nest API로 프록시한다. API는 이 두 경계를 모두 통과한 사용자만 DB 계정에 연결한다. `OPENAI_AUTH_MOCK=true`는 deterministic E2E에서만 허용되며 production에서는 항상 무시된다.
 
 ## 필수 명령
 
@@ -60,10 +60,10 @@ DB를 reset하면 로컬 데이터가 삭제되므로 대상 DB URL을 확인한
 전체 목록과 안전한 placeholder는 `.env.example`에 있다. 핵심 변수는 다음과 같다.
 
 - `DATABASE_URL`: PostgreSQL 연결 문자열
-- `WEB_ORIGIN`: cookie CORS 허용 origin 하나
-- `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`: 서로 다른 32자 이상 secret
-- `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `SLACK_REDIRECT_URI`: 유일한 로그인 provider인 Slack OIDC 설정
-- `SLACK_ALLOWED_TEAM_ID`: 선택적 workspace 제한, `SLACK_ADMIN_USER_IDS`: 관리자 Slack user ID 목록
+- `WEB_ORIGIN`: CORS 허용 웹 origin 하나
+- `SITES_AUTH_SHARED_SECRET`: Sites Worker와 Nest API에 동일하게 주입하는 긴 random secret
+- `OPENAI_ADMIN_EMAILS`: OpenAI 로그인 후 ADMIN으로 승격할 이메일 allowlist
+- `OPENAI_AUTH_MOCK`: 로컬/E2E 전용 인증 헤더 mock; production에서는 무시
 - `MAX_ACTIVE_USERS`: 기본 10
 - `INTERNAL_SERVICE_SECRET`: daily challenge ensure endpoint 보호
 - `AI_LEARNING_ENABLED`: OpenAI 학습 처리를 명시적으로 켜는 flag
@@ -108,7 +108,7 @@ pnpm troubleshoot:validate --file docs/troubleshooting/2026-08-12-pr-123-evidenc
 
 `apps/web/Dockerfile`, `apps/api/Dockerfile`은 multi-stage production image다. API readiness는 `/api/v1/health/ready`, 웹 health는 `/`로 확인한다. 상세 절차는 `docs/operations/deployment.md`를 따른다. 문서 앱은 GitHub Pages workflow가 배포한다.
 
-OpenAI Sites용 `pnpm sites:build`는 같은 React production build와 SPA fallback Worker를 `dist`에 만든다. `API_ORIGIN`이 설정되면 `/api/v1/*`를 운영 Nest API로 same-origin proxy하고, 연결 전에는 Slack 로그인 설정 대기 화면을 명시적으로 보여 준다. Sites 배포가 PostgreSQL/Nest API를 대체하지는 않는다.
+OpenAI Sites용 `pnpm sites:build`는 같은 React production build와 SPA fallback Worker를 `dist`에 만든다. `API_ORIGIN`이 설정되면 `/api/v1/*`를 운영 Nest API로 same-origin proxy한다. 아직 API가 없을 때도 Sites 인증 사용자 정보는 읽을 수 있지만, 데이터 기능은 `API_NOT_CONFIGURED`로 명확히 실패한다. Sites 배포가 PostgreSQL/Nest API를 대체하지는 않는다.
 
 ## 저장소 운영
 

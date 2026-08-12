@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, type PropsWithChildren } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { api, type User } from './lib/api';
 
 type AuthContextValue = {
@@ -11,25 +11,20 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: PropsWithChildren) {
-  const client = useQueryClient();
   const me = useQuery({
     queryKey: ['me'],
     queryFn: () => api<{ user: User }>('/auth/me'),
     retry: false,
-  });
-  const logoutMutation = useMutation({
-    mutationFn: () => api('/auth/logout', { method: 'POST' }),
-    onSuccess: () => client.setQueryData(['me'], null),
   });
   const value = useMemo<AuthContextValue>(
     () => ({
       user: me.data?.user || null,
       loading: me.isLoading,
       logout: async () => {
-        await logoutMutation.mutateAsync();
+        window.location.assign('/signout-with-chatgpt?return_to=%2F');
       },
     }),
-    [me.data, me.isLoading, logoutMutation],
+    [me.data, me.isLoading],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

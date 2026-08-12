@@ -2,12 +2,10 @@
 
 ## 인증/권한
 
-- Slack OpenID Connect가 유일한 interactive 로그인 방식이다. `openid profile email`만 요청한다.
-- authorization code, 10분 만료 one-time state, 브라우저 state cookie, nonce, ID token issuer/audience/JWKS 검증을 모두 통과해야 한다.
-- Slack이 검증한 email과 team/user ID를 계정에 연결하고 Slack access token은 저장하지 않는다.
-- 15분 access token과 회전 refresh token family를 사용한다.
-- token은 `httpOnly`, `sameSite`, 운영 `secure` cookie에만 저장한다.
-- refresh token 재사용이 감지되면 family 전체를 revoke한다.
+- OpenAI Sites가 제공하는 OpenAI 계정이 유일한 interactive 로그인 방식이다.
+- private Site dispatcher가 전달한 `oai-authenticated-user-id`와 검증 이메일을 계정에 연결하며 OpenAI token은 저장하지 않는다.
+- Worker가 원본 요청의 내부 secret 헤더를 제거하고 `SITES_AUTH_SHARED_SECRET`을 새로 설정한다. Nest API는 이 값과 OpenAI 사용자 헤더를 모두 검증한다.
+- `OPENAI_AUTH_MOCK=true`는 non-production에서만 동작하므로 운영 API에 헤더를 직접 보내 인증을 우회할 수 없다.
 - Nest global guard가 인증과 ADMIN/MEMBER role을 검사한다.
 - 활성 사용자 수는 `MAX_ACTIVE_USERS`로 제한한다.
 
@@ -23,7 +21,7 @@
 
 - 프로그래머스 본문·테스트케이스·공식 해설을 저장하지 않는다.
 - 채용 원문을 크롤링하지 않으며 자체 짧은 요약과 원본 URL만 import한다.
-- 구조화 로그와 evidence에서 OAuth code, token, secret, 사용자 code 전문, 업로드 원문을 제외한다.
+- 구조화 로그와 evidence에서 인증 헤더, secret, 사용자 code 전문, 업로드 원문을 제외한다.
 - `robots.txt`와 `noindex` meta로 내부 웹 색인을 차단한다.
 - 개인정보 export와 deletion request 기본 endpoint가 있다.
 

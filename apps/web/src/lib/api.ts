@@ -12,7 +12,7 @@ export class ApiError extends Error {
 
 export const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
 
-export async function api<T>(path: string, init: RequestInit = {}, retry = true): Promise<T> {
+export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   if (init.body && !(init.body instanceof FormData))
     headers.set('content-type', 'application/json');
@@ -21,13 +21,6 @@ export async function api<T>(path: string, init: RequestInit = {}, retry = true)
     headers,
     credentials: 'include',
   });
-  if (response.status === 401 && retry && path !== '/auth/refresh') {
-    const refreshed = await fetch(`${apiBaseUrl}/auth/refresh`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-    if (refreshed.ok) return api<T>(path, init, false);
-  }
   if (!response.ok) {
     const body = (await response.json().catch(() => ({ message: response.statusText }))) as {
       message?: string;
