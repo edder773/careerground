@@ -13,7 +13,19 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.setGlobalPrefix('api/v1');
   app.use(
-    helmet({ contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false }),
+    helmet({
+      contentSecurityPolicy:
+        process.env.NODE_ENV === 'production'
+          ? undefined
+          : {
+              directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'", "'unsafe-inline'"],
+                styleSrc: ["'self'", "'unsafe-inline'"],
+                imgSrc: ["'self'", 'data:'],
+              },
+            },
+    }),
   );
   app.use(cookieParser());
   app.use((request: Request, response: Response, next: NextFunction) => {
