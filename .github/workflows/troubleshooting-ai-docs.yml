@@ -85,8 +85,9 @@ jobs:
       - name: Validate generated documents
         if: steps.candidate.outputs.eligible == 'true'
         run: |
-          for file in docs/troubleshooting/*.md docs/blog/*.md; do
-            [ -f "$file" ] && pnpm troubleshoot:validate --file "$file"
+          git ls-files --others --modified --exclude-standard -- \
+            docs/troubleshooting docs/blog | while read -r file; do
+            pnpm troubleshoot:validate --file "$file"
           done
       - name: Open a separate documentation PR
         if: steps.candidate.outputs.eligible == 'true'
