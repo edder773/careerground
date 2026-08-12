@@ -1,0 +1,88 @@
+name: Trusted AI troubleshooting docs
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ai-docs-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    if: >-
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !contains(github.event.pull_request.labels.*.name, 'skip-ai-doc')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_TROUBLESHOOTING_MODEL: ${{ vars.OPENAI_TROUBLESHOOTING_MODEL }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+    steps:
+      - name: Decide whether this change is a documentation candidate
+        id: candidate
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          FORCE: ${{ contains(github.event.pull_request.labels.*.name, 'force-ai-doc') }}
+        run: |
+          if [[ "$FORCE" == "true" || "$PR_TITLE" =~ ^(fix|perf|refactor|feat)(\(.+\))?: ]]; then
+            echo "eligible=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "eligible=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v6
+        if: steps.candidate.outputs.eligible == 'true'
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        if: steps.candidate.outputs.eligible == 'true'
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - if: steps.candidate.outputs.eligible == 'true'
+        run: corepack enable && pnpm install --frozen-lockfile
+      - name: Verify base and head are independently addressable
+        if: steps.candidate.outputs.eligible == 'true'
+        run: |
+          git worktree add /tmp/careerground-before "$BASE_SHA"
+          git worktree add /tmp/careerground-after "$HEAD_SHA"
+          test "$(git -C /tmp/careerground-before rev-parse HEAD)" = "$BASE_SHA"
+          test "$(git -C /tmp/careerground-after rev-parse HEAD)" = "$HEAD_SHA"
+      - name: Collect and redact trusted evidence
+        if: steps.candidate.outputs.eligible == 'true'
+        run: pnpm evidence:collect --pr "$PR_NUMBER" --base "$BASE_SHA"
+      - name: Generate strict structured output
+        if: steps.candidate.outputs.eligible == 'true'
+        run: >-
+          pnpm troubleshoot:generate --manifest "docs/evidence/$PR_NUMBER/manifest.json"
+          --provider openai
+          ${{ contains(github.event.pull_request.labels.*.name, 'no-public-doc') && '--no-public-doc' || '' }}
+      - name: Validate generated documents
+        if: steps.candidate.outputs.eligible == 'true'
+        run: |
+          for file in docs/troubleshooting/*.md docs/blog/*.md; do
+            [ -f "$file" ] && pnpm troubleshoot:validate --file "$file"
+          done
+      - name: Open a separate documentation PR
+        if: steps.candidate.outputs.eligible == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          branch="docs/auto-troubleshooting-pr-$PR_NUMBER"
+          git switch -c "$branch"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/troubleshooting docs/blog docs/evidence docs/assets
+          git commit -m "docs: add troubleshooting evidence for PR #$PR_NUMBER"
+          git push origin "$branch"
+          url=$(gh pr create --base main --head "$branch" --title "docs: PR #$PR_NUMBER troubleshooting record" --body "AI generated from redacted evidence for #$PR_NUMBER. Human review is required before merge.")
+          gh pr comment "$PR_NUMBER" --body "트러블슈팅 문서 초안 PR: $url"

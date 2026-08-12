@@ -1,0 +1,44 @@
+name: Docs Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/docs/**
+      - docs/**
+      - .github/workflows/docs-pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm docs:build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: apps/docs/dist
+          retention-days: 7
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
