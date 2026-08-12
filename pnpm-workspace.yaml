@@ -13,3 +13,6 @@ engineStrict: true
 strictPeerDependencies: true
 confirmModulesPurge: false
 verifyDepsBeforeRun: warn
+
+overrides:
+  js-yaml: 5.2.2
