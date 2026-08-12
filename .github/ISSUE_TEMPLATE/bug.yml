@@ -1,0 +1,47 @@
+name: 버그·성능 개선
+description: 재현 가능한 현상과 before/after 근거를 남깁니다.
+title: 'fix: '
+labels: ['needs-triage']
+body:
+  - type: textarea
+    id: symptom
+    attributes:
+      label: 현상
+      description: 사용자에게 보이는 현상과 발생 시각을 적어주세요. 개인정보와 secret은 제거합니다.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 재현 단계
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected-actual
+    attributes:
+      label: 기대 결과와 실제 결과
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: 영향 범위
+      description: 사용자, 기능, 데이터, 보안 영향과 빈도를 적어주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 첨부 증거
+      description: 로그, 테스트 결과, 1440×900/375×812 화면 또는 측정값을 첨부하세요.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 개인정보·보안 확인
+      options:
+        - label: 첨부 자료에서 토큰, 이메일, 운영 데이터, 사용자 코드를 제거했습니다.
+          required: true

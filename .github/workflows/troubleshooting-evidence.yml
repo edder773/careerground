@@ -1,0 +1,77 @@
+name: Troubleshooting evidence
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: evidence-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:18.1-alpine
+        env:
+          POSTGRES_USER: careerground
+          POSTGRES_PASSWORD: careerground
+          POSTGRES_DB: careerground
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U careerground -d careerground"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      DATABASE_URL: postgresql://careerground:careerground@127.0.0.1:5432/careerground?schema=public
+      BOOTSTRAP_ADMIN_EMAIL: admin@careerground.local
+      BOOTSTRAP_ADMIN_PASSWORD: Demo-password-123!
+      JWT_ACCESS_SECRET: evidence-access-secret-with-at-least-32-characters
+      JWT_REFRESH_SECRET: evidence-refresh-secret-with-at-least-32-characters
+      INTERNAL_SERVICE_SECRET: evidence-internal-secret-with-at-least-32-characters
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: mkdir -p work/validation
+      - name: Validation without secrets
+        shell: bash
+        run: |
+          set -o pipefail
+          for check in lint typecheck test build; do
+            set +e
+            pnpm "$check" 2>&1 | tee "work/validation/$check.txt"
+            code=${PIPESTATUS[0]}
+            echo "exit code: $code" | tee -a "work/validation/$check.txt"
+            set -e
+          done
+          pnpm db:deploy
+          pnpm db:seed
+          pnpm exec playwright install --with-deps chromium
+          set +e
+          pnpm test:e2e 2>&1 | tee work/validation/e2e.txt
+          code=${PIPESTATUS[0]}
+          echo "exit code: $code" | tee -a work/validation/e2e.txt
+          exit 0
+      - run: pnpm evidence:collect --pr ${{ github.event.pull_request.number }} --base ${{ github.event.pull_request.base.sha }}
+      - run: pnpm evidence:optimize-images --dir test-results/visual --out docs/assets/troubleshooting/${{ github.event.pull_request.number }}
+      - name: Upload redacted evidence only
+        uses: actions/upload-artifact@v6
+        with:
+          name: troubleshooting-evidence-pr-${{ github.event.pull_request.number }}
+          path: |
+            docs/evidence/${{ github.event.pull_request.number }}
+            docs/assets/troubleshooting/${{ github.event.pull_request.number }}
+            work/validation
+          if-no-files-found: warn
+          retention-days: 30
