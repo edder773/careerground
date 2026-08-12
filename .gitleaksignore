@@ -1,0 +1,5 @@
+# Deterministic E2E/evidence fixtures and documented .env placeholders.
+c08d6747b30d9275cb0600fd2e526a0c0b9ee31e:playwright.config.ts:generic-api-key:39
+c08d6747b30d9275cb0600fd2e526a0c0b9ee31e:.github/workflows/e2e.yml:generic-api-key:39
+c08d6747b30d9275cb0600fd2e526a0c0b9ee31e:.github/workflows/troubleshooting-evidence.yml:generic-api-key:35
+844f430977cb2b768040a1cd6c4c661c9430b50e:.env.example:generic-api-key:7
