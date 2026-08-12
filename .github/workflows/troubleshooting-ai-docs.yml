@@ -43,13 +43,18 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.merge_commit_sha }}
           fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        if: steps.candidate.outputs.eligible == 'true'
+        with:
+          version: 11.21.0
+          run_install: false
       - uses: actions/setup-node@v6
         if: steps.candidate.outputs.eligible == 'true'
         with:
           node-version-file: .node-version
           cache: pnpm
       - if: steps.candidate.outputs.eligible == 'true'
-        run: corepack enable && pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Verify base and head are independently addressable
         if: steps.candidate.outputs.eligible == 'true'
         run: |
