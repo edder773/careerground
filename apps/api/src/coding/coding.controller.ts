@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
+import { codeLanguageSchema } from '@careerground/contracts';
 import { CurrentUser, Public, Roles, type AuthUser } from '../auth/auth.decorators.js';
 import { CodingService } from './coding.service.js';
 
@@ -19,14 +20,13 @@ const solutionSchema = z.object({
   id: z.string().uuid().optional(),
   problemId: z.string().uuid(),
   title: z.string().trim().min(1).max(200),
-  language: z.string().trim().min(1).max(40),
+  language: codeLanguageSchema,
   code: z.string().max(100_000),
   description: z.string().max(30_000),
   timeComplexity: z.string().max(100).optional(),
   spaceComplexity: z.string().max(100).optional(),
   lessons: z.string().max(20_000).optional(),
   solved: z.boolean(),
-  visibility: z.enum(['PRIVATE', 'MEMBERS']).default('MEMBERS'),
 });
 
 @ApiTags('coding')

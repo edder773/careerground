@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -55,13 +56,17 @@ export class UtilityController {
         id: z.string().uuid().optional(),
         title: z.string().trim().min(1).max(200),
         markdown: z.string().max(50_000),
-        visibility: z.enum(['PRIVATE', 'MEMBERS']).default('PRIVATE'),
         linkedType: z.string().max(40).optional(),
         linkedId: z.string().max(100).optional(),
       })
       .safeParse(body);
     if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
     return this.utility.saveNote(user.id, parsed.data);
+  }
+
+  @Delete('notes/:id')
+  deleteNote(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.utility.deleteNote(user.id, id);
   }
 
   @Roles('ADMIN')

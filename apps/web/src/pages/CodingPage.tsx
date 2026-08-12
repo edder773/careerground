@@ -1,11 +1,13 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
 import { Code2, ExternalLink, Filter, Flame, Save, Star } from 'lucide-react';
 import { api, json } from '../lib/api';
 import { FolderSaveButton } from '../components/FolderSaveButton';
+import { useAuth } from '../auth';
 
 type Problem = {
   id: string;
@@ -17,15 +19,19 @@ type Problem = {
   _count: { solutions: number };
 };
 type Challenge = { id: string; problemId: string; problem: Problem };
+type CodeLanguage = 'python' | 'java' | 'javascript' | 'cpp';
 
 export function CodingPage() {
   const client = useQueryClient();
+  const { user } = useAuth();
   const [level, setLevel] = useState('');
   const [selected, setSelected] = useState<Problem>();
-  const [language, setLanguage] = useState('typescript');
+  const [language, setLanguage] = useState<CodeLanguage>(user?.preferredLanguage || 'python');
   const [code, setCode] = useState('');
   const [description, setDescription] = useState('');
-  const [visibility, setVisibility] = useState<'PRIVATE' | 'MEMBERS'>('MEMBERS');
+  useEffect(() => {
+    if (user?.preferredLanguage) setLanguage(user.preferredLanguage);
+  }, [user?.preferredLanguage]);
   const problems = useQuery({
     queryKey: ['problems', level],
     queryFn: () => api<Problem[]>(`/coding/problems${level ? `?level=${level}` : ''}`),
@@ -46,7 +52,6 @@ export function CodingPage() {
           description,
           lessons: '',
           solved: true,
-          visibility,
         }),
       });
       const activeChallenge = challenge.data;
@@ -81,7 +86,7 @@ export function CodingPage() {
       <section className="page-heading">
         <div>
           <span className="eyebrow">
-            <Code2 size={15} /> 원본 링크 기반 연습
+            <Code2 size={15} /> 코딩 연습
           </span>
           <h1>코딩테스트</h1>
           <p>문제 원문은 프로그래머스에서 확인하고, 이곳에는 내 코드와 풀이만 기록합니다.</p>
@@ -94,9 +99,7 @@ export function CodingPage() {
               <Flame size={16} /> 오늘의 문제
             </span>
             <h2>{challenge.data.problem.displayTitle}</h2>
-            <p>
-              Lv. {challenge.data.problem.level} · 같은 날 모든 멤버에게 동일한 문제가 제공됩니다.
-            </p>
+            <p>Lv. {challenge.data.problem.level} · 오늘 집중해서 풀어볼 문제입니다.</p>
           </div>
           <a
             className="primary-button compact"
@@ -121,7 +124,7 @@ export function CodingPage() {
             ))}
           </select>
         </label>
-        <span>자기 보고형 해결 기록입니다.</span>
+        <span>문제를 선택해 코드와 풀이 과정을 기록하세요.</span>
       </div>
       {problems.isLoading && <div className="loading-panel">문제 목록을 불러오는 중…</div>}
       {problems.isError && <div className="error-panel">문제 목록을 불러오지 못했습니다.</div>}
@@ -142,7 +145,7 @@ export function CodingPage() {
               ))}
             </div>
             <p>
-              {problem._count.solutions}개 공유 풀이 · {problem.progress[0]?.status || 'UNTRIED'}
+              {problem._count.solutions}개 풀이 기록 · {problem.progress[0]?.status || 'UNTRIED'}
             </p>
             <div className="card-actions">
               <a href={problem.sourceUrl} target="_blank" rel="noreferrer">
@@ -156,6 +159,7 @@ export function CodingPage() {
               >
                 풀이 기록
               </button>
+              <Link to={`/solutions?problemId=${problem.id}`}>다른 풀이 보기</Link>
               <FolderSaveButton
                 itemType="CODING_PROBLEM"
                 targetId={problem.id}
@@ -180,22 +184,19 @@ export function CodingPage() {
             <div className="form-row">
               <label>
                 언어
-                <select value={language} onChange={(event) => setLanguage(event.target.value)}>
-                  <option value="typescript">TypeScript</option>
+                <select
+                  value={language}
+                  onChange={(event) => setLanguage(event.target.value as CodeLanguage)}
+                >
                   <option value="python">Python</option>
                   <option value="java">Java</option>
+                  <option value="javascript">JavaScript</option>
+                  <option value="cpp">C++</option>
                 </select>
               </label>
-              <label>
-                공개 범위
-                <select
-                  value={visibility}
-                  onChange={(event) => setVisibility(event.target.value as typeof visibility)}
-                >
-                  <option value="MEMBERS">멤버 공개</option>
-                  <option value="PRIVATE">나만 보기</option>
-                </select>
-              </label>
+              <p className="solution-visibility-note">
+                저장한 풀이는 다른 멤버도 바로 볼 수 있습니다.
+              </p>
             </div>
             <label>
               코드
@@ -204,7 +205,11 @@ export function CodingPage() {
                   value={code}
                   height="260px"
                   extensions={
-                    language === 'python' ? [python()] : [javascript({ typescript: true })]
+                    language === 'python'
+                      ? [python()]
+                      : language === 'javascript'
+                        ? [javascript()]
+                        : []
                   }
                   onChange={setCode}
                 />

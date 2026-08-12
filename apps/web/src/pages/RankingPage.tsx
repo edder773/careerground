@@ -30,7 +30,7 @@ export function RankingPage() {
             <Trophy size={15} /> 팀의 꾸준함
           </span>
           <h1>랭킹</h1>
-          <p>사이트에 직접 등록한 해결 기록을 기준으로 한 자기 보고형 랭킹입니다.</p>
+          <p>멤버가 해결한 문제 수와 꾸준한 학습 기록을 함께 확인합니다.</p>
         </div>
       </section>
       <div className="ranking-notice">

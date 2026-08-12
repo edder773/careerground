@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router';
 import { useAuth } from './auth';
 import { AppShell, type ViewMode } from './components/AppShell';
 import { LoginPage } from './pages/LoginPage';
+import { OnboardingPage } from './pages/OnboardingPage';
 
 const HomePage = lazy(() =>
   import('./pages/HomePage').then((module) => ({ default: module.HomePage })),
@@ -49,6 +50,7 @@ export function App() {
       </div>
     );
   if (!user) return <LoginPage />;
+  if (!user.onboardingCompleted) return <OnboardingPage />;
   return (
     <AppShell viewMode={viewMode} onViewMode={setViewMode}>
       <Suspense fallback={<div className="loading-panel">화면을 불러오는 중…</div>}>

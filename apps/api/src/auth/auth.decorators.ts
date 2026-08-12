@@ -7,7 +7,14 @@ export const ROLES = 'roles';
 export const Public = () => SetMetadata(IS_PUBLIC, true);
 export const Roles = (...roles: Role[]) => SetMetadata(ROLES, roles);
 
-export type AuthUser = { id: string; email: string; role: Role; displayName: string };
+export type AuthUser = {
+  id: string;
+  email: string;
+  role: Role;
+  displayName: string;
+  preferredLanguage: string;
+  onboardingCompleted: boolean;
+};
 
 export const CurrentUser = createParamDecorator((_data: unknown, context: ExecutionContext) => {
   return context.switchToHttp().getRequest<Request & { user: AuthUser }>().user;

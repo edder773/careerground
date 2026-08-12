@@ -30,6 +30,7 @@ export const applicationStatusSchema = z.enum([
   'ON_HOLD',
 ]);
 export const problemStatusSchema = z.enum(['UNTRIED', 'IN_PROGRESS', 'SOLVED', 'RETRY']);
+export const codeLanguageSchema = z.enum(['python', 'java', 'javascript', 'cpp']);
 
 const safeHttpUrl = z
   .string()

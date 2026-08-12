@@ -1,4 +1,4 @@
-name: Trusted AI troubleshooting docs
+name: Trusted troubleshooting docs
 
 on:
   pull_request:
@@ -65,11 +65,22 @@ jobs:
       - name: Collect and redact trusted evidence
         if: steps.candidate.outputs.eligible == 'true'
         run: pnpm evidence:collect --pr "$PR_NUMBER" --base "$BASE_SHA"
-      - name: Generate strict structured output
-        if: steps.candidate.outputs.eligible == 'true'
+      - name: Generate AI-assisted structured output
+        if: >-
+          steps.candidate.outputs.eligible == 'true' &&
+          env.OPENAI_API_KEY != '' &&
+          env.OPENAI_TROUBLESHOOTING_MODEL != ''
         run: >-
           pnpm troubleshoot:generate --manifest "docs/evidence/$PR_NUMBER/manifest.json"
           --provider openai
+          ${{ contains(github.event.pull_request.labels.*.name, 'no-public-doc') && '--no-public-doc' || '' }}
+      - name: Generate deterministic evidence record without API credentials
+        if: >-
+          steps.candidate.outputs.eligible == 'true' &&
+          (env.OPENAI_API_KEY == '' || env.OPENAI_TROUBLESHOOTING_MODEL == '')
+        run: >-
+          pnpm troubleshoot:generate --manifest "docs/evidence/$PR_NUMBER/manifest.json"
+          --provider mock
           ${{ contains(github.event.pull_request.labels.*.name, 'no-public-doc') && '--no-public-doc' || '' }}
       - name: Validate generated documents
         if: steps.candidate.outputs.eligible == 'true'
@@ -89,5 +100,5 @@ jobs:
           git add docs/troubleshooting docs/blog docs/evidence docs/assets
           git commit -m "docs: add troubleshooting evidence for PR #$PR_NUMBER"
           git push origin "$branch"
-          url=$(gh pr create --base main --head "$branch" --title "docs: PR #$PR_NUMBER troubleshooting record" --body "AI generated from redacted evidence for #$PR_NUMBER. Human review is required before merge.")
+          url=$(gh pr create --base main --head "$branch" --title "docs: PR #$PR_NUMBER troubleshooting record" --body "Generated from redacted evidence for #$PR_NUMBER. OpenAI credentials are optional; human review is required before merge.")
           gh pr comment "$PR_NUMBER" --body "트러블슈팅 문서 초안 PR: $url"

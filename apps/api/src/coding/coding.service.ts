@@ -12,7 +12,7 @@ import sanitizeHtml from 'sanitize-html';
 import { PrismaService } from '../common/prisma.service.js';
 import { AuditService } from '../common/audit.service.js';
 import type { AuthUser } from '../auth/auth.decorators.js';
-import type { ProblemStatus, Visibility } from '../generated/prisma/enums.js';
+import type { ProblemStatus } from '../generated/prisma/enums.js';
 import {
   denseRank,
   kstCalendarDate,
@@ -95,7 +95,7 @@ export class CodingService implements OnApplicationBootstrap {
         problemId: filters.problemId,
         language: filters.language,
         authorId: filters.authorId,
-        OR: [{ visibility: 'MEMBERS' }, { authorId: user.id }],
+        visibility: 'MEMBERS',
       },
       include: {
         author: { select: { id: true, displayName: true, avatarUrl: true } },
@@ -132,7 +132,6 @@ export class CodingService implements OnApplicationBootstrap {
       spaceComplexity?: string;
       lessons?: string;
       solved: boolean;
-      visibility: Visibility;
     },
   ) {
     if (data.solved && !data.code.trim())
@@ -156,6 +155,7 @@ export class CodingService implements OnApplicationBootstrap {
             lessons,
             currentRev: revision,
             solvedAt: data.solved ? current.solvedAt || new Date() : null,
+            visibility: 'MEMBERS',
             id: undefined,
           },
           include: { problem: true },
@@ -182,6 +182,7 @@ export class CodingService implements OnApplicationBootstrap {
           ...data,
           id: undefined,
           authorId: userId,
+          visibility: 'MEMBERS',
           description,
           lessons,
           solvedAt: data.solved ? new Date() : null,

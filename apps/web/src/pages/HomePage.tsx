@@ -197,6 +197,51 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
 
   return (
     <div className="home-page finder-home">
+      <section className="today-strip home-priority" aria-label="오늘의 요약">
+        <article className="today-feature">
+          <div className="today-icon">
+            <Code2 />
+          </div>
+          <div>
+            <span>오늘의 코딩테스트</span>
+            <strong>
+              {challenge.data?.problem.displayTitle ||
+                (challenge.isLoading ? '문제를 준비하는 중…' : '오늘의 문제를 확인해주세요')}
+            </strong>
+            <small>
+              {challenge.data
+                ? `Lv. ${challenge.data.problem.level} · 오늘 집중해서 풀어볼 문제`
+                : '잠시 후 다시 확인해주세요.'}
+            </small>
+          </div>
+          {challenge.data && (
+            <a href={challenge.data.problem.sourceUrl} target="_blank" rel="noreferrer">
+              문제 열기
+            </a>
+          )}
+        </article>
+        <article>
+          <BookOpen />
+          <div>
+            <strong>{dashboard.data?.dueReviews ?? '—'}</strong>
+            <span>오늘 복습</span>
+          </div>
+        </article>
+        <article>
+          <BriefcaseBusiness />
+          <div>
+            <strong>{dashboard.data?.recentJobs ?? '—'}</strong>
+            <span>신규 공고</span>
+          </div>
+        </article>
+        <article>
+          <BellRing />
+          <div>
+            <strong>{dashboard.data?.expiringJobs ?? '—'}</strong>
+            <span>마감 임박</span>
+          </div>
+        </article>
+      </section>
       <section className="page-heading finder-canvas-heading">
         <div>
           <span className="eyebrow">
@@ -431,11 +476,6 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
           <span>중요 표시 항목</span>
         </article>
         <article>
-          <Code2 />
-          <strong>오늘의 코테</strong>
-          <span>매일 오전 7시</span>
-        </article>
-        <article>
           <BriefcaseBusiness />
           <strong>관심 공고</strong>
           <span>지원 후보 모음</span>
@@ -444,51 +484,6 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
           <BookOpen />
           <strong>복습 예정</strong>
           <span>간격 반복 일정</span>
-        </article>
-      </section>
-      <section className="today-strip" aria-label="오늘의 요약">
-        <article className="today-feature">
-          <div className="today-icon">
-            <Code2 />
-          </div>
-          <div>
-            <span>오늘의 코딩테스트</span>
-            <strong>
-              {challenge.data?.problem.displayTitle ||
-                (challenge.isLoading ? '문제를 고르는 중…' : '후보를 확인해주세요')}
-            </strong>
-            <small>
-              {challenge.data
-                ? `Programmers Lv. ${challenge.data.problem.level} · 자기 보고형 기록`
-                : '관리자 설정에 따른 공통 문제'}
-            </small>
-          </div>
-          {challenge.data && (
-            <a href={challenge.data.problem.sourceUrl} target="_blank" rel="noreferrer">
-              문제 열기
-            </a>
-          )}
-        </article>
-        <article>
-          <BookOpen />
-          <div>
-            <strong>{dashboard.data?.dueReviews ?? '—'}</strong>
-            <span>오늘 복습</span>
-          </div>
-        </article>
-        <article>
-          <BriefcaseBusiness />
-          <div>
-            <strong>{dashboard.data?.recentJobs ?? '—'}</strong>
-            <span>신규 공고</span>
-          </div>
-        </article>
-        <article>
-          <BellRing />
-          <div>
-            <strong>{dashboard.data?.expiringJobs ?? '—'}</strong>
-            <span>마감 임박</span>
-          </div>
         </article>
       </section>
     </div>

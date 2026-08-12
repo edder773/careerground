@@ -26,6 +26,7 @@ type UserRow = {
   avatarUrl: string | null;
   githubUsername: string | null;
   preferredLanguage: string;
+  onboardingCompletedAt: string | null;
   rankingOptIn: number | boolean;
   commentNotifications: number | boolean;
   deadlineNotifications: number | boolean;
@@ -35,7 +36,16 @@ type UserRow = {
   updatedAt: string;
 };
 
-type ApiUser = { id: string; email: string; displayName: string; role: 'ADMIN' | 'MEMBER' };
+type ApiUser = {
+  id: string;
+  email: string;
+  displayName: string;
+  role: 'ADMIN' | 'MEMBER';
+  preferredLanguage: string;
+  onboardingCompleted: boolean;
+};
+
+const codeLanguages = new Set(['python', 'java', 'javascript', 'cpp']);
 
 class RouteError extends Error {
   constructor(
@@ -50,7 +60,8 @@ class RouteError extends Error {
 const userSelect = `
   SELECT id, site_user_id AS siteUserId, email, display_name AS displayName, role,
          is_active AS isActive, avatar_url AS avatarUrl, github_username AS githubUsername,
-         preferred_language AS preferredLanguage, ranking_opt_in AS rankingOptIn,
+         preferred_language AS preferredLanguage,
+         onboarding_completed_at AS onboardingCompletedAt, ranking_opt_in AS rankingOptIn,
          comment_notifications AS commentNotifications,
          deadline_notifications AS deadlineNotifications,
          review_notifications AS reviewNotifications,
@@ -112,6 +123,8 @@ const apiUser = (row: UserRow): ApiUser => ({
   email: row.email,
   displayName: row.displayName,
   role: row.role,
+  preferredLanguage: row.preferredLanguage,
+  onboardingCompleted: Boolean(row.onboardingCompletedAt),
 });
 
 async function audit(
@@ -162,8 +175,8 @@ async function resolveUser(identity: Identity, env: D1Env): Promise<UserRow> {
       db
         .prepare(
           `INSERT INTO users
-             (id, site_user_id, email, display_name, role, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+             (id, site_user_id, email, display_name, role, preferred_language, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, 'javascript', ?, ?)`,
         )
         .bind(
           id,
@@ -254,6 +267,7 @@ async function profile(db: D1Database, userId: string) {
     avatarUrl: row.avatarUrl,
     githubUsername: row.githubUsername,
     preferredLanguage: row.preferredLanguage,
+    onboardingCompleted: Boolean(row.onboardingCompletedAt),
     rankingOptIn: asBoolean(row.rankingOptIn),
     dataDeletionRequested: row.dataDeletionRequested,
     preference: {
@@ -433,7 +447,24 @@ async function commentsFor(db: D1Database, solutionId: string) {
     }));
 }
 
-async function solutionList(db: D1Database, userId: string) {
+async function solutionList(db: D1Database, userId: string, search: URLSearchParams) {
+  const clauses = ['s.deleted_at IS NULL', "s.visibility = 'MEMBERS'"];
+  const values: unknown[] = [];
+  const problemId = search.get('problemId');
+  const language = search.get('language');
+  const authorId = search.get('authorId');
+  if (problemId) {
+    clauses.push('s.problem_id = ?');
+    values.push(problemId);
+  }
+  if (language) {
+    clauses.push('s.language = ?');
+    values.push(language);
+  }
+  if (authorId) {
+    clauses.push('s.author_id = ?');
+    values.push(authorId);
+  }
   const rows = await all<SolutionRow>(
     db,
     `SELECT s.id, s.problem_id AS problemId, s.author_id AS authorId, s.title, s.language,
@@ -445,9 +476,9 @@ async function solutionList(db: D1Database, userId: string) {
        FROM solutions s
        JOIN users u ON u.id = s.author_id
        JOIN coding_problems p ON p.id = s.problem_id
-      WHERE s.deleted_at IS NULL AND (s.visibility = 'MEMBERS' OR s.author_id = ?)
+      WHERE ${clauses.join(' AND ')}
       ORDER BY s.updated_at DESC`,
-    userId,
+    ...values,
   );
   return Promise.all(
     rows.map(async (row) => {
@@ -600,7 +631,7 @@ async function noteList(db: D1Database, userId: string) {
             n.current_rev AS currentRev, n.created_at AS createdAt, n.updated_at AS updatedAt,
             u.display_name AS authorDisplayName
        FROM notes n JOIN users u ON u.id = n.user_id
-      WHERE n.deleted_at IS NULL AND (n.user_id = ? OR n.visibility = 'MEMBERS')
+      WHERE n.deleted_at IS NULL AND n.user_id = ?
       ORDER BY n.updated_at DESC LIMIT 100`,
     userId,
   );
@@ -835,11 +866,41 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
 
   if (method === 'GET' && path === '/auth/me') return { user: apiUser(user) };
   if (method === 'GET' && path === '/auth/profile') return profile(db, user.id);
+  if (method === 'POST' && path === '/auth/onboarding') {
+    const body = await readJson(request);
+    const displayName = cleanText(body.displayName);
+    const preferredLanguage = cleanText(body.preferredLanguage);
+    if (displayName.length < 2 || displayName.length > 80) {
+      throw new RouteError(400, '이름은 2~80자여야 합니다.');
+    }
+    if (!codeLanguages.has(preferredLanguage)) {
+      throw new RouteError(400, '지원하는 코드 언어를 선택해주세요.');
+    }
+    const timestamp = nowIso();
+    await run(
+      db,
+      `UPDATE users SET display_name = ?, preferred_language = ?,
+         onboarding_completed_at = ?, updated_at = ? WHERE id = ?`,
+      displayName,
+      preferredLanguage,
+      timestamp,
+      timestamp,
+      user.id,
+    );
+    await audit(db, user.id, 'ONBOARDING_COMPLETED', 'User', user.id);
+    const completed = await first<UserRow>(db, `${userSelect} WHERE id = ?`, user.id);
+    if (!completed) throw new RouteError(404, '사용자를 찾을 수 없습니다.');
+    return apiUser(completed);
+  }
   if (method === 'PATCH' && path === '/auth/profile') {
     const body = await readJson(request);
     const displayName = cleanText(body.displayName);
     if (displayName.length < 2 || displayName.length > 80) {
       throw new RouteError(400, '표시 이름은 2~80자여야 합니다.');
+    }
+    const preferredLanguage = cleanText(body.preferredLanguage);
+    if (!codeLanguages.has(preferredLanguage)) {
+      throw new RouteError(400, '지원하는 코드 언어를 선택해주세요.');
     }
     const timestamp = nowIso();
     await run(
@@ -850,7 +911,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       displayName,
       cleanText(body.avatarUrl) || null,
       cleanText(body.githubUsername) || null,
-      cleanText(body.preferredLanguage, 'typescript'),
+      preferredLanguage,
       bool(body.rankingOptIn, true) ? 1 : 0,
       bool(body.commentNotifications, true) ? 1 : 0,
       bool(body.deadlineNotifications, true) ? 1 : 0,
@@ -1101,7 +1162,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       ),
       all(
         db,
-        `SELECT id, title, updated_at AS updatedAt FROM notes WHERE deleted_at IS NULL AND (user_id = ? OR visibility = 'MEMBERS') AND (title LIKE ? OR markdown LIKE ?) LIMIT 10`,
+        `SELECT id, title, updated_at AS updatedAt FROM notes WHERE deleted_at IS NULL AND user_id = ? AND (title LIKE ? OR markdown LIKE ?) LIMIT 10`,
         user.id,
         like,
         like,
@@ -1175,7 +1236,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     const body = await readJson(request);
     const title = cleanText(body.title);
     const markdown = cleanText(body.markdown);
-    const visibility = body.visibility === 'MEMBERS' ? 'MEMBERS' : 'PRIVATE';
+    const visibility = 'PRIVATE';
     if (!title) throw new RouteError(400, '노트 제목이 필요합니다.');
     const timestamp = nowIso();
     if (typeof body.id === 'string' && body.id) {
@@ -1244,6 +1305,20 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       createdAt: timestamp,
       updatedAt: timestamp,
     };
+  }
+
+  const deleteNoteMatch = path.match(/^\/notes\/([^/]+)$/);
+  if (deleteNoteMatch && method === 'DELETE') {
+    const result = await run(
+      db,
+      'UPDATE notes SET deleted_at = ?, updated_at = ? WHERE id = ? AND user_id = ? AND deleted_at IS NULL',
+      nowIso(),
+      nowIso(),
+      deleteNoteMatch[1],
+      user.id,
+    );
+    if (!Number(result.meta?.changes || 0)) throw new RouteError(404, '노트를 찾을 수 없습니다.');
+    return { id: deleteNoteMatch[1], deleted: true };
   }
 
   if (method === 'GET' && path === '/coding/problems')
@@ -1353,7 +1428,8 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     });
     return dailyChallenge(db, user.id);
   }
-  if (method === 'GET' && path === '/coding/solutions') return solutionList(db, user.id);
+  if (method === 'GET' && path === '/coding/solutions')
+    return solutionList(db, user.id, url.searchParams);
   if (method === 'POST' && path === '/coding/solutions') {
     const body = await readJson(request);
     const code = typeof body.code === 'string' ? body.code : '';
@@ -1361,6 +1437,10 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       throw new RouteError(400, '해결 기록에는 코드가 필요합니다.');
     const timestamp = nowIso();
     const problemId = cleanText(body.problemId);
+    const language = cleanText(body.language);
+    if (!codeLanguages.has(language)) {
+      throw new RouteError(400, '지원하는 코드 언어를 선택해주세요.');
+    }
     if (typeof body.id === 'string' && body.id) {
       const current = await first<{
         authorId: string;
@@ -1383,14 +1463,14 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
           .bind(
             problemId,
             cleanText(body.title),
-            cleanText(body.language, 'typescript'),
+            language,
             code,
             cleanText(body.description),
             cleanText(body.timeComplexity) || null,
             cleanText(body.spaceComplexity) || null,
             cleanText(body.lessons),
             bool(body.solved) ? 1 : 0,
-            body.visibility === 'PRIVATE' ? 'PRIVATE' : 'MEMBERS',
+            'MEMBERS',
             revision,
             bool(body.solved) ? current.solvedAt || timestamp : null,
             timestamp,
@@ -1427,14 +1507,14 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
           problemId,
           user.id,
           cleanText(body.title),
-          cleanText(body.language, 'typescript'),
+          language,
           code,
           cleanText(body.description),
           cleanText(body.timeComplexity) || null,
           cleanText(body.spaceComplexity) || null,
           cleanText(body.lessons),
           bool(body.solved) ? 1 : 0,
-          body.visibility === 'PRIVATE' ? 'PRIVATE' : 'MEMBERS',
+          'MEMBERS',
           bool(body.solved) ? timestamp : null,
           timestamp,
           timestamp,

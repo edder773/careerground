@@ -36,7 +36,11 @@ class SqliteD1 implements D1Database {
   private readonly sqlite = new DatabaseSync(':memory:');
 
   constructor() {
-    for (const file of ['drizzle/0000_loose_shooting_star.sql', 'drizzle/0001_seed.sql']) {
+    for (const file of [
+      'drizzle/0000_loose_shooting_star.sql',
+      'drizzle/0001_seed.sql',
+      'drizzle/0002_equal_hulk.sql',
+    ]) {
       const migration = readFileSync(file, 'utf8');
       for (const statement of migration.split('--> statement-breakpoint')) {
         if (statement.trim()) this.sqlite.exec(statement);
@@ -61,6 +65,13 @@ const adminHeaders = {
   'oai-authenticated-user-id': 'site-admin',
   'oai-authenticated-user-email': 'admin@example.test',
   'oai-authenticated-user-full-name': 'Admin%20User',
+  'oai-authenticated-user-full-name-encoding': 'percent-encoded-utf-8',
+};
+
+const memberHeaders = {
+  'oai-authenticated-user-id': 'site-member',
+  'oai-authenticated-user-email': 'member@example.test',
+  'oai-authenticated-user-full-name': 'Member%20User',
   'oai-authenticated-user-full-name-encoding': 'percent-encoded-utf-8',
 };
 
@@ -94,18 +105,37 @@ describe('Sites D1 API', () => {
     const me = await call('/api/v1/auth/me');
     expect(me.response.status).toBe(200);
     expect(me.body).toMatchObject({
-      user: { email: 'admin@example.test', displayName: 'Admin User', role: 'ADMIN' },
+      user: {
+        email: 'admin@example.test',
+        displayName: 'Admin User',
+        role: 'ADMIN',
+        preferredLanguage: 'javascript',
+        onboardingCompleted: false,
+      },
     });
 
-    const member = await call(
-      '/api/v1/auth/me',
-      {},
+    const member = await call('/api/v1/auth/me', {}, memberHeaders);
+    expect(member.body).toMatchObject({
+      user: { role: 'MEMBER', onboardingCompleted: false },
+    });
+
+    const onboarding = await call(
+      '/api/v1/auth/onboarding',
       {
-        'oai-authenticated-user-id': 'site-member',
-        'oai-authenticated-user-email': 'member@example.test',
+        method: 'POST',
+        body: JSON.stringify({ displayName: '새 멤버', preferredLanguage: 'java' }),
       },
+      memberHeaders,
     );
-    expect(member.body).toMatchObject({ user: { role: 'MEMBER' } });
+    expect(onboarding.response.status).toBe(200);
+    const refreshed = await call('/api/v1/auth/me', {}, memberHeaders);
+    expect(refreshed.body).toMatchObject({
+      user: {
+        displayName: '새 멤버',
+        preferredLanguage: 'java',
+        onboardingCompleted: true,
+      },
+    });
   });
 
   it('persists a personal folder and external link', async () => {
@@ -144,7 +174,7 @@ describe('Sites D1 API', () => {
   it('persists note revisions for the current user', async () => {
     const created = await call('/api/v1/notes', {
       method: 'POST',
-      body: JSON.stringify({ title: 'D1 메모', markdown: '첫 기록', visibility: 'PRIVATE' }),
+      body: JSON.stringify({ title: 'D1 메모', markdown: '첫 기록', visibility: 'MEMBERS' }),
     });
     const note = created.body as { id: string };
     await call('/api/v1/notes', {
@@ -162,6 +192,7 @@ describe('Sites D1 API', () => {
       expect.objectContaining({
         id: note.id,
         markdown: '두 번째 기록',
+        visibility: 'PRIVATE',
         currentRev: 2,
         revisions: [
           expect.objectContaining({ revision: 2 }),
@@ -169,6 +200,12 @@ describe('Sites D1 API', () => {
         ],
       }),
     ]);
+
+    const otherUserNotes = await call('/api/v1/notes', {}, memberHeaders);
+    expect(otherUserNotes.body).toEqual([]);
+    const removed = await call(`/api/v1/notes/${note.id}`, { method: 'DELETE' });
+    expect(removed.response.status).toBe(200);
+    expect((await call('/api/v1/notes')).body).toEqual([]);
   });
 
   it('loads seeded jobs and persists the application status', async () => {
@@ -202,11 +239,11 @@ describe('Sites D1 API', () => {
       body: JSON.stringify({
         problemId: daily.problem.id,
         title: '테스트 풀이',
-        language: 'typescript',
+        language: 'javascript',
         code: 'return true;',
         description: 'D1에 저장되는 풀이',
         solved: true,
-        visibility: 'MEMBERS',
+        visibility: 'PRIVATE',
       }),
     });
     const saved = solution.body as { id: string };
@@ -217,10 +254,16 @@ describe('Sites D1 API', () => {
     });
     await call(`/api/v1/coding/daily-challenge/${daily.id}/complete`, { method: 'POST' });
 
-    const solutions = await call('/api/v1/coding/solutions');
+    const solutions = await call(
+      `/api/v1/coding/solutions?problemId=${daily.problem.id}`,
+      {},
+      memberHeaders,
+    );
     expect(solutions.body).toEqual([
       expect.objectContaining({
         id: saved.id,
+        language: 'javascript',
+        visibility: 'MEMBERS',
         reactions: [expect.any(Object)],
         comments: [expect.objectContaining({ markdown: '좋은 풀이입니다.' })],
       }),

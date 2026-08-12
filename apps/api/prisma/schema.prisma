@@ -107,19 +107,20 @@ enum NotificationType {
 }
 
 model User {
-  id                    String                       @id @default(uuid()) @db.Uuid
-  email                 String                       @unique @db.VarChar(320)
-  openAiUserId          String?                      @unique @db.VarChar(255)
-  displayName           String                       @db.VarChar(80)
-  role                  Role                         @default(MEMBER)
-  isActive              Boolean                      @default(true)
-  avatarUrl             String?                      @db.VarChar(500)
-  githubUsername        String?                      @db.VarChar(100)
-  preferredLanguage     String                       @default("typescript") @db.VarChar(40)
-  rankingOptIn          Boolean                      @default(true)
+  id                    String                        @id @default(uuid()) @db.Uuid
+  email                 String                        @unique @db.VarChar(320)
+  openAiUserId          String?                       @unique @db.VarChar(255)
+  displayName           String                        @db.VarChar(80)
+  role                  Role                          @default(MEMBER)
+  isActive              Boolean                       @default(true)
+  avatarUrl             String?                       @db.VarChar(500)
+  githubUsername        String?                       @db.VarChar(100)
+  preferredLanguage     String                        @default("javascript") @db.VarChar(40)
+  onboardingCompletedAt DateTime?
+  rankingOptIn          Boolean                       @default(true)
   dataDeletionRequested DateTime?
-  createdAt             DateTime                     @default(now())
-  updatedAt             DateTime                     @updatedAt
+  createdAt             DateTime                      @default(now())
+  updatedAt             DateTime                      @updatedAt
   deletedAt             DateTime?
   preference            UserPreference?
   collections           Collection[]
@@ -134,22 +135,22 @@ model User {
   solutionComments      SolutionComment[]
   commentReports        CommentReport[]
   notifications         Notification[]
-  auditLogs             AuditLog[]                   @relation("AuditActor")
-  hiddenComments        SolutionComment[]            @relation("CommentModerator")
+  auditLogs             AuditLog[]                    @relation("AuditActor")
+  hiddenComments        SolutionComment[]             @relation("CommentModerator")
   publishedLearning     LearningSource[]              @relation("LearningPublisher")
 }
 
 model UserPreference {
-  id                       String   @id @default(uuid()) @db.Uuid
-  userId                   String   @unique @db.Uuid
-  homeViewMode             String   @default("GRID") @db.VarChar(20)
-  homeSort                 String   @default("UPDATED_DESC") @db.VarChar(40)
-  emailNotifications       Boolean  @default(false)
-  commentNotifications     Boolean  @default(true)
-  deadlineNotifications    Boolean  @default(true)
-  reviewNotifications      Boolean  @default(true)
-  updatedAt                DateTime @updatedAt
-  user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                    String   @id @default(uuid()) @db.Uuid
+  userId                String   @unique @db.Uuid
+  homeViewMode          String   @default("GRID") @db.VarChar(20)
+  homeSort              String   @default("UPDATED_DESC") @db.VarChar(40)
+  emailNotifications    Boolean  @default(false)
+  commentNotifications  Boolean  @default(true)
+  deadlineNotifications Boolean  @default(true)
+  reviewNotifications   Boolean  @default(true)
+  updatedAt             DateTime @updatedAt
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Collection {
@@ -187,19 +188,19 @@ model CollectionItem {
 }
 
 model Note {
-  id          String         @id @default(uuid()) @db.Uuid
-  userId      String         @db.Uuid
-  title       String         @db.VarChar(200)
-  markdown    String
-  visibility  Visibility     @default(PRIVATE)
-  linkedType  String?        @db.VarChar(40)
-  linkedId    String?        @db.VarChar(100)
-  currentRev  Int            @default(1)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  deletedAt   DateTime?
-  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  revisions   NoteRevision[]
+  id         String         @id @default(uuid()) @db.Uuid
+  userId     String         @db.Uuid
+  title      String         @db.VarChar(200)
+  markdown   String
+  visibility Visibility     @default(PRIVATE)
+  linkedType String?        @db.VarChar(40)
+  linkedId   String?        @db.VarChar(100)
+  currentRev Int            @default(1)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  deletedAt  DateTime?
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  revisions  NoteRevision[]
 
   @@index([userId, updatedAt])
   @@index([linkedType, linkedId])
@@ -217,55 +218,55 @@ model NoteRevision {
 }
 
 model LearningSource {
-  id            String                 @id @default(uuid()) @db.Uuid
-  title         String                 @db.VarChar(200)
-  subject       String                 @db.VarChar(100)
-  category      String                 @db.VarChar(100)
-  visibility    Visibility             @default(MEMBERS)
-  status        LearningSourceStatus   @default(UPLOADED)
-  publishedById String?                @db.Uuid
-  createdAt     DateTime               @default(now())
-  updatedAt     DateTime               @updatedAt
+  id            String                  @id @default(uuid()) @db.Uuid
+  title         String                  @db.VarChar(200)
+  subject       String                  @db.VarChar(100)
+  category      String                  @db.VarChar(100)
+  visibility    Visibility              @default(MEMBERS)
+  status        LearningSourceStatus    @default(UPLOADED)
+  publishedById String?                 @db.Uuid
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
   deletedAt     DateTime?
-  publishedBy   User?                  @relation("LearningPublisher", fields: [publishedById], references: [id])
+  publishedBy   User?                   @relation("LearningPublisher", fields: [publishedById], references: [id])
   versions      LearningSourceVersion[]
   units         LearningUnit[]
 }
 
 model LearningSourceVersion {
-  id             String           @id @default(uuid()) @db.Uuid
-  sourceId       String           @db.Uuid
-  version        String           @db.VarChar(40)
-  fileName       String?          @db.VarChar(255)
-  mimeType       String?          @db.VarChar(120)
-  storageKey     String?          @db.VarChar(500)
-  sha256         String           @unique @db.Char(64)
+  id             String          @id @default(uuid()) @db.Uuid
+  sourceId       String          @db.Uuid
+  version        String          @db.VarChar(40)
+  fileName       String?         @db.VarChar(255)
+  mimeType       String?         @db.VarChar(120)
+  storageKey     String?         @db.VarChar(500)
+  sha256         String          @unique @db.Char(64)
   extractionMeta Json?
-  createdAt      DateTime         @default(now())
-  source         LearningSource   @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  createdAt      DateTime        @default(now())
+  source         LearningSource  @relation(fields: [sourceId], references: [id], onDelete: Cascade)
   jobs           ProcessingJob[]
 
   @@unique([sourceId, version])
 }
 
 model LearningUnit {
-  id          String                    @id @default(uuid()) @db.Uuid
-  sourceId    String                    @db.Uuid
-  anchor      String                    @db.VarChar(200)
-  title       String                    @db.VarChar(200)
-  summary     String
-  concepts    String[]
-  position    Int                       @default(0)
-  published   Boolean                   @default(false)
-  currentRev  Int                       @default(1)
-  createdAt   DateTime                  @default(now())
-  updatedAt   DateTime                  @updatedAt
-  source      LearningSource            @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  revisions   LearningContentRevision[]
-  flashcards  Flashcard[]
-  questions   LearningQuestion[]
-  progress    LearningProgress[]
-  schedules   ReviewSchedule[]
+  id         String                    @id @default(uuid()) @db.Uuid
+  sourceId   String                    @db.Uuid
+  anchor     String                    @db.VarChar(200)
+  title      String                    @db.VarChar(200)
+  summary    String
+  concepts   String[]
+  position   Int                       @default(0)
+  published  Boolean                   @default(false)
+  currentRev Int                       @default(1)
+  createdAt  DateTime                  @default(now())
+  updatedAt  DateTime                  @updatedAt
+  source     LearningSource            @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  revisions  LearningContentRevision[]
+  flashcards Flashcard[]
+  questions  LearningQuestion[]
+  progress   LearningProgress[]
+  schedules  ReviewSchedule[]
 
   @@unique([sourceId, anchor])
   @@index([sourceId, position])
@@ -335,29 +336,29 @@ model ReviewSchedule {
 }
 
 model ProcessingJob {
-  id              String                @id @default(uuid()) @db.Uuid
-  sourceVersionId String?               @db.Uuid
-  kind            String                @db.VarChar(50)
-  idempotencyKey  String                @unique @db.VarChar(160)
-  status          ProcessingStatus      @default(PENDING)
-  attempt         Int                   @default(0)
+  id              String                 @id @default(uuid()) @db.Uuid
+  sourceVersionId String?                @db.Uuid
+  kind            String                 @db.VarChar(50)
+  idempotencyKey  String                 @unique @db.VarChar(160)
+  status          ProcessingStatus       @default(PENDING)
+  attempt         Int                    @default(0)
   input           Json
   output          Json?
-  errorCode       String?               @db.VarChar(80)
+  errorCode       String?                @db.VarChar(80)
   errorMessage    String?
   startedAt       DateTime?
   completedAt     DateTime?
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
   sourceVersion   LearningSourceVersion? @relation(fields: [sourceVersionId], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt])
 }
 
 model JobSource {
-  id            String           @id @default(uuid()) @db.Uuid
-  name          String           @unique @db.VarChar(80)
-  homeUrl       String?          @db.VarChar(500)
+  id            String       @id @default(uuid()) @db.Uuid
+  name          String       @unique @db.VarChar(80)
+  homeUrl       String?      @db.VarChar(500)
   lastSuccessAt DateTime?
   lastFailureAt DateTime?
   lastError     String?
@@ -365,74 +366,74 @@ model JobSource {
 }
 
 model JobImportBatch {
-  id                 String   @id @default(uuid()) @db.Uuid
-  checksum           String   @unique @db.Char(64)
-  importVersion      String   @db.VarChar(20)
-  sourceCount        Int
-  originalCount      Int
-  createdCount       Int
-  updatedCount       Int
-  duplicateCount     Int
-  rejectedCount      Int
-  expiredCount       Int
-  needsReviewCount   Int
-  report             Json
-  approvedById       String?  @db.Uuid
-  createdAt          DateTime @default(now())
+  id               String   @id @default(uuid()) @db.Uuid
+  checksum         String   @unique @db.Char(64)
+  importVersion    String   @db.VarChar(20)
+  sourceCount      Int
+  originalCount    Int
+  createdCount     Int
+  updatedCount     Int
+  duplicateCount   Int
+  rejectedCount    Int
+  expiredCount     Int
+  needsReviewCount Int
+  report           Json
+  approvedById     String?  @db.Uuid
+  createdAt        DateTime @default(now())
 
   @@index([createdAt])
 }
 
 model Company {
-  id           String        @id @default(uuid()) @db.Uuid
-  name         String        @unique @db.VarChar(160)
-  normalizedName String      @unique @db.VarChar(160)
-  size         CompanySize   @default(UNCLASSIFIED)
-  sizeEvidence String?
-  evidenceUrl  String?       @db.VarChar(500)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  aliases      CompanyAlias[]
-  postings     JobPosting[]
+  id             String         @id @default(uuid()) @db.Uuid
+  name           String         @unique @db.VarChar(160)
+  normalizedName String         @unique @db.VarChar(160)
+  size           CompanySize    @default(UNCLASSIFIED)
+  sizeEvidence   String?
+  evidenceUrl    String?        @db.VarChar(500)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  aliases        CompanyAlias[]
+  postings       JobPosting[]
 }
 
 model CompanyAlias {
-  id             String   @id @default(uuid()) @db.Uuid
-  companyId      String   @db.Uuid
-  alias          String   @unique @db.VarChar(160)
+  id              String  @id @default(uuid()) @db.Uuid
+  companyId       String  @db.Uuid
+  alias           String  @unique @db.VarChar(160)
   normalizedAlias String  @unique @db.VarChar(160)
-  company        Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company         Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
 
 model JobPosting {
-  id                  String            @id @default(uuid()) @db.Uuid
-  sourceId            String            @db.Uuid
-  companyId           String            @db.Uuid
-  sourcePostingId     String?           @db.VarChar(200)
-  sourceUrl           String            @db.VarChar(1000)
-  canonicalUrl        String            @unique @db.VarChar(1000)
-  title               String            @db.VarChar(240)
-  category            String            @db.VarChar(80)
-  subcategory         String?           @db.VarChar(80)
+  id                  String           @id @default(uuid()) @db.Uuid
+  sourceId            String           @db.Uuid
+  companyId           String           @db.Uuid
+  sourcePostingId     String?          @db.VarChar(200)
+  sourceUrl           String           @db.VarChar(1000)
+  canonicalUrl        String           @unique @db.VarChar(1000)
+  title               String           @db.VarChar(240)
+  category            String           @db.VarChar(80)
+  subcategory         String?          @db.VarChar(80)
   careerScope         CareerScope
   careerEvidence      String
   companySizeEvidence String?
-  employmentType      String            @db.VarChar(80)
-  region              String            @db.VarChar(160)
-  remote              Boolean           @default(false)
+  employmentType      String           @db.VarChar(80)
+  region              String           @db.VarChar(160)
+  remote              Boolean          @default(false)
   techStack           String[]
   publishedAt         DateTime?
   deadlineAt          DateTime?
-  rolling             Boolean           @default(false)
+  rolling             Boolean          @default(false)
   collectedAt         DateTime
   lastVerifiedAt      DateTime
-  fingerprint         String            @db.Char(64)
+  fingerprint         String           @db.Char(64)
   summary             String
-  status              JobPostingStatus  @default(ACTIVE)
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  source              JobSource         @relation(fields: [sourceId], references: [id])
-  company             Company           @relation(fields: [companyId], references: [id])
+  status              JobPostingStatus @default(ACTIVE)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  source              JobSource        @relation(fields: [sourceId], references: [id])
+  company             Company          @relation(fields: [companyId], references: [id])
   savedBy             SavedJob[]
 
   @@unique([sourceId, sourcePostingId])
@@ -442,47 +443,47 @@ model JobPosting {
 }
 
 model SavedJob {
-  id          String            @id @default(uuid()) @db.Uuid
-  userId      String            @db.Uuid
-  jobId       String            @db.Uuid
-  status      ApplicationStatus @default(INTERESTED)
-  memo        String            @default("")
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  job         JobPosting        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  id        String            @id @default(uuid()) @db.Uuid
+  userId    String            @db.Uuid
+  jobId     String            @db.Uuid
+  status    ApplicationStatus @default(INTERESTED)
+  memo      String            @default("")
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       JobPosting        @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@unique([userId, jobId])
   @@index([userId, status])
 }
 
 model CodingProblem {
-  id           String                       @id @default(uuid()) @db.Uuid
-  source       String                       @default("PROGRAMMERS") @db.VarChar(30)
-  sourceUrl    String                       @unique @db.VarChar(1000)
-  displayTitle String                       @db.VarChar(160)
+  id           String            @id @default(uuid()) @db.Uuid
+  source       String            @default("PROGRAMMERS") @db.VarChar(30)
+  sourceUrl    String            @unique @db.VarChar(1000)
+  displayTitle String            @db.VarChar(160)
   level        Int
   tags         String[]
-  order        Int                          @default(0)
-  active       Boolean                      @default(true)
-  createdAt    DateTime                     @default(now())
-  updatedAt    DateTime                     @updatedAt
+  order        Int               @default(0)
+  active       Boolean           @default(true)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
   progress     ProblemProgress[]
   solutions    Solution[]
   challenges   DailyChallenge[]
 }
 
 model ProblemProgress {
-  id          String        @id @default(uuid()) @db.Uuid
-  userId      String        @db.Uuid
-  problemId   String        @db.Uuid
-  status      ProblemStatus @default(UNTRIED)
-  favorite    Boolean       @default(false)
-  memo        String        @default("")
-  solvedAt    DateTime?
-  updatedAt   DateTime      @updatedAt
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  problem     CodingProblem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  id        String        @id @default(uuid()) @db.Uuid
+  userId    String        @db.Uuid
+  problemId String        @db.Uuid
+  status    ProblemStatus @default(UNTRIED)
+  favorite  Boolean       @default(false)
+  memo      String        @default("")
+  solvedAt  DateTime?
+  updatedAt DateTime      @updatedAt
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem   CodingProblem @relation(fields: [problemId], references: [id], onDelete: Cascade)
 
   @@unique([userId, problemId])
   @@index([userId, status])
@@ -578,23 +579,23 @@ model SolutionReaction {
 }
 
 model SolutionComment {
-  id            String            @id @default(uuid()) @db.Uuid
-  solutionId    String            @db.Uuid
-  authorId      String            @db.Uuid
-  parentId      String?           @db.Uuid
-  markdown      String
-  editedAt      DateTime?
-  deletedAt     DateTime?
-  hiddenAt      DateTime?
-  hiddenById    String?           @db.Uuid
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-  solution      Solution          @relation(fields: [solutionId], references: [id], onDelete: Cascade)
-  author        User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  parent        SolutionComment?  @relation("CommentReplies", fields: [parentId], references: [id])
-  replies       SolutionComment[] @relation("CommentReplies")
-  hiddenBy      User?             @relation("CommentModerator", fields: [hiddenById], references: [id])
-  reports       CommentReport[]
+  id         String            @id @default(uuid()) @db.Uuid
+  solutionId String            @db.Uuid
+  authorId   String            @db.Uuid
+  parentId   String?           @db.Uuid
+  markdown   String
+  editedAt   DateTime?
+  deletedAt  DateTime?
+  hiddenAt   DateTime?
+  hiddenById String?           @db.Uuid
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  solution   Solution          @relation(fields: [solutionId], references: [id], onDelete: Cascade)
+  author     User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent     SolutionComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies    SolutionComment[] @relation("CommentReplies")
+  hiddenBy   User?             @relation("CommentModerator", fields: [hiddenById], references: [id])
+  reports    CommentReport[]
 
   @@index([solutionId, createdAt])
   @@index([parentId])

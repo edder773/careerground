@@ -40,8 +40,8 @@ describe('domain pages', () => {
   it('posts a sanitized comment through the solution flow', async () => {
     const solution = {
       id: '11111111-1111-4111-8111-111111111111',
-      title: '공유 풀이',
-      language: 'typescript',
+      title: '풀이 기록',
+      language: 'javascript',
       code: 'const answer = 1;',
       description: '설명',
       author: { displayName: '김그라운드' },
@@ -118,7 +118,7 @@ describe('domain pages', () => {
     );
   });
 
-  it('shows dense ranking and its self-reported calculation fields', async () => {
+  it('shows dense ranking and its calculation fields', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn(() =>
@@ -142,7 +142,7 @@ describe('domain pages', () => {
     );
     renderPage(<RankingPage />);
     expect(await screen.findByText('김그라운드')).toBeInTheDocument();
-    expect(screen.getByText('자기 보고형 랭킹입니다.', { exact: false })).toBeInTheDocument();
+    expect(screen.getByText('멤버가 해결한 문제 수', { exact: false })).toBeInTheDocument();
     expect(screen.getByText('2일')).toBeInTheDocument();
   });
 });

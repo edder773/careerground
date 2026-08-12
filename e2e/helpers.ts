@@ -8,7 +8,15 @@ export async function login(page: Page, email = 'member@careerground.local') {
     'oai-authenticated-user-full-name-encoding': 'percent-encoded-utf-8',
   });
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: '내 폴더', level: 1 })).toBeVisible();
+  const onboarding = page.getByRole('heading', { name: '어떻게 불러드릴까요?' });
+  const home = page.getByRole('heading', { name: '내 폴더', level: 1 });
+  await expect(home.or(onboarding)).toBeVisible();
+  if (await onboarding.isVisible()) {
+    await page.getByLabel('이름').fill(email.split('@')[0] || 'OpenAI user');
+    await page.getByLabel('JavaScript').check();
+    await page.getByRole('button', { name: /내 작업대 시작하기/ }).click();
+  }
+  await expect(home).toBeVisible();
 }
 
 export async function logout(page: Page) {

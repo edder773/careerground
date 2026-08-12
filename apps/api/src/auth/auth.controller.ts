@@ -1,6 +1,7 @@
 import { BadRequestException, Body, Controller, Get, Headers, Patch, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
+import { codeLanguageSchema } from '@careerground/contracts';
 import { CurrentUser, Roles, type AuthUser } from './auth.decorators.js';
 import { PrismaService } from '../common/prisma.service.js';
 
@@ -13,7 +14,7 @@ const profileSchema = z.object({
     .regex(/^[a-zA-Z0-9-]{1,39}$/)
     .nullable()
     .optional(),
-  preferredLanguage: z.string().trim().min(1).max(40),
+  preferredLanguage: codeLanguageSchema,
   rankingOptIn: z.boolean(),
   commentNotifications: z.boolean(),
   deadlineNotifications: z.boolean(),
@@ -44,6 +45,29 @@ export class AuthController {
         rankingOptIn: true,
         dataDeletionRequested: true,
         preference: true,
+      },
+    });
+  }
+
+  @Post('onboarding')
+  async completeOnboarding(@CurrentUser() user: AuthUser, @Body() body: unknown) {
+    const parsed = z
+      .object({
+        displayName: z.string().trim().min(2).max(80),
+        preferredLanguage: codeLanguageSchema,
+      })
+      .safeParse(body);
+    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
+    return this.prisma.user.update({
+      where: { id: user.id },
+      data: { ...parsed.data, onboardingCompletedAt: new Date() },
+      select: {
+        id: true,
+        email: true,
+        displayName: true,
+        role: true,
+        preferredLanguage: true,
+        onboardingCompletedAt: true,
       },
     });
   }

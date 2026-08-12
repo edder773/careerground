@@ -16,6 +16,25 @@ test.describe('CareerGround MVP vertical slices', () => {
     await expect(page.getByLabel('비밀번호')).toHaveCount(0);
   });
 
+  test('first login requires a name and one of four code languages', async ({ page }) => {
+    await logout(page);
+    const email = `onboarding-${Date.now()}@example.com`;
+    await page.context().setExtraHTTPHeaders({
+      'oai-authenticated-user-id': `e2e:${email}`,
+      'oai-authenticated-user-email': email,
+      'oai-authenticated-user-full-name': 'OpenAI%20User',
+      'oai-authenticated-user-full-name-encoding': 'percent-encoded-utf-8',
+    });
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: '어떻게 불러드릴까요?' })).toBeVisible();
+    await expect(page.locator('input[name="preferredLanguage"]')).toHaveCount(4);
+    await expect(page.getByRole('button', { name: /내 작업대 시작하기/ })).toBeDisabled();
+    await page.getByLabel('이름').fill('첫 가입자');
+    await page.getByLabel('C++').check();
+    await page.getByRole('button', { name: /내 작업대 시작하기/ }).click();
+    await expect(page.getByRole('heading', { name: '내 폴더', level: 1 })).toBeVisible();
+  });
+
   test('creates, renames, and adds a link to a personal folder', async ({ page }) => {
     const suffix = Date.now().toString().slice(-7);
     const initialName = `E2E 폴더 ${suffix}`;
@@ -71,15 +90,22 @@ test.describe('CareerGround MVP vertical slices', () => {
       .getByRole('button', { name: '풀이 기록' });
     await expect(record).toBeVisible();
     await record.click();
-    await page.locator('.cm-content').fill('function solution(value: number) { return value; }');
-    await page.getByLabel('풀이 설명').fill('E2E에서 저장한 풀이입니다.');
+    const description = `다른 멤버 공개 검증 ${Date.now()}`;
+    await page.getByLabel('언어').selectOption('javascript');
+    await page.locator('.cm-content').fill('function solution(value) { return value; }');
+    await page.getByLabel('풀이 설명').fill(description);
     await page.getByRole('button', { name: '해결 기록 저장' }).click();
     await expect(page.locator('.editor-panel')).toBeHidden();
+
+    await logout(page);
+    await login(page, `solution-reader-${Date.now()}@example.com`);
+    await page.getByRole('link', { name: '풀이 기록' }).first().click();
+    await expect(page.getByText(description)).toBeVisible();
   });
 
-  test('reacts to a shared solution and adds a comment', async ({ page }) => {
-    await page.getByRole('link', { name: '공유 풀이' }).first().click();
-    await expect(page.getByRole('heading', { name: '공유 풀이' })).toBeVisible();
+  test('reacts to a solution record and adds a comment', async ({ page }) => {
+    await page.getByRole('link', { name: '풀이 기록' }).first().click();
+    await expect(page.getByRole('heading', { name: '풀이 기록' })).toBeVisible();
     await page
       .getByRole('button', { name: /유용해요/ })
       .first()
@@ -110,11 +136,11 @@ test.describe('CareerGround MVP vertical slices', () => {
     await expect(page.getByText('학습 완료').first()).toBeVisible();
   });
 
-  test('shows dense ranking and self-report disclosure', async ({ page }) => {
+  test('shows dense ranking calculation details', async ({ page }) => {
     await page.getByRole('link', { name: '랭킹' }).first().click();
     await expect(page.getByRole('table', { name: '코딩 랭킹' })).toBeVisible();
     await expect(page.getByText('동점은 같은 순위로 표시합니다.')).toBeVisible();
-    await expect(page.getByText(/자기 보고형 랭킹/)).toBeVisible();
+    await expect(page.getByText(/사용자·문제별 한 번만 계산/)).toBeVisible();
   });
 
   test('searches across the workspace and marks notifications read', async ({ page }) => {
