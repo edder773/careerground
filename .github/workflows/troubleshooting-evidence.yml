@@ -34,7 +34,7 @@ jobs:
       JWT_REFRESH_SECRET: evidence-refresh-secret-with-at-least-32-characters
       INTERNAL_SERVICE_SECRET: evidence-internal-secret-with-at-least-32-characters
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: actions/setup-node@v6

@@ -39,7 +39,7 @@ jobs:
       INTERNAL_SERVICE_SECRET: e2e-internal-secret-with-at-least-32-characters
       COOKIE_SECURE: 'false'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
         with:
           node-version-file: .node-version
