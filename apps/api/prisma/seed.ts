@@ -27,7 +27,6 @@ async function main() {
     where: { email: process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@careerground.local' },
     create: {
       email: process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@careerground.local',
-      openAiUserId: `e2e:${process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@careerground.local'}`,
       displayName: '데모 관리자',
       role: 'ADMIN',
       rankingOptIn: false,
@@ -35,7 +34,6 @@ async function main() {
     },
     update: {
       displayName: '데모 관리자',
-      openAiUserId: `e2e:${process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@careerground.local'}`,
       role: 'ADMIN',
       isActive: true,
     },
@@ -44,14 +42,12 @@ async function main() {
     where: { email: 'member@careerground.local' },
     create: {
       email: 'member@careerground.local',
-      openAiUserId: 'e2e:member@careerground.local',
       displayName: '김그라운드',
       preferredLanguage: 'typescript',
       preference: { create: {} },
     },
     update: {
       displayName: '김그라운드',
-      openAiUserId: 'e2e:member@careerground.local',
       isActive: true,
     },
   });
@@ -59,14 +55,12 @@ async function main() {
     where: { email: 'peer@careerground.local' },
     create: {
       email: 'peer@careerground.local',
-      openAiUserId: 'e2e:peer@careerground.local',
       displayName: '이플레이어',
       preferredLanguage: 'python',
       preference: { create: {} },
     },
     update: {
       displayName: '이플레이어',
-      openAiUserId: 'e2e:peer@careerground.local',
       isActive: true,
     },
   });
@@ -74,7 +68,6 @@ async function main() {
     where: { email: 'visual@careerground.local' },
     create: {
       email: 'visual@careerground.local',
-      openAiUserId: 'e2e:visual@careerground.local',
       displayName: '박비주얼',
       preferredLanguage: 'typescript',
       rankingOptIn: false,
@@ -82,7 +75,6 @@ async function main() {
     },
     update: {
       displayName: '박비주얼',
-      openAiUserId: 'e2e:visual@careerground.local',
       isActive: true,
       rankingOptIn: false,
     },
