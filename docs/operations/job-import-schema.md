@@ -1,0 +1,46 @@
+# 채용공고 import schema 1.0
+
+애플리케이션은 채용 사이트를 크롤링하지 않는다. 관리자가 JSON/CSV를 preview한 뒤 승인한다. JSON은 아래 envelope를 사용한다.
+
+```json
+{
+  "version": "1.0",
+  "collectedAt": "2026-08-12T00:00:00.000Z",
+  "sourceCount": 10,
+  "items": [
+    {
+      "sourceName": "Example public source",
+      "sourceId": "optional-source-id",
+      "sourceUrl": "https://example.com/jobs/123",
+      "companyName": "Example Company",
+      "title": "[DEMO] Backend New Grad",
+      "category": "백엔드",
+      "careerScope": "NEW_GRAD_ONLY",
+      "careerEvidence": "공고의 신입 지원 가능 문구를 자체 요약",
+      "companySize": "UNCLASSIFIED",
+      "companySizeEvidence": "분류 근거가 없어 관리자 검토 필요",
+      "employmentType": "FULL_TIME",
+      "region": "서울",
+      "remote": false,
+      "techStack": ["TypeScript", "PostgreSQL"],
+      "publishedAt": "2026-08-10T00:00:00.000Z",
+      "deadlineAt": "2026-08-30T14:59:59.000Z",
+      "rolling": false,
+      "collectedAt": "2026-08-12T00:00:00.000Z",
+      "lastVerifiedAt": "2026-08-12T00:00:00.000Z",
+      "summary": "원문을 복제하지 않은 짧은 자체 요약",
+      "status": "NEEDS_REVIEW"
+    }
+  ]
+}
+```
+
+`careerScope`: `NEW_GRAD_ONLY`, `NEW_GRAD_ELIGIBLE`, `CAREER_ONLY`. 마지막 값은 import에서 거절된다.
+
+`companySize`: `LARGE`, `PUBLIC`, `MID`, `SMALL`, `STARTUP`, `FOREIGN`, `UNCLASSIFIED`. 근거가 불충분하면 `UNCLASSIFIED`를 유지한다.
+
+`status`: `ACTIVE`, `DEADLINE_UNKNOWN`, `EXPIRED`, `REMOVED`, `NEEDS_REVIEW`.
+
+CSV는 item 필드를 header로 사용한다. `techStack`은 `TypeScript|PostgreSQL`, boolean은 `true`/`false`다. JSON envelope의 `sourceCount`는 CSV sourceName 고유 수로 계산한다.
+
+중복 순서는 canonical URL, source ID, 정규화 회사+제목+마감일 fingerprint다. 유사도 후보는 자동 삭제하지 않는다.
