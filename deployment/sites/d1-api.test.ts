@@ -40,6 +40,7 @@ class SqliteD1 implements D1Database {
       'drizzle/0000_loose_shooting_star.sql',
       'drizzle/0001_seed.sql',
       'drizzle/0002_equal_hulk.sql',
+      'drizzle/0003_import_careerground_catalog.sql',
     ]) {
       const migration = readFileSync(file, 'utf8');
       for (const statement of migration.split('--> statement-breakpoint')) {
@@ -208,9 +209,36 @@ describe('Sites D1 API', () => {
     expect((await call('/api/v1/notes')).body).toEqual([]);
   });
 
-  it('loads seeded jobs and persists the application status', async () => {
+  it('replaces dummy records with the imported job and problem catalogs', async () => {
+    const jobCount = await db
+      .prepare('SELECT COUNT(*) AS count FROM jobs')
+      .first<{ count: number }>();
+    const problemCount = await db
+      .prepare('SELECT COUNT(*) AS count FROM coding_problems WHERE active = 1')
+      .first<{ count: number }>();
+    const dummyCount = await db
+      .prepare(
+        `SELECT
+          (SELECT COUNT(*) FROM jobs WHERE source_url LIKE 'https://example.com/jobs/%') +
+          (SELECT COUNT(*) FROM learning_sources WHERE id = 'source-web-foundations') AS count`,
+      )
+      .first<{ count: number }>();
+
+    expect(jobCount?.count).toBe(47);
+    expect(problemCount?.count).toBe(427);
+    expect(dummyCount?.count).toBe(0);
+
     const jobs = await call('/api/v1/jobs?sort=new');
     expect(jobs.response.status).toBe(200);
+    expect(jobs.body).toHaveLength(46);
+    expect(jobs.body).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: 'Fullstack Engineer',
+          company: expect.objectContaining({ name: 'Hudson AI' }),
+        }),
+      ]),
+    );
     const firstJob = (jobs.body as unknown as Array<{ id: string }>)[0];
     expect(firstJob).toBeDefined();
 
@@ -271,6 +299,37 @@ describe('Sites D1 API', () => {
   });
 
   it('persists learning review state and returns searchable data', async () => {
+    const imported = await call('/api/v1/learning/import/commit', {
+      method: 'POST',
+      body: JSON.stringify({
+        version: '1.0',
+        source: {
+          title: '테스트용 웹 기초',
+          subject: '소프트웨어 개발',
+          category: '백엔드',
+          sourceVersion: '1.0',
+          checksum: 'a'.repeat(64),
+        },
+        units: [
+          {
+            anchor: 'http-api',
+            title: 'HTTP API와 상태 코드',
+            summaryMarkdown: '요청과 응답의 구조를 학습합니다.',
+            concepts: ['HTTP'],
+            flashcards: [{ front: '멱등한 요청이란?', back: '반복해도 최종 상태가 같습니다.' }],
+            questions: [
+              {
+                type: 'SHORT_ANSWER',
+                prompt: '생성 성공 상태 코드는?',
+                answer: '201 Created',
+              },
+            ],
+          },
+        ],
+      }),
+    });
+    expect(imported.response.status).toBe(200);
+
     const learning = await call('/api/v1/learning');
     const source = (learning.body as unknown as Array<{ units: Array<{ id: string }> }>)[0];
     expect(source.units.length).toBeGreaterThan(0);
