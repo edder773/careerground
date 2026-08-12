@@ -21,8 +21,10 @@ GitHub secrets:
 
 production S3 adapter가 배포 환경에 구현되지 않았다면 `STORAGE_DRIVER=local`을 단일 persistent volume에서만 사용하고 horizontal scale을 금지한다.
 
-## OpenAI Sites 프런트엔드
+## OpenAI Sites 운영 앱
 
-`pnpm sites:build`는 검증된 `apps/web` production 산출물을 Cloudflare Worker-compatible ESM과 함께 패키징한다. Sites runtime의 `API_ORIGIN`은 별도로 배포한 HTTPS Nest API origin을 가리켜야 한다. Worker가 `/api/v1/*`를 same-origin으로 프록시하고 원본 내부 secret 헤더를 덮어쓰므로 브라우저에는 API origin이나 proxy secret이 노출되지 않는다.
+`pnpm sites:build`는 검증된 `apps/web` production 산출물을 Cloudflare Worker-compatible ESM과 함께 패키징한다. `.openai/hosting.json`의 `d1: "DB"`는 Sites가 소유하는 전용 D1을 연결하며, 배포 archive의 `drizzle/` SQL을 버전 순서대로 적용한다. Worker는 브라우저가 전달할 수 없는 OpenAI 사용자 헤더를 서버에서 읽고, 사용자별 데이터 소유권을 모든 D1 쿼리에 적용한다.
 
-`API_ORIGIN`이 없으면 `/auth/me`만 Sites 인증 헤더로 응답하고 데이터 endpoint는 `API_NOT_CONFIGURED`로 실패한다. 이는 성공을 가장하는 demo 모드가 아니다. 완전한 운영 전환에는 managed PostgreSQL, Nest API, 같은 값의 `SITES_AUTH_SHARED_SECRET`, 그리고 Sites `API_ORIGIN`이 모두 필요하다.
+첫 번째 정상 OpenAI 사용자는 bootstrap `ADMIN`으로 생성되고 이후 사용자는 `MEMBER`로 생성된다. 추가 관리자는 `OPENAI_ADMIN_EMAILS` allowlist로 승격할 수 있다. D1 readiness는 `/api/v1/health/ready`에서 확인하며 DB 쿼리가 성공해야 200을 반환한다.
+
+Nest/PostgreSQL을 별도 운영하는 대안도 유지한다. 그 경우 Sites에 `API_ORIGIN`을 설정하고 API와 Worker에 같은 `SITES_AUTH_SHARED_SECRET`을 주입한다. `API_ORIGIN`과 D1이 모두 없을 때만 데이터 endpoint가 `API_NOT_CONFIGURED` 503을 반환한다.

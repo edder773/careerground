@@ -176,6 +176,7 @@ export function JobsPage() {
               <div className="job-actions">
                 <FolderSaveButton itemType="JOB_POSTING" targetId={job.id} label={job.title} />
                 <button
+                  disabled={save.isPending}
                   onClick={() => save.mutate({ jobId: job.id, status: 'INTERESTED' })}
                   className={job.savedBy.length ? 'saved' : ''}
                 >
@@ -187,6 +188,7 @@ export function JobsPage() {
                     <span className="sr-only">{job.title} 지원 상태</span>
                     <select
                       aria-label={`${job.title} 지원 상태`}
+                      disabled={save.isPending}
                       value={job.savedBy[0]?.status || 'INTERESTED'}
                       onChange={(event) =>
                         save.mutate({ jobId: job.id, status: event.target.value })

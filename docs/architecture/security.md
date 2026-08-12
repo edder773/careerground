@@ -4,7 +4,7 @@
 
 - OpenAI Sites가 제공하는 OpenAI 계정이 유일한 interactive 로그인 방식이다.
 - private Site dispatcher가 전달한 `oai-authenticated-user-id`와 검증 이메일을 계정에 연결하며 OpenAI token은 저장하지 않는다.
-- Worker가 원본 요청의 내부 secret 헤더를 제거하고 `SITES_AUTH_SHARED_SECRET`을 새로 설정한다. Nest API는 이 값과 OpenAI 사용자 헤더를 모두 검증한다.
+- Sites D1 경로는 Worker 내부에서 OpenAI 사용자 헤더를 검증하고 모든 개인 데이터 쿼리를 내부 사용자 ID로 제한한다. 외부 Nest API 프록시를 사용할 때는 Worker가 원본 요청의 내부 secret 헤더를 제거하고 `SITES_AUTH_SHARED_SECRET`을 새로 설정하며, Nest API가 이 값과 OpenAI 사용자 헤더를 모두 검증한다.
 - `OPENAI_AUTH_MOCK=true`는 non-production에서만 동작하므로 운영 API에 헤더를 직접 보내 인증을 우회할 수 없다.
 - Nest global guard가 인증과 ADMIN/MEMBER role을 검사한다.
 - 활성 사용자 수는 `MAX_ACTIVE_USERS`로 제한한다.
