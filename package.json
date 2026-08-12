@@ -1,0 +1,63 @@
+{
+  "name": "careerground",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.21.0",
+  "engines": {
+    "node": ">=24.19.0 <27",
+    "pnpm": "11.21.0"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @careerground/api --filter @careerground/web dev",
+    "build": "pnpm --filter @careerground/contracts build && pnpm --filter @careerground/ui build && pnpm --filter @careerground/api build && pnpm --filter @careerground/web build && pnpm --filter @careerground/docs build",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test && vitest run scripts/troubleshooting",
+    "test:e2e": "playwright test",
+    "test:e2e:visual": "playwright test e2e/visual.spec.ts",
+    "api:generate": "openapi-typescript http://127.0.0.1:4000/api/openapi.json -o apps/web/src/generated/openapi.ts",
+    "db:generate": "pnpm --filter @careerground/api prisma:generate",
+    "db:migrate": "pnpm --filter @careerground/api prisma:migrate",
+    "db:deploy": "pnpm --filter @careerground/api prisma:deploy",
+    "db:seed": "pnpm --filter @careerground/api prisma:seed",
+    "db:reset": "pnpm --filter @careerground/api prisma:reset",
+    "jobs:import": "pnpm --filter @careerground/api jobs:import",
+    "learning:import": "pnpm --filter @careerground/api learning:import",
+    "docs:dev": "pnpm --filter @careerground/docs dev",
+    "docs:build": "pnpm --filter @careerground/docs build",
+    "evidence:collect": "tsx scripts/troubleshooting/collect-evidence.ts",
+    "troubleshoot:generate": "tsx scripts/troubleshooting/generate.ts",
+    "troubleshoot:validate": "tsx scripts/troubleshooting/validate.ts",
+    "evidence:optimize-images": "tsx scripts/troubleshooting/optimize-images.ts",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml,css}": "prettier --write"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.12.1",
+    "@commitlint/cli": "21.2.1",
+    "@commitlint/config-conventional": "21.2.0",
+    "@eslint/js": "9.39.5",
+    "@playwright/test": "1.62.1",
+    "@types/node": "26.2.0",
+    "eslint": "9.39.5",
+    "globals": "17.9.0",
+    "husky": "9.1.7",
+    "lint-staged": "17.3.0",
+    "openapi-typescript": "7.13.0",
+    "prettier": "3.9.6",
+    "sharp": "0.35.3",
+    "tsx": "4.23.12",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.67.0",
+    "vitest": "4.1.10"
+  }
+}

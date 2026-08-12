@@ -1,0 +1,16 @@
+packages:
+  - apps/*
+  - packages/*
+
+allowBuilds:
+  '@prisma/engines': true
+  '@scarf/scarf': false
+  argon2: true
+  esbuild: true
+  prisma: true
+
+saveExact: true
+engineStrict: true
+strictPeerDependencies: true
+confirmModulesPurge: false
+verifyDepsBeforeRun: warn
