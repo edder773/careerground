@@ -43,7 +43,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.merge_commit_sha }}
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         if: steps.candidate.outputs.eligible == 'true'
         with:
           version: 11.21.0
