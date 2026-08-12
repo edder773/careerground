@@ -111,7 +111,11 @@ describe('Sites D1 API', () => {
   it('persists a personal folder and external link', async () => {
     const created = await call('/api/v1/collections', {
       method: 'POST',
-      body: JSON.stringify({ name: '지원 준비', icon: 'folder', color: 'violet' }),
+      body: JSON.stringify({
+        name: '<scr<script>ipt>지원 준비</script>',
+        icon: 'folder',
+        color: 'violet',
+      }),
     });
     expect(created.response.status).toBe(200);
     const folder = created.body as { id: string };
@@ -130,10 +134,11 @@ describe('Sites D1 API', () => {
     expect(listed.body).toEqual([
       expect.objectContaining({
         id: folder.id,
-        name: '지원 준비',
+        name: 'scrscriptipt지원 준비/script',
         items: [expect.objectContaining({ label: '포트폴리오' })],
       }),
     ]);
+    expect((listed.body as Array<{ name: string }>)[0]?.name).not.toMatch(/[<>]/);
   });
 
   it('persists note revisions for the current user', async () => {

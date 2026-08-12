@@ -69,7 +69,7 @@ const responseJson = (body: unknown, status = 200, requestId?: string) =>
   });
 
 const cleanText = (value: unknown, fallback = '') =>
-  (typeof value === 'string' ? value : fallback).replace(/<[^>]*>/g, '').trim();
+  (typeof value === 'string' ? value : fallback).replace(/[<>]/g, '').trim();
 
 const bool = (value: unknown, fallback = false) => (typeof value === 'boolean' ? value : fallback);
 
