@@ -14,7 +14,7 @@
 
 ```bash
 cp .env.example .env
-# JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, INTERNAL_SERVICE_SECRET를 변경한다.
+# JWT secret과 Slack App의 client ID/secret/redirect URI를 변경한다.
 corepack enable
 corepack prepare pnpm@11.21.0 --activate
 pnpm install --frozen-lockfile
@@ -30,7 +30,7 @@ pnpm dev
 - OpenAPI JSON: <http://localhost:4000/api/openapi.json>
 - 문서 사이트: `pnpm docs:dev` → <http://localhost:5174>
 
-개발 seed 계정은 `admin@careerground.local`, `member@careerground.local`, `peer@careerground.local`이며 기본 비밀번호는 `Demo-password-123!`다. `visual@careerground.local`은 deterministic 시각 회귀 전용 계정이다. 이 비밀번호는 `NODE_ENV=production` seed에서 허용되지 않는다. 운영 bootstrap은 `BOOTSTRAP_ADMIN_PASSWORD`를 secret로 전달한다.
+로그인은 Slack OpenID Connect 한 가지만 사용한다. Slack App의 OAuth & Permissions에 `SLACK_REDIRECT_URI`를 등록하고 `openid profile email` scope를 사용한다. 개발 seed 계정은 실제 Slack 로그인을 완료했을 때 같은 검증 이메일과 연결되며, `visual@careerground.local`은 deterministic 시각 회귀 전용이다. 자동화 테스트는 `SLACK_OIDC_MOCK=true`로 동일한 state/nonce/callback 경계를 검증하지만 production에서는 mock이 항상 비활성화된다.
 
 ## 필수 명령
 
@@ -62,6 +62,8 @@ DB를 reset하면 로컬 데이터가 삭제되므로 대상 DB URL을 확인한
 - `DATABASE_URL`: PostgreSQL 연결 문자열
 - `WEB_ORIGIN`: cookie CORS 허용 origin 하나
 - `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`: 서로 다른 32자 이상 secret
+- `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, `SLACK_REDIRECT_URI`: 유일한 로그인 provider인 Slack OIDC 설정
+- `SLACK_ALLOWED_TEAM_ID`: 선택적 workspace 제한, `SLACK_ADMIN_USER_IDS`: 관리자 Slack user ID 목록
 - `MAX_ACTIVE_USERS`: 기본 10
 - `INTERNAL_SERVICE_SECRET`: daily challenge ensure endpoint 보호
 - `AI_LEARNING_ENABLED`: OpenAI 학습 처리를 명시적으로 켜는 flag
@@ -106,9 +108,11 @@ pnpm troubleshoot:validate --file docs/troubleshooting/2026-08-12-pr-123-evidenc
 
 `apps/web/Dockerfile`, `apps/api/Dockerfile`은 multi-stage production image다. API readiness는 `/api/v1/health/ready`, 웹 health는 `/`로 확인한다. 상세 절차는 `docs/operations/deployment.md`를 따른다. 문서 앱은 GitHub Pages workflow가 배포한다.
 
+OpenAI Sites용 `pnpm sites:build`는 같은 React production build와 SPA fallback Worker를 `dist`에 만든다. `API_ORIGIN`이 설정되면 `/api/v1/*`를 운영 Nest API로 same-origin proxy하고, 연결 전에는 Slack 로그인 설정 대기 화면을 명시적으로 보여 준다. Sites 배포가 PostgreSQL/Nest API를 대체하지는 않는다.
+
 ## 저장소 운영
 
-- Conventional Commits, commitlint, lint-staged, Husky pre-commit/commit-msg/pre-push가 적용된다.
+- 영어 Conventional Commits, commitlint, lint-staged, Husky pre-commit/commit-msg/pre-push가 적용된다. 저장소 커밋 작성자는 `edder773`으로 설정한다.
 - branch protection 권장: PR 필수, 1명 review, `CI / validate`, `E2E / browser`, `CodeQL` 필수, force push와 branch delete 금지.
 - fork PR에서는 secret을 사용하지 않는다. AI 문서 생성은 같은 저장소에서 merge된 뒤의 신뢰된 workflow에서만 실행한다.
 - artifact retention은 일반 검증 14일, troubleshooting evidence 30일이다.

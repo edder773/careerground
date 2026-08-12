@@ -39,6 +39,9 @@ export default defineConfig({
         INTERNAL_SERVICE_SECRET: 'e2e-internal-secret-with-at-least-32-characters',
         COOKIE_SECURE: 'false',
         MAX_ACTIVE_USERS: '100',
+        SLACK_OIDC_MOCK: 'true',
+        SLACK_REDIRECT_URI: 'http://127.0.0.1:4000/api/v1/auth/slack/callback',
+        SLACK_ADMIN_USER_IDS: 'U_ADMIN',
       },
     },
     {

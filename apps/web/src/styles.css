@@ -2599,66 +2599,136 @@ body {
   background: #f5f6f7;
 }
 
-.login-icon {
-  color: #5363bc;
-  background: #eceef9;
-}
-
-.activation-page {
-  min-height: 100vh;
-  padding: 24px;
+.slack-login-card {
+  width: min(390px, 100%);
+  padding: 38px 34px;
   display: grid;
-  place-items: center;
-  background: #cfd3d5;
-}
-
-.activation-page form {
-  width: min(430px, 100%);
-  padding: 32px;
-  display: grid;
-  gap: 15px;
+  gap: 16px;
   background: white;
   border: 1px solid #e1e3e7;
   border-radius: 24px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 22px 60px rgba(42, 46, 62, 0.13);
 }
 
-.activation-brand {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  color: #4859b7;
-  font-weight: 850;
-}
-
-.activation-brand svg {
-  width: 20px;
-}
-
-.activation-page h1 {
-  margin: 4px 0 -5px;
-  font-size: 26px;
+.slack-login-card h2 {
+  margin: 2px 0 -7px;
+  font-size: 25px;
   letter-spacing: -0.035em;
 }
 
-.activation-page p {
+.slack-login-card > p {
+  margin: 0 0 7px;
   color: var(--muted);
   font-size: 12px;
   line-height: 1.65;
 }
 
-.activation-page label {
+.slack-mark {
+  width: 54px;
+  height: 54px;
+  padding: 10px;
   display: grid;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 750;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  background: #f5f5f7;
+  border-radius: 16px;
 }
 
-.activation-page input {
-  height: 43px;
-  padding: 0 12px;
-  border: 1px solid #d9dce2;
+.slack-mark i {
+  display: block;
+  border-radius: 5px;
+}
+
+.slack-mark i:nth-child(1) {
+  background: #36c5f0;
+}
+
+.slack-mark i:nth-child(2) {
+  background: #2eb67d;
+}
+
+.slack-mark i:nth-child(3) {
+  background: #e01e5a;
+}
+
+.slack-mark i:nth-child(4) {
+  background: #ecb22e;
+}
+
+.slack-button {
+  min-height: 52px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  color: white;
+  background: #4a154b;
+  border: 1px solid #4a154b;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 800;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.slack-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(74, 21, 75, 0.2);
+}
+
+.slack-button.disabled {
+  color: #888b93;
+  background: #ececef;
+  border-color: #e2e3e6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.slack-button-mark {
+  font-size: 19px;
+}
+
+.slack-login-card small {
+  min-height: 24px;
+  color: #81858f;
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.member-list {
+  max-height: 210px;
+  display: grid;
+  gap: 7px;
+  overflow: auto;
+}
+
+.member-list > div {
+  padding: 10px 11px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3px 10px;
+  background: #f5f6f8;
   border-radius: 10px;
+}
+
+.member-list strong {
+  font-size: 11px;
+}
+
+.member-list span {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.member-list small {
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--brand);
+  font-size: 8px;
+  font-weight: 800;
 }
 
 @media (min-width: 901px) {
@@ -3507,6 +3577,11 @@ body {
 }
 
 @media (max-width: 640px) {
+  .slack-login-card {
+    margin-top: -42px;
+    padding: 26px 22px;
+  }
+
   .folder-grid.grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

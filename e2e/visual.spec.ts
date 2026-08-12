@@ -14,6 +14,13 @@ test('captures responsive home screenshots and has no serious accessibility viol
   page,
 }) => {
   await mkdir('test-results/visual', { recursive: true });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  await expect(page.getByRole('link', { name: 'Slack으로 계속' })).toBeVisible();
+  await page.screenshot({
+    path: 'test-results/visual/login-slack-desktop.png',
+    fullPage: false,
+  });
   await login(page, 'visual@careerground.local');
   for (const viewport of viewports) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });

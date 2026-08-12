@@ -6,10 +6,14 @@ test.describe('CareerGround MVP vertical slices', () => {
     await login(page);
   });
 
-  test('invitation-only authentication and common Finder workspace load', async ({ page }) => {
+  test('Slack-only authentication and common Finder workspace load', async ({ page }) => {
     await expect(page.getByText('CareerGround', { exact: true }).first()).toBeVisible();
     await expect(page.getByRole('navigation', { name: '주요 메뉴' })).toBeVisible();
     await expect(page.getByRole('button', { name: '검색' })).toBeVisible();
+    await page.getByRole('button', { name: '로그아웃' }).click();
+    await expect(page.getByRole('link', { name: 'Slack으로 계속' })).toBeVisible();
+    await expect(page.getByLabel('이메일')).toHaveCount(0);
+    await expect(page.getByLabel('비밀번호')).toHaveCount(0);
   });
 
   test('creates, renames, and adds a link to a personal folder', async ({ page }) => {
@@ -212,26 +216,13 @@ test.describe('CareerGround MVP vertical slices', () => {
     await expect(page.getByRole('heading', { name: learningTitle })).toBeVisible();
   });
 
-  test('admin invitation activates a new MEMBER and MEMBER cannot open admin', async ({ page }) => {
+  test('Slack first login provisions a MEMBER and MEMBER cannot open admin', async ({ page }) => {
     await page.getByRole('button', { name: '로그아웃' }).click();
     await login(page, 'admin@careerground.local');
     await page.getByRole('link', { name: '관리자' }).first().click();
-    const suffix = Date.now();
-    const email = `invite-${suffix}@example.com`;
-    const password = 'Invited-password-123!';
-    await page.getByLabel('허용 이메일').fill(email);
-    await page.getByRole('button', { name: '초대 생성' }).click();
-    const status = page.getByRole('status');
-    await expect(status).toContainText('초대 생성 완료');
-    const token = (await status.textContent())?.split(': ').at(-1)?.trim();
-    expect(token).toBeTruthy();
+    await expect(page.getByRole('heading', { name: 'Slack 멤버' })).toBeVisible();
     await page.getByRole('button', { name: '로그아웃' }).click();
-    await page.goto(`/activate?token=${encodeURIComponent(token!)}`);
-    await page.getByLabel('표시 이름').fill('초대 멤버');
-    await page.getByLabel('새 비밀번호', { exact: true }).fill(password);
-    await page.getByLabel('비밀번호 확인').fill(password);
-    await page.getByRole('button', { name: '계정 활성화' }).click();
-    await expect(page.getByRole('heading', { name: '내 폴더', level: 1 })).toBeVisible();
+    await login(page, `slack-member-${Date.now()}@example.com`);
     await page.goto('/admin');
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole('heading', { name: '내 폴더', level: 1 })).toBeVisible();

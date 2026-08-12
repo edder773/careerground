@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import { createHash } from 'node:crypto';
-import { hash } from 'argon2';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client.js';
 
@@ -10,12 +9,7 @@ const connectionString =
     ? undefined
     : 'postgresql://careerground:careerground@127.0.0.1:5432/careerground?schema=public');
 if (!connectionString) throw new Error('production seed requires DATABASE_URL');
-if (process.env.NODE_ENV === 'production' && !process.env.BOOTSTRAP_ADMIN_PASSWORD) {
-  throw new Error('production seed requires BOOTSTRAP_ADMIN_PASSWORD');
-}
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
-const demoPassword = process.env.BOOTSTRAP_ADMIN_PASSWORD || 'Demo-password-123!';
-const passwordHash = await hash(demoPassword);
 const sha = (value: string) => createHash('sha256').update(value).digest('hex');
 
 const kstDate = (date = new Date()) => {
@@ -35,45 +29,71 @@ async function main() {
       email: process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@careerground.local',
       displayName: '데모 관리자',
       role: 'ADMIN',
-      passwordHash,
+      slackTeamId: 'T_DEMO',
+      slackUserId: 'U_ADMIN',
       rankingOptIn: false,
       preference: { create: {} },
     },
-    update: { displayName: '데모 관리자', passwordHash, role: 'ADMIN', isActive: true },
+    update: {
+      displayName: '데모 관리자',
+      slackTeamId: 'T_DEMO',
+      slackUserId: 'U_ADMIN',
+      role: 'ADMIN',
+      isActive: true,
+    },
   });
   const member = await prisma.user.upsert({
     where: { email: 'member@careerground.local' },
     create: {
       email: 'member@careerground.local',
       displayName: '김그라운드',
-      passwordHash,
+      slackTeamId: 'T_DEMO',
+      slackUserId: 'U_MEMBER',
       preferredLanguage: 'typescript',
       preference: { create: {} },
     },
-    update: { displayName: '김그라운드', passwordHash, isActive: true },
+    update: {
+      displayName: '김그라운드',
+      slackTeamId: 'T_DEMO',
+      slackUserId: 'U_MEMBER',
+      isActive: true,
+    },
   });
   const member2 = await prisma.user.upsert({
     where: { email: 'peer@careerground.local' },
     create: {
       email: 'peer@careerground.local',
       displayName: '이플레이어',
-      passwordHash,
+      slackTeamId: 'T_DEMO',
+      slackUserId: 'U_PEER',
       preferredLanguage: 'python',
       preference: { create: {} },
     },
-    update: { displayName: '이플레이어', passwordHash, isActive: true },
+    update: {
+      displayName: '이플레이어',
+      slackTeamId: 'T_DEMO',
+      slackUserId: 'U_PEER',
+      isActive: true,
+    },
   });
   const visualMember = await prisma.user.upsert({
     where: { email: 'visual@careerground.local' },
     create: {
       email: 'visual@careerground.local',
       displayName: '박비주얼',
-      passwordHash,
+      slackTeamId: 'T_DEMO',
+      slackUserId: 'U_VISUAL',
       preferredLanguage: 'typescript',
       rankingOptIn: false,
       preference: { create: {} },
     },
-    update: { displayName: '박비주얼', passwordHash, isActive: true, rankingOptIn: false },
+    update: {
+      displayName: '박비주얼',
+      slackTeamId: 'T_DEMO',
+      slackUserId: 'U_VISUAL',
+      isActive: true,
+      rankingOptIn: false,
+    },
   });
 
   const source = await prisma.jobSource.upsert({
@@ -413,11 +433,7 @@ async function main() {
   console.log('Member: member@careerground.local');
   console.log('Peer: peer@careerground.local');
   console.log('Visual QA: visual@careerground.local');
-  console.log(
-    process.env.BOOTSTRAP_ADMIN_PASSWORD
-      ? 'Password: from BOOTSTRAP_ADMIN_PASSWORD'
-      : 'Development password: Demo-password-123!',
-  );
+  console.log('Interactive sign-in: Slack OpenID Connect only');
 }
 
 await main().finally(() => prisma.$disconnect());

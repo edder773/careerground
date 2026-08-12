@@ -6,6 +6,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthController } from './auth/auth.controller.js';
 import { AuthService } from './auth/auth.service.js';
+import { SlackOidcService } from './auth/slack-oidc.service.js';
 import { AccessGuard } from './auth/access.guard.js';
 import { PrismaService } from './common/prisma.service.js';
 import { AuditService } from './common/audit.service.js';
@@ -47,6 +48,7 @@ import { StorageService } from './learning/storage.service.js';
     PrismaService,
     AuditService,
     AuthService,
+    SlackOidcService,
     CollectionsService,
     CodingService,
     JobsService,

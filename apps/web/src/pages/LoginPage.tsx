@@ -1,26 +1,18 @@
-import { useState, type FormEvent } from 'react';
-import { FolderKanban, LockKeyhole, Sparkles } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { FolderKanban, Sparkles } from 'lucide-react';
 import { brand } from '@careerground/config';
-import { useAuth } from '../auth';
+import { api, apiBaseUrl } from '../lib/api';
+
+type SlackConfig = { provider: 'slack'; configured: boolean };
 
 export function LoginPage() {
-  const { login } = useAuth();
-  const [email, setEmail] = useState('member@careerground.local');
-  const [password, setPassword] = useState('Demo-password-123!');
-  const [error, setError] = useState('');
-  const [pending, setPending] = useState(false);
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
-    setError('');
-    setPending(true);
-    try {
-      await login({ email, password });
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : '로그인하지 못했습니다.');
-    } finally {
-      setPending(false);
-    }
-  };
+  const config = useQuery({
+    queryKey: ['slack-config'],
+    queryFn: () => api<SlackConfig>('/auth/slack/config'),
+    retry: false,
+  });
+  const authError = new URLSearchParams(window.location.search).get('auth_error');
+  const configured = config.data?.configured === true;
   return (
     <main className="login-page">
       <section className="login-story">
@@ -36,9 +28,7 @@ export function LoginPage() {
             <br />
             함께 해결하세요.
           </h1>
-          <p>
-            작은 팀의 학습자료, 신입 채용공고, 코딩 풀이를 폴더처럼 정돈하는 개인 성장 작업대입니다.
-          </p>
+          <p>학습자료, 신입 채용공고, 코딩 풀이를 폴더처럼 정돈하는 개인 성장 작업대입니다.</p>
         </div>
         <div className="story-grid">
           <span>학습과 복습</span>
@@ -47,42 +37,39 @@ export function LoginPage() {
         </div>
       </section>
       <section className="login-panel">
-        <form onSubmit={(event) => void submit(event)}>
-          <div className="login-icon">
-            <LockKeyhole />
+        <div className="slack-login-card">
+          <div className="slack-mark" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+            <i />
           </div>
-          <h2>팀 워크스페이스 로그인</h2>
-          <p>관리자가 초대한 계정만 사용할 수 있습니다.</p>
-          <label>
-            이메일
-            <input
-              type="email"
-              autoComplete="username"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-            />
-          </label>
-          <label>
-            비밀번호
-            <input
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
-          </label>
-          {error && (
+          <span className="eyebrow">CAREERGROUND WORKSPACE</span>
+          <h2>Slack으로 시작하기</h2>
+          <p>Slack 프로필로 안전하게 로그인하고 개인 작업대를 이어서 사용하세요.</p>
+          {authError && (
             <div className="form-error" role="alert">
-              {error}
+              {authError}
             </div>
           )}
-          <button className="primary-button" type="submit" disabled={pending}>
-            {pending ? '확인 중…' : '로그인'}
-          </button>
-          <small>개발 seed: member@careerground.local / Demo-password-123!</small>
-        </form>
+          <a
+            className={`slack-button${configured ? '' : ' disabled'}`}
+            href={configured ? `${apiBaseUrl}/auth/slack/start` : undefined}
+            aria-disabled={!configured}
+          >
+            <span className="slack-button-mark" aria-hidden="true">
+              ✦
+            </span>
+            Slack으로 계속
+          </a>
+          {config.isLoading ? (
+            <small>Slack 연결 상태를 확인하는 중…</small>
+          ) : configured ? (
+            <small>로그인은 Slack OpenID Connect 한 가지 방식만 사용합니다.</small>
+          ) : (
+            <small>운영자가 Slack App 연결 정보를 설정하면 로그인이 활성화됩니다.</small>
+          )}
+        </div>
       </section>
     </main>
   );

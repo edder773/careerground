@@ -1,9 +1,8 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router';
+import { Navigate, Route, Routes } from 'react-router';
 import { useAuth } from './auth';
 import { AppShell, type ViewMode } from './components/AppShell';
 import { LoginPage } from './pages/LoginPage';
-import { ActivatePage } from './pages/ActivatePage';
 
 const HomePage = lazy(() =>
   import('./pages/HomePage').then((module) => ({ default: module.HomePage })),
@@ -38,12 +37,10 @@ const SettingsPage = lazy(() =>
 
 export function App() {
   const { user, loading } = useAuth();
-  const location = useLocation();
   const [viewMode, setViewMode] = useState<ViewMode>(() =>
     localStorage.getItem('cg-view') === 'list' ? 'list' : 'grid',
   );
   useEffect(() => localStorage.setItem('cg-view', viewMode), [viewMode]);
-  if (!user && location.pathname === '/activate') return <ActivatePage />;
   if (loading)
     return (
       <div className="app-loading">
