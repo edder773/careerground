@@ -66,7 +66,7 @@ jobs:
       - run: pnpm evidence:collect --pr ${{ github.event.pull_request.number }} --base ${{ github.event.pull_request.base.sha }}
       - run: pnpm evidence:optimize-images --dir test-results/visual --out docs/assets/troubleshooting/${{ github.event.pull_request.number }}
       - name: Upload redacted evidence only
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: troubleshooting-evidence-pr-${{ github.event.pull_request.number }}
           path: |
