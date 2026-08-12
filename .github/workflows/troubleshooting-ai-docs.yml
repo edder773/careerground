@@ -90,11 +90,18 @@ jobs:
             pnpm troubleshoot:validate --file "$file"
           done
       - name: Open a separate documentation PR
+        id: publish_docs
         if: steps.candidate.outputs.eligible == 'true'
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           branch="docs/auto-troubleshooting-pr-$PR_NUMBER"
+          technical=$(git ls-files --others --modified --exclude-standard -- \
+            docs/troubleshooting | head -n 1)
+          test -n "$technical"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "technical=$technical" >> "$GITHUB_OUTPUT"
           git switch -c "$branch"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -102,4 +109,32 @@ jobs:
           git commit -m "docs: add troubleshooting evidence for PR #$PR_NUMBER"
           git push origin "$branch"
           url=$(gh pr create --base main --head "$branch" --title "docs: PR #$PR_NUMBER troubleshooting record" --body "Generated from redacted evidence for #$PR_NUMBER. OpenAI credentials are optional; human review is required before merge.")
-          gh pr comment "$PR_NUMBER" --body "트러블슈팅 문서 초안 PR: $url"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: Link the documentation PR
+        if: >-
+          steps.candidate.outputs.eligible == 'true' &&
+          steps.publish_docs.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment "$PR_NUMBER" \
+            --body "트러블슈팅 문서 초안 PR: ${{ steps.publish_docs.outputs.url }}"
+      - name: Record documentation on the source PR when bot PRs are disabled
+        if: >-
+          steps.candidate.outputs.eligible == 'true' &&
+          steps.publish_docs.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git -c core.hooksPath=/dev/null push origin --delete \
+            "${{ steps.publish_docs.outputs.branch }}" || true
+          {
+            echo "## 트러블슈팅 기록"
+            echo
+            echo "GitHub Actions의 PR 생성 권한이 비활성화되어 원본 PR에 기록합니다."
+            echo
+            cat "${{ steps.publish_docs.outputs.technical }}"
+          } > /tmp/troubleshooting-comment.md
+          cat /tmp/troubleshooting-comment.md >> "$GITHUB_STEP_SUMMARY"
+          gh pr comment "$PR_NUMBER" --body-file /tmp/troubleshooting-comment.md || \
+            echo "::warning::원본 PR 댓글 작성 권한도 없어 실행 요약에만 기록했습니다."
