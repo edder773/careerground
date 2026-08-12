@@ -16,9 +16,9 @@ test('captures responsive home screenshots and has no serious accessibility viol
   await mkdir('test-results/visual', { recursive: true });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
-  await expect(page.getByRole('link', { name: 'Slack으로 계속' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'OpenAI 계정으로 계속' })).toBeVisible();
   await page.screenshot({
-    path: 'test-results/visual/login-slack-desktop.png',
+    path: 'test-results/visual/login-openai-desktop.png',
     fullPage: false,
   });
   await login(page, 'visual@careerground.local');

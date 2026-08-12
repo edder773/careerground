@@ -50,7 +50,10 @@ async function bootstrap() {
       .setTitle(`${process.env.APP_NAME || 'CareerGround'} API`)
       .setDescription('Internal learning, recruiting, coding, and workspace API')
       .setVersion('1.0')
-      .addCookieAuth('cg_access', { type: 'apiKey', in: 'cookie' })
+      .addApiKey(
+        { type: 'apiKey', in: 'header', name: 'oai-authenticated-user-id' },
+        'openai-user-id',
+      )
       .build(),
   );
   SwaggerModule.setup('api/docs', app, document);

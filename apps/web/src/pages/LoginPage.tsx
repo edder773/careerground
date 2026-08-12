@@ -1,18 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
 import { FolderKanban, Sparkles } from 'lucide-react';
 import { brand } from '@careerground/config';
-import { api, apiBaseUrl } from '../lib/api';
-
-type SlackConfig = { provider: 'slack'; configured: boolean };
 
 export function LoginPage() {
-  const config = useQuery({
-    queryKey: ['slack-config'],
-    queryFn: () => api<SlackConfig>('/auth/slack/config'),
-    retry: false,
-  });
-  const authError = new URLSearchParams(window.location.search).get('auth_error');
-  const configured = config.data?.configured === true;
   return (
     <main className="login-page">
       <section className="login-story">
@@ -37,38 +26,20 @@ export function LoginPage() {
         </div>
       </section>
       <section className="login-panel">
-        <div className="slack-login-card">
-          <div className="slack-mark" aria-hidden="true">
-            <i />
-            <i />
-            <i />
-            <i />
+        <div className="openai-login-card">
+          <div className="openai-mark" aria-hidden="true">
+            <Sparkles />
           </div>
           <span className="eyebrow">CAREERGROUND WORKSPACE</span>
-          <h2>Slack으로 시작하기</h2>
-          <p>Slack 프로필로 안전하게 로그인하고 개인 작업대를 이어서 사용하세요.</p>
-          {authError && (
-            <div className="form-error" role="alert">
-              {authError}
-            </div>
-          )}
-          <a
-            className={`slack-button${configured ? '' : ' disabled'}`}
-            href={configured ? `${apiBaseUrl}/auth/slack/start` : undefined}
-            aria-disabled={!configured}
-          >
-            <span className="slack-button-mark" aria-hidden="true">
-              ✦
+          <h2>OpenAI 계정으로 시작하기</h2>
+          <p>OpenAI 계정으로 안전하게 로그인하고 개인 작업대를 이어서 사용하세요.</p>
+          <a className="openai-button" href="/signin-with-chatgpt?return_to=%2F">
+            <span className="openai-button-mark" aria-hidden="true">
+              O
             </span>
-            Slack으로 계속
+            OpenAI 계정으로 계속
           </a>
-          {config.isLoading ? (
-            <small>Slack 연결 상태를 확인하는 중…</small>
-          ) : configured ? (
-            <small>로그인은 Slack OpenID Connect 한 가지 방식만 사용합니다.</small>
-          ) : (
-            <small>운영자가 Slack App 연결 정보를 설정하면 로그인이 활성화됩니다.</small>
-          )}
+          <small>로그인은 OpenAI 계정 한 가지 방식만 사용합니다.</small>
         </div>
       </section>
     </main>

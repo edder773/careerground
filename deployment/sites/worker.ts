@@ -3,6 +3,8 @@ type Fetcher = { fetch(request: Request): Promise<Response> };
 type SitesEnv = {
   ASSETS: Fetcher;
   API_ORIGIN?: string;
+  SITES_AUTH_SHARED_SECRET?: string;
+  OPENAI_ADMIN_EMAILS?: string;
 };
 
 type SitesExecutionContext = {
@@ -19,11 +21,40 @@ const json = (body: unknown, status = 200) =>
     },
   });
 
+function currentOpenAiUser(request: Request, env: SitesEnv) {
+  const userId = request.headers.get('oai-authenticated-user-id')?.trim();
+  const email = request.headers.get('oai-authenticated-user-email')?.trim().toLowerCase();
+  if (!userId || !email) return null;
+  const encodedName = request.headers.get('oai-authenticated-user-full-name');
+  const encoding = request.headers.get('oai-authenticated-user-full-name-encoding');
+  let displayName = email.split('@')[0] || email;
+  if (encodedName && encoding === 'percent-encoded-utf-8') {
+    try {
+      displayName = decodeURIComponent(encodedName).trim() || displayName;
+    } catch {
+      // A malformed optional name must not invalidate an otherwise valid identity.
+    }
+  }
+  const adminEmails = new Set(
+    (env.OPENAI_ADMIN_EMAILS || '')
+      .split(',')
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean),
+  );
+  return {
+    id: userId.slice(0, 255),
+    email: email.slice(0, 320),
+    displayName: displayName.slice(0, 80),
+    role: adminEmails.has(email) ? 'ADMIN' : 'MEMBER',
+  };
+}
+
 async function proxyApi(request: Request, env: SitesEnv) {
   const url = new URL(request.url);
   if (!env.API_ORIGIN) {
-    if (url.pathname === '/api/v1/auth/slack/config') {
-      return json({ provider: 'slack', configured: false });
+    if (url.pathname === '/api/v1/auth/me' && request.method === 'GET') {
+      const user = currentOpenAiUser(request, env);
+      return user ? json({ user }) : json({ message: 'OpenAI 로그인이 필요합니다.' }, 401);
     }
     if (url.pathname === '/api/v1/health' || url.pathname === '/api/v1/health/ready') {
       return json({ status: 'frontend-ready', api: 'not-configured' }, 503);
@@ -31,13 +62,17 @@ async function proxyApi(request: Request, env: SitesEnv) {
     return json(
       {
         code: 'API_NOT_CONFIGURED',
-        message: '운영 API 연결 전입니다. Slack App과 API origin을 설정해 주세요.',
+        message: 'OpenAI 로그인은 완료되었지만 운영 데이터 API가 아직 연결되지 않았습니다.',
       },
       503,
     );
   }
   const upstream = new URL(`${url.pathname}${url.search}`, env.API_ORIGIN);
   const headers = new Headers(request.headers);
+  headers.delete('x-careerground-sites-secret');
+  if (env.SITES_AUTH_SHARED_SECRET) {
+    headers.set('x-careerground-sites-secret', env.SITES_AUTH_SHARED_SECRET);
+  }
   headers.set('x-forwarded-host', url.host);
   headers.set('x-forwarded-proto', url.protocol.slice(0, -1));
   const response = await fetch(

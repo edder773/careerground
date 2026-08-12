@@ -1,17 +1,17 @@
 import { expect, test } from '@playwright/test';
-import { login } from './helpers';
+import { login, logout } from './helpers';
 
 test.describe('CareerGround MVP vertical slices', () => {
   test.beforeEach(async ({ page }) => {
     await login(page);
   });
 
-  test('Slack-only authentication and common Finder workspace load', async ({ page }) => {
+  test('OpenAI-only authentication and common Finder workspace load', async ({ page }) => {
     await expect(page.getByText('CareerGround', { exact: true }).first()).toBeVisible();
     await expect(page.getByRole('navigation', { name: '주요 메뉴' })).toBeVisible();
     await expect(page.getByRole('button', { name: '검색' })).toBeVisible();
-    await page.getByRole('button', { name: '로그아웃' }).click();
-    await expect(page.getByRole('link', { name: 'Slack으로 계속' })).toBeVisible();
+    await logout(page);
+    await expect(page.getByRole('link', { name: 'OpenAI 계정으로 계속' })).toBeVisible();
     await expect(page.getByLabel('이메일')).toHaveCount(0);
     await expect(page.getByLabel('비밀번호')).toHaveCount(0);
   });
@@ -216,13 +216,13 @@ test.describe('CareerGround MVP vertical slices', () => {
     await expect(page.getByRole('heading', { name: learningTitle })).toBeVisible();
   });
 
-  test('Slack first login provisions a MEMBER and MEMBER cannot open admin', async ({ page }) => {
-    await page.getByRole('button', { name: '로그아웃' }).click();
+  test('OpenAI first login provisions a MEMBER and MEMBER cannot open admin', async ({ page }) => {
+    await logout(page);
     await login(page, 'admin@careerground.local');
     await page.getByRole('link', { name: '관리자' }).first().click();
-    await expect(page.getByRole('heading', { name: 'Slack 멤버' })).toBeVisible();
-    await page.getByRole('button', { name: '로그아웃' }).click();
-    await login(page, `slack-member-${Date.now()}@example.com`);
+    await expect(page.getByRole('heading', { name: 'OpenAI 멤버' })).toBeVisible();
+    await logout(page);
+    await login(page, `openai-member-${Date.now()}@example.com`);
     await page.goto('/admin');
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole('heading', { name: '내 폴더', level: 1 })).toBeVisible();

@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtModule } from '@nestjs/jwt';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthController } from './auth/auth.controller.js';
 import { AuthService } from './auth/auth.service.js';
-import { SlackOidcService } from './auth/slack-oidc.service.js';
 import { AccessGuard } from './auth/access.guard.js';
 import { PrismaService } from './common/prisma.service.js';
 import { AuditService } from './common/audit.service.js';
@@ -26,11 +24,6 @@ import { StorageService } from './learning/storage.service.js';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env', '../../.env'] }),
-    JwtModule.register({
-      global: true,
-      secret: process.env.JWT_ACCESS_SECRET || 'development-access-secret-change-me',
-      signOptions: { expiresIn: '15m' },
-    }),
     ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
   ],
@@ -48,7 +41,6 @@ import { StorageService } from './learning/storage.service.js';
     PrismaService,
     AuditService,
     AuthService,
-    SlackOidcService,
     CollectionsService,
     CodingService,
     JobsService,

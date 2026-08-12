@@ -4,7 +4,6 @@
 
 ```mermaid
 erDiagram
-  User ||--o{ RefreshToken : owns
   User ||--o{ Collection : owns
   Collection ||--o{ CollectionItem : contains
   User ||--o{ Solution : writes
@@ -33,7 +32,6 @@ erDiagram
 - `SavedJob(userId,jobId)` unique: 사용자별 지원 상태 하나
 - `JobImportBatch.checksum` unique: 동일 import idempotency
 - `LearningSourceVersion.sha256` unique: 동일 파일 중복 감지
-- `User(slackTeamId,slackUserId)` unique: Slack workspace 안의 계정 연결 중복 방지
-- `SlackOAuthState.stateHash` unique: OAuth state 재사용 방지
+- `User.openAiUserId` unique: 같은 Site 안의 OpenAI 계정 연결 중복 방지
 
 폴더 cycle과 2단계 UI 정책, 댓글 한 단계 답글, SOLVED 코드 필수, career-only 거절은 DB constraint만으로 표현하기 어려워 domain service와 unit test로 방어한다.

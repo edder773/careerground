@@ -33,13 +33,10 @@ jobs:
     env:
       DATABASE_URL: postgresql://careerground:careerground@127.0.0.1:5432/careerground?schema=public
       BOOTSTRAP_ADMIN_EMAIL: admin@careerground.local
-      JWT_ACCESS_SECRET: e2e-access-secret-with-at-least-32-characters
-      JWT_REFRESH_SECRET: e2e-refresh-secret-with-at-least-32-characters
-      INTERNAL_SERVICE_SECRET: e2e-internal-secret-with-at-least-32-characters
+      INTERNAL_SERVICE_SECRET: test-test-test-test-test-test-test-test
       COOKIE_SECURE: 'false'
-      SLACK_OIDC_MOCK: 'true'
-      SLACK_REDIRECT_URI: http://127.0.0.1:4000/api/v1/auth/slack/callback
-      SLACK_ADMIN_USER_IDS: U_ADMIN
+      OPENAI_AUTH_MOCK: 'true'
+      OPENAI_ADMIN_EMAILS: admin@careerground.local
     steps:
       - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4

@@ -15,4 +15,5 @@ confirmModulesPurge: false
 verifyDepsBeforeRun: warn
 
 overrides:
-  js-yaml: 5.2.2
+  # Redocly 1.x reads the js-yaml 4.x `types` API during OpenAPI generation.
+  js-yaml: 4.1.1

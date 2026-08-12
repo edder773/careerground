@@ -109,8 +109,7 @@ enum NotificationType {
 model User {
   id                    String                       @id @default(uuid()) @db.Uuid
   email                 String                       @unique @db.VarChar(320)
-  slackTeamId           String?                      @db.VarChar(40)
-  slackUserId           String?                      @db.VarChar(40)
+  openAiUserId          String?                      @unique @db.VarChar(255)
   displayName           String                       @db.VarChar(80)
   role                  Role                         @default(MEMBER)
   isActive              Boolean                      @default(true)
@@ -122,7 +121,6 @@ model User {
   createdAt             DateTime                     @default(now())
   updatedAt             DateTime                     @updatedAt
   deletedAt             DateTime?
-  refreshTokens         RefreshToken[]
   preference            UserPreference?
   collections           Collection[]
   notes                 Note[]
@@ -139,34 +137,6 @@ model User {
   auditLogs             AuditLog[]                   @relation("AuditActor")
   hiddenComments        SolutionComment[]            @relation("CommentModerator")
   publishedLearning     LearningSource[]              @relation("LearningPublisher")
-
-  @@unique([slackTeamId, slackUserId])
-}
-
-model RefreshToken {
-  id             String    @id @default(uuid()) @db.Uuid
-  userId         String    @db.Uuid
-  tokenHash      String    @unique @db.VarChar(128)
-  familyId       String    @db.Uuid
-  expiresAt      DateTime
-  revokedAt      DateTime?
-  replacedByHash String?   @db.VarChar(128)
-  createdAt      DateTime  @default(now())
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, familyId])
-  @@index([expiresAt])
-}
-
-model SlackOAuthState {
-  id        String    @id @default(uuid()) @db.Uuid
-  stateHash String    @unique @db.Char(64)
-  nonce     String    @db.VarChar(128)
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
-
-  @@index([expiresAt, usedAt])
 }
 
 model UserPreference {

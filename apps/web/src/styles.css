@@ -2599,7 +2599,7 @@ body {
   background: #f5f6f7;
 }
 
-.slack-login-card {
+.openai-login-card {
   width: min(390px, 100%);
   padding: 38px 34px;
   display: grid;
@@ -2610,52 +2610,35 @@ body {
   box-shadow: 0 22px 60px rgba(42, 46, 62, 0.13);
 }
 
-.slack-login-card h2 {
+.openai-login-card h2 {
   margin: 2px 0 -7px;
   font-size: 25px;
   letter-spacing: -0.035em;
 }
 
-.slack-login-card > p {
+.openai-login-card > p {
   margin: 0 0 7px;
   color: var(--muted);
   font-size: 12px;
   line-height: 1.65;
 }
 
-.slack-mark {
+.openai-mark {
   width: 54px;
   height: 54px;
-  padding: 10px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  background: #f5f5f7;
+  place-items: center;
+  color: white;
+  background: #111318;
   border-radius: 16px;
 }
 
-.slack-mark i {
-  display: block;
-  border-radius: 5px;
+.openai-mark svg {
+  width: 25px;
+  height: 25px;
 }
 
-.slack-mark i:nth-child(1) {
-  background: #36c5f0;
-}
-
-.slack-mark i:nth-child(2) {
-  background: #2eb67d;
-}
-
-.slack-mark i:nth-child(3) {
-  background: #e01e5a;
-}
-
-.slack-mark i:nth-child(4) {
-  background: #ecb22e;
-}
-
-.slack-button {
+.openai-button {
   min-height: 52px;
   padding: 0 18px;
   display: flex;
@@ -2663,8 +2646,8 @@ body {
   justify-content: center;
   gap: 11px;
   color: white;
-  background: #4a154b;
-  border: 1px solid #4a154b;
+  background: #111318;
+  border: 1px solid #111318;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 800;
@@ -2673,24 +2656,24 @@ body {
     box-shadow 0.15s ease;
 }
 
-.slack-button:hover {
+.openai-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(74, 21, 75, 0.2);
+  box-shadow: 0 10px 24px rgba(17, 19, 24, 0.2);
 }
 
-.slack-button.disabled {
-  color: #888b93;
-  background: #ececef;
-  border-color: #e2e3e6;
-  cursor: not-allowed;
-  pointer-events: none;
+.openai-button-mark {
+  width: 23px;
+  height: 23px;
+  display: grid;
+  place-items: center;
+  color: #111318;
+  background: white;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 900;
 }
 
-.slack-button-mark {
-  font-size: 19px;
-}
-
-.slack-login-card small {
+.openai-login-card small {
   min-height: 24px;
   color: #81858f;
   font-size: 9px;
@@ -3577,7 +3560,7 @@ body {
 }
 
 @media (max-width: 640px) {
-  .slack-login-card {
+  .openai-login-card {
     margin-top: -42px;
     padding: 26px 22px;
   }

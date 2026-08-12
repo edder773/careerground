@@ -27,17 +27,15 @@ async function main() {
     where: { email: process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@careerground.local' },
     create: {
       email: process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@careerground.local',
+      openAiUserId: `e2e:${process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@careerground.local'}`,
       displayName: '데모 관리자',
       role: 'ADMIN',
-      slackTeamId: 'T_DEMO',
-      slackUserId: 'U_ADMIN',
       rankingOptIn: false,
       preference: { create: {} },
     },
     update: {
       displayName: '데모 관리자',
-      slackTeamId: 'T_DEMO',
-      slackUserId: 'U_ADMIN',
+      openAiUserId: `e2e:${process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@careerground.local'}`,
       role: 'ADMIN',
       isActive: true,
     },
@@ -46,16 +44,14 @@ async function main() {
     where: { email: 'member@careerground.local' },
     create: {
       email: 'member@careerground.local',
+      openAiUserId: 'e2e:member@careerground.local',
       displayName: '김그라운드',
-      slackTeamId: 'T_DEMO',
-      slackUserId: 'U_MEMBER',
       preferredLanguage: 'typescript',
       preference: { create: {} },
     },
     update: {
       displayName: '김그라운드',
-      slackTeamId: 'T_DEMO',
-      slackUserId: 'U_MEMBER',
+      openAiUserId: 'e2e:member@careerground.local',
       isActive: true,
     },
   });
@@ -63,16 +59,14 @@ async function main() {
     where: { email: 'peer@careerground.local' },
     create: {
       email: 'peer@careerground.local',
+      openAiUserId: 'e2e:peer@careerground.local',
       displayName: '이플레이어',
-      slackTeamId: 'T_DEMO',
-      slackUserId: 'U_PEER',
       preferredLanguage: 'python',
       preference: { create: {} },
     },
     update: {
       displayName: '이플레이어',
-      slackTeamId: 'T_DEMO',
-      slackUserId: 'U_PEER',
+      openAiUserId: 'e2e:peer@careerground.local',
       isActive: true,
     },
   });
@@ -80,17 +74,15 @@ async function main() {
     where: { email: 'visual@careerground.local' },
     create: {
       email: 'visual@careerground.local',
+      openAiUserId: 'e2e:visual@careerground.local',
       displayName: '박비주얼',
-      slackTeamId: 'T_DEMO',
-      slackUserId: 'U_VISUAL',
       preferredLanguage: 'typescript',
       rankingOptIn: false,
       preference: { create: {} },
     },
     update: {
       displayName: '박비주얼',
-      slackTeamId: 'T_DEMO',
-      slackUserId: 'U_VISUAL',
+      openAiUserId: 'e2e:visual@careerground.local',
       isActive: true,
       rankingOptIn: false,
     },
@@ -433,7 +425,7 @@ async function main() {
   console.log('Member: member@careerground.local');
   console.log('Peer: peer@careerground.local');
   console.log('Visual QA: visual@careerground.local');
-  console.log('Interactive sign-in: Slack OpenID Connect only');
+  console.log('Interactive sign-in: OpenAI Sites identity only');
 }
 
 await main().finally(() => prisma.$disconnect());
