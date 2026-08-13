@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowRight,
   BookOpen,
   Brain,
   CheckCircle2,
@@ -161,10 +160,18 @@ function LearningUnitModal({
 export function LearningPage() {
   const client = useQueryClient();
   const [selected, setSelected] = useState<{ unit: Unit; index: number }>();
-  const learning = useQuery({ queryKey: ['learning'], queryFn: () => api<Source[]>('/learning') });
+  const learning = useQuery({
+    queryKey: ['learning'],
+    queryFn: () => api<Source[]>('/learning'),
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+    refetchOnWindowFocus: false,
+  });
   const due = useQuery({
     queryKey: ['learning-due'],
     queryFn: () => api<unknown[]>('/learning/due'),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
   const review = useMutation({
     mutationFn: ({ unitId, rating }: { unitId: string; rating: number }) =>
@@ -213,51 +220,39 @@ export function LearningPage() {
             <div className="unit-grid">
               {source.units.map((unit, index) => (
                 <article key={unit.id} className="learning-unit-card">
-                  <div className="unit-top">
-                    <span className="module-number">{String(index + 1).padStart(2, '0')}</span>
-                    <span>
-                      {unit.progress[0]?.completed ? (
-                        <>
-                          <CheckCircle2 /> 학습 완료
-                        </>
-                      ) : (
-                        <>
-                          <Layers3 /> 학습 전
-                        </>
-                      )}
-                    </span>
-                  </div>
-                  <h3>{unit.title}</h3>
-                  <p>{summaryPreview(unit.summary)}</p>
-                  <div className="tag-row">
-                    {unit.concepts.slice(0, 5).map((concept) => (
-                      <span key={concept}>{concept}</span>
-                    ))}
-                  </div>
-                  <div className="unit-counts">
-                    <span>플래시카드 {unit.flashcards.length}</span>
-                    <span>복습 문제 {unit.questions.length}</span>
-                  </div>
                   <button
                     type="button"
-                    className="learning-start-button"
+                    className="learning-card-trigger"
                     onClick={() => setSelected({ unit, index })}
-                  >
-                    {unit.progress[0]?.completed ? '다시 학습' : '학습 시작'} <ArrowRight />
-                  </button>
-                  <div className="rating-buttons" aria-label={`${unit.title} 이해도 기록`}>
-                    <span>이해도</span>
-                    {[1, 2, 3, 4, 5].map((rating) => (
-                      <button
-                        type="button"
-                        key={rating}
-                        disabled={review.isPending}
-                        onClick={() => review.mutate({ unitId: unit.id, rating })}
-                        aria-label={`이해도 ${rating}점`}
-                      >
-                        {rating}
-                      </button>
-                    ))}
+                    aria-label={`${unit.title} 내용 보기`}
+                  />
+                  <div className="learning-card-content">
+                    <div className="unit-top">
+                      <span className="module-number">{String(index + 1).padStart(2, '0')}</span>
+                      <span>
+                        {unit.progress[0]?.completed ? (
+                          <>
+                            <CheckCircle2 /> 학습 완료
+                          </>
+                        ) : (
+                          <>
+                            <Layers3 /> 학습 전
+                          </>
+                        )}
+                      </span>
+                    </div>
+                    <h3>{unit.title}</h3>
+                    <p>{summaryPreview(unit.summary)}</p>
+                    <div className="tag-row">
+                      {unit.concepts.slice(0, 5).map((concept) => (
+                        <span key={concept}>{concept}</span>
+                      ))}
+                    </div>
+                    <div className="unit-counts">
+                      <span>플래시카드 {unit.flashcards.length}</span>
+                      <span>복습 문제 {unit.questions.length}</span>
+                      <span className="learning-card-open">카드를 눌러 바로 보기</span>
+                    </div>
                   </div>
                 </article>
               ))}

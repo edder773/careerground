@@ -16,6 +16,11 @@ import { JobsService } from './jobs.service.js';
 import { parseJobImportBuffer } from './jobs-domain.js';
 
 type UploadFile = { originalname: string; buffer: Buffer; size: number; mimetype: string };
+type QueryValue = string | string[] | undefined;
+
+function queryValues(value: QueryValue) {
+  return (Array.isArray(value) ? value : value ? [value] : []).slice(0, 20);
+}
 
 @ApiTags('jobs')
 @Controller('jobs')
@@ -28,17 +33,17 @@ export class JobsController {
   }
 
   @Get()
-  list(@CurrentUser() user: AuthUser, @Query() query: Record<string, string | undefined>) {
+  list(@CurrentUser() user: AuthUser, @Query() query: Record<string, QueryValue>) {
     return this.jobs.list(user.id, {
-      companySize: query.companySize,
-      category: query.category,
-      region: query.region,
-      tech: query.tech,
-      sort: query.sort,
+      companySizes: queryValues(query.companySize),
+      categories: queryValues(query.category),
+      region: queryValues(query.region)[0],
+      tech: queryValues(query.tech)[0],
+      sort: queryValues(query.sort)[0],
       saved: query.saved === 'true',
       calendar: query.calendar === 'true',
-      deadlineFrom: query.deadlineFrom,
-      deadlineTo: query.deadlineTo,
+      deadlineFrom: queryValues(query.deadlineFrom)[0],
+      deadlineTo: queryValues(query.deadlineTo)[0],
     });
   }
 

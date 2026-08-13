@@ -1,9 +1,12 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import {
   Bookmark,
   Building2,
   CalendarClock,
   CalendarDays,
+  Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
@@ -13,7 +16,7 @@ import {
   MapPin,
   X,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FolderSaveButton } from '../components/FolderSaveButton';
 import { api, json } from '../lib/api';
 
@@ -36,7 +39,7 @@ type Job = {
 };
 
 type ViewMode = 'calendar' | 'list';
-type CalendarEventType = 'start' | 'deadline';
+type CalendarEventType = 'start' | 'deadline' | 'rolling';
 type CalendarEvent = { job: Job; type: CalendarEventType };
 
 const KOREA_OFFSET_MS = 9 * 60 * 60 * 1000;
@@ -63,6 +66,7 @@ const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
 const calendarEventLabels: Record<CalendarEventType, string> = {
   start: '시작일',
   deadline: '마감일',
+  rolling: '상시',
 };
 
 function monthStart(date = new Date()) {
@@ -135,6 +139,15 @@ function deadlineLabel(value?: string) {
 
 function startDate(job: Job) {
   return job.publishedAt || job.collectedAt;
+}
+
+function dateLabel(value: string) {
+  return new Intl.DateTimeFormat('ko-KR', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+    timeZone: 'Asia/Seoul',
+  }).format(new Date(`${value}T00:00:00+09:00`));
 }
 
 function SourceDetails({ job, compact = false }: { job: Job; compact?: boolean }) {
@@ -239,14 +252,182 @@ function JobDetailModal({ job, onClose }: { job: Job; onClose: () => void }) {
   );
 }
 
+function ScheduleListDialog({
+  open,
+  onOpenChange,
+  title,
+  description,
+  items,
+  onSelect,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  description: string;
+  items: CalendarEvent[];
+  onSelect: (jobId: string) => void;
+}) {
+  return (
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="schedule-dialog-overlay" />
+        <DialogPrimitive.Content className="schedule-list-dialog">
+          <header>
+            <div>
+              <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
+              <DialogPrimitive.Description>{description}</DialogPrimitive.Description>
+            </div>
+            <DialogPrimitive.Close className="job-modal-close" aria-label="닫기">
+              <X />
+            </DialogPrimitive.Close>
+          </header>
+          <div className="schedule-dialog-list">
+            {items.map(({ job, type }) => (
+              <button
+                type="button"
+                key={`${job.id}-${type}`}
+                className="schedule-list-item"
+                onClick={() => {
+                  onOpenChange(false);
+                  onSelect(job.id);
+                }}
+                aria-label={`${job.company.name} ${job.title} 상세 보기`}
+              >
+                <span className={`schedule-list-badge schedule-${type}`}>
+                  {calendarEventLabels[type]}
+                </span>
+                <span className="schedule-list-copy">
+                  <strong>{job.company.name}</strong>
+                  <b>{job.title}</b>
+                  <small>
+                    {job.category} · {job.source.name}
+                  </small>
+                </span>
+                <ChevronRight aria-hidden="true" />
+              </button>
+            ))}
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
+  );
+}
+
+function MultiSelectFilter({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: Array<{ value: string; label: string }>;
+  value: string[];
+  onChange: (value: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  const selected = new Set(value);
+  const selectedLabels = value.map(
+    (selectedValue) =>
+      options.find((option) => option.value === selectedValue)?.label || selectedValue,
+  );
+  const summary =
+    value.length === 0
+      ? '전체'
+      : value.length <= 2
+        ? selectedLabels.join(' · ')
+        : `${value.length}개 선택`;
+  const toggle = (optionValue: string, checked: boolean) => {
+    onChange(
+      checked
+        ? [...value, optionValue]
+        : value.filter((currentValue) => currentValue !== optionValue),
+    );
+  };
+  useEffect(() => {
+    if (!open) return undefined;
+    const close = (event: PointerEvent | KeyboardEvent) => {
+      if (event instanceof KeyboardEvent && event.key === 'Escape') {
+        setOpen(false);
+        return;
+      }
+      if (event instanceof PointerEvent && !root.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    window.addEventListener('pointerdown', close);
+    window.addEventListener('keydown', close);
+    return () => {
+      window.removeEventListener('pointerdown', close);
+      window.removeEventListener('keydown', close);
+    };
+  }, [open]);
+
+  return (
+    <div className="multi-filter-root" ref={root}>
+      <button
+        type="button"
+        className="multi-filter-trigger"
+        aria-label={`${label}: ${summary}`}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+        data-state={open ? 'open' : 'closed'}
+      >
+        <span>
+          <small>{label}</small>
+          <strong>{summary}</strong>
+        </span>
+        <ChevronDown aria-hidden="true" />
+      </button>
+      {open && (
+        <div className="multi-filter-menu" role="menu" aria-label={`${label} 복수 선택`}>
+          <span className="multi-filter-label">{label} 복수 선택</span>
+          {options.map((option) => (
+            <button
+              type="button"
+              key={option.value}
+              className="multi-filter-option"
+              role="menuitemcheckbox"
+              aria-checked={selected.has(option.value)}
+              onClick={() => toggle(option.value, !selected.has(option.value))}
+              data-state={selected.has(option.value) ? 'checked' : 'unchecked'}
+            >
+              <span className="multi-filter-check">
+                {selected.has(option.value) && <Check aria-hidden="true" />}
+              </span>
+              {option.label}
+            </button>
+          ))}
+          {value.length > 0 && (
+            <>
+              <span className="multi-filter-separator" role="separator" />
+              <button
+                type="button"
+                role="menuitem"
+                className="multi-filter-clear"
+                onClick={() => onChange([])}
+              >
+                선택 초기화
+              </button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function JobsPage() {
   const client = useQueryClient();
-  const [companySize, setCompanySize] = useState('');
-  const [category, setCategory] = useState('');
+  const [companySizes, setCompanySizes] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sort, setSort] = useState('new');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [visibleMonth, setVisibleMonth] = useState(monthStart);
   const [selectedJobId, setSelectedJobId] = useState<string>();
+  const [rollingOpen, setRollingOpen] = useState(false);
+  const [expandedDateKey, setExpandedDateKey] = useState<string>();
 
   const bounds = monthBounds(visibleMonth);
   const categories = useQuery({
@@ -256,20 +437,21 @@ export function JobsPage() {
     gcTime: 30 * 60_000,
     refetchOnWindowFocus: false,
   });
-  const query = new URLSearchParams({
-    ...(companySize ? { companySize } : {}),
-    ...(category ? { category } : {}),
+  const queryParams = new URLSearchParams({
     sort: viewMode === 'calendar' ? 'deadline' : sort,
     ...(viewMode === 'calendar'
       ? { calendar: 'true', deadlineFrom: bounds.from, deadlineTo: bounds.to }
       : {}),
-  }).toString();
+  });
+  companySizes.forEach((value) => queryParams.append('companySize', value));
+  selectedCategories.forEach((value) => queryParams.append('category', value));
+  const query = queryParams.toString();
   const jobs = useQuery({
     queryKey: [
       'jobs',
       viewMode,
-      companySize,
-      category,
+      companySizes.join('|'),
+      selectedCategories.join('|'),
       viewMode === 'calendar'
         ? `${visibleMonth.getUTCFullYear()}-${visibleMonth.getUTCMonth()}`
         : sort,
@@ -324,6 +506,9 @@ export function JobsPage() {
     };
   }, [jobs.data]);
   const selectedJob = jobs.data?.find((job) => job.id === selectedJobId);
+  const expandedDateEvents = expandedDateKey
+    ? calendarData.eventsByDate.get(expandedDateKey) || []
+    : [];
   const dates = calendarDates(visibleMonth);
   const today = koreaDateKey(new Date());
   const monthLabel = `${visibleMonth.getUTCFullYear()}년 ${visibleMonth.getUTCMonth() + 1}월`;
@@ -331,6 +516,8 @@ export function JobsPage() {
   const setMode = (mode: ViewMode) => {
     setViewMode(mode);
     setSelectedJobId(undefined);
+    setRollingOpen(false);
+    setExpandedDateKey(undefined);
   };
 
   return (
@@ -365,26 +552,18 @@ export function JobsPage() {
 
       <div className="filter-bar jobs-filter">
         <Filter aria-hidden="true" />
-        <label>
-          기업 규모
-          <select value={companySize} onChange={(event) => setCompanySize(event.target.value)}>
-            <option value="">전체</option>
-            {Object.entries(sizeLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          직무
-          <select value={category} onChange={(event) => setCategory(event.target.value)}>
-            <option value="">전체 IT 직무</option>
-            {(categories.data || []).map((value) => (
-              <option key={value}>{value}</option>
-            ))}
-          </select>
-        </label>
+        <MultiSelectFilter
+          label="기업 규모"
+          options={Object.entries(sizeLabels).map(([value, label]) => ({ value, label }))}
+          value={companySizes}
+          onChange={setCompanySizes}
+        />
+        <MultiSelectFilter
+          label="직무"
+          options={(categories.data || []).map((value) => ({ value, label: value }))}
+          value={selectedCategories}
+          onChange={setSelectedCategories}
+        />
         {viewMode === 'list' && (
           <label>
             정렬
@@ -436,23 +615,15 @@ export function JobsPage() {
             <span className="schedule-rolling">상시</span>
           </div>
           {calendarData.rollingJobs.length > 0 && (
-            <section className="rolling-job-rail" aria-label="상시 채용 공고">
-              <strong>상시 채용</strong>
+            <section className="rolling-job-summary" aria-label="상시 채용 공고">
               <div>
-                {calendarData.rollingJobs.map((job) => (
-                  <button
-                    type="button"
-                    key={job.id}
-                    className="schedule-rolling"
-                    onClick={() => setSelectedJobId(job.id)}
-                    aria-label={`${job.company.name} ${job.title} 상시 채용 상세 보기`}
-                  >
-                    <span>상시</span>
-                    <b>{job.company.name}</b>
-                    <small>{job.title}</small>
-                  </button>
-                ))}
+                <span className="schedule-rolling">상시</span>
+                <strong>{calendarData.rollingJobs.length}개 상시채용 공고</strong>
+                <small>마감일 없이 진행 중인 공고만 한 번에 확인하세요.</small>
               </div>
+              <button type="button" onClick={() => setRollingOpen(true)}>
+                상시채용 확인하기 <ChevronRight />
+              </button>
             </section>
           )}
           <p className="calendar-scroll-hint">좌우로 밀어 전체 달력을 볼 수 있어요.</p>
@@ -488,7 +659,14 @@ export function JobsPage() {
                           </button>
                         ))}
                         {dayEvents.length > 4 && (
-                          <span className="calendar-more">+{dayEvents.length - 4}개</span>
+                          <button
+                            type="button"
+                            className="calendar-more"
+                            onClick={() => setExpandedDateKey(item.key)}
+                            aria-label={`${dateLabel(item.key)} 추가 공고 ${dayEvents.length - 4}개 보기`}
+                          >
+                            +{dayEvents.length - 4}개 더 보기
+                          </button>
                         )}
                       </div>
                     </div>
@@ -508,6 +686,25 @@ export function JobsPage() {
           )}
         </section>
       )}
+
+      <ScheduleListDialog
+        open={rollingOpen}
+        onOpenChange={setRollingOpen}
+        title="상시채용 공고"
+        description={`현재 조건에 맞는 상시채용 ${calendarData.rollingJobs.length}개를 모았습니다.`}
+        items={calendarData.rollingJobs.map((job) => ({ job, type: 'rolling' }))}
+        onSelect={setSelectedJobId}
+      />
+      <ScheduleListDialog
+        open={Boolean(expandedDateKey)}
+        onOpenChange={(open) => {
+          if (!open) setExpandedDateKey(undefined);
+        }}
+        title={expandedDateKey ? `${dateLabel(expandedDateKey)} 채용 일정` : '채용 일정'}
+        description={`시작일과 마감일을 포함한 ${expandedDateEvents.length}개 일정을 확인하세요.`}
+        items={expandedDateEvents}
+        onSelect={setSelectedJobId}
+      />
 
       {selectedJob && (
         <JobDetailModal job={selectedJob} onClose={() => setSelectedJobId(undefined)} />

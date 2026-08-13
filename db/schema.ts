@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 const timestamps = {
@@ -291,6 +292,26 @@ export const jobs = sqliteTable(
     index('idx_jobs_size_created_status').on(table.companySize, table.createdAt, table.status),
     index('idx_jobs_company_status').on(table.companyName, table.status),
     index('idx_jobs_deadline_status').on(table.deadlineAt, table.status),
+    index('idx_jobs_calendar_deadline')
+      .on(table.deadlineAt)
+      .where(
+        sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
+      ),
+    index('idx_jobs_calendar_collected')
+      .on(table.collectedAt)
+      .where(
+        sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
+      ),
+    index('idx_jobs_calendar_created')
+      .on(table.createdAt)
+      .where(
+        sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE') AND ${table.collectedAt} IS NULL`,
+      ),
+    index('idx_jobs_calendar_rolling')
+      .on(table.id)
+      .where(
+        sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE') AND ${table.rolling} = 1`,
+      ),
   ],
 );
 
@@ -335,24 +356,37 @@ export const learningUnits = sqliteTable(
   (table) => [
     uniqueIndex('idx_learning_units_source_anchor').on(table.sourceId, table.anchor),
     index('idx_learning_units_source_position').on(table.sourceId, table.position),
+    index('idx_learning_units_published_source_position').on(
+      table.published,
+      table.sourceId,
+      table.position,
+    ),
   ],
 );
 
-export const flashcards = sqliteTable('flashcards', {
-  id: text('id').primaryKey(),
-  unitId: text('unit_id').notNull(),
-  front: text('front').notNull(),
-  back: text('back').notNull(),
-  createdAt: text('created_at').notNull(),
-});
+export const flashcards = sqliteTable(
+  'flashcards',
+  {
+    id: text('id').primaryKey(),
+    unitId: text('unit_id').notNull(),
+    front: text('front').notNull(),
+    back: text('back').notNull(),
+    createdAt: text('created_at').notNull(),
+  },
+  (table) => [index('idx_flashcards_unit_created').on(table.unitId, table.createdAt)],
+);
 
-export const learningQuestions = sqliteTable('learning_questions', {
-  id: text('id').primaryKey(),
-  unitId: text('unit_id').notNull(),
-  prompt: text('prompt').notNull(),
-  answer: text('answer').notNull(),
-  createdAt: text('created_at').notNull(),
-});
+export const learningQuestions = sqliteTable(
+  'learning_questions',
+  {
+    id: text('id').primaryKey(),
+    unitId: text('unit_id').notNull(),
+    prompt: text('prompt').notNull(),
+    answer: text('answer').notNull(),
+    createdAt: text('created_at').notNull(),
+  },
+  (table) => [index('idx_learning_questions_unit_created').on(table.unitId, table.createdAt)],
+);
 
 export const learningProgress = sqliteTable(
   'learning_progress',

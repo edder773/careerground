@@ -68,6 +68,14 @@ test('captures core domain screens', async ({ page }) => {
     }
     if (screen.name === 'jobs') {
       await expect(page.locator('.job-card').first()).toBeVisible();
+      await page.getByRole('button', { name: '기업 규모: 전체' }).click();
+      await expect(page.getByRole('menu', { name: '기업 규모 복수 선택' })).toBeVisible();
+      await page.waitForTimeout(220);
+      await page.screenshot({
+        path: 'test-results/visual/jobs-multi-filter-desktop-1440.png',
+        fullPage: false,
+      });
+      await page.keyboard.press('Escape');
     }
     await page.screenshot({
       path: `test-results/visual/${screen.name}-desktop.png`,
@@ -77,6 +85,7 @@ test('captures core domain screens', async ({ page }) => {
       const daily = page.getByRole('region', { name: '오늘의 문제 2개' });
       await daily.getByRole('button', { name: '풀이 기록' }).first().click();
       await expect(page.getByRole('dialog')).toBeVisible();
+      await page.waitForTimeout(220);
       await page.screenshot({
         path: 'test-results/visual/coding-editor-desktop-1440.png',
         fullPage: false,
@@ -89,10 +98,11 @@ test('captures core domain screens', async ({ page }) => {
         .filter({ hasText: '생성형 AI 실전: Prompt와 Context Engineering' });
       await expect(promptLearning).toBeVisible();
       await promptLearning
-        .getByRole('button', { name: /학습 시작|다시 학습/ })
+        .getByRole('button', { name: /내용 보기/ })
         .first()
         .click();
       await expect(page.getByRole('dialog')).toBeVisible();
+      await page.waitForTimeout(220);
       await page.screenshot({
         path: 'test-results/visual/learning-module-desktop-1440.png',
         fullPage: false,
@@ -107,8 +117,20 @@ test('captures core domain screens', async ({ page }) => {
         path: 'test-results/visual/jobs-calendar-desktop-1440.png',
         fullPage: true,
       });
+      await page.getByRole('button', { name: /상시채용 확인하기/ }).click();
+      await expect(page.getByRole('dialog', { name: '상시채용 공고' })).toBeVisible();
+      await page.waitForTimeout(220);
+      await page.screenshot({
+        path: 'test-results/visual/jobs-rolling-modal-desktop-1440.png',
+        fullPage: false,
+      });
+      await page
+        .getByRole('dialog', { name: '상시채용 공고' })
+        .getByRole('button', { name: '닫기' })
+        .click();
       await page.locator('.calendar-job').first().click();
       await expect(page.getByRole('dialog')).toBeVisible();
+      await page.waitForTimeout(220);
       await page.screenshot({
         path: 'test-results/visual/jobs-calendar-modal-desktop-1440.png',
         fullPage: false,
@@ -129,8 +151,20 @@ test('captures core domain screens', async ({ page }) => {
     path: 'test-results/visual/jobs-calendar-mobile-375.png',
     fullPage: false,
   });
+  await page.getByRole('button', { name: /상시채용 확인하기/ }).click();
+  await expect(page.getByRole('dialog', { name: '상시채용 공고' })).toBeVisible();
+  await page.waitForTimeout(220);
+  await page.screenshot({
+    path: 'test-results/visual/jobs-rolling-modal-mobile-375.png',
+    fullPage: false,
+  });
+  await page
+    .getByRole('dialog', { name: '상시채용 공고' })
+    .getByRole('button', { name: '닫기' })
+    .click();
   await page.locator('.calendar-job').first().click();
   await expect(page.getByRole('dialog')).toBeVisible();
+  await page.waitForTimeout(220);
   await page.screenshot({
     path: 'test-results/visual/jobs-calendar-modal-mobile-375.png',
     fullPage: false,
@@ -143,10 +177,11 @@ test('captures core domain screens', async ({ page }) => {
     .filter({ hasText: '생성형 AI 실전: Prompt와 Context Engineering' });
   await expect(promptLearning).toBeVisible();
   await promptLearning
-    .getByRole('button', { name: /학습 시작|다시 학습/ })
+    .getByRole('button', { name: /내용 보기/ })
     .first()
     .click();
   await expect(page.getByRole('dialog')).toBeVisible();
+  await page.waitForTimeout(220);
   await page.screenshot({
     path: 'test-results/visual/learning-module-mobile-375.png',
     fullPage: false,
@@ -160,6 +195,7 @@ test('captures core domain screens', async ({ page }) => {
     .first()
     .click();
   await expect(page.getByRole('dialog')).toBeVisible();
+  await page.waitForTimeout(220);
   await page.screenshot({
     path: 'test-results/visual/coding-editor-mobile-375.png',
     fullPage: false,

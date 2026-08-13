@@ -8,10 +8,11 @@ class SqliteStatement implements D1PreparedStatement {
   constructor(
     private readonly statement: StatementSync,
     private readonly values: unknown[] = [],
+    readonly sql = '',
   ) {}
 
   bind(...values: unknown[]) {
-    return new SqliteStatement(this.statement, values);
+    return new SqliteStatement(this.statement, values, this.sql);
   }
 
   async first<T>() {
@@ -34,6 +35,7 @@ class SqliteStatement implements D1PreparedStatement {
 
 class SqliteD1 implements D1Database {
   private readonly sqlite = new DatabaseSync(':memory:');
+  preparedSql: string[] = [];
 
   constructor() {
     for (const file of [
@@ -43,6 +45,7 @@ class SqliteD1 implements D1Database {
       'drizzle/0003_import_careerground_catalog.sql',
       'drizzle/0004_melodic_xavin.sql',
       'drizzle/0005_naive_blindfold.sql',
+      'drizzle/0006_tense_iron_patriot.sql',
     ]) {
       const migration = readFileSync(file, 'utf8');
       for (const statement of migration.split('--> statement-breakpoint')) {
@@ -52,11 +55,22 @@ class SqliteD1 implements D1Database {
   }
 
   prepare(sql: string) {
-    return new SqliteStatement(this.sqlite.prepare(sql));
+    this.preparedSql.push(sql);
+    return new SqliteStatement(this.sqlite.prepare(sql), [], sql);
+  }
+
+  resetPreparedSql() {
+    this.preparedSql = [];
   }
 
   async batch<T>(statements: D1PreparedStatement[]): Promise<D1Result<T>[]> {
-    return Promise.all(statements.map((statement) => statement.run<T>()));
+    return Promise.all(
+      statements.map((statement) =>
+        statement instanceof SqliteStatement && /^\s*(SELECT|WITH|PRAGMA)/i.test(statement.sql)
+          ? statement.all<T>()
+          : statement.run<T>(),
+      ),
+    );
   }
 
   close() {
@@ -267,6 +281,65 @@ describe('Sites D1 API', () => {
     );
   });
 
+  it('accepts repeated company-size and category filters', async () => {
+    const sizes = await call('/api/v1/jobs?companySize=STARTUP&companySize=FOREIGN');
+    const sizeRows = sizes.body as unknown as Array<{ company: { size: string } }>;
+    expect(sizeRows.length).toBeGreaterThan(0);
+    expect(sizeRows.every((row) => ['STARTUP', 'FOREIGN'].includes(row.company.size))).toBe(true);
+
+    const categories = await call(
+      '/api/v1/jobs?category=%EB%B0%B1%EC%97%94%EB%93%9C&category=AI%20%ED%92%80%EC%8A%A4%ED%83%9D%20%EA%B0%9C%EB%B0%9C',
+    );
+    const categoryRows = categories.body as unknown as Array<{ category: string }>;
+    expect(categoryRows.length).toBeGreaterThan(0);
+    expect(categoryRows.every((row) => ['백엔드', 'AI 풀스택 개발'].includes(row.category))).toBe(
+      true,
+    );
+  });
+
+  it('shares catalog data while isolating each member activity record', async () => {
+    const adminJobs = await call('/api/v1/jobs?sort=new');
+    const memberJobs = await call('/api/v1/jobs?sort=new', {}, memberHeaders);
+    const adminRows = adminJobs.body as unknown as Array<{ id: string }>;
+    const memberRows = memberJobs.body as unknown as Array<{
+      id: string;
+      savedBy: Array<{ status: string }>;
+    }>;
+    expect(memberRows.map((row) => row.id)).toEqual(adminRows.map((row) => row.id));
+
+    await call('/api/v1/jobs/saved', {
+      method: 'POST',
+      body: JSON.stringify({ jobId: adminRows[0].id, status: 'APPLIED', memo: '' }),
+    });
+    const isolatedJobs = await call('/api/v1/jobs?sort=new', {}, memberHeaders);
+    expect(
+      (isolatedJobs.body as unknown as Array<{ id: string; savedBy: unknown[] }>).find(
+        (row) => row.id === adminRows[0].id,
+      )?.savedBy,
+    ).toEqual([]);
+
+    const adminLearning = await call('/api/v1/learning');
+    const unitId = (adminLearning.body as unknown as Array<{ units: Array<{ id: string }> }>)[0]
+      .units[0].id;
+    await call('/api/v1/learning/review', {
+      method: 'POST',
+      body: JSON.stringify({ unitId, rating: 5 }),
+    });
+    const memberLearning = await call('/api/v1/learning', {}, memberHeaders);
+    const memberUnit = (
+      memberLearning.body as unknown as Array<{
+        units: Array<{ id: string; progress: unknown[] }>;
+      }>
+    )
+      .flatMap((source) => source.units)
+      .find((unit) => unit.id === unitId);
+    expect(memberUnit?.progress).toEqual([]);
+
+    const adminChallenges = await call('/api/v1/coding/daily-challenges');
+    const memberChallenges = await call('/api/v1/coding/daily-challenges', {}, memberHeaders);
+    expect(memberChallenges.body).toEqual(adminChallenges.body);
+  });
+
   it('limits calendar queries to the requested deadline month', async () => {
     const september = await call(
       '/api/v1/jobs?sort=deadline&deadlineFrom=2026-08-31T15%3A00%3A00.000Z&deadlineTo=2026-09-30T15%3A00%3A00.000Z',
@@ -421,5 +494,16 @@ describe('Sites D1 API', () => {
     const search = await call('/api/v1/search?q=HTTP');
     expect(search.response.status).toBe(200);
     expect(search.body).toMatchObject({ query: 'HTTP' });
+  });
+
+  it('loads the complete learning library with four bulk queries', async () => {
+    db.resetPreparedSql();
+    const learning = await call('/api/v1/learning');
+    const learningQueries = db.preparedSql.filter((sql) =>
+      /FROM (learning_sources|learning_units|flashcards|learning_questions)/.test(sql),
+    );
+
+    expect(learning.response.status).toBe(200);
+    expect(learningQueries).toHaveLength(4);
   });
 });
