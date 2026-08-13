@@ -22,6 +22,8 @@ GitHub secrets:
 
 `pnpm sites:build`는 검증된 `apps/web` production 산출물을 Cloudflare Worker-compatible ESM과 함께 패키징한다. `.openai/hosting.json`의 `d1: "DB"`는 Sites가 소유하는 전용 D1을 연결하며, 배포 archive의 `drizzle/` SQL을 버전 순서대로 적용한다. Worker는 브라우저가 전달할 수 없는 OpenAI 사용자 헤더를 서버에서 읽고, 사용자별 데이터 소유권을 모든 D1 쿼리에 적용한다.
 
+Sites 버전은 소스만 저장하지 않고, 같은 커밋에서 만든 `dist/`, `.openai/hosting.json`, `drizzle/`을 공식 Sites 패키징 도구로 하나의 archive에 묶어 저장한다. 이 archive를 생략하면 Sites가 모노레포의 일반 `build` 스크립트를 다시 실행해 Workers 전용 산출물과 D1 migration이 배포 대상에서 빠질 수 있다. 저장 전에는 archive 안에 `dist/server/index.js`, `dist/.openai/hosting.json`, `dist/.openai/drizzle/`이 포함됐는지 확인한다.
+
 첫 번째 정상 OpenAI 사용자는 bootstrap `ADMIN`으로 생성되고 이후 사용자는 `MEMBER`로 생성된다. 추가 관리자는 `OPENAI_ADMIN_EMAILS` allowlist로 승격할 수 있다. D1 readiness는 `/api/v1/health/ready`에서 확인하며 DB 쿼리가 성공해야 200을 반환한다.
 
 Nest/PostgreSQL을 별도 운영하는 대안도 유지한다. 그 경우 Sites에 `API_ORIGIN`을 설정하고 API와 Worker에 같은 `SITES_AUTH_SHARED_SECRET`을 주입한다. `API_ORIGIN`과 D1이 모두 없을 때만 데이터 endpoint가 `API_NOT_CONFIGURED` 503을 반환한다.
