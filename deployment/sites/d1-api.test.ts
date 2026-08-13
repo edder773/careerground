@@ -40,6 +40,7 @@ class SqliteD1 implements D1Database {
       'drizzle/0000_loose_shooting_star.sql',
       'drizzle/0001_seed.sql',
       'drizzle/0002_equal_hulk.sql',
+      'drizzle/0003_sparkling_logan.sql',
     ]) {
       const migration = readFileSync(file, 'utf8');
       for (const statement of migration.split('--> statement-breakpoint')) {
@@ -227,6 +228,24 @@ describe('Sites D1 API', () => {
         }),
       ]),
     );
+  });
+
+  it('limits calendar queries to the requested deadline month', async () => {
+    const september = await call(
+      '/api/v1/jobs?sort=deadline&deadlineFrom=2026-08-31T15%3A00%3A00.000Z&deadlineTo=2026-09-30T15%3A00%3A00.000Z',
+    );
+    expect(september.response.status).toBe(200);
+    expect(september.body).toHaveLength(2);
+
+    const august = await call(
+      '/api/v1/jobs?sort=deadline&deadlineFrom=2026-07-31T15%3A00%3A00.000Z&deadlineTo=2026-08-31T15%3A00%3A00.000Z',
+    );
+    expect(august.body).toEqual([]);
+
+    const invalid = await call(
+      '/api/v1/jobs?deadlineFrom=2026-09-30T15%3A00%3A00.000Z&deadlineTo=2026-08-31T15%3A00%3A00.000Z',
+    );
+    expect(invalid.response.status).toBe(400);
   });
 
   it('persists coding progress, solution, reaction, and comment', async () => {

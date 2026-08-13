@@ -279,6 +279,11 @@ export const jobs = sqliteTable(
     uniqueIndex('idx_jobs_source_url').on(table.sourceUrl),
     index('idx_jobs_status_deadline').on(table.status, table.deadlineAt),
     index('idx_jobs_category_created').on(table.category, table.createdAt),
+    index('idx_jobs_created_status').on(table.createdAt, table.status),
+    index('idx_jobs_category_created_status').on(table.category, table.createdAt, table.status),
+    index('idx_jobs_size_created_status').on(table.companySize, table.createdAt, table.status),
+    index('idx_jobs_company_status').on(table.companyName, table.status),
+    index('idx_jobs_deadline_status').on(table.deadlineAt, table.status),
   ],
 );
 

@@ -127,6 +127,11 @@ test.describe('CareerGround MVP vertical slices', () => {
     const status = page.getByLabel(/지원 상태/).first();
     await status.selectOption('APPLIED');
     await expect(status).toHaveValue('APPLIED');
+
+    await page.getByLabel('기업 규모').selectOption('');
+    await page.getByRole('button', { name: '달력' }).click();
+    await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
+    await expect(page.locator('.calendar-job strong').first()).toBeVisible();
   });
 
   test('records understanding and refreshes spaced-review state', async ({ page }) => {

@@ -533,16 +533,50 @@ async function jobList(db: D1Database, userId: string, url: URL) {
     clauses.push('j.category = ?');
     values.push(category);
   }
+  const deadlineFrom = url.searchParams.get('deadlineFrom');
+  const deadlineTo = url.searchParams.get('deadlineTo');
+  const deadlineFromTime = deadlineFrom ? Date.parse(deadlineFrom) : undefined;
+  const deadlineToTime = deadlineTo ? Date.parse(deadlineTo) : undefined;
+  if (
+    (deadlineFromTime !== undefined && Number.isNaN(deadlineFromTime)) ||
+    (deadlineToTime !== undefined && Number.isNaN(deadlineToTime)) ||
+    (deadlineFromTime !== undefined &&
+      deadlineToTime !== undefined &&
+      deadlineFromTime >= deadlineToTime)
+  ) {
+    throw new RouteError(400, '올바른 마감일 조회 범위가 필요합니다.');
+  }
+  if (deadlineFrom) {
+    clauses.push('j.deadline_at >= ?');
+    values.push(new Date(deadlineFrom).toISOString());
+  }
+  if (deadlineTo) {
+    clauses.push('j.deadline_at < ?');
+    values.push(new Date(deadlineTo).toISOString());
+  }
   const order =
     url.searchParams.get('sort') === 'deadline'
       ? 'j.deadline_at ASC'
       : url.searchParams.get('sort') === 'company'
         ? 'j.company_name ASC'
         : 'j.created_at DESC';
+  const indexName =
+    url.searchParams.get('sort') === 'deadline'
+      ? 'idx_jobs_deadline_status'
+      : url.searchParams.get('sort') === 'company'
+        ? 'idx_jobs_company_status'
+        : category
+          ? 'idx_jobs_category_created_status'
+          : companySize
+            ? 'idx_jobs_size_created_status'
+            : 'idx_jobs_created_status';
   const rows = await all<Record<string, unknown>>(
     db,
-    `SELECT j.*, sj.status AS savedStatus, sj.memo AS savedMemo
-       FROM jobs j
+    `SELECT j.id, j.title, j.category, j.region, j.remote, j.tech_stack,
+            j.deadline_at, j.rolling, j.summary, j.source_url, j.company_name,
+            j.company_size, j.source_name, j.last_verified_at,
+            sj.status AS savedStatus, sj.memo AS savedMemo
+       FROM jobs j INDEXED BY ${indexName}
        LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ?
       WHERE ${clauses.join(' AND ')}
       ORDER BY ${order} LIMIT 100`,

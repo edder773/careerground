@@ -31,6 +31,8 @@ export class JobsController {
       tech: query.tech,
       sort: query.sort,
       saved: query.saved === 'true',
+      deadlineFrom: query.deadlineFrom,
+      deadlineTo: query.deadlineTo,
     });
   }
 
