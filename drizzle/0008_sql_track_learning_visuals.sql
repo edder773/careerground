@@ -1,6 +1,6 @@
 ALTER TABLE `coding_problems` ADD `track` text DEFAULT 'ALGORITHM' NOT NULL;--> statement-breakpoint
-ALTER TABLE `learning_units` ADD `visuals` text DEFAULT '[]' NOT NULL;--> statement-breakpoint
 CREATE INDEX `idx_coding_problems_track_level_position` ON `coding_problems` (`track`,`level`,`position`);--> statement-breakpoint
+ALTER TABLE `learning_units` ADD `visuals` text DEFAULT '[]' NOT NULL;--> statement-breakpoint
 UPDATE `coding_problems`
    SET `track` = 'SQL'
  WHERE CAST(substr(`source_url`, instr(`source_url`, '/lessons/') + 9) AS INTEGER) IN (
