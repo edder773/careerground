@@ -289,21 +289,38 @@ export class CodingService implements OnApplicationBootstrap {
 
   @Cron('0 0 7 * * *', { timeZone: 'Asia/Seoul' })
   scheduledEnsure() {
-    return this.ensureTodayChallenge();
+    return this.ensureTodayChallenges();
   }
 
-  async ensureTodayChallenge(now = new Date()) {
-    const kstDate = kstCalendarDate(now);
-    const existing = await this.prisma.dailyChallenge.findUnique({
-      where: { kstDate },
-      include: { problem: true },
-    });
-    if (existing) return existing;
+  async ensureTodayChallenges(now = new Date()) {
     const setting = await this.prisma.dailyChallengeSetting.upsert({
       where: { id: 1 },
       create: { id: 1, allowedLevels: [1, 2], repeatExclusionDays: 60 },
-      update: {},
+      update: { allowedLevels: [1, 2] },
     });
+    return Promise.all(
+      [1, 2].map((levelSlot) => this.ensureTodayChallengeLevel(now, levelSlot, setting)),
+    );
+  }
+
+  async ensureTodayChallenge(now = new Date()) {
+    return (await this.ensureTodayChallenges(now))[0];
+  }
+
+  private async ensureTodayChallengeLevel(
+    now: Date,
+    levelSlot: number,
+    setting: {
+      repeatExclusionDays: number;
+      allowRepeatRelaxation: boolean;
+    },
+  ) {
+    const kstDate = kstCalendarDate(now);
+    const existing = await this.prisma.dailyChallenge.findUnique({
+      where: { kstDate_levelSlot: { kstDate, levelSlot } },
+      include: { problem: true },
+    });
+    if (existing) return existing;
     const candidatesForWindow = async (days: number) => {
       const cutoff = new Date(kstDate.getTime() - days * 86_400_000);
       const recent = await this.prisma.dailyChallenge.findMany({
@@ -313,7 +330,7 @@ export class CodingService implements OnApplicationBootstrap {
       return this.prisma.codingProblem.findMany({
         where: {
           active: true,
-          level: { in: setting.allowedLevels },
+          level: levelSlot,
           id: { notIn: recent.map((x) => x.problemId) },
         },
       });
@@ -336,7 +353,7 @@ export class CodingService implements OnApplicationBootstrap {
           metadata: {
             configuredDays: setting.repeatExclusionDays,
             effectiveDays: days,
-            allowedLevels: setting.allowedLevels,
+            level: levelSlot,
           },
         });
         break;
@@ -351,25 +368,26 @@ export class CodingService implements OnApplicationBootstrap {
         data: admins.map((admin) => ({
           userId: admin.id,
           type: 'IMPORT_ERROR' as const,
-          title: '오늘의 문제 후보 없음',
-          message: `레벨 ${setting.allowedLevels.join(', ')}과 ${setting.repeatExclusionDays}일 제외 조건을 만족하는 문제가 없습니다.`,
+          title: `오늘의 Lv. ${levelSlot} 문제 후보 없음`,
+          message: `레벨 ${levelSlot}과 ${setting.repeatExclusionDays}일 제외 조건을 만족하는 문제가 없습니다.`,
           href: '/admin',
         })),
       });
       throw new ServiceUnavailableException(
-        '오늘의 문제 후보가 없습니다. 관리자 설정을 확인하세요.',
+        `오늘의 Lv. ${levelSlot} 문제 후보가 없습니다. 관리자 설정을 확인하세요.`,
       );
     }
-    const seed = kstDate.toISOString().slice(0, 10);
+    const seed = `${kstDate.toISOString().slice(0, 10)}:level-${levelSlot}`;
     const selected = selectDeterministicProblem(candidates, seed);
     if (!selected) throw new ServiceUnavailableException();
     try {
       const created = await this.prisma.dailyChallenge.create({
         data: {
           kstDate,
+          levelSlot,
           problemId: selected.id,
           candidateCount: candidates.length,
-          allowedLevels: setting.allowedLevels,
+          allowedLevels: [levelSlot],
           repeatWindowDays: effectiveRepeatDays,
           selectionSeed: createHash('sha256').update(seed).digest('hex').slice(0, 16),
           selectionReason:
@@ -388,14 +406,14 @@ export class CodingService implements OnApplicationBootstrap {
           userId: user.id,
           type: 'DAILY_CHALLENGE' as const,
           title: '오늘의 코딩테스트',
-          message: selected.displayTitle,
+          message: `Lv. ${levelSlot} · ${selected.displayTitle}`,
           href: '/coding',
         })),
       });
       return created;
     } catch (error) {
       const winner = await this.prisma.dailyChallenge.findUnique({
-        where: { kstDate },
+        where: { kstDate_levelSlot: { kstDate, levelSlot } },
         include: { problem: true },
       });
       if (winner) return winner;
@@ -418,16 +436,17 @@ export class CodingService implements OnApplicationBootstrap {
     if (confirmKstDate !== dateKey)
       throw new BadRequestException(`확인 날짜로 ${dateKey}를 입력해야 합니다.`);
     const current = await this.prisma.dailyChallenge.findUnique({
-      where: { kstDate },
+      where: { kstDate_levelSlot: { kstDate, levelSlot: 1 } },
       include: { problem: true, _count: { select: { participations: true } } },
     });
     if (!current) throw new NotFoundException('오늘의 문제가 아직 생성되지 않았습니다.');
     if (current._count.participations > 0)
       throw new BadRequestException('참여 기록이 생긴 뒤에는 오늘의 문제를 재선정할 수 없습니다.');
     const next = await this.prisma.codingProblem.findFirst({
-      where: { id: problemId, active: true },
+      where: { id: problemId, active: true, level: current.levelSlot },
     });
-    if (!next) throw new NotFoundException('활성 문제를 찾을 수 없습니다.');
+    if (!next)
+      throw new NotFoundException(`활성 Lv. ${current.levelSlot} 문제를 찾을 수 없습니다.`);
     if (next.id === current.problemId) throw new BadRequestException('현재 문제와 동일합니다.');
     const updated = await this.prisma.dailyChallenge.update({
       where: { id: current.id },

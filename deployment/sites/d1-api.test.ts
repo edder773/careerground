@@ -42,6 +42,7 @@ class SqliteD1 implements D1Database {
       'drizzle/0002_equal_hulk.sql',
       'drizzle/0003_import_careerground_catalog.sql',
       'drizzle/0004_melodic_xavin.sql',
+      'drizzle/0005_naive_blindfold.sql',
     ]) {
       const migration = readFileSync(file, 'utf8');
       for (const statement of migration.split('--> statement-breakpoint')) {
@@ -295,7 +296,28 @@ describe('Sites D1 API', () => {
     expect(invalid.response.status).toBe(400);
   });
 
+  it('returns start, deadline, and rolling schedule data for calendar rendering', async () => {
+    const calendar = await call(
+      '/api/v1/jobs?calendar=true&sort=deadline&deadlineFrom=2026-07-31T15%3A00%3A00.000Z&deadlineTo=2026-08-31T15%3A00%3A00.000Z',
+    );
+    const rows = calendar.body as unknown as Array<{
+      collectedAt: string;
+      deadlineAt: string | null;
+      rolling: boolean;
+    }>;
+    expect(calendar.response.status).toBe(200);
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.some((row) => row.rolling)).toBe(true);
+    expect(rows.some((row) => Boolean(row.collectedAt))).toBe(true);
+    expect(rows.some((row) => Boolean(row.deadlineAt))).toBe(true);
+  });
+
   it('persists coding progress, solution, reaction, and comment', async () => {
+    const challenges = await call('/api/v1/coding/daily-challenges');
+    expect(challenges.body).toEqual([
+      expect.objectContaining({ levelSlot: 1, problem: expect.objectContaining({ level: 1 }) }),
+      expect.objectContaining({ levelSlot: 2, problem: expect.objectContaining({ level: 2 }) }),
+    ]);
     const challenge = await call('/api/v1/coding/daily-challenge');
     const daily = challenge.body as unknown as { id: string; problem: { id: string } };
     expect(daily.problem.id).toBeTruthy();
@@ -337,6 +359,12 @@ describe('Sites D1 API', () => {
   });
 
   it('persists learning review state and returns searchable data', async () => {
+    const reconstructed = await db
+      .prepare(
+        "SELECT COUNT(*) AS count FROM learning_units WHERE source_id = 'source-generative-ai-context'",
+      )
+      .first<{ count: number }>();
+    expect(reconstructed?.count).toBe(6);
     const imported = await call('/api/v1/learning/import/commit', {
       method: 'POST',
       body: JSON.stringify({

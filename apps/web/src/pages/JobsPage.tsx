@@ -11,8 +11,9 @@ import {
   Globe2,
   List,
   MapPin,
+  X,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FolderSaveButton } from '../components/FolderSaveButton';
 import { api, json } from '../lib/api';
 
@@ -23,6 +24,8 @@ type Job = {
   region: string;
   remote: boolean;
   techStack: string[];
+  publishedAt?: string;
+  collectedAt?: string;
   deadlineAt?: string;
   rolling: boolean;
   summary: string;
@@ -33,6 +36,8 @@ type Job = {
 };
 
 type ViewMode = 'calendar' | 'list';
+type CalendarEventType = 'start' | 'deadline';
+type CalendarEvent = { job: Job; type: CalendarEventType };
 
 const KOREA_OFFSET_MS = 9 * 60 * 60 * 1000;
 const sizeLabels: Record<string, string> = {
@@ -55,6 +60,10 @@ const applicationLabels: Record<string, string> = {
   ON_HOLD: '보류',
 };
 const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
+const calendarEventLabels: Record<CalendarEventType, string> = {
+  start: '시작일',
+  deadline: '마감일',
+};
 
 function monthStart(date = new Date()) {
   return new Date(Date.UTC(date.getFullYear(), date.getMonth(), 1));
@@ -124,6 +133,10 @@ function deadlineLabel(value?: string) {
   }).format(new Date(value));
 }
 
+function startDate(job: Job) {
+  return job.publishedAt || job.collectedAt;
+}
+
 function SourceDetails({ job, compact = false }: { job: Job; compact?: boolean }) {
   return (
     <div className={`job-source ${compact ? 'compact' : ''}`}>
@@ -134,6 +147,94 @@ function SourceDetails({ job, compact = false }: { job: Job; compact?: boolean }
       </div>
       <span className="job-source-host">{sourceHost(job.sourceUrl)}</span>
       <span className="job-source-latest">최신일 {latestLabel(job.source.lastSuccessAt)}</span>
+    </div>
+  );
+}
+
+function JobDetailModal({ job, onClose }: { job: Job; onClose: () => void }) {
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [onClose]);
+
+  return (
+    <div
+      className="job-modal-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.currentTarget === event.target) onClose();
+      }}
+    >
+      <section
+        className="job-detail-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="job-detail-title"
+      >
+        <header>
+          <div className="company-tile">
+            <Building2 aria-hidden="true" />
+          </div>
+          <div>
+            <span>{sizeLabels[job.company.size] || job.company.size}</span>
+            <h2 id="job-detail-title">{job.company.name}</h2>
+          </div>
+          <button
+            type="button"
+            className="job-modal-close"
+            onClick={onClose}
+            aria-label="닫기"
+            autoFocus
+          >
+            <X />
+          </button>
+        </header>
+        <div className="job-modal-body">
+          <div className="job-modal-title">
+            <span>{job.category}</span>
+            <h3>{job.title}</h3>
+            <p>{job.summary}</p>
+          </div>
+          <div className="job-modal-schedule" aria-label="채용 일정">
+            <div className="schedule-start">
+              <span>시작일</span>
+              <strong>{startDate(job) ? deadlineLabel(startDate(job)) : '확인 필요'}</strong>
+            </div>
+            {job.rolling ? (
+              <div className="schedule-rolling">
+                <span>상시</span>
+                <strong>채용 완료 시까지</strong>
+              </div>
+            ) : (
+              <div className="schedule-deadline">
+                <span>마감일</span>
+                <strong>{deadlineLabel(job.deadlineAt)}</strong>
+              </div>
+            )}
+          </div>
+          <div className="job-modal-meta">
+            <span>
+              <MapPin aria-hidden="true" /> {job.region}
+            </span>
+            {job.remote && <span>재택 가능</span>}
+          </div>
+          <div className="tag-row">
+            {job.techStack.map((tech) => (
+              <span key={tech}>{tech}</span>
+            ))}
+          </div>
+          <SourceDetails job={job} />
+        </div>
+        <footer>
+          <FolderSaveButton itemType="JOB_POSTING" targetId={job.id} label={job.title} />
+          <a href={job.sourceUrl} target="_blank" rel="noreferrer">
+            {job.source.name}에서 보기 <ExternalLink />
+          </a>
+        </footer>
+      </section>
     </div>
   );
 }
@@ -159,7 +260,9 @@ export function JobsPage() {
     ...(companySize ? { companySize } : {}),
     ...(category ? { category } : {}),
     sort: viewMode === 'calendar' ? 'deadline' : sort,
-    ...(viewMode === 'calendar' ? { deadlineFrom: bounds.from, deadlineTo: bounds.to } : {}),
+    ...(viewMode === 'calendar'
+      ? { calendar: 'true', deadlineFrom: bounds.from, deadlineTo: bounds.to }
+      : {}),
   }).toString();
   const jobs = useQuery({
     queryKey: [
@@ -195,14 +298,30 @@ export function JobsPage() {
     onSettled: () => client.invalidateQueries({ queryKey: ['jobs'] }),
   });
 
-  const jobsByDate = useMemo(() => {
-    const grouped = new Map<string, Job[]>();
+  const calendarData = useMemo(() => {
+    const grouped = new Map<string, CalendarEvent[]>();
+    const rollingJobs: Job[] = [];
     for (const job of jobs.data || []) {
-      if (!job.deadlineAt || job.rolling) continue;
-      const key = koreaDateKey(job.deadlineAt);
-      grouped.set(key, [...(grouped.get(key) || []), job]);
+      if (job.rolling) {
+        rollingJobs.push(job);
+        continue;
+      }
+      const startedAt = startDate(job);
+      if (startedAt) {
+        const key = koreaDateKey(startedAt);
+        grouped.set(key, [...(grouped.get(key) || []), { job, type: 'start' }]);
+      }
+      if (job.deadlineAt) {
+        const key = koreaDateKey(job.deadlineAt);
+        grouped.set(key, [...(grouped.get(key) || []), { job, type: 'deadline' }]);
+      }
     }
-    return grouped;
+    return {
+      eventsByDate: grouped,
+      rollingJobs,
+      eventCount:
+        rollingJobs.length + [...grouped.values()].reduce((sum, events) => sum + events.length, 0),
+    };
   }, [jobs.data]);
   const selectedJob = jobs.data?.find((job) => job.id === selectedJobId);
   const dates = calendarDates(visibleMonth);
@@ -222,7 +341,7 @@ export function JobsPage() {
             <CalendarDays size={15} /> 신입 채용 일정
           </span>
           <h1>신입 IT 채용공고</h1>
-          <p>마감일은 달력에서 한눈에, 상세 조건과 지원 상태는 목록에서 확인하세요.</p>
+          <p>시작일·마감일·상시채용을 달력에서 구분하고, 지원 상태는 목록에서 관리하세요.</p>
         </div>
         <div className="jobs-view-switch" role="group" aria-label="채용공고 보기 방식">
           <button
@@ -288,7 +407,7 @@ export function JobsPage() {
         <section className="job-calendar-panel" aria-label={`${monthLabel} 신입 채용 달력`}>
           <header className="job-calendar-header">
             <div>
-              <span>{jobs.data?.length || 0}개 마감 일정</span>
+              <span>{calendarData.eventCount}개 채용 일정</span>
               <h2>{monthLabel}</h2>
             </div>
             <nav aria-label="달력 월 이동">
@@ -311,6 +430,31 @@ export function JobsPage() {
               </button>
             </nav>
           </header>
+          <div className="job-calendar-legend" aria-label="일정 색상 안내">
+            <span className="schedule-start">시작일</span>
+            <span className="schedule-deadline">마감일</span>
+            <span className="schedule-rolling">상시</span>
+          </div>
+          {calendarData.rollingJobs.length > 0 && (
+            <section className="rolling-job-rail" aria-label="상시 채용 공고">
+              <strong>상시 채용</strong>
+              <div>
+                {calendarData.rollingJobs.map((job) => (
+                  <button
+                    type="button"
+                    key={job.id}
+                    className="schedule-rolling"
+                    onClick={() => setSelectedJobId(job.id)}
+                    aria-label={`${job.company.name} ${job.title} 상시 채용 상세 보기`}
+                  >
+                    <span>상시</span>
+                    <b>{job.company.name}</b>
+                    <small>{job.title}</small>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
           <p className="calendar-scroll-hint">좌우로 밀어 전체 달력을 볼 수 있어요.</p>
           <div className="job-calendar-scroll">
             <div className="job-calendar">
@@ -321,7 +465,7 @@ export function JobsPage() {
               </div>
               <div className="calendar-grid">
                 {dates.map((item) => {
-                  const dayJobs = jobsByDate.get(item.key) || [];
+                  const dayEvents = calendarData.eventsByDate.get(item.key) || [];
                   return (
                     <div
                       key={item.key}
@@ -330,21 +474,21 @@ export function JobsPage() {
                     >
                       <time dateTime={item.key}>{item.date.getUTCDate()}</time>
                       <div className="calendar-events">
-                        {dayJobs.slice(0, 3).map((job, index) => (
+                        {dayEvents.slice(0, 4).map(({ job, type }) => (
                           <button
                             type="button"
-                            key={job.id}
-                            className={`calendar-job event-color-${index % 4} ${selectedJobId === job.id ? 'selected' : ''}`}
-                            title={`${job.company.name} · ${job.title}`}
-                            aria-label={`${job.company.name} ${job.title} 상세 보기`}
+                            key={`${job.id}-${type}`}
+                            className={`calendar-job schedule-${type} ${selectedJobId === job.id ? 'selected' : ''}`}
+                            title={`${calendarEventLabels[type]} · ${job.company.name} · ${job.title}`}
+                            aria-label={`${job.company.name} ${job.title} ${calendarEventLabels[type]} 상세 보기`}
                             onClick={() => setSelectedJobId(job.id)}
                           >
+                            <span>{calendarEventLabels[type]}</span>
                             <strong>{job.company.name}</strong>
-                            <span>{job.title}</span>
                           </button>
                         ))}
-                        {dayJobs.length > 3 && (
-                          <span className="calendar-more">+{dayJobs.length - 3}개</span>
+                        {dayEvents.length > 4 && (
+                          <span className="calendar-more">+{dayEvents.length - 4}개</span>
                         )}
                       </div>
                     </div>
@@ -353,42 +497,20 @@ export function JobsPage() {
               </div>
             </div>
           </div>
-          {jobs.data?.length === 0 && (
+          {calendarData.eventCount === 0 && (
             <div className="calendar-empty">
               <CalendarClock />
               <div>
-                <strong>{monthLabel}에 마감하는 공고가 없습니다.</strong>
+                <strong>{monthLabel}에 표시할 채용 일정이 없습니다.</strong>
                 <span>다른 달로 이동하거나 필터 범위를 넓혀보세요.</span>
               </div>
             </div>
           )}
-          {selectedJob && (
-            <article className="calendar-job-detail" aria-live="polite">
-              <div className="company-tile">
-                <Building2 aria-hidden="true" />
-              </div>
-              <div>
-                <span className="calendar-detail-deadline">
-                  {deadlineLabel(selectedJob.deadlineAt)} 마감
-                </span>
-                <h3>{selectedJob.company.name}</h3>
-                <strong>{selectedJob.title}</strong>
-                <p>{selectedJob.summary}</p>
-                <SourceDetails job={selectedJob} compact />
-              </div>
-              <div className="calendar-detail-actions">
-                <FolderSaveButton
-                  itemType="JOB_POSTING"
-                  targetId={selectedJob.id}
-                  label={selectedJob.title}
-                />
-                <a href={selectedJob.sourceUrl} target="_blank" rel="noreferrer">
-                  {selectedJob.source.name}에서 보기 <ExternalLink />
-                </a>
-              </div>
-            </article>
-          )}
         </section>
+      )}
+
+      {selectedJob && (
+        <JobDetailModal job={selectedJob} onClose={() => setSelectedJobId(undefined)} />
       )}
 
       {viewMode === 'list' && (

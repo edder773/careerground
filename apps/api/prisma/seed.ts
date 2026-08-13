@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { learningImportSchema } from '@careerground/contracts';
 import { PrismaClient } from '../src/generated/prisma/client.js';
 
 const connectionString =
@@ -11,6 +13,55 @@ const connectionString =
 if (!connectionString) throw new Error('production seed requires DATABASE_URL');
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 const sha = (value: string) => createHash('sha256').update(value).digest('hex');
+
+async function seedPromptContextLearning(adminId: string) {
+  const file = new URL(
+    '../../../data/imports/generative_ai_prompt_context_learning.json',
+    import.meta.url,
+  );
+  const parsed = learningImportSchema.parse(JSON.parse(await readFile(file, 'utf8')));
+  const existing = await prisma.learningSourceVersion.findUnique({
+    where: { sha256: parsed.source.checksum },
+  });
+  if (existing) return;
+
+  await prisma.learningSource.create({
+    data: {
+      title: parsed.source.title,
+      subject: parsed.source.subject,
+      category: parsed.source.category,
+      status: 'READY',
+      publishedById: adminId,
+      versions: {
+        create: {
+          version: parsed.source.sourceVersion,
+          sha256: parsed.source.checksum,
+          extractionMeta: { reconstructedForLearning: true },
+        },
+      },
+      units: {
+        create: parsed.units.map((unit, position) => ({
+          anchor: unit.anchor,
+          title: unit.title,
+          summary: unit.summaryMarkdown,
+          concepts: unit.concepts,
+          position,
+          published: true,
+          revisions: { create: { revision: 1, markdown: unit.summaryMarkdown } },
+          flashcards: { create: unit.flashcards },
+          questions: {
+            create: unit.questions.map((question) => ({
+              type: question.type,
+              prompt: question.prompt,
+              answer: question.answer,
+              choices: question.choices || [],
+            })),
+          },
+        })),
+      },
+    },
+  });
+}
 
 const kstDate = (date = new Date()) => {
   const value = new Intl.DateTimeFormat('en-CA', {
@@ -92,6 +143,8 @@ async function main() {
       onboardingCompletedAt: new Date(),
     },
   });
+
+  await seedPromptContextLearning(admin.id);
 
   const source = await prisma.jobSource.upsert({
     where: { name: 'CareerGround Demo Source' },
@@ -248,27 +301,35 @@ async function main() {
       },
     });
 
-  const challenge = await prisma.dailyChallenge.upsert({
-    where: { kstDate: kstDate() },
-    create: {
-      kstDate: kstDate(),
-      problemId: problems[1]!.id,
-      candidateCount: problems.length,
-      allowedLevels: [1, 2],
-      repeatWindowDays: 60,
-      selectionSeed: sha(kstDate().toISOString()).slice(0, 16),
-      selectionReason: 'deterministic development seed',
-    },
-    update: {},
-  });
+  const today = kstDate();
+  const challenges = await Promise.all(
+    [1, 2].map((levelSlot) => {
+      const problem = problems.find((item) => item.level === levelSlot);
+      if (!problem) throw new Error(`Lv. ${levelSlot} seed problem is required`);
+      return prisma.dailyChallenge.upsert({
+        where: { kstDate_levelSlot: { kstDate: today, levelSlot } },
+        create: {
+          kstDate: today,
+          levelSlot,
+          problemId: problem.id,
+          candidateCount: problems.filter((item) => item.level === levelSlot).length,
+          allowedLevels: [levelSlot],
+          repeatWindowDays: 60,
+          selectionSeed: sha(`${today.toISOString()}:level-${levelSlot}`).slice(0, 16),
+          selectionReason: 'deterministic development seed',
+        },
+        update: {},
+      });
+    }),
+  );
   await prisma.dailyChallengeSetting.upsert({
     where: { id: 1 },
     create: { id: 1, allowedLevels: [1, 2], repeatExclusionDays: 60 },
     update: {},
   });
   await prisma.dailyChallengeParticipation.upsert({
-    where: { challengeId_userId: { challengeId: challenge.id, userId: member.id } },
-    create: { challengeId: challenge.id, userId: member.id, completedAt: new Date() },
+    where: { challengeId_userId: { challengeId: challenges[0]!.id, userId: member.id } },
+    create: { challengeId: challenges[0]!.id, userId: member.id, completedAt: new Date() },
     update: { completedAt: new Date() },
   });
 

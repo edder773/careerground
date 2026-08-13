@@ -326,46 +326,53 @@ const kstDate = () =>
     day: '2-digit',
   }).format(new Date());
 
-async function dailyChallenge(db: D1Database, userId: string) {
+async function dailyChallenge(db: D1Database, userId: string, levelSlot = 1) {
   const today = kstDate();
-  let challenge = await first<{ id: string; problemId: string; createdAt: string }>(
+  let challenge = await first<{
+    id: string;
+    problemId: string;
+    levelSlot: number;
+    createdAt: string;
+  }>(
     db,
-    `SELECT id, problem_id AS problemId, created_at AS createdAt
-       FROM daily_challenges WHERE kst_date = ?`,
+    `SELECT id, problem_id AS problemId, level_slot AS levelSlot, created_at AS createdAt
+       FROM daily_challenges WHERE kst_date = ? AND level_slot = ?`,
     today,
+    levelSlot,
   );
   if (!challenge) {
-    const setting = await first<{ allowedLevels: string }>(
-      db,
-      'SELECT allowed_levels AS allowedLevels FROM daily_challenge_settings WHERE id = 1',
-    );
-    const allowed = parseArray(setting?.allowedLevels || '[1,2]')
-      .map(Number)
-      .filter(Number.isFinite);
-    const placeholders = allowed.map(() => '?').join(',') || '1,2';
     const candidates = await all<{ id: string }>(
       db,
-      `SELECT id FROM coding_problems WHERE active = 1 AND level IN (${placeholders}) ORDER BY position, id`,
-      ...allowed,
+      'SELECT id FROM coding_problems WHERE active = 1 AND level = ? ORDER BY position, id',
+      levelSlot,
     );
-    if (!candidates.length) throw new RouteError(404, '오늘의 문제 후보가 없습니다.');
-    const seed = [...today].reduce((sum, character) => sum + character.charCodeAt(0), 0);
+    if (!candidates.length)
+      throw new RouteError(404, `오늘의 Lv. ${levelSlot} 문제 후보가 없습니다.`);
+    const seed =
+      [...today].reduce((sum, character) => sum + character.charCodeAt(0), 0) + levelSlot * 31;
     const selected = candidates[seed % candidates.length];
     const timestamp = nowIso();
     const id = newId();
     await run(
       db,
-      'INSERT OR IGNORE INTO daily_challenges (id, kst_date, problem_id, created_at) VALUES (?, ?, ?, ?)',
+      'INSERT OR IGNORE INTO daily_challenges (id, kst_date, level_slot, problem_id, created_at) VALUES (?, ?, ?, ?, ?)',
       id,
       today,
+      levelSlot,
       selected.id,
       timestamp,
     );
-    challenge = await first<{ id: string; problemId: string; createdAt: string }>(
+    challenge = await first<{
+      id: string;
+      problemId: string;
+      levelSlot: number;
+      createdAt: string;
+    }>(
       db,
-      `SELECT id, problem_id AS problemId, created_at AS createdAt
-         FROM daily_challenges WHERE kst_date = ?`,
+      `SELECT id, problem_id AS problemId, level_slot AS levelSlot, created_at AS createdAt
+         FROM daily_challenges WHERE kst_date = ? AND level_slot = ?`,
       today,
+      levelSlot,
     );
   }
   if (!challenge) throw new RouteError(500, '오늘의 문제를 준비하지 못했습니다.');
@@ -395,6 +402,10 @@ async function dailyChallenge(db: D1Database, userId: string) {
       }
     : problem;
   return { ...challenge, problem: problemValue };
+}
+
+async function dailyChallenges(db: D1Database, userId: string) {
+  return Promise.all([1, 2].map((levelSlot) => dailyChallenge(db, userId, levelSlot)));
 }
 
 type SolutionRow = {
@@ -538,6 +549,7 @@ async function jobList(db: D1Database, userId: string, url: URL) {
   }
   const deadlineFrom = url.searchParams.get('deadlineFrom');
   const deadlineTo = url.searchParams.get('deadlineTo');
+  const calendar = url.searchParams.get('calendar') === 'true';
   const deadlineFromTime = deadlineFrom ? Date.parse(deadlineFrom) : undefined;
   const deadlineToTime = deadlineTo ? Date.parse(deadlineTo) : undefined;
   if (
@@ -549,13 +561,24 @@ async function jobList(db: D1Database, userId: string, url: URL) {
   ) {
     throw new RouteError(400, '올바른 마감일 조회 범위가 필요합니다.');
   }
-  if (deadlineFrom) {
-    clauses.push('j.deadline_at >= ?');
-    values.push(new Date(deadlineFrom).toISOString());
-  }
-  if (deadlineTo) {
-    clauses.push('j.deadline_at < ?');
-    values.push(new Date(deadlineTo).toISOString());
+  if (calendar && deadlineFrom && deadlineTo) {
+    const from = new Date(deadlineFrom).toISOString();
+    const to = new Date(deadlineTo).toISOString();
+    clauses.push(`(
+      (j.deadline_at >= ? AND j.deadline_at < ?)
+      OR (COALESCE(j.collected_at, j.created_at) >= ? AND COALESCE(j.collected_at, j.created_at) < ?)
+      OR j.rolling = 1
+    )`);
+    values.push(from, to, from, to);
+  } else {
+    if (deadlineFrom) {
+      clauses.push('j.deadline_at >= ?');
+      values.push(new Date(deadlineFrom).toISOString());
+    }
+    if (deadlineTo) {
+      clauses.push('j.deadline_at < ?');
+      values.push(new Date(deadlineTo).toISOString());
+    }
   }
   const order =
     url.searchParams.get('sort') === 'deadline'
@@ -576,10 +599,10 @@ async function jobList(db: D1Database, userId: string, url: URL) {
   const rows = await all<Record<string, unknown>>(
     db,
     `SELECT j.id, j.title, j.category, j.region, j.remote, j.tech_stack,
-            j.deadline_at, j.rolling, j.summary, j.source_url, j.company_name,
+            j.collected_at, j.deadline_at, j.rolling, j.summary, j.source_url, j.company_name,
             j.company_size, j.source_name, j.last_verified_at,
             sj.status AS savedStatus, sj.memo AS savedMemo
-       FROM jobs j INDEXED BY ${indexName}
+       FROM jobs j ${calendar ? '' : `INDEXED BY ${indexName}`}
        LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ?
       WHERE ${clauses.join(' AND ')}
       ORDER BY ${order} LIMIT 100`,
@@ -592,6 +615,8 @@ async function jobList(db: D1Database, userId: string, url: URL) {
     region: row.region,
     remote: asBoolean(row.remote),
     techStack: parseArray(row.tech_stack),
+    publishedAt: null,
+    collectedAt: row.collected_at,
     deadlineAt: row.deadline_at,
     rolling: asBoolean(row.rolling),
     summary: row.summary,
@@ -1460,6 +1485,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     return { problemId: progressMatch[1], status };
   }
   if (method === 'GET' && path === '/coding/daily-challenge') return dailyChallenge(db, user.id);
+  if (method === 'GET' && path === '/coding/daily-challenges') return dailyChallenges(db, user.id);
   const completeMatch = path.match(/^\/coding\/daily-challenge\/([^/]+)\/complete$/);
   if (completeMatch && method === 'POST') {
     const timestamp = nowIso();

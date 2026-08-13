@@ -26,7 +26,7 @@ test('captures responsive home screenshots and has no serious accessibility viol
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.reload();
     await expect(page.getByRole('heading', { name: '내 폴더', level: 1 })).toBeVisible();
-    await expect(page.locator('.today-feature strong')).not.toContainText('준비하는 중');
+    await expect(page.locator('.today-problem-list a')).toHaveCount(2);
     await page.screenshot({
       path: `test-results/visual/home-${viewport.name}.png`,
       fullPage: false,
@@ -73,6 +73,32 @@ test('captures core domain screens', async ({ page }) => {
       path: `test-results/visual/${screen.name}-desktop.png`,
       fullPage: true,
     });
+    if (screen.name === 'coding') {
+      const daily = page.getByRole('region', { name: '오늘의 문제 2개' });
+      await daily.getByRole('button', { name: '풀이 기록' }).first().click();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.screenshot({
+        path: 'test-results/visual/coding-editor-desktop-1440.png',
+        fullPage: false,
+      });
+      await page.getByRole('button', { name: '닫기' }).click();
+    }
+    if (screen.name === 'learning') {
+      const promptLearning = page
+        .locator('.learning-source')
+        .filter({ hasText: '생성형 AI 실전: Prompt와 Context Engineering' });
+      await expect(promptLearning).toBeVisible();
+      await promptLearning
+        .getByRole('button', { name: /학습 시작|다시 학습/ })
+        .first()
+        .click();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.screenshot({
+        path: 'test-results/visual/learning-module-desktop-1440.png',
+        fullPage: false,
+      });
+      await page.getByRole('button', { name: '닫기' }).click();
+    }
     if (screen.name === 'jobs') {
       await page.getByRole('button', { name: '달력' }).click();
       await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
@@ -81,6 +107,13 @@ test('captures core domain screens', async ({ page }) => {
         path: 'test-results/visual/jobs-calendar-desktop-1440.png',
         fullPage: true,
       });
+      await page.locator('.calendar-job').first().click();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.screenshot({
+        path: 'test-results/visual/jobs-calendar-modal-desktop-1440.png',
+        fullPage: false,
+      });
+      await page.getByRole('button', { name: '닫기' }).click();
     }
   }
   await page.setViewportSize({ width: 375, height: 812 });
@@ -94,6 +127,41 @@ test('captures core domain screens', async ({ page }) => {
   await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
   await page.screenshot({
     path: 'test-results/visual/jobs-calendar-mobile-375.png',
+    fullPage: false,
+  });
+  await page.locator('.calendar-job').first().click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.screenshot({
+    path: 'test-results/visual/jobs-calendar-modal-mobile-375.png',
+    fullPage: false,
+  });
+  await page.getByRole('button', { name: '닫기' }).click();
+
+  await page.goto('/learning');
+  const promptLearning = page
+    .locator('.learning-source')
+    .filter({ hasText: '생성형 AI 실전: Prompt와 Context Engineering' });
+  await expect(promptLearning).toBeVisible();
+  await promptLearning
+    .getByRole('button', { name: /학습 시작|다시 학습/ })
+    .first()
+    .click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.screenshot({
+    path: 'test-results/visual/learning-module-mobile-375.png',
+    fullPage: false,
+  });
+  await page.getByRole('button', { name: '닫기' }).click();
+
+  await page.goto('/coding');
+  await page
+    .getByRole('region', { name: '오늘의 문제 2개' })
+    .getByRole('button', { name: '풀이 기록' })
+    .first()
+    .click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.screenshot({
+    path: 'test-results/visual/coding-editor-mobile-375.png',
     fullPage: false,
   });
 });

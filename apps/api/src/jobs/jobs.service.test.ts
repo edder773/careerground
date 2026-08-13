@@ -49,6 +49,43 @@ describe('JobsService list', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
+  it('includes starts, deadlines, and rolling jobs in calendar queries', async () => {
+    const { jobs, findMany } = service();
+    await jobs.list('user-id', {
+      calendar: true,
+      deadlineFrom: '2026-08-31T15:00:00.000Z',
+      deadlineTo: '2026-09-30T15:00:00.000Z',
+    });
+
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          OR: [
+            {
+              deadlineAt: {
+                gte: new Date('2026-08-31T15:00:00.000Z'),
+                lt: new Date('2026-09-30T15:00:00.000Z'),
+              },
+            },
+            {
+              publishedAt: {
+                gte: new Date('2026-08-31T15:00:00.000Z'),
+                lt: new Date('2026-09-30T15:00:00.000Z'),
+              },
+            },
+            {
+              collectedAt: {
+                gte: new Date('2026-08-31T15:00:00.000Z'),
+                lt: new Date('2026-09-30T15:00:00.000Z'),
+              },
+            },
+            { rolling: true },
+          ],
+        }),
+      }),
+    );
+  });
+
   it('returns distinct active entry-level categories', async () => {
     const findMany = vi.fn().mockResolvedValue([{ category: 'AI 풀스택 개발' }]);
     const prisma = { jobPosting: { findMany } } as unknown as PrismaService;

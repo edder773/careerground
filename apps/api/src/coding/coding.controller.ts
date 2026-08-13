@@ -137,6 +137,11 @@ export class CodingController {
     return this.coding.ensureTodayChallenge();
   }
 
+  @Get('daily-challenges')
+  dailyChallenges() {
+    return this.coding.ensureTodayChallenges();
+  }
+
   @Post('daily-challenge/:id/complete')
   complete(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.coding.completeChallenge(user.id, id);
@@ -164,7 +169,7 @@ export class CodingController {
   internalEnsure(@Headers('x-internal-secret') secret?: string) {
     if (!secret || secret !== process.env.INTERNAL_SERVICE_SECRET)
       throw new BadRequestException('invalid internal secret');
-    return this.coding.ensureTodayChallenge();
+    return this.coding.ensureTodayChallenges();
   }
 
   @Get('rankings')
@@ -183,6 +188,6 @@ export class DailyChallengeInternalController {
   ensure(@Headers('x-internal-secret') secret?: string) {
     if (!secret || secret !== process.env.INTERNAL_SERVICE_SECRET)
       throw new BadRequestException('invalid internal secret');
-    return this.coding.ensureTodayChallenge();
+    return this.coding.ensureTodayChallenges();
   }
 }

@@ -102,8 +102,8 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
       api<{ recentJobs: number; expiringJobs: number; dueReviews: number }>('/dashboard'),
   });
   const challenge = useQuery({
-    queryKey: ['daily-challenge'],
-    queryFn: () => api<Challenge>('/coding/daily-challenge'),
+    queryKey: ['daily-challenges'],
+    queryFn: () => api<Challenge[]>('/coding/daily-challenges'),
   });
   const [selected, setSelected] = useState<string>();
   const [creating, setCreating] = useState(false);
@@ -202,23 +202,22 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
           <div className="today-icon">
             <Code2 />
           </div>
-          <div>
+          <div className="today-problems">
             <span>오늘의 코딩테스트</span>
-            <strong>
-              {challenge.data?.problem.displayTitle ||
-                (challenge.isLoading ? '문제를 준비하는 중…' : '오늘의 문제를 확인해주세요')}
-            </strong>
-            <small>
-              {challenge.data
-                ? `Lv. ${challenge.data.problem.level} · 오늘 집중해서 풀어볼 문제`
-                : '잠시 후 다시 확인해주세요.'}
-            </small>
+            {challenge.isLoading && <strong>문제를 준비하는 중…</strong>}
+            {!challenge.isLoading && !challenge.data?.length && (
+              <strong>오늘의 문제를 확인해주세요</strong>
+            )}
+            <div className="today-problem-list">
+              {challenge.data?.map((item) => (
+                <a key={item.id} href={item.problem.sourceUrl} target="_blank" rel="noreferrer">
+                  <small>Lv. {item.problem.level}</small>
+                  <strong>{item.problem.displayTitle}</strong>
+                  <b>열기</b>
+                </a>
+              ))}
+            </div>
           </div>
-          {challenge.data && (
-            <a href={challenge.data.problem.sourceUrl} target="_blank" rel="noreferrer">
-              문제 열기
-            </a>
-          )}
         </article>
         <article>
           <BookOpen />

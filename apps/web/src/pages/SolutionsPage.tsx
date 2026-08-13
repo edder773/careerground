@@ -167,6 +167,7 @@ export function SolutionsPage() {
   const client = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const problemId = searchParams.get('problemId') || '';
+  const problemTitle = searchParams.get('title') || '';
   const [commenting, setCommenting] = useState<string>();
   const [replyingTo, setReplyingTo] = useState<string>();
   const [comment, setComment] = useState('');
@@ -203,7 +204,7 @@ export function SolutionsPage() {
           <span className="eyebrow">
             <Users size={15} /> 함께 보는 코드
           </span>
-          <h1>{problemId ? '문제별 풀이 기록' : '풀이 기록'}</h1>
+          <h1>{problemId ? `${problemTitle || '선택한 문제'} 다른 풀이` : '풀이 기록'}</h1>
           <p>기록된 코드를 비교하고 더 나은 접근 방법을 함께 찾아보세요.</p>
         </div>
         {problemId && (

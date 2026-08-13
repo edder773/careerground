@@ -21,6 +21,13 @@ type Problem = {
 type Challenge = { id: string; problemId: string; problem: Problem };
 type CodeLanguage = 'python' | 'java' | 'javascript' | 'cpp';
 
+function solutionsUrl(problem: Problem) {
+  return `/solutions?${new URLSearchParams({
+    problemId: problem.id,
+    title: problem.displayTitle,
+  }).toString()}`;
+}
+
 export function CodingPage() {
   const client = useQueryClient();
   const { user } = useAuth();
@@ -32,13 +39,21 @@ export function CodingPage() {
   useEffect(() => {
     if (user?.preferredLanguage) setLanguage(user.preferredLanguage);
   }, [user?.preferredLanguage]);
+  useEffect(() => {
+    if (!selected) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelected(undefined);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [selected]);
   const problems = useQuery({
     queryKey: ['problems', level],
     queryFn: () => api<Problem[]>(`/coding/problems${level ? `?level=${level}` : ''}`),
   });
   const challenge = useQuery({
-    queryKey: ['daily-challenge'],
-    queryFn: () => api<Challenge>('/coding/daily-challenge'),
+    queryKey: ['daily-challenges'],
+    queryFn: () => api<Challenge[]>('/coding/daily-challenges'),
   });
   const save = useMutation({
     mutationFn: async () => {
@@ -54,8 +69,10 @@ export function CodingPage() {
           solved: true,
         }),
       });
-      const activeChallenge = challenge.data;
-      if (activeChallenge && selected && activeChallenge.problem.id === selected.id) {
+      const activeChallenge = challenge.data?.find(
+        (item) => selected && item.problem.id === selected.id,
+      );
+      if (activeChallenge) {
         await api(`/coding/daily-challenge/${activeChallenge.id}/complete`, { method: 'POST' });
       }
       return solution;
@@ -79,8 +96,15 @@ export function CodingPage() {
     event.preventDefault();
     if (selected && code.trim()) save.mutate();
   };
-  const dailyId = challenge.data?.problem.id;
+  const dailyIds = useMemo(
+    () => new Set((challenge.data || []).map((item) => item.problem.id)),
+    [challenge.data],
+  );
   const list = useMemo(() => problems.data || [], [problems.data]);
+  const openEditor = (problem: Problem) => {
+    setSelected(problem);
+    progress.mutate(problem.id);
+  };
   return (
     <div>
       <section className="page-heading">
@@ -92,23 +116,42 @@ export function CodingPage() {
           <p>문제 원문은 프로그래머스에서 확인하고, 이곳에는 내 코드와 풀이만 기록합니다.</p>
         </div>
       </section>
-      {challenge.data && (
-        <section className="daily-hero">
-          <div>
+      {challenge.data && challenge.data.length > 0 && (
+        <section className="daily-hero daily-pair" aria-label="오늘의 문제 2개">
+          <header>
             <span>
               <Flame size={16} /> 오늘의 문제
             </span>
-            <h2>{challenge.data.problem.displayTitle}</h2>
-            <p>Lv. {challenge.data.problem.level} · 오늘 집중해서 풀어볼 문제입니다.</p>
+            <h2>Lv. 1부터 Lv. 2까지, 오늘 두 문제</h2>
+            <p>기본기를 먼저 풀고 한 단계 높은 문제로 이어가세요.</p>
+          </header>
+          <div className="daily-challenge-grid">
+            {challenge.data.map((item) => (
+              <article key={item.id}>
+                <span>Lv. {item.problem.level}</span>
+                <strong>{item.problem.displayTitle}</strong>
+                <div className="tag-row">
+                  {item.problem.tags.slice(0, 3).map((tag) => (
+                    <span key={tag}>{tag}</span>
+                  ))}
+                </div>
+                <div className="daily-challenge-actions">
+                  <a
+                    href={item.problem.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`${item.problem.displayTitle} 원본 열기`}
+                  >
+                    문제 열기 <ExternalLink />
+                  </a>
+                  <button type="button" onClick={() => openEditor(item.problem)}>
+                    풀이 기록
+                  </button>
+                  <Link to={solutionsUrl(item.problem)}>다른 풀이 보기</Link>
+                </div>
+              </article>
+            ))}
           </div>
-          <a
-            className="primary-button compact"
-            href={challenge.data.problem.sourceUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            원본 열기 <ExternalLink />
-          </a>
         </section>
       )}
       <div className="filter-bar">
@@ -130,10 +173,10 @@ export function CodingPage() {
       {problems.isError && <div className="error-panel">문제 목록을 불러오지 못했습니다.</div>}
       <div className="problem-grid">
         {list.map((problem) => (
-          <article key={problem.id} className={problem.id === dailyId ? 'daily' : ''}>
+          <article key={problem.id} className={dailyIds.has(problem.id) ? 'daily' : ''}>
             <div className="problem-top">
               <span className="level-pill">Lv. {problem.level}</span>
-              {problem.id === dailyId && <span className="today-pill">TODAY</span>}
+              {dailyIds.has(problem.id) && <span className="today-pill">TODAY</span>}
               <button aria-label="즐겨찾기">
                 <Star size={17} fill={problem.progress[0]?.favorite ? 'currentColor' : 'none'} />
               </button>
@@ -151,15 +194,8 @@ export function CodingPage() {
               <a href={problem.sourceUrl} target="_blank" rel="noreferrer">
                 원본 <ExternalLink />
               </a>
-              <button
-                onClick={() => {
-                  setSelected(problem);
-                  progress.mutate(problem.id);
-                }}
-              >
-                풀이 기록
-              </button>
-              <Link to={`/solutions?problemId=${problem.id}`}>다른 풀이 보기</Link>
+              <button onClick={() => openEditor(problem)}>풀이 기록</button>
+              <Link to={solutionsUrl(problem)}>다른 풀이 보기</Link>
               <FolderSaveButton
                 itemType="CODING_PROBLEM"
                 targetId={problem.id}
@@ -170,66 +206,79 @@ export function CodingPage() {
         ))}
       </div>
       {selected && (
-        <section className="editor-panel">
-          <div className="editor-heading">
-            <div>
-              <span>새 풀이</span>
-              <h2>{selected.displayTitle}</h2>
-            </div>
-            <button className="ghost-button" onClick={() => setSelected(undefined)}>
-              닫기
-            </button>
-          </div>
-          <form onSubmit={submit}>
-            <div className="form-row">
-              <label>
-                언어
-                <select
-                  value={language}
-                  onChange={(event) => setLanguage(event.target.value as CodeLanguage)}
-                >
-                  <option value="python">Python</option>
-                  <option value="java">Java</option>
-                  <option value="javascript">JavaScript</option>
-                  <option value="cpp">C++</option>
-                </select>
-              </label>
-              <p className="solution-visibility-note">
-                저장한 풀이는 다른 멤버도 바로 볼 수 있습니다.
-              </p>
-            </div>
-            <label>
-              코드
-              <div className="code-editor">
-                <CodeMirror
-                  value={code}
-                  height="260px"
-                  extensions={
-                    language === 'python'
-                      ? [python()]
-                      : language === 'javascript'
-                        ? [javascript()]
-                        : []
-                  }
-                  onChange={setCode}
-                />
+        <div
+          className="editor-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.currentTarget === event.target) setSelected(undefined);
+          }}
+        >
+          <section
+            className="editor-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="solution-editor-title"
+          >
+            <div className="editor-heading">
+              <div>
+                <span>새 풀이</span>
+                <h2 id="solution-editor-title">{selected.displayTitle}</h2>
               </div>
-            </label>
-            <label>
-              풀이 설명
-              <textarea
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
-                rows={5}
-                placeholder="접근 방식, 복잡도, 배운 점을 Markdown으로 남겨보세요."
-              />
-            </label>
-            {save.isError && <div className="form-error">{save.error.message}</div>}
-            <button className="primary-button" disabled={!code.trim() || save.isPending}>
-              <Save /> {save.isPending ? '저장 중…' : '해결 기록 저장'}
-            </button>
-          </form>
-        </section>
+              <button className="ghost-button" onClick={() => setSelected(undefined)} autoFocus>
+                닫기
+              </button>
+            </div>
+            <form onSubmit={submit}>
+              <div className="form-row">
+                <label>
+                  언어
+                  <select
+                    value={language}
+                    onChange={(event) => setLanguage(event.target.value as CodeLanguage)}
+                  >
+                    <option value="python">Python</option>
+                    <option value="java">Java</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="cpp">C++</option>
+                  </select>
+                </label>
+                <p className="solution-visibility-note">
+                  저장한 풀이는 다른 멤버도 바로 볼 수 있습니다.
+                </p>
+              </div>
+              <label>
+                코드
+                <div className="code-editor">
+                  <CodeMirror
+                    value={code}
+                    height="260px"
+                    extensions={
+                      language === 'python'
+                        ? [python()]
+                        : language === 'javascript'
+                          ? [javascript()]
+                          : []
+                    }
+                    onChange={setCode}
+                  />
+                </div>
+              </label>
+              <label>
+                풀이 설명
+                <textarea
+                  value={description}
+                  onChange={(event) => setDescription(event.target.value)}
+                  rows={5}
+                  placeholder="접근 방식, 복잡도, 배운 점을 Markdown으로 남겨보세요."
+                />
+              </label>
+              {save.isError && <div className="form-error">{save.error.message}</div>}
+              <button className="primary-button" disabled={!code.trim() || save.isPending}>
+                <Save /> {save.isPending ? '저장 중…' : '해결 기록 저장'}
+              </button>
+            </form>
+          </section>
+        </div>
       )}
     </div>
   );
