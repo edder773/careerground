@@ -3365,6 +3365,6 @@ ON CONFLICT(source_url) DO UPDATE SET
 INSERT OR IGNORE INTO import_batches
   (id, kind, checksum, original_count, rejected_count, created_at)
 VALUES
-  ('catalog-jobs-20260813', 'jobs', '2bdde4b5e9c86b0c4d6e49b1c7029ee34763082fafc87feccb9d5d0553c448d4', 120, 0, '2026-08-13T15:03:45+09:00');
+  ('catalog-jobs-20260813', 'jobs', 'd410700737d845d6226ab79e0d71a2822ee50d15282f5ae6befd9f15f8065d7e', 120, 0, '2026-08-13T15:03:45+09:00');
 --> statement-breakpoint
 PRAGMA optimize;

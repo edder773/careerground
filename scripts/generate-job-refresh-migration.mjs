@@ -109,7 +109,7 @@ ON CONFLICT(source_url) DO UPDATE SET
 statements.push(`INSERT OR IGNORE INTO import_batches
   (id, kind, checksum, original_count, rejected_count, created_at)
 VALUES
-  ('catalog-jobs-20260813', 'jobs', ${quote(hash(currentSource))}, ${current.items.length}, 0, ${quote(current.collectedAt)});`);
+  ('catalog-jobs-20260813', 'jobs', ${quote(hash(JSON.stringify(current)))}, ${current.items.length}, 0, ${quote(current.collectedAt)});`);
 statements.push('PRAGMA optimize;');
 
 await writeFile(migrationPath, `${statements.join(statementBreak)}\n`, 'utf8');
