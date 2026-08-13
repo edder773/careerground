@@ -117,13 +117,11 @@ export function CodingPage() {
         </div>
       </section>
       {challenge.data && challenge.data.length > 0 && (
-        <section className="daily-hero daily-pair" aria-label="오늘의 문제 2개">
+        <section className="daily-hero daily-pair" aria-label="오늘의 문제">
           <header>
             <span>
               <Flame size={16} /> 오늘의 문제
             </span>
-            <h2>Lv. 1부터 Lv. 2까지, 오늘 두 문제</h2>
-            <p>기본기를 먼저 풀고 한 단계 높은 문제로 이어가세요.</p>
           </header>
           <div className="daily-challenge-grid">
             {challenge.data.map((item) => (

@@ -470,7 +470,7 @@ export class CodingService implements OnApplicationBootstrap {
 
   async rankings() {
     const users = await this.prisma.user.findMany({
-      where: { isActive: true, deletedAt: null, role: 'MEMBER', rankingOptIn: true },
+      where: { isActive: true, deletedAt: null, role: 'MEMBER' },
       select: { id: true, displayName: true },
     });
     const solutions = await this.prisma.solution.findMany({

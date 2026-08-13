@@ -38,8 +38,7 @@ export function RankingPage() {
         <div>
           <strong>동점은 같은 순위로 표시합니다.</strong>
           <span>
-            코드가 있고 SOLVED인 문제를 사용자·문제별 한 번만 계산합니다. 관리자와 랭킹 미참여자는
-            제외됩니다.
+            모든 멤버의 SOLVED 풀이를 사용자·문제별 한 번만 자동 계산하며 관리자는 제외됩니다.
           </span>
         </div>
       </div>

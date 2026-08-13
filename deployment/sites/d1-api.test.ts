@@ -46,6 +46,7 @@ class SqliteD1 implements D1Database {
       'drizzle/0004_melodic_xavin.sql',
       'drizzle/0005_naive_blindfold.sql',
       'drizzle/0006_tense_iron_patriot.sql',
+      'drizzle/0007_learning_catalog_expansion.sql',
     ]) {
       const migration = readFileSync(file, 'utf8');
       for (const statement of migration.split('--> statement-breakpoint')) {
@@ -505,5 +506,41 @@ describe('Sites D1 API', () => {
 
     expect(learning.response.status).toBe(200);
     expect(learningQueries).toHaveLength(4);
+  });
+
+  it('publishes all reconstructed PDF learning sources to every signed-in member', async () => {
+    const adminLearning = await call('/api/v1/learning');
+    const memberLearning = await call('/api/v1/learning', {}, memberHeaders);
+    const titles = (adminLearning.body as unknown as Array<{ title: string }>).map(
+      (source) => source.title,
+    );
+
+    expect(titles).toEqual(
+      expect.arrayContaining([
+        '생성형 AI 실전: Prompt와 Context Engineering',
+        '데이터 분석 기초: 변수에서 가설검정까지',
+        '데이터 관계 읽기: 상관과 회귀',
+        '개발 입문: Git, 환경 구성, AI 코딩',
+      ]),
+    );
+    expect(memberLearning.body).toEqual(adminLearning.body);
+  });
+
+  it('automatically ranks members and does not expose export or deletion request routes', async () => {
+    await call('/api/v1/auth/me');
+    await call('/api/v1/auth/me', {}, memberHeaders);
+    await db
+      .prepare("UPDATE users SET ranking_opt_in = 0 WHERE email = 'member@example.test'")
+      .run();
+
+    const ranking = await call('/api/v1/coding/rankings');
+    expect(ranking.body).toMatchObject({
+      rows: expect.arrayContaining([expect.objectContaining({ displayName: 'Member User' })]),
+    });
+
+    const exportResponse = await call('/api/v1/auth/export');
+    const deletionResponse = await call('/api/v1/auth/delete-request', { method: 'POST' });
+    expect(exportResponse.response.status).toBe(404);
+    expect(deletionResponse.response.status).toBe(404);
   });
 });

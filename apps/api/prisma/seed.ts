@@ -14,11 +14,8 @@ if (!connectionString) throw new Error('production seed requires DATABASE_URL');
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 const sha = (value: string) => createHash('sha256').update(value).digest('hex');
 
-async function seedPromptContextLearning(adminId: string) {
-  const file = new URL(
-    '../../../data/imports/generative_ai_prompt_context_learning.json',
-    import.meta.url,
-  );
+async function seedLearningSource(adminId: string, fileName: string) {
+  const file = new URL(`../../../data/imports/${fileName}`, import.meta.url);
   const parsed = learningImportSchema.parse(JSON.parse(await readFile(file, 'utf8')));
   const existing = await prisma.learningSourceVersion.findUnique({
     where: { sha256: parsed.source.checksum },
@@ -82,7 +79,7 @@ async function main() {
       role: 'ADMIN',
       preferredLanguage: 'javascript',
       onboardingCompletedAt: new Date(),
-      rankingOptIn: false,
+      rankingOptIn: true,
       preference: { create: {} },
     },
     update: {
@@ -132,19 +129,26 @@ async function main() {
       displayName: '박비주얼',
       preferredLanguage: 'javascript',
       onboardingCompletedAt: new Date(),
-      rankingOptIn: false,
+      rankingOptIn: true,
       preference: { create: {} },
     },
     update: {
       displayName: '박비주얼',
       isActive: true,
-      rankingOptIn: false,
+      rankingOptIn: true,
       preferredLanguage: 'javascript',
       onboardingCompletedAt: new Date(),
     },
   });
 
-  await seedPromptContextLearning(admin.id);
+  for (const fileName of [
+    'generative_ai_prompt_context_learning.json',
+    'data_analysis_statistics_day1_learning.json',
+    'data_analysis_statistics_day2_learning.json',
+    'git_ai_environment_learning.json',
+  ]) {
+    await seedLearningSource(admin.id, fileName);
+  }
 
   const source = await prisma.jobSource.upsert({
     where: { name: 'CareerGround Demo Source' },

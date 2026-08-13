@@ -50,6 +50,13 @@
       "when": 1786590625663,
       "tag": "0006_tense_iron_patriot",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1786593600000,
+      "tag": "0007_learning_catalog_expansion",
+      "breakpoints": true
     }
   ]
 }

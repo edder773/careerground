@@ -268,8 +268,6 @@ async function profile(db: D1Database, userId: string) {
     githubUsername: row.githubUsername,
     preferredLanguage: row.preferredLanguage,
     onboardingCompleted: Boolean(row.onboardingCompletedAt),
-    rankingOptIn: asBoolean(row.rankingOptIn),
-    dataDeletionRequested: row.dataDeletionRequested,
     preference: {
       commentNotifications: asBoolean(row.commentNotifications),
       deadlineNotifications: asBoolean(row.deadlineNotifications),
@@ -1086,13 +1084,12 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     await run(
       db,
       `UPDATE users SET display_name = ?, avatar_url = ?, github_username = ?,
-         preferred_language = ?, ranking_opt_in = ?, comment_notifications = ?,
+         preferred_language = ?, ranking_opt_in = 1, comment_notifications = ?,
          deadline_notifications = ?, review_notifications = ?, updated_at = ? WHERE id = ?`,
       displayName,
       cleanText(body.avatarUrl) || null,
       cleanText(body.githubUsername) || null,
       preferredLanguage,
-      bool(body.rankingOptIn, true) ? 1 : 0,
       bool(body.commentNotifications, true) ? 1 : 0,
       bool(body.deadlineNotifications, true) ? 1 : 0,
       bool(body.reviewNotifications, true) ? 1 : 0,
@@ -1101,36 +1098,6 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     );
     await audit(db, user.id, 'PROFILE_UPDATED', 'User', user.id);
     return profile(db, user.id);
-  }
-  if (method === 'GET' && path === '/auth/export') {
-    const [userProfile, userCollections, notes, saved, solutions, learning] = await Promise.all([
-      profile(db, user.id),
-      collections(db, user.id),
-      all(db, 'SELECT * FROM notes WHERE user_id = ? AND deleted_at IS NULL', user.id),
-      all(db, 'SELECT * FROM saved_jobs WHERE user_id = ?', user.id),
-      all(db, 'SELECT * FROM solutions WHERE author_id = ? AND deleted_at IS NULL', user.id),
-      all(db, 'SELECT * FROM learning_progress WHERE user_id = ?', user.id),
-    ]);
-    return {
-      ...userProfile,
-      collections: userCollections,
-      notes,
-      savedJobs: saved,
-      solutions,
-      learningProgress: learning,
-    };
-  }
-  if (method === 'POST' && path === '/auth/delete-request') {
-    const timestamp = nowIso();
-    await run(
-      db,
-      'UPDATE users SET data_deletion_requested = ?, updated_at = ? WHERE id = ?',
-      timestamp,
-      timestamp,
-      user.id,
-    );
-    await audit(db, user.id, 'DATA_DELETION_REQUESTED', 'User', user.id);
-    return { id: user.id, dataDeletionRequested: timestamp };
   }
   if (method === 'GET' && path === '/auth/users') {
     requireAdmin(user);
@@ -1812,7 +1779,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
          FROM users u
          LEFT JOIN solutions s ON s.author_id = u.id AND s.deleted_at IS NULL
          LEFT JOIN daily_challenge_participations dp ON dp.user_id = u.id AND dp.completed_at IS NOT NULL
-        WHERE u.is_active = 1 AND u.role = 'MEMBER' AND u.ranking_opt_in = 1
+        WHERE u.is_active = 1 AND u.role = 'MEMBER'
         GROUP BY u.id, u.display_name ORDER BY score DESC, u.display_name`,
     );
     let rank = 0;
@@ -1937,39 +1904,6 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
   ) {
     return learningImport(db, user, await readJson(request), path.endsWith('/commit'));
   }
-  if (method === 'POST' && path === '/learning/sources/upload') {
-    requireAdmin(user);
-    const form = await request.formData();
-    const file = form.get('file');
-    if (!(file instanceof File)) throw new RouteError(400, '학습 원본 파일이 필요합니다.');
-    if (file.size > 20 * 1024 * 1024) throw new RouteError(400, '파일은 20MB 이하여야 합니다.');
-    const timestamp = nowIso();
-    const id = newId();
-    const status = [
-      'application/pdf',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    ].includes(file.type)
-      ? 'REQUIRES_MANUAL_PROCESSING'
-      : 'UPLOADED';
-    await run(
-      db,
-      'INSERT INTO learning_sources (id, title, subject, category, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      id,
-      cleanText(form.get('title')),
-      cleanText(form.get('subject')),
-      cleanText(form.get('category')),
-      status,
-      timestamp,
-      timestamp,
-    );
-    await audit(db, user.id, 'LEARNING_SOURCE_REGISTERED', 'LearningSource', id, {
-      fileName: file.name,
-      size: file.size,
-      status,
-    });
-    return { id, status };
-  }
-
   if (method === 'GET' && path === '/admin/overview') {
     requireAdmin(user);
     const [active, batches] = await Promise.all([

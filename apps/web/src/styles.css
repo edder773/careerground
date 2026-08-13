@@ -1879,6 +1879,9 @@ p {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
+.admin-grid > .admin-card:only-child {
+  grid-column: 1 / -1;
+}
 .admin-card,
 .import-grid article {
   padding: 18px;
@@ -3539,7 +3542,7 @@ body {
 
 .daily-hero.daily-pair {
   display: grid;
-  grid-template-columns: minmax(210px, 0.78fr) minmax(0, 1.45fr);
+  grid-template-columns: minmax(104px, 0.28fr) minmax(0, 1.72fr);
   align-items: stretch;
 }
 
@@ -4132,6 +4135,40 @@ body {
   background: #f7f7f8;
   border: 1px solid #e3e4e7;
   border-radius: 20px;
+}
+
+.settings-card-header {
+  min-height: 42px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.settings-card-header .outline-button svg,
+.settings-actions svg {
+  width: 14px;
+}
+
+.settings-card input:disabled,
+.settings-card select:disabled {
+  color: #4a5159;
+  background: #eef0f2;
+  border-color: #e0e3e6;
+  opacity: 1;
+  cursor: default;
+}
+
+.settings-card.is-editing {
+  background: #fff;
+  border-color: #bfc5e4;
+  box-shadow: 0 0 0 3px rgba(86, 101, 185, 0.08);
+}
+
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .settings-card > label:not(.check-label) {
@@ -4891,8 +4928,9 @@ body {
   top: calc(100% + 6px);
   left: 0;
   min-width: 220px;
-  max-height: min(360px, var(--radix-dropdown-menu-content-available-height));
+  max-height: min(280px, calc(100dvh - 190px));
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 6px;
   background: #fff;
   border: 1px solid #dfe2e7;
