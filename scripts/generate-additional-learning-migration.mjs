@@ -43,9 +43,7 @@ for (const sourceDefinition of sources) {
     }
 
     for (const [questionIndex, question] of unit.questions.entries()) {
-      const choices = question.choices?.length
-        ? `\n\n선택지: ${question.choices.join(' / ')}`
-        : '';
+      const choices = question.choices?.length ? `\n\n선택지: ${question.choices.join(' / ')}` : '';
       statements.push(`INSERT OR REPLACE INTO learning_questions
          (id, unit_id, prompt, answer, created_at)
        VALUES
