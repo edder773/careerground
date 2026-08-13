@@ -281,6 +281,7 @@ export const jobs = sqliteTable(
     rolling: integer('rolling', { mode: 'boolean' }).notNull().default(false),
     summary: text('summary').notNull(),
     status: text('status').notNull().default('ACTIVE'),
+    fingerprint: text('fingerprint'),
     collectedAt: text('collected_at'),
     lastVerifiedAt: text('last_verified_at').notNull(),
     ...timestamps,
@@ -314,6 +315,7 @@ export const jobs = sqliteTable(
       .where(
         sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE') AND ${table.rolling} = 1`,
       ),
+    index('idx_jobs_fingerprint').on(table.fingerprint),
   ],
 );
 
@@ -324,6 +326,7 @@ export const savedJobs = sqliteTable(
     userId: text('user_id').notNull(),
     jobId: text('job_id').notNull(),
     status: text('status').notNull().default('INTERESTED'),
+    bookmarked: integer('bookmarked', { mode: 'boolean' }).notNull().default(true),
     memo: text('memo').notNull().default(''),
     ...timestamps,
   },
@@ -333,14 +336,25 @@ export const savedJobs = sqliteTable(
   ],
 );
 
-export const learningSources = sqliteTable('learning_sources', {
-  id: text('id').primaryKey(),
-  title: text('title').notNull(),
-  subject: text('subject').notNull(),
-  category: text('category').notNull(),
-  status: text('status').notNull().default('READY'),
-  ...timestamps,
-});
+export const learningSources = sqliteTable(
+  'learning_sources',
+  {
+    id: text('id').primaryKey(),
+    title: text('title').notNull(),
+    subject: text('subject').notNull(),
+    category: text('category').notNull(),
+    sourceVersion: text('source_version'),
+    sourceChecksum: text('source_checksum'),
+    status: text('status').notNull().default('READY'),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('idx_learning_sources_checksum_version').on(
+      table.sourceChecksum,
+      table.sourceVersion,
+    ),
+  ],
+);
 
 export const learningUnits = sqliteTable(
   'learning_units',
@@ -452,9 +466,30 @@ export const importBatches = sqliteTable(
     id: text('id').primaryKey(),
     kind: text('kind').notNull(),
     checksum: text('checksum').notNull(),
+    status: text('status').notNull().default('COMMITTED'),
     originalCount: integer('original_count').notNull().default(0),
     rejectedCount: integer('rejected_count').notNull().default(0),
+    result: text('result').notNull().default('{}'),
+    committedAt: text('committed_at'),
     createdAt: text('created_at').notNull(),
   },
   (table) => [uniqueIndex('idx_import_batches_kind_checksum').on(table.kind, table.checksum)],
+);
+
+export const importPreviews = sqliteTable(
+  'import_previews',
+  {
+    token: text('token').primaryKey(),
+    kind: text('kind').notNull(),
+    checksum: text('checksum').notNull(),
+    payload: text('payload').notNull(),
+    actorId: text('actor_id').notNull(),
+    expiresAt: text('expires_at').notNull(),
+    consumedAt: text('consumed_at'),
+    createdAt: text('created_at').notNull(),
+  },
+  (table) => [
+    index('idx_import_previews_actor_kind').on(table.actorId, table.kind, table.createdAt),
+    index('idx_import_previews_expiry').on(table.expiresAt),
+  ],
 );

@@ -143,8 +143,27 @@ export const apiErrorSchema = z.object({
   requestId: z.string(),
 });
 
+/**
+ * Persist user-authored Markdown and source code without HTML-style stripping.
+ * Safety belongs to the renderer; callers may use trim() only for emptiness checks.
+ */
+export const preserveSourceText = (value: unknown, fallback = '') =>
+  typeof value === 'string' ? value : fallback;
+
+export const importPreviewSchema = z.object({
+  previewToken: z.string().uuid(),
+  checksum: z.string().regex(/^[a-f0-9]{64}$/i),
+  expiresAt: z.string().datetime({ offset: true }),
+});
+
+export const importCommitSchema = z.object({
+  previewToken: z.string().uuid(),
+  checksum: z.string().regex(/^[a-f0-9]{64}$/i),
+});
+
 export type JobImport = z.infer<typeof jobImportSchema>;
 export type JobImportItem = z.infer<typeof jobImportItemSchema>;
 export type LearningImport = z.infer<typeof learningImportSchema>;
 export type ProblemImport = z.infer<typeof problemImportSchema>;
 export type Role = z.infer<typeof roleSchema>;
+export type ImportCommit = z.infer<typeof importCommitSchema>;

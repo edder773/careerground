@@ -1,85 +1,6 @@
-import { readFileSync } from 'node:fs';
-import { DatabaseSync, type StatementSync } from 'node:sqlite';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { handleD1Api } from './d1-api.js';
-import type { D1Database, D1PreparedStatement, D1Result } from './d1.js';
-
-class SqliteStatement implements D1PreparedStatement {
-  constructor(
-    private readonly statement: StatementSync,
-    private readonly values: unknown[] = [],
-    readonly sql = '',
-  ) {}
-
-  bind(...values: unknown[]) {
-    return new SqliteStatement(this.statement, values, this.sql);
-  }
-
-  async first<T>() {
-    return (this.statement.get(...this.values) as T | undefined) || null;
-  }
-
-  async all<T>(): Promise<D1Result<T>> {
-    return { success: true, results: this.statement.all(...this.values) as T[] };
-  }
-
-  async run<T>(): Promise<D1Result<T>> {
-    const result = this.statement.run(...this.values);
-    return {
-      success: true,
-      results: [],
-      meta: { changes: Number(result.changes), last_row_id: Number(result.lastInsertRowid) },
-    };
-  }
-}
-
-class SqliteD1 implements D1Database {
-  private readonly sqlite = new DatabaseSync(':memory:');
-  preparedSql: string[] = [];
-
-  constructor() {
-    for (const file of [
-      'drizzle/0000_loose_shooting_star.sql',
-      'drizzle/0001_seed.sql',
-      'drizzle/0002_equal_hulk.sql',
-      'drizzle/0003_import_careerground_catalog.sql',
-      'drizzle/0004_melodic_xavin.sql',
-      'drizzle/0005_naive_blindfold.sql',
-      'drizzle/0006_tense_iron_patriot.sql',
-      'drizzle/0007_learning_catalog_expansion.sql',
-      'drizzle/0008_sql_track_learning_visuals.sql',
-      'drizzle/0009_refresh_job_catalog.sql',
-    ]) {
-      const migration = readFileSync(file, 'utf8');
-      for (const statement of migration.split('--> statement-breakpoint')) {
-        if (statement.trim()) this.sqlite.exec(statement);
-      }
-    }
-  }
-
-  prepare(sql: string) {
-    this.preparedSql.push(sql);
-    return new SqliteStatement(this.sqlite.prepare(sql), [], sql);
-  }
-
-  resetPreparedSql() {
-    this.preparedSql = [];
-  }
-
-  async batch<T>(statements: D1PreparedStatement[]): Promise<D1Result<T>[]> {
-    return Promise.all(
-      statements.map((statement) =>
-        statement instanceof SqliteStatement && /^\s*(SELECT|WITH|PRAGMA)/i.test(statement.sql)
-          ? statement.all<T>()
-          : statement.run<T>(),
-      ),
-    );
-  }
-
-  close() {
-    this.sqlite.close();
-  }
-}
+import { LocalD1 } from './local-d1.js';
 
 const adminHeaders = {
   'oai-authenticated-user-id': 'site-admin',
@@ -96,11 +17,13 @@ const memberHeaders = {
 };
 
 describe('Sites D1 API', () => {
-  let db: SqliteD1;
+  let db: LocalD1;
 
   beforeEach(() => {
-    db = new SqliteD1();
+    db = new LocalD1();
   });
+
+  afterEach(() => db.close());
 
   async function call(
     path: string,
@@ -112,15 +35,18 @@ describe('Sites D1 API', () => {
       requestHeaders.set('content-type', 'application/json');
     const response = await handleD1Api(
       new Request(`https://careerground.example${path}`, { ...init, headers: requestHeaders }),
-      { DB: db },
+      { DB: db, OPENAI_ADMIN_EMAILS: 'admin@example.test', MAX_ACTIVE_USERS: '100' },
     );
     return { response, body: (await response.json()) as Record<string, unknown> };
   }
 
-  it('reports D1 readiness and provisions the first OpenAI user as admin', async () => {
+  it('provisions normal first users as MEMBER and only allowlisted users as ADMIN', async () => {
     const health = await call('/api/v1/health', {}, {});
     expect(health.response.status).toBe(200);
     expect(health.body).toMatchObject({ status: 'ok', database: 'd1' });
+
+    const member = await call('/api/v1/auth/me', {}, memberHeaders);
+    expect(member.body).toMatchObject({ user: { role: 'MEMBER', onboardingCompleted: false } });
 
     const me = await call('/api/v1/auth/me');
     expect(me.response.status).toBe(200);
@@ -132,11 +58,6 @@ describe('Sites D1 API', () => {
         preferredLanguage: 'javascript',
         onboardingCompleted: false,
       },
-    });
-
-    const member = await call('/api/v1/auth/me', {}, memberHeaders);
-    expect(member.body).toMatchObject({
-      user: { role: 'MEMBER', onboardingCompleted: false },
     });
 
     const onboarding = await call(
@@ -184,28 +105,43 @@ describe('Sites D1 API', () => {
     expect(listed.body).toEqual([
       expect.objectContaining({
         id: folder.id,
-        name: 'scrscriptipt지원 준비/script',
+        name: '<scr<script>ipt>지원 준비</script>',
         items: [expect.objectContaining({ label: '포트폴리오' })],
       }),
     ]);
-    expect((listed.body as Array<{ name: string }>)[0]?.name).not.toMatch(/[<>]/);
   });
 
   it('persists note revisions for the current user', async () => {
+    const original =
+      'List<String>\nvector<pair<int, int>>\na < b && c > d\n<script>alert(1)</script>';
     const created = await call('/api/v1/notes', {
       method: 'POST',
-      body: JSON.stringify({ title: 'D1 메모', markdown: '첫 기록', visibility: 'MEMBERS' }),
+      body: JSON.stringify({ title: 'D1 메모', markdown: original, visibility: 'MEMBERS' }),
     });
     const note = created.body as { id: string };
-    await call('/api/v1/notes', {
+    expect(created.body).toMatchObject({ markdown: original });
+    const updated = await call('/api/v1/notes', {
       method: 'POST',
       body: JSON.stringify({
         id: note.id,
+        baseRevision: 1,
         title: 'D1 메모',
         markdown: '두 번째 기록',
         visibility: 'PRIVATE',
       }),
     });
+    expect(updated.response.status).toBe(200);
+    const conflict = await call('/api/v1/notes', {
+      method: 'POST',
+      body: JSON.stringify({
+        id: note.id,
+        baseRevision: 1,
+        title: '충돌 저장',
+        markdown: '덮어쓰면 안 됩니다.',
+      }),
+    });
+    expect(conflict.response.status).toBe(409);
+    expect(conflict.body).toMatchObject({ code: 'REVISION_CONFLICT' });
 
     const listed = await call('/api/v1/notes');
     expect(listed.body).toEqual([
@@ -275,14 +211,19 @@ describe('Sites D1 API', () => {
 
     await call('/api/v1/jobs/saved', {
       method: 'POST',
-      body: JSON.stringify({ jobId: firstJob.id, status: 'APPLIED', memo: '' }),
+      body: JSON.stringify({ jobId: firstJob.id, status: 'APPLIED', memo: '지원 메모' }),
+    });
+    await call(`/api/v1/jobs/${firstJob.id}/bookmark`, {
+      method: 'PATCH',
+      body: JSON.stringify({ bookmarked: false }),
     });
     const saved = await call('/api/v1/jobs?sort=new');
     expect(saved.body).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: firstJob.id,
-          savedBy: [expect.objectContaining({ status: 'APPLIED' })],
+          bookmarked: false,
+          savedBy: [expect.objectContaining({ status: 'APPLIED', memo: '지원 메모' })],
         }),
       ]),
     );
@@ -477,40 +418,47 @@ describe('Sites D1 API', () => {
       )
       .first<{ count: number }>();
     expect(reconstructed?.count).toBe(6);
+    const payload = {
+      version: '1.0',
+      source: {
+        title: '테스트용 웹 기초',
+        subject: '소프트웨어 개발',
+        category: '백엔드',
+        sourceVersion: '1.0',
+        checksum: 'a'.repeat(64),
+      },
+      units: [
+        {
+          anchor: 'http-api',
+          title: 'HTTP API와 상태 코드',
+          summaryMarkdown: 'List<String>과 a < b를 그대로 학습합니다.',
+          concepts: ['HTTP'],
+          flashcards: [{ front: '멱등한 요청이란?', back: '반복해도 최종 상태가 같습니다.' }],
+          questions: [
+            {
+              type: 'SHORT_ANSWER',
+              prompt: '생성 성공 상태 코드는?',
+              answer: '201 Created',
+            },
+          ],
+        },
+      ],
+    };
+    const preview = await call('/api/v1/learning/import/preview', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    const token = preview.body as { previewToken: string; checksum: string };
     const imported = await call('/api/v1/learning/import/commit', {
       method: 'POST',
-      body: JSON.stringify({
-        version: '1.0',
-        source: {
-          title: '테스트용 웹 기초',
-          subject: '소프트웨어 개발',
-          category: '백엔드',
-          sourceVersion: '1.0',
-          checksum: 'a'.repeat(64),
-        },
-        units: [
-          {
-            anchor: 'http-api',
-            title: 'HTTP API와 상태 코드',
-            summaryMarkdown: '요청과 응답의 구조를 학습합니다.',
-            concepts: ['HTTP'],
-            flashcards: [{ front: '멱등한 요청이란?', back: '반복해도 최종 상태가 같습니다.' }],
-            questions: [
-              {
-                type: 'SHORT_ANSWER',
-                prompt: '생성 성공 상태 코드는?',
-                answer: '201 Created',
-              },
-            ],
-          },
-        ],
-      }),
+      body: JSON.stringify(token),
     });
     expect(imported.response.status).toBe(200);
 
     const learning = await call('/api/v1/learning');
     const source = (learning.body as unknown as Array<{ units: Array<{ id: string }> }>)[0];
     expect(source.units.length).toBeGreaterThan(0);
+    expect(source.units[0]).toMatchObject({ summary: 'List<String>과 a < b를 그대로 학습합니다.' });
     await call('/api/v1/learning/review', {
       method: 'POST',
       body: JSON.stringify({ unitId: source.units[0].id, rating: 4 }),
@@ -588,5 +536,157 @@ describe('Sites D1 API', () => {
     const deletionResponse = await call('/api/v1/auth/delete-request', { method: 'POST' });
     expect(exportResponse.response.status).toBe(404);
     expect(deletionResponse.response.status).toBe(404);
+  });
+
+  it('preserves problem memo and favorite across independent status patches', async () => {
+    const problem = await db
+      .prepare('SELECT id FROM coding_problems WHERE active = 1 ORDER BY position LIMIT 1')
+      .first<{ id: string }>();
+    expect(problem?.id).toBeTruthy();
+    const base = `/api/v1/coding/problems/${problem!.id}`;
+    await call(`${base}/memo`, {
+      method: 'PATCH',
+      body: JSON.stringify({ memo: 'List<String> a < b && c > d' }),
+    });
+    await call(`${base}/favorite`, {
+      method: 'PATCH',
+      body: JSON.stringify({ favorite: true }),
+    });
+    await call(`${base}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'IN_PROGRESS' }),
+    });
+    await call(`${base}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'SOLVED' }),
+    });
+    const progress = await db
+      .prepare('SELECT status, favorite, memo FROM problem_progress WHERE problem_id = ?')
+      .bind(problem!.id)
+      .first<{ status: string; favorite: number; memo: string }>();
+    expect(progress).toEqual({
+      status: 'SOLVED',
+      favorite: 1,
+      memo: 'List<String> a < b && c > d',
+    });
+  });
+
+  it('requires a matching preview token and rolls back an interrupted job import', async () => {
+    const timestamp = new Date().toISOString();
+    const payload = {
+      version: '1.0',
+      collectedAt: timestamp,
+      sourceCount: 1,
+      items: [
+        {
+          sourceName: 'regression-fixture',
+          sourceUrl: 'https://example.test/jobs/atomic-1?utm_source=test',
+          companyName: '주식회사 주사위게임',
+          title: '신입 백엔드 개발자',
+          category: '백엔드',
+          careerScope: 'NEW_GRAD_ONLY',
+          careerEvidence: '신입 지원 가능',
+          companySize: 'SMALL',
+          companySizeEvidence: '테스트 근거',
+          employmentType: 'FULL_TIME',
+          region: '서울',
+          remote: false,
+          techStack: ['TypeScript'],
+          rolling: true,
+          collectedAt: timestamp,
+          lastVerifiedAt: timestamp,
+          summary: '원자 import 회귀 테스트',
+          status: 'ACTIVE',
+        },
+      ],
+    };
+    const direct = await call('/api/v1/jobs/import/commit', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    expect(direct.response.status).toBe(422);
+
+    const preview = await call('/api/v1/jobs/import/preview', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    const approval = preview.body as { previewToken: string; checksum: string };
+    expect(approval.previewToken).toBeTruthy();
+    const changed = await call('/api/v1/jobs/import/commit', {
+      method: 'POST',
+      body: JSON.stringify({ ...approval, checksum: 'f'.repeat(64) }),
+    });
+    expect(changed.response.status).toBe(409);
+
+    const before = await db
+      .prepare('SELECT COUNT(*) AS count FROM jobs')
+      .first<{ count: number }>();
+    db.failNextBatch(1);
+    const interrupted = await call('/api/v1/jobs/import/commit', {
+      method: 'POST',
+      body: JSON.stringify(approval),
+    });
+    expect(interrupted.response.status).toBe(500);
+    const afterFailure = await db
+      .prepare('SELECT COUNT(*) AS count FROM jobs')
+      .first<{ count: number }>();
+    expect(afterFailure?.count).toBe(before?.count);
+
+    const committed = await call('/api/v1/jobs/import/commit', {
+      method: 'POST',
+      body: JSON.stringify(approval),
+    });
+    expect(committed.response.status).toBe(200);
+    const retried = await call('/api/v1/jobs/import/commit', {
+      method: 'POST',
+      body: JSON.stringify(approval),
+    });
+    expect(retried.body).toMatchObject({ idempotent: true });
+  });
+
+  it('redacts hidden replies in the API response', async () => {
+    await call('/api/v1/auth/me', {}, memberHeaders);
+    const problem = await db
+      .prepare('SELECT id FROM coding_problems WHERE active = 1 ORDER BY position LIMIT 1')
+      .first<{ id: string }>();
+    const solution = await call('/api/v1/coding/solutions', {
+      method: 'POST',
+      body: JSON.stringify({
+        problemId: problem!.id,
+        title: 'redaction fixture',
+        language: 'javascript',
+        code: 'return true;',
+        description: '설명',
+        solved: true,
+      }),
+    });
+    const solutionId = String(solution.body.id);
+    const parent = await call(`/api/v1/coding/solutions/${solutionId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ markdown: '부모 댓글' }),
+    });
+    const reply = await call(
+      `/api/v1/coding/solutions/${solutionId}/comments`,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          markdown: '<script>private reply</script>',
+          parentId: parent.body.id,
+        }),
+      },
+      memberHeaders,
+    );
+    await db
+      .prepare('UPDATE solution_comments SET hidden_at = ? WHERE id = ?')
+      .bind(new Date().toISOString(), reply.body.id)
+      .run();
+    const listed = await call('/api/v1/coding/solutions', {}, memberHeaders);
+    const comments = (
+      listed.body as unknown as Array<{ comments: Array<{ replies: unknown[] }> }>
+    )[0]?.comments;
+    expect(comments?.[0]?.replies).toEqual([
+      expect.objectContaining({ markdown: null, redacted: 'HIDDEN' }),
+    ]);
+    expect(JSON.stringify(listed.body)).not.toContain('private reply');
   });
 });

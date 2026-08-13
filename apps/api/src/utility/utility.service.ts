@@ -5,14 +5,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import sanitizeHtml from 'sanitize-html';
+import { preserveSourceText } from '@careerground/contracts';
 import type { AuthUser } from '../auth/auth.decorators.js';
 import type { CompanySize } from '../generated/prisma/enums.js';
 import { PrismaService } from '../common/prisma.service.js';
 import { AuditService } from '../common/audit.service.js';
 
-const clean = (value: string) =>
-  sanitizeHtml(value, { allowedTags: [], allowedAttributes: {} }).trim();
+const clean = (value: string) => preserveSourceText(value);
 
 @Injectable()
 export class UtilityService {
