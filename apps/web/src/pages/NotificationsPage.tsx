@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bell, BellRing, CheckCheck, MessageCircle, RefreshCcw } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { api } from '../lib/api';
 
 type Notification = {
@@ -20,17 +21,35 @@ const iconFor = (type: string) =>
 
 export function NotificationsPage() {
   const client = useQueryClient();
+  const navigate = useNavigate();
   const notifications = useQuery({
     queryKey: ['notifications'],
     queryFn: () => api<Notification[]>('/notifications'),
   });
   const readAll = useMutation({
     mutationFn: () => api('/notifications/read-all', { method: 'PATCH' }),
-    onSuccess: () => client.invalidateQueries({ queryKey: ['notifications'] }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ['notifications'] });
+      void client.invalidateQueries({ queryKey: ['notification-unread-count'] });
+    },
   });
   const read = useMutation({
     mutationFn: (id: string) => api(`/notifications/${id}/read`, { method: 'PATCH' }),
-    onSuccess: () => client.invalidateQueries({ queryKey: ['notifications'] }),
+    onMutate: async (id) => {
+      await client.cancelQueries({ queryKey: ['notifications'] });
+      const previous = client.getQueryData<Notification[]>(['notifications']);
+      client.setQueryData<Notification[]>(['notifications'], (current) =>
+        current?.map((item) =>
+          item.id === id ? { ...item, readAt: item.readAt || new Date().toISOString() } : item,
+        ),
+      );
+      return { previous };
+    },
+    onError: (_error, _id, context) => client.setQueryData(['notifications'], context?.previous),
+    onSettled: () => {
+      void client.invalidateQueries({ queryKey: ['notifications'] });
+      void client.invalidateQueries({ queryKey: ['notification-unread-count'] });
+    },
   });
   return (
     <div>
@@ -61,7 +80,10 @@ export function NotificationsPage() {
             <button
               key={item.id}
               className={item.readAt ? 'read' : 'unread'}
-              onClick={() => read.mutate(item.id)}
+              onClick={async () => {
+                await read.mutateAsync(item.id);
+                if (item.href?.startsWith('/')) navigate(item.href);
+              }}
             >
               <span className="notification-icon">
                 <Icon />

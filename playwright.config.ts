@@ -1,9 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const databaseUrl =
-  process.env.DATABASE_URL ||
-  'postgresql://careerground:careerground@127.0.0.1:5432/careerground?schema=public';
-
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
@@ -23,22 +19,25 @@ export default defineConfig({
   },
   expect: { timeout: 10_000 },
   timeout: 45_000,
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'chromium-mobile-375',
+      testMatch: /visual\.spec\.ts/,
+      use: { ...devices['Pixel 7'], viewport: { width: 375, height: 812 } },
+    },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+  ],
   webServer: [
     {
-      command: 'pnpm --filter @careerground/api dev',
+      command: 'pnpm tsx deployment/sites/local-d1-server.ts',
       url: 'http://127.0.0.1:4000/api/v1/health/ready',
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
       env: {
         ...process.env,
-        DATABASE_URL: databaseUrl,
-        WEB_ORIGIN: 'http://127.0.0.1:5173',
-        INTERNAL_SERVICE_SECRET: 'test-test-test-test-test-test-test-test',
-        COOKIE_SECURE: 'false',
-        MAX_ACTIVE_USERS: '100',
-        OPENAI_AUTH_MOCK: 'true',
-        OPENAI_ADMIN_EMAILS: 'admin@careerground.local',
+        NODE_NO_WARNINGS: '1',
       },
     },
     {
@@ -48,7 +47,8 @@ export default defineConfig({
       timeout: 120_000,
       env: {
         ...process.env,
-        VITE_API_URL: 'http://127.0.0.1:4000/api/v1',
+        VITE_API_URL: '/api/v1',
+        VITE_API_PROXY_ORIGIN: 'http://127.0.0.1:4000',
       },
     },
   ],

@@ -14,6 +14,7 @@ import {
   Home,
   List,
   Menu,
+  MoreHorizontal,
   Search,
   Settings,
   ShieldCheck,
@@ -52,6 +53,13 @@ const titles: Record<string, string> = {
 };
 
 export type ViewMode = 'grid' | 'list';
+type SearchItem = {
+  id: string;
+  href: string;
+  title?: string;
+  name?: string;
+  displayTitle?: string;
+};
 
 export function AppShell({
   children,
@@ -64,11 +72,21 @@ export function AppShell({
   const [drawer, setDrawer] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [activeResult, setActiveResult] = useState(0);
+  const unread = useQuery({
+    queryKey: ['notification-unread-count'],
+    queryFn: () => api<{ count: number }>('/notifications/unread-count'),
+  });
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedQuery(query.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [query]);
   const results = useQuery({
-    queryKey: ['search', query],
+    queryKey: ['search', debouncedQuery],
     queryFn: () =>
-      api<Record<string, Array<Record<string, unknown>>>>(`/search?q=${encodeURIComponent(query)}`),
-    enabled: searchOpen && query.trim().length >= 2,
+      api<Record<string, SearchItem[]>>(`/search?q=${encodeURIComponent(debouncedQuery)}`),
+    enabled: searchOpen && debouncedQuery.length >= 2,
   });
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -88,6 +106,19 @@ export function AppShell({
         .reduce((sum, value) => sum + value.length, 0),
     [results.data],
   );
+  const flatResults = useMemo(
+    () =>
+      Object.entries(results.data || {}).flatMap(([group, items]) =>
+        Array.isArray(items) ? items.map((item) => ({ ...item, group })) : [],
+      ),
+    [results.data],
+  );
+  useEffect(() => setActiveResult(0), [debouncedQuery, results.data]);
+  const openResult = (item: SearchItem) => {
+    setSearchOpen(false);
+    setQuery('');
+    navigate(item.href);
+  };
 
   const nav = (
     <>
@@ -125,6 +156,11 @@ export function AppShell({
           <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'active' : '')}>
             <Icon size={18} aria-hidden="true" />
             <span>{label}</span>
+            {to === '/notifications' && Boolean(unread.data?.count) && (
+              <span className="nav-badge" aria-label={`읽지 않은 알림 ${unread.data?.count}개`}>
+                {unread.data?.count}
+              </span>
+            )}
           </NavLink>
         ))}
         {user?.role === 'ADMIN' && (
@@ -215,7 +251,12 @@ export function AppShell({
             </div>
           </div>
           <div className="toolbar-actions">
-            <button className="search-trigger" type="button" onClick={() => setSearchOpen(true)}>
+            <button
+              aria-label="검색"
+              className="search-trigger"
+              type="button"
+              onClick={() => setSearchOpen(true)}
+            >
               <Search size={17} />
               <span>검색</span>
               <kbd>⌘ K</kbd>
@@ -242,14 +283,17 @@ export function AppShell({
       </main>
       <nav className="bottom-nav" aria-label="모바일 주요 메뉴">
         {navigation
-          .filter(({ to }) => to !== '/notes')
-          .slice(0, 5)
+          .filter(({ to }) => ['/', '/learning', '/jobs', '/coding'].includes(to))
           .map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} end={to === '/'}>
               <Icon />
               <span>{label}</span>
             </NavLink>
           ))}
+        <button type="button" onClick={() => setDrawer(true)} aria-label="더보기 메뉴">
+          <MoreHorizontal />
+          <span>더보기</span>
+        </button>
       </nav>
 
       <Dialog.Root open={searchOpen} onOpenChange={setSearchOpen}>
@@ -264,10 +308,27 @@ export function AppShell({
                 autoFocus
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'ArrowDown') {
+                    event.preventDefault();
+                    setActiveResult((current) => Math.min(current + 1, flatResults.length - 1));
+                  } else if (event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    setActiveResult((current) => Math.max(0, current - 1));
+                  } else if (event.key === 'Enter' && flatResults[activeResult]) {
+                    event.preventDefault();
+                    openResult(flatResults[activeResult]);
+                  }
+                }}
                 placeholder="폴더, 공고, 문제, 풀이, 학습자료…"
               />
             </label>
-            <div className="search-results" aria-live="polite">
+            <div
+              className="search-results"
+              aria-live="polite"
+              aria-label="검색 결과"
+              role={flatResults.length > 0 ? 'listbox' : 'status'}
+            >
               {query.length < 2 && <p>두 글자 이상 입력하세요.</p>}
               {results.isFetching && <p>검색 중…</p>}
               {results.isError && <p className="error-text">검색 결과를 불러오지 못했습니다.</p>}
@@ -276,12 +337,20 @@ export function AppShell({
                   <div className="result-summary">{resultCount}개 결과</div>
                   {Object.entries(results.data).map(([group, items]) =>
                     Array.isArray(items) && items.length > 0 ? (
-                      <section key={group}>
+                      <section key={group} role="group" aria-label={group}>
                         <h3>{group}</h3>
                         {items.slice(0, 5).map((item, index) => (
                           <button
                             key={String(item.id || index)}
-                            onClick={() => setSearchOpen(false)}
+                            role="option"
+                            aria-selected={flatResults[activeResult]?.id === item.id}
+                            className={flatResults[activeResult]?.id === item.id ? 'active' : ''}
+                            onMouseEnter={() =>
+                              setActiveResult(
+                                flatResults.findIndex((result) => result.id === item.id),
+                              )
+                            }
+                            onClick={() => openResult(item)}
                           >
                             {String(item.title || item.name || item.displayTitle || '검색 결과')}
                           </button>

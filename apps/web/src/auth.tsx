@@ -1,10 +1,12 @@
 import { createContext, useContext, useMemo, type PropsWithChildren } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { api, type User } from './lib/api';
+import { api, ApiError, type User } from './lib/api';
 
 type AuthContextValue = {
   user: User | null;
   loading: boolean;
+  error: ApiError | null;
+  retry: () => void;
   logout: () => Promise<void>;
 };
 
@@ -20,11 +22,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
     () => ({
       user: me.data?.user || null,
       loading: me.isLoading,
+      error: me.error instanceof ApiError && me.error.status !== 401 ? me.error : null,
+      retry: () => void me.refetch(),
       logout: async () => {
         window.location.assign('/signout-with-chatgpt?return_to=%2F');
       },
     }),
-    [me.data, me.isLoading],
+    [me.data, me.error, me.isLoading, me.refetch],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
@@ -32,6 +32,7 @@ function solutionsUrl(problem: Problem) {
 export function CodingPage() {
   const client = useQueryClient();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [level, setLevel] = useState('');
   const [track, setTrack] = useState<'ALGORITHM' | 'SQL'>('ALGORITHM');
   const [selected, setSelected] = useState<Problem>();
@@ -84,20 +85,85 @@ export function CodingPage() {
       return solution;
     },
     onSuccess: async () => {
+      if (selected) localStorage.removeItem(`cg-solution-draft:${selected.id}`);
       setSelected(undefined);
       setCode('');
       setDescription('');
       await client.invalidateQueries({ queryKey: ['problems'] });
     },
   });
-  const progress = useMutation({
-    mutationFn: (problemId: string) =>
-      api(`/coding/problems/${problemId}/progress`, {
+  const favorite = useMutation({
+    mutationFn: ({ problemId, active }: { problemId: string; active: boolean }) =>
+      api(`/coding/problems/${problemId}/favorite`, {
         method: 'PATCH',
-        body: json({ status: 'IN_PROGRESS' }),
+        body: json({ favorite: active }),
       }),
-    onSuccess: () => client.invalidateQueries({ queryKey: ['problems'] }),
+    onMutate: async ({ problemId, active }) => {
+      await client.cancelQueries({ queryKey: ['problems'] });
+      const snapshots = client.getQueriesData<Problem[]>({ queryKey: ['problems'] });
+      client.setQueriesData<Problem[]>({ queryKey: ['problems'] }, (current) =>
+        current?.map((problem) =>
+          problem.id === problemId
+            ? {
+                ...problem,
+                progress: [
+                  {
+                    status: problem.progress[0]?.status || 'UNTRIED',
+                    favorite: active,
+                  },
+                ],
+              }
+            : problem,
+        ),
+      );
+      return { snapshots };
+    },
+    onError: (_error, _variables, context) =>
+      context?.snapshots.forEach(([key, data]) => client.setQueryData(key, data)),
+    onSettled: () => client.invalidateQueries({ queryKey: ['problems'] }),
   });
+  useEffect(() => {
+    if (!selected || (!code && !description)) return;
+    localStorage.setItem(
+      `cg-solution-draft:${selected.id}`,
+      JSON.stringify({ code, description, language }),
+    );
+  }, [code, description, language, selected]);
+  useEffect(() => {
+    const warn = (event: BeforeUnloadEvent) => {
+      if (!selected || (!code && !description)) return;
+      event.preventDefault();
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [code, description, selected]);
+  const openEditor = (problem: Problem) => {
+    setSelected(problem);
+    setLanguage(problem.track === 'SQL' ? 'sql' : user?.preferredLanguage || 'python');
+    const draft = localStorage.getItem(`cg-solution-draft:${problem.id}`);
+    if (!draft) {
+      setCode('');
+      setDescription('');
+      return;
+    }
+    try {
+      const parsed = JSON.parse(draft) as {
+        code?: string;
+        description?: string;
+        language?: CodeLanguage;
+      };
+      setCode(parsed.code || '');
+      setDescription(parsed.description || '');
+      if (parsed.language) setLanguage(parsed.language);
+    } catch {
+      localStorage.removeItem(`cg-solution-draft:${problem.id}`);
+    }
+  };
+  const closeEditor = () => {
+    if ((code || description) && !window.confirm('저장하지 않은 풀이가 있습니다. 닫을까요?'))
+      return;
+    setSelected(undefined);
+  };
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (selected && code.trim()) save.mutate();
@@ -107,11 +173,11 @@ export function CodingPage() {
     [challenge.data],
   );
   const list = useMemo(() => problems.data || [], [problems.data]);
-  const openEditor = (problem: Problem) => {
-    setSelected(problem);
-    setLanguage(problem.track === 'SQL' ? 'sql' : user?.preferredLanguage || 'python');
-    progress.mutate(problem.id);
-  };
+  const requestedProblem = searchParams.get('problem');
+  useEffect(() => {
+    if (!requestedProblem || !problems.data) return;
+    document.getElementById(`problem-${requestedProblem}`)?.scrollIntoView({ block: 'center' });
+  }, [problems.data, requestedProblem]);
   return (
     <div>
       <section className="page-heading">
@@ -204,14 +270,28 @@ export function CodingPage() {
       {problems.isError && <div className="error-panel">문제 목록을 불러오지 못했습니다.</div>}
       <div className="problem-grid">
         {list.map((problem) => (
-          <article key={problem.id} className={dailyIds.has(problem.id) ? 'daily' : ''}>
+          <article
+            key={problem.id}
+            id={`problem-${problem.id}`}
+            className={`${dailyIds.has(problem.id) ? 'daily' : ''} ${problem.id === requestedProblem ? 'search-target' : ''}`}
+          >
             <div className="problem-top">
               <span className="level-pill">Lv. {problem.level}</span>
               <span className={`track-pill ${problem.track === 'SQL' ? 'sql' : ''}`}>
                 {problem.track === 'SQL' ? 'SQL' : '알고리즘'}
               </span>
               {dailyIds.has(problem.id) && <span className="today-pill">TODAY</span>}
-              <button aria-label="즐겨찾기">
+              <button
+                aria-label={`${problem.displayTitle} 즐겨찾기`}
+                aria-pressed={Boolean(problem.progress[0]?.favorite)}
+                disabled={favorite.isPending && favorite.variables?.problemId === problem.id}
+                onClick={() =>
+                  favorite.mutate({
+                    problemId: problem.id,
+                    active: !problem.progress[0]?.favorite,
+                  })
+                }
+              >
                 <Star size={17} fill={problem.progress[0]?.favorite ? 'currentColor' : 'none'} />
               </button>
             </div>
@@ -258,7 +338,7 @@ export function CodingPage() {
                 <span>새 풀이</span>
                 <h2 id="solution-editor-title">{selected.displayTitle}</h2>
               </div>
-              <button className="ghost-button" onClick={() => setSelected(undefined)} autoFocus>
+              <button className="ghost-button" onClick={closeEditor} autoFocus>
                 닫기
               </button>
             </div>

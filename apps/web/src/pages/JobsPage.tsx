@@ -17,6 +17,7 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { FolderSaveButton } from '../components/FolderSaveButton';
 import { api, json } from '../lib/api';
 
@@ -35,7 +36,8 @@ type Job = {
   sourceUrl: string;
   company: { name: string; size: string };
   source: { name: string; lastSuccessAt?: string };
-  savedBy: Array<{ status: string; memo: string }>;
+  bookmarked: boolean;
+  savedBy: Array<{ status: string; memo: string; bookmarked: boolean }>;
 };
 
 type ViewMode = 'calendar' | 'list';
@@ -470,15 +472,45 @@ function JobFilterPanel({
 
 export function JobsPage() {
   const client = useQueryClient();
-  const [companySizes, setCompanySizes] = useState<string[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [sort, setSort] = useState<SortMode>('new');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [companySizes, setCompanySizes] = useState<string[]>(() =>
+    searchParams.getAll('companySize'),
+  );
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(() =>
+    searchParams.getAll('category'),
+  );
+  const initialSort = searchParams.get('sort');
+  const [sort, setSort] = useState<SortMode>(
+    initialSort === 'deadline' || initialSort === 'company' ? initialSort : 'new',
+  );
+  const [memoDrafts, setMemoDrafts] = useState<Record<string, string>>({});
+  const search = searchParams.get('q') || '';
+  const savedOnly = searchParams.get('saved') === '1';
+  const requestedJob = searchParams.get('job');
   const [fontSize, setFontSize] = useState<JobFontSize>(initialJobFontSize);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [visibleMonth, setVisibleMonth] = useState(monthStart);
   const [selectedJobId, setSelectedJobId] = useState<string>();
   const [rollingOpen, setRollingOpen] = useState(false);
   const [expandedDateKey, setExpandedDateKey] = useState<string>();
+
+  const setUrlParam = (key: string, value: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    setSearchParams(next, { replace: true });
+  };
+
+  useEffect(() => {
+    const next = new URLSearchParams(searchParams);
+    next.delete('companySize');
+    next.delete('category');
+    companySizes.forEach((value) => next.append('companySize', value));
+    selectedCategories.forEach((value) => next.append('category', value));
+    if (sort === 'new') next.delete('sort');
+    else next.set('sort', sort);
+    if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true });
+  }, [companySizes, searchParams, selectedCategories, setSearchParams, sort]);
 
   const bounds = monthBounds(visibleMonth);
   const categories = useQuery({
@@ -496,6 +528,8 @@ export function JobsPage() {
   });
   companySizes.forEach((value) => queryParams.append('companySize', value));
   selectedCategories.forEach((value) => queryParams.append('category', value));
+  if (viewMode === 'list' && search) queryParams.set('q', search);
+  if (viewMode === 'list' && savedOnly) queryParams.set('saved', '1');
   const query = queryParams.toString();
   const jobs = useQuery({
     queryKey: [
@@ -503,6 +537,8 @@ export function JobsPage() {
       viewMode,
       companySizes.join('|'),
       selectedCategories.join('|'),
+      search,
+      savedOnly,
       viewMode === 'calendar'
         ? `${visibleMonth.getUTCFullYear()}-${visibleMonth.getUTCMonth()}`
         : sort,
@@ -513,23 +549,68 @@ export function JobsPage() {
     gcTime: 10 * 60_000,
     refetchOnWindowFocus: false,
   });
-  const save = useMutation({
-    mutationFn: ({ jobId, status }: { jobId: string; status: string }) =>
-      api('/jobs/saved', { method: 'POST', body: json({ jobId, status, memo: '' }) }),
-    onMutate: ({ jobId, status }) => {
+  const bookmark = useMutation({
+    mutationFn: ({ jobId, bookmarked }: { jobId: string; bookmarked: boolean }) =>
+      api(`/jobs/${jobId}/bookmark`, { method: 'PATCH', body: json({ bookmarked }) }),
+    onMutate: async ({ jobId, bookmarked }) => {
+      await client.cancelQueries({ queryKey: ['jobs'] });
+      const snapshots = client.getQueriesData<Job[]>({ queryKey: ['jobs'] });
       client.setQueriesData<Job[]>({ queryKey: ['jobs'] }, (current) =>
         current?.map((job) =>
           job.id === jobId
             ? {
                 ...job,
-                savedBy: [{ status, memo: job.savedBy[0]?.memo || '' }],
+                bookmarked,
+                savedBy: [
+                  {
+                    status: job.savedBy[0]?.status || 'INTERESTED',
+                    memo: job.savedBy[0]?.memo || '',
+                    bookmarked,
+                  },
+                ],
               }
             : job,
         ),
       );
+      return { snapshots };
     },
+    onError: (_error, _variables, context) =>
+      context?.snapshots.forEach(([key, data]) => client.setQueryData(key, data)),
     onSettled: () => client.invalidateQueries({ queryKey: ['jobs'] }),
   });
+  const application = useMutation({
+    mutationFn: ({ jobId, patch }: { jobId: string; patch: { status?: string; memo?: string } }) =>
+      api(`/jobs/${jobId}/application`, { method: 'PATCH', body: json(patch) }),
+    onMutate: async ({ jobId, patch }) => {
+      await client.cancelQueries({ queryKey: ['jobs'] });
+      const snapshots = client.getQueriesData<Job[]>({ queryKey: ['jobs'] });
+      client.setQueriesData<Job[]>({ queryKey: ['jobs'] }, (current) =>
+        current?.map((job) =>
+          job.id === jobId
+            ? {
+                ...job,
+                savedBy: [
+                  {
+                    status: patch.status ?? job.savedBy[0]?.status ?? 'INTERESTED',
+                    memo: patch.memo ?? job.savedBy[0]?.memo ?? '',
+                    bookmarked: job.bookmarked,
+                  },
+                ],
+              }
+            : job,
+        ),
+      );
+      return { snapshots };
+    },
+    onError: (_error, _variables, context) =>
+      context?.snapshots.forEach(([key, data]) => client.setQueryData(key, data)),
+    onSettled: () => client.invalidateQueries({ queryKey: ['jobs'] }),
+  });
+
+  useEffect(() => {
+    if (!requestedJob || !jobs.data) return;
+    document.getElementById(`job-${requestedJob}`)?.scrollIntoView({ block: 'center' });
+  }, [jobs.data, requestedJob]);
 
   const calendarData = useMemo(() => {
     const grouped = new Map<string, CalendarEvent[]>();
@@ -612,6 +693,27 @@ export function JobsPage() {
       </section>
 
       <div className="filter-bar jobs-filter">
+        {viewMode === 'list' && (
+          <>
+            <label>
+              공고 검색
+              <input
+                type="search"
+                value={search}
+                onChange={(event) => setUrlParam('q', event.target.value)}
+                placeholder="회사, 직무, 기술 스택"
+              />
+            </label>
+            <label className="check-label">
+              <input
+                type="checkbox"
+                checked={savedOnly}
+                onChange={(event) => setUrlParam('saved', event.target.checked ? '1' : '')}
+              />
+              저장한 공고만
+            </label>
+          </>
+        )}
         <JobFilterPanel
           companySizes={companySizes}
           categories={categories.data || []}
@@ -818,7 +920,11 @@ export function JobsPage() {
               ? Math.ceil((new Date(job.deadlineAt).getTime() - Date.now()) / 86_400_000)
               : undefined;
             return (
-              <article key={job.id} className="job-card">
+              <article
+                key={job.id}
+                id={`job-${job.id}`}
+                className={`job-card ${job.id === requestedJob ? 'search-target' : ''}`}
+              >
                 <div className="company-tile">
                   <Building2 aria-hidden="true" />
                 </div>
@@ -872,22 +978,30 @@ export function JobsPage() {
                 <div className="job-actions">
                   <FolderSaveButton itemType="JOB_POSTING" targetId={job.id} label={job.title} />
                   <button
-                    disabled={save.isPending}
-                    onClick={() => save.mutate({ jobId: job.id, status: 'INTERESTED' })}
-                    className={job.savedBy.length ? 'saved' : ''}
+                    disabled={bookmark.isPending && bookmark.variables?.jobId === job.id}
+                    onClick={() =>
+                      bookmark.mutate({ jobId: job.id, bookmarked: !job.bookmarked })
+                    }
+                    className={job.bookmarked ? 'saved' : ''}
+                    aria-pressed={job.bookmarked}
                   >
-                    <Bookmark fill={job.savedBy.length ? 'currentColor' : 'none'} />
-                    {job.savedBy.length ? '관심 공고' : '관심 저장'}
+                    <Bookmark fill={job.bookmarked ? 'currentColor' : 'none'} />
+                    {job.bookmarked ? '관심 공고' : '관심 저장'}
                   </button>
                   {job.savedBy.length > 0 && (
                     <label className="application-status">
                       <span className="sr-only">{job.title} 지원 상태</span>
                       <select
                         aria-label={`${job.title} 지원 상태`}
-                        disabled={save.isPending}
+                        disabled={
+                          application.isPending && application.variables?.jobId === job.id
+                        }
                         value={job.savedBy[0]?.status || 'INTERESTED'}
                         onChange={(event) =>
-                          save.mutate({ jobId: job.id, status: event.target.value })
+                          application.mutate({
+                            jobId: job.id,
+                            patch: { status: event.target.value },
+                          })
                         }
                       >
                         {Object.entries(applicationLabels).map(([value, label]) => (
@@ -896,6 +1010,29 @@ export function JobsPage() {
                           </option>
                         ))}
                       </select>
+                    </label>
+                  )}
+                  {job.savedBy.length > 0 && (
+                    <label className="application-memo">
+                      <span className="sr-only">{job.title} 지원 메모</span>
+                      <textarea
+                        aria-label={`${job.title} 지원 메모`}
+                        rows={2}
+                        value={memoDrafts[job.id] ?? job.savedBy[0]?.memo ?? ''}
+                        onChange={(event) =>
+                          setMemoDrafts((current) => ({
+                            ...current,
+                            [job.id]: event.target.value,
+                          }))
+                        }
+                        onBlur={() => {
+                          const memo = memoDrafts[job.id];
+                          if (memo !== undefined && memo !== job.savedBy[0]?.memo) {
+                            application.mutate({ jobId: job.id, patch: { memo } });
+                          }
+                        }}
+                        placeholder="지원 메모"
+                      />
                     </label>
                   )}
                   <a href={job.sourceUrl} target="_blank" rel="noreferrer">

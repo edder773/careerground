@@ -10,7 +10,8 @@ import { api, json } from '../lib/api';
 
 type Comment = {
   id: string;
-  markdown: string;
+  markdown: string | null;
+  redacted?: 'DELETED' | 'HIDDEN' | null;
   deletedAt?: string;
   hiddenAt?: string;
   author: { displayName: string };
@@ -62,6 +63,7 @@ function SolutionRevisionPanel({ solution }: { solution: Solution }) {
           spaceComplexity: solution.spaceComplexity,
           lessons: solution.lessons,
           solved: solution.solved,
+          baseRevision: solution.currentRev,
         }),
       }),
     onSuccess: async () => {
@@ -112,15 +114,9 @@ function SolutionRevisionPanel({ solution }: { solution: Solution }) {
         </form>
       ) : (
         <>
-          <div className="code-view">
-            <CodeMirror
-              value={solution.code}
-              height="220px"
-              editable={false}
-              extensions={solution.language === 'javascript' ? [javascript()] : []}
-              basicSetup={{ lineNumbers: true }}
-            />
-          </div>
+          <pre className="code-view static-code" tabIndex={0} aria-label={`${solution.title} 코드`}>
+            <code>{solution.code.split('\n').slice(0, 80).join('\n')}</code>
+          </pre>
           <div className="markdown-body">
             <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{solution.description}</ReactMarkdown>
           </div>
@@ -218,7 +214,7 @@ export function SolutionsPage() {
       {!solutions.isLoading && !solutions.data?.length && (
         <div className="empty-panel">
           <Users />
-          <h3>아직 풀이 기록이 없습니다</h3>
+          <h2>아직 풀이 기록이 없습니다</h2>
           <p>코딩테스트에서 이 문제의 첫 풀이를 기록해보세요.</p>
         </div>
       )}
@@ -255,9 +251,9 @@ export function SolutionsPage() {
                 <div key={item.id} className="comment">
                   <strong>{item.author.displayName}</strong>
                   <p>
-                    {item.deletedAt
+                    {item.redacted === 'DELETED' || item.deletedAt
                       ? '삭제된 댓글입니다.'
-                      : item.hiddenAt
+                      : item.redacted === 'HIDDEN' || item.hiddenAt
                         ? '관리자가 숨긴 댓글입니다.'
                         : item.markdown}
                   </p>
@@ -275,7 +271,13 @@ export function SolutionsPage() {
                   {item.replies.map((reply) => (
                     <div className="reply" key={reply.id}>
                       <strong>{reply.author.displayName}</strong>
-                      <p>{reply.markdown}</p>
+                      <p>
+                        {reply.redacted === 'DELETED' || reply.deletedAt
+                          ? '삭제된 답글입니다.'
+                          : reply.redacted === 'HIDDEN' || reply.hiddenAt
+                            ? '관리자가 숨긴 답글입니다.'
+                            : reply.markdown}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -296,9 +298,26 @@ export function SolutionsPage() {
                   <button className="primary-button compact" disabled={!comment.trim()}>
                     <Send /> 등록
                   </button>
+                  <button
+                    type="button"
+                    className="ghost-button compact"
+                    onClick={() => {
+                      setComment('');
+                      setCommenting(undefined);
+                      setReplyingTo(undefined);
+                    }}
+                  >
+                    취소
+                  </button>
                 </form>
               ) : (
-                <button className="ghost-button" onClick={() => setCommenting(solution.id)}>
+                <button
+                  className="ghost-button"
+                  onClick={() => {
+                    setCommenting(solution.id);
+                    setReplyingTo(undefined);
+                  }}
+                >
                   댓글 남기기
                 </button>
               )}

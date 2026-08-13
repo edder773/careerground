@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router';
 import {
   Clock3,
   Code2,
@@ -58,6 +59,7 @@ function RevisionDiff({ revisions }: { revisions: Revision[] }) {
 
 export function NotesPage() {
   const client = useQueryClient();
+  const [searchParams] = useSearchParams();
   const editor = useRef<HTMLTextAreaElement>(null);
   const notes = useQuery({ queryKey: ['notes'], queryFn: () => api<Note[]>('/notes') });
   const [selectedId, setSelectedId] = useState<string>();
@@ -70,6 +72,9 @@ export function NotesPage() {
     () => notes.data?.find((note) => note.id === selectedId),
     [notes.data, selectedId],
   );
+  const dirty = creating
+    ? Boolean(title || markdown)
+    : Boolean(selected && (title !== selected.title || markdown !== selected.markdown));
   const filtered = useMemo(() => {
     const keyword = query.trim().toLowerCase();
     if (!keyword) return notes.data || [];
@@ -80,19 +85,35 @@ export function NotesPage() {
 
   useEffect(() => {
     if (!notes.data?.length || selectedId || creating) return;
-    setSelectedId(notes.data[0]?.id);
-  }, [notes.data, selectedId, creating]);
+    const requested = searchParams.get('note');
+    setSelectedId(
+      notes.data.some((note) => note.id === requested) ? requested! : notes.data[0]?.id,
+    );
+  }, [notes.data, selectedId, creating, searchParams]);
   useEffect(() => {
     if (!selected || creating) return;
     setTitle(selected.title);
     setMarkdown(selected.markdown);
   }, [selected, creating]);
+  useEffect(() => {
+    const warn = (event: BeforeUnloadEvent) => {
+      if (!dirty) return;
+      event.preventDefault();
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [dirty]);
 
   const save = useMutation({
     mutationFn: () =>
       api<Note>('/notes', {
         method: 'POST',
-        body: json({ id: creating ? undefined : selected?.id, title, markdown }),
+        body: json({
+          id: creating ? undefined : selected?.id,
+          baseRevision: creating ? undefined : selected?.currentRev,
+          title,
+          markdown,
+        }),
       }),
     onSuccess: async (note) => {
       setCreating(false);
@@ -206,6 +227,7 @@ export function NotesPage() {
             <header className="note-workspace-header">
               <div>
                 <span>{creating ? '새 노트' : `버전 ${selected?.currentRev || 1}`}</span>
+                <strong role="status">{dirty ? '저장되지 않은 변경' : '모든 변경 저장됨'}</strong>
                 {!creating && selected && (
                   <time dateTime={selected.updatedAt}>{dateLabel(selected.updatedAt)} 수정</time>
                 )}
