@@ -605,7 +605,7 @@ async function calendarJobList(
        AND j.career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
        AND ${scheduleClause}
        ${filters.length ? `AND ${filters.join(' AND ')}` : ''}
-     LIMIT 100`;
+     LIMIT 200`;
   const statement = (indexName: string, scheduleClause: string, ...scheduleValues: unknown[]) =>
     db.prepare(select(indexName, scheduleClause)).bind(userId, ...scheduleValues, ...filterValues);
   const resultSets = await db.batch<Record<string, unknown>>([
@@ -639,9 +639,12 @@ async function jobList(db: D1Database, userId: string, url: URL) {
   const values: unknown[] = [userId];
   const companySizes = [...new Set(url.searchParams.getAll('companySize').filter(Boolean))].slice(
     0,
-    20,
+    100,
   );
-  const categories = [...new Set(url.searchParams.getAll('category').filter(Boolean))].slice(0, 20);
+  const categories = [...new Set(url.searchParams.getAll('category').filter(Boolean))].slice(
+    0,
+    100,
+  );
   if (companySizes.length) {
     clauses.push(`j.company_size IN (${companySizes.map(() => '?').join(', ')})`);
     values.push(...companySizes);
@@ -683,7 +686,7 @@ async function jobList(db: D1Database, userId: string, url: URL) {
       ? 'j.deadline_at ASC'
       : url.searchParams.get('sort') === 'company'
         ? 'j.company_name ASC'
-        : 'j.created_at DESC';
+        : 'j.collected_at DESC';
   const indexName =
     url.searchParams.get('sort') === 'deadline'
       ? 'idx_jobs_deadline_status'
@@ -693,7 +696,7 @@ async function jobList(db: D1Database, userId: string, url: URL) {
           ? 'idx_jobs_category_created_status'
           : companySizes.length
             ? 'idx_jobs_size_created_status'
-            : 'idx_jobs_created_status';
+            : 'idx_jobs_calendar_collected';
   const rows = await all<Record<string, unknown>>(
     db,
     `SELECT j.id, j.title, j.category, j.region, j.remote, j.tech_stack,
@@ -703,7 +706,7 @@ async function jobList(db: D1Database, userId: string, url: URL) {
        FROM jobs j ${calendar ? '' : `INDEXED BY ${indexName}`}
        LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ?
       WHERE ${clauses.join(' AND ')}
-      ORDER BY ${order} LIMIT 100`,
+      ORDER BY ${order} LIMIT 200`,
     ...values,
   );
   return serializeJobRows(rows);

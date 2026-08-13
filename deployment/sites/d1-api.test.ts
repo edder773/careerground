@@ -48,6 +48,7 @@ class SqliteD1 implements D1Database {
       'drizzle/0006_tense_iron_patriot.sql',
       'drizzle/0007_learning_catalog_expansion.sql',
       'drizzle/0008_sql_track_learning_visuals.sql',
+      'drizzle/0009_refresh_job_catalog.sql',
     ]) {
       const migration = readFileSync(file, 'utf8');
       for (const statement of migration.split('--> statement-breakpoint')) {
@@ -231,6 +232,12 @@ describe('Sites D1 API', () => {
     const jobCount = await db
       .prepare('SELECT COUNT(*) AS count FROM jobs')
       .first<{ count: number }>();
+    const currentJobCount = await db
+      .prepare("SELECT COUNT(*) AS count FROM jobs WHERE status != 'EXPIRED'")
+      .first<{ count: number }>();
+    const expiredJobCount = await db
+      .prepare("SELECT COUNT(*) AS count FROM jobs WHERE status = 'EXPIRED'")
+      .first<{ count: number }>();
     const problemCount = await db
       .prepare('SELECT COUNT(*) AS count FROM coding_problems WHERE active = 1')
       .first<{ count: number }>();
@@ -245,14 +252,16 @@ describe('Sites D1 API', () => {
       )
       .first<{ count: number }>();
 
-    expect(jobCount?.count).toBe(47);
+    expect(jobCount?.count).toBe(121);
+    expect(currentJobCount?.count).toBe(120);
+    expect(expiredJobCount?.count).toBe(1);
     expect(problemCount?.count).toBe(427);
     expect(sqlProblemCount?.count).toBe(62);
     expect(dummyCount?.count).toBe(0);
 
     const jobs = await call('/api/v1/jobs?sort=new');
     expect(jobs.response.status).toBe(200);
-    expect(jobs.body).toHaveLength(46);
+    expect(jobs.body).toHaveLength(119);
     expect(jobs.body).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

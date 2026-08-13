@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { LearningPage } from './LearningPage';
@@ -69,7 +69,7 @@ describe('learning library', () => {
       '/learning/statistical-thinking.jpg',
     );
 
-    await user.click(modal.getByRole('button', { name: '통계적 사고 이해도 4점' }));
-    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    expect(modal.queryByText('이 단원을 얼마나 이해했나요?')).not.toBeInTheDocument();
+    expect(modal.queryByRole('button', { name: /이해도/ })).not.toBeInTheDocument();
   });
 });
