@@ -42,6 +42,7 @@ async function seedLearningSource(adminId: string, fileName: string) {
           title: unit.title,
           summary: unit.summaryMarkdown,
           concepts: unit.concepts,
+          visuals: unit.visuals,
           position,
           published: true,
           revisions: { create: { revision: 1, markdown: unit.summaryMarkdown } },
@@ -230,15 +231,16 @@ async function main() {
   }
 
   const problemDefs = [
-    ['[DEMO] 배열 순회 연습', 1, '12901'],
-    ['[DEMO] 문자열 처리 연습', 1, '12916'],
-    ['[DEMO] 해시 탐색 연습', 2, '42576'],
-    ['[DEMO] 스택 연습', 2, '12909'],
-    ['[DEMO] 그래프 연습', 3, '43162'],
-    ['[DEMO] 동적 계획 연습', 3, '42898'],
+    ['[DEMO] 배열 순회 연습', 1, '12901', 'ALGORITHM'],
+    ['[DEMO] 문자열 처리 연습', 1, '12916', 'ALGORITHM'],
+    ['[DEMO] 해시 탐색 연습', 2, '42576', 'ALGORITHM'],
+    ['[DEMO] 스택 연습', 2, '12909', 'ALGORITHM'],
+    ['[DEMO] 그래프 연습', 3, '43162', 'ALGORITHM'],
+    ['[DEMO] 동적 계획 연습', 3, '42898', 'ALGORITHM'],
+    ['[DEMO] SQL JOIN 연습', 3, '59042', 'SQL'],
   ] as const;
   const problems = [];
-  for (const [order, [displayTitle, level, id]] of problemDefs.entries()) {
+  for (const [order, [displayTitle, level, id, track]] of problemDefs.entries()) {
     const sourceUrl = `https://school.programmers.co.kr/learn/courses/30/lessons/${id}`;
     problems.push(
       await prisma.codingProblem.upsert({
@@ -247,10 +249,18 @@ async function main() {
           sourceUrl,
           displayTitle,
           level,
-          tags: level === 1 ? ['구현'] : level === 2 ? ['자료구조'] : ['그래프'],
+          track,
+          tags:
+            track === 'SQL'
+              ? ['JOIN']
+              : level === 1
+                ? ['구현']
+                : level === 2
+                  ? ['자료구조']
+                  : ['그래프'],
           order,
         },
-        update: { displayTitle, level, active: true, order },
+        update: { displayTitle, level, track, active: true, order },
       }),
     );
   }
@@ -307,19 +317,25 @@ async function main() {
 
   const today = kstDate();
   const challenges = await Promise.all(
-    [1, 2].map((levelSlot) => {
-      const problem = problems.find((item) => item.level === levelSlot);
-      if (!problem) throw new Error(`Lv. ${levelSlot} seed problem is required`);
+    [
+      { levelSlot: 1, track: 'ALGORITHM', levels: [1] },
+      { levelSlot: 2, track: 'ALGORITHM', levels: [2] },
+      { levelSlot: 34, track: 'SQL', levels: [3, 4] },
+    ].map(({ levelSlot, track, levels }) => {
+      const problem = problems.find((item) => item.track === track && levels.includes(item.level));
+      if (!problem) throw new Error(`${track} daily seed problem is required`);
       return prisma.dailyChallenge.upsert({
         where: { kstDate_levelSlot: { kstDate: today, levelSlot } },
         create: {
           kstDate: today,
           levelSlot,
           problemId: problem.id,
-          candidateCount: problems.filter((item) => item.level === levelSlot).length,
-          allowedLevels: [levelSlot],
+          candidateCount: problems.filter(
+            (item) => item.track === track && levels.includes(item.level),
+          ).length,
+          allowedLevels: levels,
           repeatWindowDays: 60,
-          selectionSeed: sha(`${today.toISOString()}:level-${levelSlot}`).slice(0, 16),
+          selectionSeed: sha(`${today.toISOString()}:${track}:${levels.join('-')}`).slice(0, 16),
           selectionReason: 'deterministic development seed',
         },
         update: {},

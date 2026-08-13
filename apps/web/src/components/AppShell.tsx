@@ -10,6 +10,7 @@ import {
   FolderKanban,
   FileText,
   Grid2X2,
+  GraduationCap,
   Home,
   List,
   Menu,
@@ -137,6 +138,20 @@ export function AppShell({
           <span>설정</span>
         </NavLink>
       </nav>
+      <a
+        className="certification-link"
+        href="https://baeumzip.site"
+        target="_blank"
+        rel="noreferrer"
+        aria-label="배움집 자격증 학습 새 창에서 열기"
+      >
+        <GraduationCap size={18} aria-hidden="true" />
+        <span>
+          <strong>자격증 학습</strong>
+          <small>배움집으로 이동</small>
+        </span>
+        <ChevronRight size={15} aria-hidden="true" />
+      </a>
       <div className="sidebar-profile">
         <div className="avatar" aria-hidden="true">
           {user?.displayName.slice(0, 1)}

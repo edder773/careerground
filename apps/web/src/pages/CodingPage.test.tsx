@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { CodingPage } from './CodingPage';
@@ -11,6 +11,7 @@ describe('solution editor', () => {
       id: '11111111-1111-4111-8111-111111111111',
       displayTitle: '데모 문제',
       level: 1,
+      track: 'ALGORITHM' as const,
       tags: ['구현'],
       sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/1',
       progress: [],
@@ -22,6 +23,15 @@ describe('solution editor', () => {
       displayTitle: '데모 문제 Lv. 2',
       level: 2,
       sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/2',
+    };
+    const sqlProblem = {
+      ...problem,
+      id: '33333333-3333-4333-8333-333333333333',
+      displayTitle: '조건에 맞는 사용자 찾기',
+      level: 3,
+      track: 'SQL' as const,
+      tags: ['SELECT'],
+      sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/3',
     };
     const calls: Array<{ url: string; body?: unknown }> = [];
     vi.stubGlobal(
@@ -40,11 +50,13 @@ describe('solution editor', () => {
               onboardingCompleted: true,
             },
           });
-        if (url.endsWith('/coding/problems')) return response([problem, levelTwoProblem]);
+        if (url.includes('/coding/problems?'))
+          return response(url.includes('track=SQL') ? [sqlProblem] : [problem, levelTwoProblem]);
         if (url.endsWith('/coding/daily-challenges'))
           return response([
             { id: 'daily-lv1', problemId: problem.id, problem },
             { id: 'daily-lv2', problemId: levelTwoProblem.id, problem: levelTwoProblem },
+            { id: 'daily-sql', problemId: sqlProblem.id, problem: sqlProblem },
           ]);
         return response({});
       }),
@@ -59,9 +71,13 @@ describe('solution editor', () => {
     expect(screen.queryByText(/오늘 두 문제|오늘의 두 문제/)).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: '데모 문제 원본 열기' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '데모 문제 Lv. 2 원본 열기' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: '조건에 맞는 사용자 찾기 원본 열기' }),
+    ).toBeInTheDocument();
     const dailySection = screen.getByRole('region', { name: '오늘의 문제' });
-    expect(dailySection.querySelectorAll('a[href^="/solutions?"]')).toHaveLength(2);
-    await user.click(screen.getAllByRole('button', { name: '풀이 기록' })[0]!);
+    expect(dailySection.querySelectorAll('article')).toHaveLength(3);
+    expect(dailySection.querySelectorAll('a[href^="/solutions?"]')).toHaveLength(3);
+    await user.click(within(dailySection).getAllByRole('button', { name: '풀이 기록' })[0]!);
     expect(screen.getByRole('dialog', { name: '데모 문제' })).toBeInTheDocument();
     const language = screen.getByRole('combobox', { name: '언어' });
     await waitFor(() => expect(language).toHaveValue('javascript'));
@@ -72,5 +88,23 @@ describe('solution editor', () => {
     expect(screen.getByText('저장한 풀이는 다른 멤버도 바로 볼 수 있습니다.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /해결 기록 저장/ })).toBeDisabled();
     await waitFor(() => expect(calls.some((call) => call.url.includes('/progress'))).toBe(true));
+
+    await user.click(screen.getByRole('button', { name: '닫기' }));
+    await user.click(within(dailySection).getAllByRole('button', { name: '풀이 기록' })[2]!);
+    const sqlLanguage = screen.getByRole('combobox', { name: '언어' });
+    expect(sqlLanguage).toHaveValue('sql');
+    expect(
+      Array.from(sqlLanguage.querySelectorAll('option')).map((option) => option.textContent),
+    ).toEqual(['SQL']);
+
+    await user.click(screen.getByRole('button', { name: '닫기' }));
+    await user.click(screen.getByRole('button', { name: 'SQL' }));
+    await waitFor(() =>
+      expect(
+        Array.from(document.querySelectorAll('.problem-grid h3')).map(
+          (heading) => heading.textContent,
+        ),
+      ).toEqual(['조건에 맞는 사용자 찾기']),
+    );
   });
 });

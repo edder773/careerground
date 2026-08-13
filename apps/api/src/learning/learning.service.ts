@@ -62,6 +62,7 @@ export class LearningService {
             title: unit.title,
             summary: sanitizeHtml(unit.summaryMarkdown, { allowedTags: [], allowedAttributes: {} }),
             concepts: unit.concepts,
+            visuals: unit.visuals,
             position,
             published: true,
             revisions: {

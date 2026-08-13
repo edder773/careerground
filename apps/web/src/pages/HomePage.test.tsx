@@ -55,6 +55,7 @@ describe('folder workspace', () => {
               problem: {
                 displayTitle: '오늘의 Lv. 1',
                 level: 1,
+                track: 'ALGORITHM',
                 sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/1',
               },
             },
@@ -63,7 +64,17 @@ describe('folder workspace', () => {
               problem: {
                 displayTitle: '오늘의 Lv. 2',
                 level: 2,
+                track: 'ALGORITHM',
                 sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/2',
+              },
+            },
+            {
+              id: 'challenge-sql',
+              problem: {
+                displayTitle: '오늘의 SQL',
+                level: 3,
+                track: 'SQL',
+                sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/3',
               },
             },
           ]);
@@ -78,6 +89,8 @@ describe('folder workspace', () => {
     expect(await screen.findByText('취업 준비')).toBeInTheDocument();
     expect(await screen.findByText('오늘의 Lv. 1')).toBeInTheDocument();
     expect(screen.getByText('오늘의 Lv. 2')).toBeInTheDocument();
+    expect(screen.getByText('오늘의 SQL')).toBeInTheDocument();
+    expect(screen.getByText('SQL · Lv. 3')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /새 폴더/ }));
     await user.type(screen.getByRole('textbox', { name: '폴더 이름' }), '코테 모음');
     await user.click(screen.getByRole('button', { name: '만들기' }));

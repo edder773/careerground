@@ -24,6 +24,14 @@ describe('responsive application navigation', () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     renderWithProviders(client);
     expect((await screen.findAllByRole('navigation', { name: '주요 메뉴' })).length).toBe(1);
+    expect(screen.getByRole('link', { name: '배움집 자격증 학습 새 창에서 열기' })).toHaveAttribute(
+      'href',
+      'https://baeumzip.site',
+    );
+    expect(screen.getByRole('link', { name: '배움집 자격증 학습 새 창에서 열기' })).toHaveAttribute(
+      'target',
+      '_blank',
+    );
     expect(screen.getByRole('navigation', { name: '모바일 주요 메뉴' })).toBeInTheDocument();
     await userEvent.setup().click(screen.getByRole('button', { name: '메뉴 열기' }));
     expect(screen.getAllByRole('navigation', { name: '주요 메뉴' })).toHaveLength(2);

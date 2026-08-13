@@ -26,7 +26,7 @@ test('captures responsive home screenshots and has no serious accessibility viol
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.reload();
     await expect(page.getByRole('heading', { name: '내 폴더', level: 1 })).toBeVisible();
-    await expect(page.locator('.today-problem-list a')).toHaveCount(2);
+    await expect(page.locator('.today-problem-list a')).toHaveCount(3);
     await page.screenshot({
       path: `test-results/visual/home-${viewport.name}.png`,
       fullPage: false,
@@ -106,6 +106,8 @@ test('captures core domain screens', async ({ page }) => {
         .locator('.learning-source')
         .filter({ hasText: '생성형 AI 실전: Prompt와 Context Engineering' });
       await expect(promptLearning).toBeVisible();
+      const promptToggle = promptLearning.getByRole('button', { name: '펼치기' });
+      if (await promptToggle.isVisible()) await promptToggle.click();
       await promptLearning
         .getByRole('button', { name: /내용 보기/ })
         .first()
@@ -190,6 +192,8 @@ test('captures core domain screens', async ({ page }) => {
     .locator('.learning-source')
     .filter({ hasText: '생성형 AI 실전: Prompt와 Context Engineering' });
   await expect(promptLearning).toBeVisible();
+  const promptToggle = promptLearning.getByRole('button', { name: '펼치기' });
+  if (await promptToggle.isVisible()) await promptToggle.click();
   await promptLearning
     .getByRole('button', { name: /내용 보기/ })
     .first()

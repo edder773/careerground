@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
-import { codeLanguageSchema } from '@careerground/contracts';
+import { problemTrackSchema, solutionLanguageSchema } from '@careerground/contracts';
 import { CurrentUser, Public, Roles, type AuthUser } from '../auth/auth.decorators.js';
 import { CodingService } from './coding.service.js';
 
@@ -20,7 +20,7 @@ const solutionSchema = z.object({
   id: z.string().uuid().optional(),
   problemId: z.string().uuid(),
   title: z.string().trim().min(1).max(200),
-  language: codeLanguageSchema,
+  language: solutionLanguageSchema,
   code: z.string().max(100_000),
   description: z.string().max(30_000),
   timeComplexity: z.string().max(100).optional(),
@@ -39,8 +39,14 @@ export class CodingController {
     @CurrentUser() user: AuthUser,
     @Query('level') level?: string,
     @Query('tag') tag?: string,
+    @Query('track') track?: string,
   ) {
-    return this.coding.listProblems(user.id, { level: level ? Number(level) : undefined, tag });
+    const parsedTrack = problemTrackSchema.safeParse(track);
+    return this.coding.listProblems(user.id, {
+      level: level ? Number(level) : undefined,
+      tag,
+      track: parsedTrack.success ? parsedTrack.data : undefined,
+    });
   }
 
   @Roles('ADMIN')
@@ -51,6 +57,7 @@ export class CodingController {
         sourceUrl: z.string().url(),
         displayTitle: z.string().trim().min(1).max(160),
         level: z.number().int().min(0).max(5),
+        track: problemTrackSchema.default('ALGORITHM'),
         tags: z.array(z.string().max(40)).max(20),
       })
       .safeParse(body);

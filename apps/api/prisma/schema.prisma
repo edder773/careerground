@@ -256,6 +256,7 @@ model LearningUnit {
   title      String                    @db.VarChar(200)
   summary    String
   concepts   String[]
+  visuals    Json?
   position   Int                       @default(0)
   published  Boolean                   @default(false)
   currentRev Int                       @default(1)
@@ -473,6 +474,7 @@ model CodingProblem {
   sourceUrl    String            @unique @db.VarChar(1000)
   displayTitle String            @db.VarChar(160)
   level        Int
+  track        String            @default("ALGORITHM") @db.VarChar(20)
   tags         String[]
   order        Int               @default(0)
   active       Boolean           @default(true)
@@ -481,6 +483,8 @@ model CodingProblem {
   progress     ProblemProgress[]
   solutions    Solution[]
   challenges   DailyChallenge[]
+
+  @@index([track, level, order])
 }
 
 model ProblemProgress {

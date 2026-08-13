@@ -1714,6 +1714,283 @@ p {
     flex-direction: column;
   }
 }
+
+/* SQL track, compact learning accordion, and source-captured learning visuals */
+.certification-link {
+  min-height: 54px;
+  margin-top: auto;
+  padding: 9px 11px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  color: #dce9e8;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.certification-link:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.certification-link span,
+.certification-link strong,
+.certification-link small {
+  min-width: 0;
+  display: block;
+}
+
+.certification-link strong {
+  font-size: 11px;
+}
+
+.certification-link small {
+  margin-top: 2px;
+  color: #9db9b9;
+  font-size: 8px;
+}
+
+.certification-link > svg:last-child {
+  color: #9db9b9;
+}
+
+.sidebar-profile {
+  margin-top: 8px;
+}
+
+.daily-challenge-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.problem-track-tabs {
+  padding: 3px;
+  display: inline-flex;
+  gap: 2px;
+  background: #eceef3;
+  border-radius: 9px;
+}
+
+.problem-track-tabs button {
+  min-height: 28px;
+  padding: 0 11px;
+  color: #69707d;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.problem-track-tabs button.active {
+  color: white;
+  background: #5363b8;
+  box-shadow: 0 3px 9px rgba(55, 67, 127, 0.18);
+}
+
+.track-pill {
+  padding: 4px 7px;
+  color: #54606e;
+  background: #eff1f4;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.track-pill.sql {
+  color: #895522;
+  background: #fff0d8;
+}
+
+.problem-grid article {
+  padding: 15px;
+}
+
+.learning-list {
+  gap: 10px;
+}
+
+.learning-source {
+  padding: 15px 16px;
+}
+
+.learning-source > header {
+  margin-bottom: 0;
+}
+
+.learning-source.expanded > header {
+  margin-bottom: 13px;
+}
+
+.learning-source > header > div:nth-child(2) {
+  min-width: 0;
+}
+
+.learning-source-toggle {
+  min-height: 34px;
+  margin-left: auto;
+  padding: 0 10px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+  color: #4f5eaa;
+  background: #f0f1f8;
+  border: 1px solid #dfe2ef;
+  border-radius: 9px;
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.learning-source-toggle svg {
+  width: 14px;
+  transition: transform 160ms ease;
+}
+
+.learning-source-toggle[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+.unit-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.learning-unit-card {
+  min-height: 0;
+}
+
+.unit-grid article {
+  padding: 13px;
+}
+
+.learning-card-content {
+  min-height: 178px;
+}
+
+.unit-grid h3 {
+  margin: 8px 0 5px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.learning-card-content > p {
+  min-height: 0;
+  margin: 0 0 8px;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.learning-unit-card .tag-row {
+  min-height: 0;
+}
+
+.learning-unit-card .unit-counts {
+  margin: 10px 0 0;
+}
+
+.learning-card-open {
+  display: none;
+}
+
+.learning-visual-section {
+  margin: 0 0 22px;
+  padding: 16px;
+  background: #f2f3f7;
+  border: 1px solid #e0e2ea;
+  border-radius: 16px;
+}
+
+.learning-visual-section .learning-section-title {
+  margin-bottom: 12px;
+}
+
+.learning-visual-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.learning-visual-grid figure {
+  margin: 0;
+}
+
+.learning-visual-grid a {
+  position: relative;
+  overflow: hidden;
+  display: block;
+  background: white;
+  border: 1px solid #d9dce5;
+  border-radius: 12px;
+}
+
+.learning-visual-grid img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.learning-visual-grid a span {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  min-height: 28px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: white;
+  background: rgba(37, 42, 58, 0.84);
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 800;
+  backdrop-filter: blur(8px);
+}
+
+.learning-visual-grid a span svg {
+  width: 12px;
+}
+
+.learning-visual-grid figcaption {
+  margin-top: 8px;
+  color: #68707d;
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+@media (max-width: 1180px) {
+  .daily-challenge-grid,
+  .unit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .daily-challenge-grid,
+  .unit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .learning-source > header {
+    align-items: flex-start;
+  }
+
+  .learning-source-toggle {
+    min-width: 72px;
+  }
+
+  .learning-unit-modal {
+    width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .learning-modal-backdrop {
+    padding: 0;
+  }
+}
 .ranking-notice {
   margin-bottom: 18px;
   padding: 15px;
@@ -5937,5 +6214,92 @@ body {
 
   .schedule-list-item {
     min-height: 72px;
+  }
+}
+
+/* Final responsive overrides for the three-track daily set and compact learning library. */
+.certification-link {
+  color: #303641;
+  background: #e5e7eb;
+  border-color: #d5d8de;
+}
+
+.certification-link:hover {
+  color: #222833;
+  background: #dcdfe4;
+}
+
+.certification-link small,
+.certification-link > svg:last-child {
+  color: #555e6a;
+}
+
+.daily-challenge-grid,
+.today-problem-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.learning-list {
+  gap: 10px;
+}
+
+.learning-source {
+  padding: 15px 16px;
+}
+
+.learning-source > header {
+  margin-bottom: 0;
+}
+
+.learning-source.expanded > header {
+  margin-bottom: 13px;
+}
+
+.unit-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.learning-unit-card {
+  min-height: 0;
+}
+
+.unit-grid article {
+  padding: 13px;
+}
+
+.learning-card-content {
+  min-height: 178px;
+}
+
+.learning-card-content > p,
+.learning-unit-card .tag-row {
+  min-height: 0;
+}
+
+.learning-card-content > p {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.learning-unit-card .unit-counts {
+  margin: 10px 0 0;
+}
+
+@media (max-width: 1180px) {
+  .daily-challenge-grid,
+  .today-problem-list,
+  .unit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .daily-challenge-grid,
+  .today-problem-list,
+  .unit-grid {
+    grid-template-columns: 1fr;
   }
 }

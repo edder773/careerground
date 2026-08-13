@@ -5,6 +5,7 @@ import {
   newId,
   nowIso,
   parseArray,
+  parseJsonArray,
   parseObject,
   run,
   type D1Database,
@@ -46,6 +47,7 @@ type ApiUser = {
 };
 
 const codeLanguages = new Set(['python', 'java', 'javascript', 'cpp']);
+const solutionLanguages = new Set([...codeLanguages, 'sql']);
 
 class RouteError extends Error {
   constructor(
@@ -281,22 +283,32 @@ type ProblemRow = {
   sourceUrl: string;
   displayTitle: string;
   level: number;
+  track: 'ALGORITHM' | 'SQL';
   tags: string;
   status: string | null;
   favorite: number | boolean | null;
   solutionCount: number;
 };
 
-async function problems(db: D1Database, userId: string, level?: string | null) {
+async function problems(
+  db: D1Database,
+  userId: string,
+  level?: string | null,
+  track?: string | null,
+) {
   const values: unknown[] = [userId];
   let filter = '';
   if (level) {
     filter = ' AND p.level = ?';
     values.push(Number(level));
   }
+  if (track === 'ALGORITHM' || track === 'SQL') {
+    filter += ' AND p.track = ?';
+    values.push(track);
+  }
   const rows = await all<ProblemRow>(
     db,
-    `SELECT p.id, p.source_url AS sourceUrl, p.display_title AS displayTitle, p.level, p.tags,
+    `SELECT p.id, p.source_url AS sourceUrl, p.display_title AS displayTitle, p.level, p.track, p.tags,
             pp.status, pp.favorite,
             (SELECT COUNT(*) FROM solutions s WHERE s.problem_id = p.id AND s.deleted_at IS NULL) AS solutionCount
        FROM coding_problems p
@@ -310,6 +322,7 @@ async function problems(db: D1Database, userId: string, level?: string | null) {
     sourceUrl: row.sourceUrl,
     displayTitle: row.displayTitle,
     level: row.level,
+    track: row.track,
     tags: parseArray(row.tags),
     progress: row.status ? [{ status: row.status, favorite: asBoolean(row.favorite) }] : [],
     _count: { solutions: Number(row.solutionCount || 0) },
@@ -324,7 +337,13 @@ const kstDate = () =>
     day: '2-digit',
   }).format(new Date());
 
-async function dailyChallenge(db: D1Database, userId: string, levelSlot = 1) {
+async function dailyChallenge(
+  db: D1Database,
+  userId: string,
+  levelSlot = 1,
+  track: 'ALGORITHM' | 'SQL' = 'ALGORITHM',
+  levels: number[] = [levelSlot],
+) {
   const today = kstDate();
   let challenge = await first<{
     id: string;
@@ -339,15 +358,22 @@ async function dailyChallenge(db: D1Database, userId: string, levelSlot = 1) {
     levelSlot,
   );
   if (!challenge) {
+    const levelPlaceholders = levels.map(() => '?').join(', ');
     const candidates = await all<{ id: string }>(
       db,
-      'SELECT id FROM coding_problems WHERE active = 1 AND level = ? ORDER BY position, id',
-      levelSlot,
+      `SELECT id FROM coding_problems WHERE active = 1 AND track = ? AND level IN (${levelPlaceholders}) ORDER BY position, id`,
+      track,
+      ...levels,
     );
     if (!candidates.length)
-      throw new RouteError(404, `오늘의 Lv. ${levelSlot} 문제 후보가 없습니다.`);
-    const seed =
-      [...today].reduce((sum, character) => sum + character.charCodeAt(0), 0) + levelSlot * 31;
+      throw new RouteError(
+        404,
+        `오늘의 ${track === 'SQL' ? 'SQL Lv. 3~4' : `Lv. ${levelSlot}`} 문제 후보가 없습니다.`,
+      );
+    const seed = [...`${today}:${track}:${levels.join('-')}`].reduce(
+      (sum, character) => sum + character.charCodeAt(0),
+      0,
+    );
     const selected = candidates[seed % candidates.length];
     const timestamp = nowIso();
     const id = newId();
@@ -374,10 +400,9 @@ async function dailyChallenge(db: D1Database, userId: string, levelSlot = 1) {
     );
   }
   if (!challenge) throw new RouteError(500, '오늘의 문제를 준비하지 못했습니다.');
-  const [problem] = await problems(db, userId);
   const exact = await first<ProblemRow>(
     db,
-    `SELECT p.id, p.source_url AS sourceUrl, p.display_title AS displayTitle, p.level, p.tags,
+    `SELECT p.id, p.source_url AS sourceUrl, p.display_title AS displayTitle, p.level, p.track, p.tags,
             pp.status, pp.favorite,
             (SELECT COUNT(*) FROM solutions s WHERE s.problem_id = p.id AND s.deleted_at IS NULL) AS solutionCount
        FROM coding_problems p
@@ -386,24 +411,26 @@ async function dailyChallenge(db: D1Database, userId: string, levelSlot = 1) {
     userId,
     challenge.problemId,
   );
-  const problemValue = exact
-    ? {
-        id: exact.id,
-        sourceUrl: exact.sourceUrl,
-        displayTitle: exact.displayTitle,
-        level: exact.level,
-        tags: parseArray(exact.tags),
-        progress: exact.status
-          ? [{ status: exact.status, favorite: asBoolean(exact.favorite) }]
-          : [],
-        _count: { solutions: Number(exact.solutionCount || 0) },
-      }
-    : problem;
+  if (!exact) throw new RouteError(500, '오늘의 문제 정보를 찾지 못했습니다.');
+  const problemValue = {
+    id: exact.id,
+    sourceUrl: exact.sourceUrl,
+    displayTitle: exact.displayTitle,
+    level: exact.level,
+    track: exact.track,
+    tags: parseArray(exact.tags),
+    progress: exact.status ? [{ status: exact.status, favorite: asBoolean(exact.favorite) }] : [],
+    _count: { solutions: Number(exact.solutionCount || 0) },
+  };
   return { ...challenge, problem: problemValue };
 }
 
 async function dailyChallenges(db: D1Database, userId: string) {
-  return Promise.all([1, 2].map((levelSlot) => dailyChallenge(db, userId, levelSlot)));
+  return Promise.all([
+    dailyChallenge(db, userId, 1, 'ALGORITHM', [1]),
+    dailyChallenge(db, userId, 2, 'ALGORITHM', [2]),
+    dailyChallenge(db, userId, 34, 'SQL', [3, 4]),
+  ]);
 }
 
 type SolutionRow = {
@@ -705,7 +732,7 @@ async function learningList(db: D1Database, userId: string) {
     ),
     all<Record<string, unknown>>(
       db,
-      `SELECT u.id, u.source_id AS sourceId, u.title, u.summary, u.concepts, u.position,
+      `SELECT u.id, u.source_id AS sourceId, u.title, u.summary, u.concepts, u.visuals, u.position,
               lp.completed, lp.understanding, lp.next_review_at AS nextReviewAt
          FROM learning_units u INDEXED BY idx_learning_units_published_source_position
          JOIN learning_sources s ON s.id = u.source_id
@@ -756,6 +783,7 @@ async function learningList(db: D1Database, userId: string) {
       title: unit.title,
       summary: unit.summary,
       concepts: parseArray(unit.concepts),
+      visuals: parseJsonArray(unit.visuals),
       flashcards: cardsByUnit.get(id) || [],
       questions: questionsByUnit.get(id) || [],
       progress:
@@ -994,14 +1022,15 @@ async function learningImport(db: D1Database, user: UserRow, input: unknown, com
     await run(
       db,
       `INSERT INTO learning_units
-         (id, source_id, anchor, title, summary, concepts, position, published, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
+         (id, source_id, anchor, title, summary, concepts, visuals, position, published, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
       unitId,
       sourceId,
       cleanText(unit.anchor),
       cleanText(unit.title),
       cleanText(unit.summaryMarkdown),
       JSON.stringify(Array.isArray(unit.concepts) ? unit.concepts.map(String) : []),
+      JSON.stringify(Array.isArray(unit.visuals) ? unit.visuals : []),
       position,
       timestamp,
       timestamp,
@@ -1469,7 +1498,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
   }
 
   if (method === 'GET' && path === '/coding/problems')
-    return problems(db, user.id, url.searchParams.get('level'));
+    return problems(db, user.id, url.searchParams.get('level'), url.searchParams.get('track'));
   if (method === 'POST' && path === '/coding/problems') {
     requireAdmin(user);
     const body = await readJson(request);
@@ -1494,13 +1523,18 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       db,
       'SELECT COUNT(*) AS count FROM coding_problems',
     );
+    const track = cleanText(body.track, 'ALGORITHM');
+    if (!['ALGORITHM', 'SQL'].includes(track)) {
+      throw new RouteError(400, '문제 유형은 ALGORITHM 또는 SQL이어야 합니다.');
+    }
     await run(
       db,
-      `INSERT INTO coding_problems (id, source_url, display_title, level, tags, position, active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)`,
+      `INSERT INTO coding_problems (id, source_url, display_title, level, track, tags, position, active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
       id,
       sourceUrl.toString(),
       cleanText(body.displayTitle),
       int(body.level, 1),
+      track,
       JSON.stringify(Array.isArray(body.tags) ? body.tags.map(String) : []),
       Number(count?.count || 0),
       timestamp,
@@ -1512,6 +1546,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       sourceUrl: sourceUrl.toString(),
       displayTitle: cleanText(body.displayTitle),
       level: int(body.level, 1),
+      track,
       tags: Array.isArray(body.tags) ? body.tags : [],
     };
   }
@@ -1586,7 +1621,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     const timestamp = nowIso();
     const problemId = cleanText(body.problemId);
     const language = cleanText(body.language);
-    if (!codeLanguages.has(language)) {
+    if (!solutionLanguages.has(language)) {
       throw new RouteError(400, '지원하는 코드 언어를 선택해주세요.');
     }
     if (typeof body.id === 'string' && body.id) {

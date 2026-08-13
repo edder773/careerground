@@ -31,6 +31,8 @@ export const applicationStatusSchema = z.enum([
 ]);
 export const problemStatusSchema = z.enum(['UNTRIED', 'IN_PROGRESS', 'SOLVED', 'RETRY']);
 export const codeLanguageSchema = z.enum(['python', 'java', 'javascript', 'cpp']);
+export const solutionLanguageSchema = z.enum(['python', 'java', 'javascript', 'cpp', 'sql']);
+export const problemTrackSchema = z.enum(['ALGORITHM', 'SQL']);
 
 const safeHttpUrl = z
   .string()
@@ -87,6 +89,17 @@ export const learningImportSchema = z.object({
         title: z.string().trim().min(1).max(200),
         summaryMarkdown: z.string().max(30_000),
         concepts: z.array(z.string().trim().min(1).max(200)).max(30),
+        visuals: z
+          .array(
+            z.object({
+              src: z.string().regex(/^\/learning\/[a-z0-9-]+\.(?:jpg|jpeg|png|webp)$/),
+              alt: z.string().trim().min(1).max(300),
+              caption: z.string().trim().min(1).max(500),
+              page: z.number().int().positive(),
+            }),
+          )
+          .max(3)
+          .default([]),
         flashcards: z
           .array(z.object({ front: z.string().max(2_000), back: z.string().max(4_000) }))
           .max(50),
@@ -116,6 +129,7 @@ export const problemImportSchema = z.object({
       ),
       title: z.string().trim().min(1).max(160),
       level: z.number().int().min(0).max(5),
+      track: problemTrackSchema.default('ALGORITHM'),
       tags: z.array(z.string().trim().min(1).max(40)).max(20),
       active: z.boolean().default(true),
     }),
