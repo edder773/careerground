@@ -17,11 +17,7 @@
       "employmentType": "FULL_TIME",
       "region": "경기 성남시",
       "remote": false,
-      "techStack": [
-        "Next.js",
-        "Supabase",
-        "Frontend"
-      ],
+      "techStack": ["Next.js", "Supabase", "Frontend"],
       "rolling": false,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -138,10 +134,7 @@
       "employmentType": "FULL_TIME",
       "region": "경기",
       "remote": false,
-      "techStack": [
-        "IT",
-        "Development"
-      ],
+      "techStack": ["IT", "Development"],
       "rolling": false,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -163,10 +156,7 @@
       "employmentType": "FULL_TIME",
       "region": "부산",
       "remote": false,
-      "techStack": [
-        "IT",
-        "Information Systems"
-      ],
+      "techStack": ["IT", "Information Systems"],
       "rolling": false,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -188,10 +178,7 @@
       "employmentType": "FULL_TIME",
       "region": "미정",
       "remote": false,
-      "techStack": [
-        "Backend",
-        "AI Platform"
-      ],
+      "techStack": ["Backend", "AI Platform"],
       "rolling": false,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -213,10 +200,7 @@
       "employmentType": "FULL_TIME",
       "region": "미정",
       "remote": false,
-      "techStack": [
-        "Automotive Software",
-        "Control Software"
-      ],
+      "techStack": ["Automotive Software", "Control Software"],
       "rolling": false,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -238,10 +222,7 @@
       "employmentType": "FULL_TIME",
       "region": "미정",
       "remote": false,
-      "techStack": [
-        "AI",
-        "Full Stack"
-      ],
+      "techStack": ["AI", "Full Stack"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -262,10 +243,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Unity",
-        "C#"
-      ],
+      "techStack": ["Unity", "C#"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -286,9 +264,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Frontend"
-      ],
+      "techStack": ["Frontend"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -309,11 +285,7 @@
       "employmentType": "FULL_TIME",
       "region": "대전 유성구",
       "remote": false,
-      "techStack": [
-        "C",
-        "C++",
-        "Embedded"
-      ],
+      "techStack": ["C", "C++", "Embedded"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -334,11 +306,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Linux",
-        "Windows",
-        "Cloud"
-      ],
+      "techStack": ["Linux", "Windows", "Cloud"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -359,10 +327,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울 강남구",
       "remote": false,
-      "techStack": [
-        "DevOps",
-        "Cloud"
-      ],
+      "techStack": ["DevOps", "Cloud"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -383,10 +348,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울 강남구",
       "remote": false,
-      "techStack": [
-        "AI",
-        "Algorithm"
-      ],
+      "techStack": ["AI", "Algorithm"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -407,9 +369,7 @@
       "employmentType": "FULL_TIME",
       "region": "경북 경산시",
       "remote": false,
-      "techStack": [
-        "Frontend"
-      ],
+      "techStack": ["Frontend"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -430,9 +390,7 @@
       "employmentType": "FULL_TIME",
       "region": "미정",
       "remote": false,
-      "techStack": [
-        "Backend"
-      ],
+      "techStack": ["Backend"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -453,9 +411,7 @@
       "employmentType": "FULL_TIME",
       "region": "미정",
       "remote": false,
-      "techStack": [
-        "Backend"
-      ],
+      "techStack": ["Backend"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -476,10 +432,7 @@
       "employmentType": "FULL_TIME",
       "region": "미정",
       "remote": false,
-      "techStack": [
-        "Blockchain",
-        "DevOps"
-      ],
+      "techStack": ["Blockchain", "DevOps"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -500,9 +453,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울 강남구",
       "remote": false,
-      "techStack": [
-        "DevOps"
-      ],
+      "techStack": ["DevOps"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -523,10 +474,7 @@
       "employmentType": "FULL_TIME",
       "region": "미정",
       "remote": false,
-      "techStack": [
-        "Backend",
-        "Frontend"
-      ],
+      "techStack": ["Backend", "Frontend"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -547,10 +495,7 @@
       "employmentType": "FULL_TIME",
       "region": "미정",
       "remote": false,
-      "techStack": [
-        "AI",
-        "Machine Learning"
-      ],
+      "techStack": ["AI", "Machine Learning"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -571,10 +516,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "PHP",
-        "Laravel"
-      ],
+      "techStack": ["PHP", "Laravel"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -595,11 +537,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울 강서구",
       "remote": false,
-      "techStack": [
-        "Terraform",
-        "CI/CD",
-        "Infrastructure as Code"
-      ],
+      "techStack": ["Terraform", "CI/CD", "Infrastructure as Code"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -620,12 +558,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울 금천구",
       "remote": false,
-      "techStack": [
-        "C",
-        "Python",
-        "Go",
-        "Cloud"
-      ],
+      "techStack": ["C", "Python", "Go", "Cloud"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -646,10 +579,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울 강남구",
       "remote": false,
-      "techStack": [
-        "Frontend",
-        "Backend"
-      ],
+      "techStack": ["Frontend", "Backend"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -670,12 +600,7 @@
       "employmentType": "CONVERSION_INTERN",
       "region": "서울 마포구",
       "remote": false,
-      "techStack": [
-        "Autodesk",
-        "Revit",
-        "Inventor",
-        "Generative AI"
-      ],
+      "techStack": ["Autodesk", "Revit", "Inventor", "Generative AI"],
       "rolling": false,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -726,14 +651,7 @@
       "employmentType": "FULL_TIME",
       "region": "미정",
       "remote": false,
-      "techStack": [
-        "Python",
-        "PyTorch",
-        "Computer Vision",
-        "VLM",
-        "MLOps",
-        "Physical AI"
-      ],
+      "techStack": ["Python", "PyTorch", "Computer Vision", "VLM", "MLOps", "Physical AI"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -754,15 +672,7 @@
       "employmentType": "FULL_TIME",
       "region": "경기 과천",
       "remote": false,
-      "techStack": [
-        "SQL",
-        "Python",
-        "Spark",
-        "Databricks",
-        "Snowflake",
-        "AWS Glue",
-        "Airflow"
-      ],
+      "techStack": ["SQL", "Python", "Spark", "Databricks", "Snowflake", "AWS Glue", "Airflow"],
       "rolling": false,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -783,14 +693,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "C",
-        "C++",
-        "Embedded",
-        "NPU",
-        "CUDA",
-        "RISC-V"
-      ],
+      "techStack": ["C", "C++", "Embedded", "NPU", "CUDA", "RISC-V"],
       "rolling": false,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -811,15 +714,7 @@
       "employmentType": "INTERN",
       "region": "미정",
       "remote": false,
-      "techStack": [
-        "TypeScript",
-        "Node.js",
-        "Fastify",
-        "PostgreSQL",
-        "Redis",
-        "AWS",
-        "Kubernetes"
-      ],
+      "techStack": ["TypeScript", "Node.js", "Fastify", "PostgreSQL", "Redis", "AWS", "Kubernetes"],
       "rolling": false,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -840,10 +735,7 @@
       "employmentType": "FULL_TIME",
       "region": "미정",
       "remote": false,
-      "techStack": [
-        "AI",
-        "Machine Learning"
-      ],
+      "techStack": ["AI", "Machine Learning"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -864,10 +756,7 @@
       "employmentType": "FULL_TIME",
       "region": "미정",
       "remote": false,
-      "techStack": [
-        "5G",
-        "R&D"
-      ],
+      "techStack": ["5G", "R&D"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -888,10 +777,7 @@
       "employmentType": "FULL_TIME",
       "region": "미정",
       "remote": false,
-      "techStack": [
-        "5G",
-        "RAN"
-      ],
+      "techStack": ["5G", "RAN"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -912,10 +798,7 @@
       "employmentType": "FULL_TIME",
       "region": "미정",
       "remote": false,
-      "techStack": [
-        "5G",
-        "Packet Core"
-      ],
+      "techStack": ["5G", "Packet Core"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -936,9 +819,7 @@
       "employmentType": "FULL_TIME",
       "region": "미정",
       "remote": false,
-      "techStack": [
-        "iOS"
-      ],
+      "techStack": ["iOS"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -959,9 +840,7 @@
       "employmentType": "FULL_TIME",
       "region": "미정",
       "remote": false,
-      "techStack": [
-        "Enterprise IT"
-      ],
+      "techStack": ["Enterprise IT"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -982,11 +861,7 @@
       "employmentType": "FULL_TIME",
       "region": "미정",
       "remote": false,
-      "techStack": [
-        "Web",
-        "App",
-        "IoT"
-      ],
+      "techStack": ["Web", "App", "IoT"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -1007,10 +882,7 @@
       "employmentType": "CONTRACT_TO_FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Frontend",
-        "AI"
-      ],
+      "techStack": ["Frontend", "AI"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -1031,11 +903,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "AI",
-        "Embedded",
-        "IoT"
-      ],
+      "techStack": ["AI", "Embedded", "IoT"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -1056,10 +924,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "C#",
-        "Python"
-      ],
+      "techStack": ["C#", "Python"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -1080,10 +945,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Web",
-        "Software"
-      ],
+      "techStack": ["Web", "Software"],
       "rolling": true,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -1104,12 +966,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울 강서구",
       "remote": false,
-      "techStack": [
-        "VPN",
-        "L7",
-        "Citrix Gateway",
-        "TCP/IP"
-      ],
+      "techStack": ["VPN", "L7", "Citrix Gateway", "TCP/IP"],
       "rolling": false,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -1131,13 +988,7 @@
       "employmentType": "FULL_TIME",
       "region": "충남 아산시",
       "remote": false,
-      "techStack": [
-        "C",
-        "C++",
-        "C#",
-        "Embedded",
-        "MFC"
-      ],
+      "techStack": ["C", "C++", "C#", "Embedded", "MFC"],
       "rolling": false,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -1159,14 +1010,7 @@
       "employmentType": "CONVERSION_INTERN",
       "region": "대전 유성구",
       "remote": false,
-      "techStack": [
-        "Next.js",
-        "TypeScript",
-        "Zustand",
-        "Tailwind CSS",
-        "Supabase",
-        "GitHub"
-      ],
+      "techStack": ["Next.js", "TypeScript", "Zustand", "Tailwind CSS", "Supabase", "GitHub"],
       "rolling": false,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",
@@ -1188,15 +1032,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울 서초구",
       "remote": false,
-      "techStack": [
-        "Git",
-        "NumPy",
-        "Pandas",
-        "Python",
-        "SQL",
-        "RAG",
-        "LangChain"
-      ],
+      "techStack": ["Git", "NumPy", "Pandas", "Python", "SQL", "RAG", "LangChain"],
       "rolling": false,
       "collectedAt": "2026-08-12T12:37:42Z",
       "lastVerifiedAt": "2026-08-12T12:37:42Z",

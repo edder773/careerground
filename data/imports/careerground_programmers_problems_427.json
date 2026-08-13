@@ -1293,18 +1293,14 @@
       "sourceUrl": "https://school.programmers.co.kr/learn/courses/30/lessons/250132",
       "title": "[PCCE 기출문제] 2번 / 피타고라스의 정리",
       "level": 0,
-      "tags": [
-        "PCCE"
-      ],
+      "tags": ["PCCE"],
       "active": true
     },
     {
       "sourceUrl": "https://school.programmers.co.kr/learn/courses/30/lessons/340200",
       "title": "[PCCE 기출문제] 8번 / 닉네임 규칙",
       "level": 0,
-      "tags": [
-        "PCCE"
-      ],
+      "tags": ["PCCE"],
       "active": true
     },
     {
@@ -1948,9 +1944,7 @@
       "sourceUrl": "https://school.programmers.co.kr/learn/courses/30/lessons/250137",
       "title": "[PCCP 기출문제] 1번 / 붕대 감기",
       "level": 1,
-      "tags": [
-        "PCCP"
-      ],
+      "tags": ["PCCP"],
       "active": true
     },
     {
@@ -1978,18 +1972,14 @@
       "sourceUrl": "https://school.programmers.co.kr/learn/courses/30/lessons/340199",
       "title": "[PCCE 기출문제] 9번 / 지폐 접기",
       "level": 1,
-      "tags": [
-        "PCCE"
-      ],
+      "tags": ["PCCE"],
       "active": true
     },
     {
       "sourceUrl": "https://school.programmers.co.kr/learn/courses/30/lessons/340213",
       "title": "[PCCP 기출문제] 1번 / 동영상 재생기",
       "level": 1,
-      "tags": [
-        "PCCP"
-      ],
+      "tags": ["PCCP"],
       "active": true
     },
     {
@@ -2563,18 +2553,14 @@
       "sourceUrl": "https://school.programmers.co.kr/learn/courses/30/lessons/250135",
       "title": "[PCCP 기출문제] 3번 / 아날로그 시계",
       "level": 2,
-      "tags": [
-        "PCCP"
-      ],
+      "tags": ["PCCP"],
       "active": true
     },
     {
       "sourceUrl": "https://school.programmers.co.kr/learn/courses/30/lessons/250136",
       "title": "[PCCP 기출문제] 2번 / 석유 시추",
       "level": 2,
-      "tags": [
-        "PCCP"
-      ],
+      "tags": ["PCCP"],
       "active": true
     },
     {
@@ -2609,18 +2595,14 @@
       "sourceUrl": "https://school.programmers.co.kr/learn/courses/30/lessons/340211",
       "title": "[PCCP 기출문제] 3번 / 충돌위험 찾기",
       "level": 2,
-      "tags": [
-        "PCCP"
-      ],
+      "tags": ["PCCP"],
       "active": true
     },
     {
       "sourceUrl": "https://school.programmers.co.kr/learn/courses/30/lessons/340212",
       "title": "[PCCP 기출문제] 2번 / 퍼즐 게임 챌린지",
       "level": 2,
-      "tags": [
-        "PCCP"
-      ],
+      "tags": ["PCCP"],
       "active": true
     },
     {
@@ -2795,9 +2777,7 @@
       "sourceUrl": "https://school.programmers.co.kr/learn/courses/30/lessons/67258",
       "title": "[카카오 인턴] 보석 쇼핑",
       "level": 3,
-      "tags": [
-        "KAKAO"
-      ],
+      "tags": ["KAKAO"],
       "active": true
     },
     {
@@ -2881,9 +2861,7 @@
       "sourceUrl": "https://school.programmers.co.kr/learn/courses/30/lessons/250134",
       "title": "[PCCP 기출문제] 4번 / 수레 움직이기",
       "level": 3,
-      "tags": [
-        "PCCP"
-      ],
+      "tags": ["PCCP"],
       "active": true
     },
     {
@@ -2988,9 +2966,7 @@
       "sourceUrl": "https://school.programmers.co.kr/learn/courses/30/lessons/67260",
       "title": "[카카오 인턴] 동굴 탐험",
       "level": 4,
-      "tags": [
-        "KAKAO"
-      ],
+      "tags": ["KAKAO"],
       "active": true
     },
     {
