@@ -130,12 +130,13 @@ test.describe('CareerGround MVP vertical slices', () => {
   test('filters and saves an entry-level IT job', async ({ page }) => {
     await page.getByRole('link', { name: '채용공고' }).first().click();
     await expect(page.getByRole('heading', { name: '신입 IT 채용공고' })).toBeVisible();
-    await page.getByRole('button', { name: '기업 규모: 전체' }).click();
-    await page.getByRole('menuitemcheckbox', { name: '대기업' }).click();
-    await page.getByRole('menuitemcheckbox', { name: '중견기업' }).click();
-    await expect(page.getByRole('button', { name: '기업 규모: 대기업 · 중견기업' })).toBeVisible();
-    await page.getByRole('menuitemcheckbox', { name: '중견기업' }).click();
-    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: /^채용공고 필터/ }).click();
+    const filterDialog = page.getByRole('dialog', { name: '채용공고 전체 필터' });
+    await filterDialog.getByRole('checkbox', { name: '대기업' }).check();
+    await filterDialog.getByRole('checkbox', { name: '중견기업' }).check();
+    await expect(filterDialog.getByText('2개 조건 적용')).toBeVisible();
+    await filterDialog.getByRole('checkbox', { name: '중견기업' }).uncheck();
+    await filterDialog.getByRole('button', { name: '1개 조건 적용' }).click();
     const save = page.getByRole('button', { name: /관심 저장|관심 공고/ }).first();
     await expect(save).toBeVisible();
     await save.click();
@@ -144,23 +145,32 @@ test.describe('CareerGround MVP vertical slices', () => {
     await status.selectOption('APPLIED');
     await expect(status).toHaveValue('APPLIED');
 
-    await page.getByRole('button', { name: '기업 규모: 대기업' }).click();
-    await page.getByRole('menuitem', { name: '선택 초기화' }).click();
-    await page.getByRole('button', { name: '직무: 전체' }).click();
-    const jobCategoryMenu = page.getByRole('menu', { name: '직무 복수 선택' });
-    await expect(jobCategoryMenu).toBeVisible();
-    await expect
-      .poll(() =>
-        jobCategoryMenu.evaluate((element) => element.scrollHeight > element.clientHeight),
-      )
-      .toBe(true);
-    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: /^채용공고 필터/ }).click();
+    await filterDialog.getByRole('button', { name: '전체 해제' }).click();
+    expect(await filterDialog.getByRole('checkbox').count()).toBeGreaterThan(4);
+    await filterDialog.getByRole('button', { name: '전체 공고 보기' }).click();
+    await page
+      .getByRole('group', { name: '채용공고 정렬' })
+      .getByRole('button', {
+        name: '마감 임박순',
+      })
+      .click();
+    await expect(
+      page
+        .getByRole('group', { name: '채용공고 정렬' })
+        .getByRole('button', { name: '마감 임박순' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await page
+      .getByRole('group', { name: '채용공고 글자 크기' })
+      .getByRole('button', { name: '크게', exact: true })
+      .click();
+    await expect(page.locator('.jobs-page')).toHaveAttribute('data-font-size', 'large');
     await page.getByRole('button', { name: '달력' }).click();
     await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
     await expect(page.locator('.calendar-job strong').first()).toBeVisible();
   });
 
-  test('records understanding and refreshes spaced-review state', async ({ page }) => {
+  test('opens learning content directly without an understanding rating', async ({ page }) => {
     await page.getByRole('link', { name: '학습' }).first().click();
     await expect(page.getByRole('heading', { name: '학습 라이브러리' })).toBeVisible();
     await expect(
@@ -178,12 +188,10 @@ test.describe('CareerGround MVP vertical slices', () => {
       .getByRole('button', { name: /내용 보기/ })
       .first()
       .click();
-    await page
-      .getByRole('dialog')
-      .getByRole('button', { name: /이해도 4점/ })
-      .click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByText('이 단원을 얼마나 이해했나요?')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /이해도 [1-5]점/ })).toHaveCount(0);
     await page.getByRole('button', { name: '닫기' }).click();
-    await expect(page.getByText('학습 완료').first()).toBeVisible();
   });
 
   test('shows dense ranking calculation details', async ({ page }) => {
@@ -269,9 +277,10 @@ test.describe('CareerGround MVP vertical slices', () => {
     await expect(page.getByRole('status')).toContainText('반영이 완료');
 
     await page.getByRole('link', { name: '채용공고' }).first().click();
-    await page.getByRole('button', { name: '기업 규모: 전체' }).click();
-    await page.getByRole('menuitemcheckbox', { name: '중소기업' }).click();
-    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: /^채용공고 필터/ }).click();
+    const jobFilter = page.getByRole('dialog', { name: '채용공고 전체 필터' });
+    await jobFilter.getByRole('checkbox', { name: '중소기업' }).check();
+    await jobFilter.getByRole('button', { name: '1개 조건 적용' }).click();
     await expect(page.getByText(companyName, { exact: true })).toBeVisible();
 
     await page.getByRole('link', { name: '관리자' }).first().click();

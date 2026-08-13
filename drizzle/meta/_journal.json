@@ -64,6 +64,13 @@
       "when": 1786601463097,
       "tag": "0008_sql_track_learning_visuals",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1786604779990,
+      "tag": "0009_refresh_job_catalog",
+      "breakpoints": true
     }
   ]
 }

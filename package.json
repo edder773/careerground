@@ -28,6 +28,7 @@
     "db:d1:generate": "drizzle-kit generate",
     "db:reset": "pnpm --filter @careerground/api prisma:reset",
     "jobs:import": "pnpm --filter @careerground/api jobs:import",
+    "jobs:catalog:refresh": "node scripts/generate-job-refresh-migration.mjs",
     "learning:import": "pnpm --filter @careerground/api learning:import",
     "docs:dev": "pnpm --filter @careerground/docs dev",
     "docs:build": "pnpm --filter @careerground/docs build",

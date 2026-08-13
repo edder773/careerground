@@ -69,18 +69,16 @@ test('captures core domain screens', async ({ page }) => {
     }
     if (screen.name === 'jobs') {
       await expect(page.locator('.job-card').first()).toBeVisible();
-      await page.getByRole('button', { name: '직무: 전체' }).click();
-      const menu = page.getByRole('menu', { name: '직무 복수 선택' });
-      await expect(menu).toBeVisible();
-      await expect
-        .poll(() => menu.evaluate((element) => element.scrollHeight > element.clientHeight))
-        .toBe(true);
+      await page.getByRole('button', { name: /^채용공고 필터/ }).click();
+      const filterDialog = page.getByRole('dialog', { name: '채용공고 전체 필터' });
+      await expect(filterDialog).toBeVisible();
+      expect(await filterDialog.getByRole('checkbox').count()).toBeGreaterThan(4);
       await page.waitForTimeout(220);
       await page.screenshot({
         path: 'test-results/visual/jobs-multi-filter-desktop-1440.png',
         fullPage: false,
       });
-      await page.keyboard.press('Escape');
+      await filterDialog.getByRole('button', { name: '필터 닫기' }).click();
     }
     if (screen.name === 'settings') {
       await expect(page.getByLabel('표시 이름')).toBeDisabled();

@@ -41,12 +41,11 @@ describe('domain pages', () => {
     );
     const user = userEvent.setup();
     renderPage(<JobsPage />);
-    await user.click(await screen.findByRole('button', { name: '기업 규모: 전체' }));
-    await user.click(screen.getByRole('menuitemcheckbox', { name: '대기업' }));
-    await user.click(screen.getByRole('menuitemcheckbox', { name: '중견기업' }));
-    await user.keyboard('{Escape}');
-    await user.click(screen.getByRole('button', { name: '직무: 전체' }));
-    await user.click(screen.getByRole('menuitemcheckbox', { name: 'AI 풀스택 개발' }));
+    await user.click(await screen.findByRole('button', { name: '채용공고 필터' }));
+    const filter = screen.getByRole('dialog', { name: '채용공고 전체 필터' });
+    await user.click(within(filter).getByRole('checkbox', { name: '대기업' }));
+    await user.click(within(filter).getByRole('checkbox', { name: '중견기업' }));
+    await user.click(within(filter).getByRole('checkbox', { name: 'AI 풀스택 개발' }));
     await waitFor(() =>
       expect(
         calls.some((call) => {
@@ -58,6 +57,13 @@ describe('domain pages', () => {
         }),
       ).toBe(true),
     );
+    await user.click(within(filter).getByRole('button', { name: '3개 조건 적용' }));
+    await user.click(screen.getByRole('button', { name: '마감 임박순' }));
+    await waitFor(() =>
+      expect(calls.some((call) => call.url.includes('sort=deadline'))).toBe(true),
+    );
+    await user.click(screen.getByRole('button', { name: '크게' }));
+    expect(document.querySelector('.jobs-page')).toHaveAttribute('data-font-size', 'large');
   });
 
   it('shows company deadlines in a monthly calendar with prominent source details', async () => {
@@ -102,7 +108,7 @@ describe('domain pages', () => {
 
     await user.click(screen.getByRole('button', { name: '달력' }));
     const legend = await screen.findByLabelText('일정 색상 안내');
-    expect(within(legend).getByText('시작일')).toBeInTheDocument();
+    expect(within(legend).getByText('시작·확인일')).toBeInTheDocument();
     expect(within(legend).getByText('마감일')).toBeInTheDocument();
     expect(within(legend).getByText('상시')).toBeInTheDocument();
     await user.click(
@@ -229,7 +235,7 @@ describe('domain pages', () => {
     );
   });
 
-  it('records learning progress with a 1–5 rating', async () => {
+  it('opens learning content without an understanding rating prompt', async () => {
     const source = [
       {
         id: 's',
@@ -268,15 +274,9 @@ describe('domain pages', () => {
     await user.click(await screen.findByRole('button', { name: '포커스 내용 보기' }));
     expect(screen.getByRole('dialog', { name: '포커스' })).toHaveTextContent('포커스의 핵심');
     expect(screen.getByText('포커스란?')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: '포커스 이해도 4점' }));
-    await waitFor(() =>
-      expect(
-        calls.some(
-          (call) =>
-            call.url.endsWith('/learning/review') && (call.body as { rating: number }).rating === 4,
-        ),
-      ).toBe(true),
-    );
+    expect(screen.queryByText('이 단원을 얼마나 이해했나요?')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: /이해도 기록/ })).not.toBeInTheDocument();
+    expect(calls.some((call) => call.url.endsWith('/learning/review'))).toBe(false);
   });
 
   it('shows dense ranking and its calculation fields', async () => {

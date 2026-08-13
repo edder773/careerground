@@ -158,7 +158,7 @@ export class JobsService {
         ? { deadlineAt: 'asc' as const }
         : filters.sort === 'company'
           ? { company: { name: 'asc' as const } }
-          : { createdAt: 'desc' as const };
+          : { collectedAt: 'desc' as const };
     return this.prisma.jobPosting.findMany({
       where: {
         status: { in: ['ACTIVE', 'DEADLINE_UNKNOWN'] },
@@ -222,7 +222,7 @@ export class JobsService {
         savedBy: { where: { userId }, select: { status: true, memo: true } },
       },
       orderBy,
-      take: 100,
+      take: 200,
     });
   }
 

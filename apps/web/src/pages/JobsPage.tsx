@@ -6,7 +6,6 @@ import {
   CalendarClock,
   CalendarDays,
   Check,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
@@ -14,6 +13,7 @@ import {
   Globe2,
   List,
   MapPin,
+  SlidersHorizontal,
   X,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -39,6 +39,8 @@ type Job = {
 };
 
 type ViewMode = 'calendar' | 'list';
+type SortMode = 'new' | 'deadline' | 'company';
+type JobFontSize = 'comfortable' | 'large' | 'largest';
 type CalendarEventType = 'start' | 'deadline' | 'rolling';
 type CalendarEvent = { job: Job; type: CalendarEventType };
 
@@ -64,10 +66,20 @@ const applicationLabels: Record<string, string> = {
 };
 const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
 const calendarEventLabels: Record<CalendarEventType, string> = {
-  start: '시작일',
+  start: '시작·확인일',
   deadline: '마감일',
   rolling: '상시',
 };
+const sortOptions: Array<{ value: SortMode; label: string }> = [
+  { value: 'new', label: '최신순' },
+  { value: 'deadline', label: '마감 임박순' },
+  { value: 'company', label: '회사명순' },
+];
+const fontSizeOptions: Array<{ value: JobFontSize; label: string }> = [
+  { value: 'comfortable', label: '보통' },
+  { value: 'large', label: '크게' },
+  { value: 'largest', label: '아주 크게' },
+];
 
 function monthStart(date = new Date()) {
   return new Date(Date.UTC(date.getFullYear(), date.getMonth(), 1));
@@ -213,7 +225,7 @@ function JobDetailModal({ job, onClose }: { job: Job; onClose: () => void }) {
           </div>
           <div className="job-modal-schedule" aria-label="채용 일정">
             <div className="schedule-start">
-              <span>시작일</span>
+              <span>시작·확인일</span>
               <strong>{startDate(job) ? deadlineLabel(startDate(job)) : '확인 필요'}</strong>
             </div>
             {job.rolling ? (
@@ -313,37 +325,40 @@ function ScheduleListDialog({
   );
 }
 
-function MultiSelectFilter({
-  label,
-  options,
-  value,
-  onChange,
+function initialJobFontSize(): JobFontSize {
+  try {
+    const stored = window.localStorage.getItem('careerground.jobs.font-size');
+    if (stored === 'large' || stored === 'largest') return stored;
+  } catch {
+    // Device preferences are optional; the comfortable default remains usable.
+  }
+  return 'comfortable';
+}
+
+function JobFilterPanel({
+  companySizes,
+  categories,
+  selectedCategories,
+  onCompanySizesChange,
+  onCategoriesChange,
 }: {
-  label: string;
-  options: Array<{ value: string; label: string }>;
-  value: string[];
-  onChange: (value: string[]) => void;
+  companySizes: string[];
+  categories: string[];
+  selectedCategories: string[];
+  onCompanySizesChange: (value: string[]) => void;
+  onCategoriesChange: (value: string[]) => void;
 }) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
-  const selected = new Set(value);
-  const selectedLabels = value.map(
-    (selectedValue) =>
-      options.find((option) => option.value === selectedValue)?.label || selectedValue,
-  );
-  const summary =
-    value.length === 0
-      ? '전체'
-      : value.length <= 2
-        ? selectedLabels.join(' · ')
-        : `${value.length}개 선택`;
-  const toggle = (optionValue: string, checked: boolean) => {
-    onChange(
-      checked
-        ? [...value, optionValue]
-        : value.filter((currentValue) => currentValue !== optionValue),
-    );
-  };
+  const selectedSizes = new Set(companySizes);
+  const selectedJobs = new Set(selectedCategories);
+  const selectedCount = companySizes.length + selectedCategories.length;
+  const toggle = (
+    value: string,
+    checked: boolean,
+    current: string[],
+    onChange: (value: string[]) => void,
+  ) => onChange(checked ? [...current, value] : current.filter((item) => item !== value));
   useEffect(() => {
     if (!open) return undefined;
     const close = (event: PointerEvent | KeyboardEvent) => {
@@ -367,51 +382,86 @@ function MultiSelectFilter({
     <div className="multi-filter-root" ref={root}>
       <button
         type="button"
-        className="multi-filter-trigger"
-        aria-label={`${label}: ${summary}`}
-        aria-haspopup="menu"
+        className="job-filter-trigger"
+        aria-label={`채용공고 필터${selectedCount ? `, ${selectedCount}개 선택` : ''}`}
+        aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
         data-state={open ? 'open' : 'closed'}
       >
-        <span>
-          <small>{label}</small>
-          <strong>{summary}</strong>
-        </span>
-        <ChevronDown aria-hidden="true" />
+        <Filter aria-hidden="true" />
+        <span>필터</span>
+        {selectedCount > 0 && <strong>{selectedCount}</strong>}
       </button>
       {open && (
-        <div className="multi-filter-menu" role="menu" aria-label={`${label} 복수 선택`}>
-          <span className="multi-filter-label">{label} 복수 선택</span>
-          {options.map((option) => (
+        <div className="job-filter-panel" role="dialog" aria-label="채용공고 전체 필터">
+          <header>
+            <div>
+              <strong>모든 필터</strong>
+              <span>여러 조건을 체크해 함께 적용할 수 있습니다.</span>
+            </div>
+            <button type="button" onClick={() => setOpen(false)} aria-label="필터 닫기">
+              <X />
+            </button>
+          </header>
+          <div className="job-filter-scroll">
+            <fieldset>
+              <legend>기업 규모</legend>
+              <div className="job-filter-options company-size-options">
+                {Object.entries(sizeLabels).map(([value, label]) => (
+                  <label key={value}>
+                    <input
+                      type="checkbox"
+                      checked={selectedSizes.has(value)}
+                      onChange={(event) =>
+                        toggle(value, event.target.checked, companySizes, onCompanySizesChange)
+                      }
+                    />
+                    <span className="multi-filter-check">
+                      {selectedSizes.has(value) && <Check aria-hidden="true" />}
+                    </span>
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>직무</legend>
+              <div className="job-filter-options category-options">
+                {categories.map((value) => (
+                  <label key={value}>
+                    <input
+                      type="checkbox"
+                      checked={selectedJobs.has(value)}
+                      onChange={(event) =>
+                        toggle(value, event.target.checked, selectedCategories, onCategoriesChange)
+                      }
+                    />
+                    <span className="multi-filter-check">
+                      {selectedJobs.has(value) && <Check aria-hidden="true" />}
+                    </span>
+                    <span>{value}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+          <footer>
             <button
               type="button"
-              key={option.value}
-              className="multi-filter-option"
-              role="menuitemcheckbox"
-              aria-checked={selected.has(option.value)}
-              onClick={() => toggle(option.value, !selected.has(option.value))}
-              data-state={selected.has(option.value) ? 'checked' : 'unchecked'}
+              className="job-filter-clear"
+              disabled={selectedCount === 0}
+              onClick={() => {
+                onCompanySizesChange([]);
+                onCategoriesChange([]);
+              }}
             >
-              <span className="multi-filter-check">
-                {selected.has(option.value) && <Check aria-hidden="true" />}
-              </span>
-              {option.label}
+              전체 해제
             </button>
-          ))}
-          {value.length > 0 && (
-            <>
-              <span className="multi-filter-separator" role="separator" />
-              <button
-                type="button"
-                role="menuitem"
-                className="multi-filter-clear"
-                onClick={() => onChange([])}
-              >
-                선택 초기화
-              </button>
-            </>
-          )}
+            <button type="button" className="job-filter-done" onClick={() => setOpen(false)}>
+              {selectedCount ? `${selectedCount}개 조건 적용` : '전체 공고 보기'}
+            </button>
+          </footer>
         </div>
       )}
     </div>
@@ -422,7 +472,8 @@ export function JobsPage() {
   const client = useQueryClient();
   const [companySizes, setCompanySizes] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [sort, setSort] = useState('new');
+  const [sort, setSort] = useState<SortMode>('new');
+  const [fontSize, setFontSize] = useState<JobFontSize>(initialJobFontSize);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [visibleMonth, setVisibleMonth] = useState(monthStart);
   const [selectedJobId, setSelectedJobId] = useState<string>();
@@ -513,6 +564,14 @@ export function JobsPage() {
   const today = koreaDateKey(new Date());
   const monthLabel = `${visibleMonth.getUTCFullYear()}년 ${visibleMonth.getUTCMonth() + 1}월`;
 
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('careerground.jobs.font-size', fontSize);
+    } catch {
+      // The preference stays in memory when storage is unavailable.
+    }
+  }, [fontSize]);
+
   const setMode = (mode: ViewMode) => {
     setViewMode(mode);
     setSelectedJobId(undefined);
@@ -521,14 +580,16 @@ export function JobsPage() {
   };
 
   return (
-    <div className="jobs-page">
+    <div className="jobs-page" data-font-size={fontSize}>
       <section className="page-heading jobs-heading">
         <div>
           <span className="eyebrow">
             <CalendarDays size={15} /> 신입 채용 일정
           </span>
           <h1>신입 IT 채용공고</h1>
-          <p>시작일·마감일·상시채용을 달력에서 구분하고, 지원 상태는 목록에서 관리하세요.</p>
+          <p>
+            제공된 시작일이 없으면 수집·확인일을 표시하고, 마감일과 상시채용을 명확히 구분합니다.
+          </p>
         </div>
         <div className="jobs-view-switch" role="group" aria-label="채용공고 보기 방식">
           <button
@@ -551,32 +612,72 @@ export function JobsPage() {
       </section>
 
       <div className="filter-bar jobs-filter">
-        <Filter aria-hidden="true" />
-        <MultiSelectFilter
-          label="기업 규모"
-          options={Object.entries(sizeLabels).map(([value, label]) => ({ value, label }))}
-          value={companySizes}
-          onChange={setCompanySizes}
+        <JobFilterPanel
+          companySizes={companySizes}
+          categories={categories.data || []}
+          selectedCategories={selectedCategories}
+          onCompanySizesChange={setCompanySizes}
+          onCategoriesChange={setSelectedCategories}
         />
-        <MultiSelectFilter
-          label="직무"
-          options={(categories.data || []).map((value) => ({ value, label: value }))}
-          value={selectedCategories}
-          onChange={setSelectedCategories}
-        />
-        {viewMode === 'list' && (
-          <label>
-            정렬
-            <select value={sort} onChange={(event) => setSort(event.target.value)}>
-              <option value="new">신규순</option>
-              <option value="deadline">마감 임박순</option>
-              <option value="company">회사명순</option>
-            </select>
-          </label>
-        )}
+        {companySizes.map((value) => (
+          <button
+            type="button"
+            key={value}
+            className="job-filter-chip"
+            onClick={() => setCompanySizes((current) => current.filter((item) => item !== value))}
+          >
+            {sizeLabels[value] || value} <X />
+          </button>
+        ))}
+        {selectedCategories.map((value) => (
+          <button
+            type="button"
+            key={value}
+            className="job-filter-chip"
+            onClick={() =>
+              setSelectedCategories((current) => current.filter((item) => item !== value))
+            }
+          >
+            {value} <X />
+          </button>
+        ))}
         {jobs.isFetching && !jobs.isLoading && (
           <span className="jobs-refreshing">최신 정보 반영 중</span>
         )}
+      </div>
+
+      <div className="jobs-list-tools">
+        <strong>{jobs.data?.length ?? 0}개 공고</strong>
+        {viewMode === 'list' && (
+          <div className="jobs-sort-buttons" role="group" aria-label="채용공고 정렬">
+            <SlidersHorizontal aria-hidden="true" />
+            {sortOptions.map((option) => (
+              <button
+                type="button"
+                key={option.value}
+                className={sort === option.value ? 'active' : ''}
+                aria-pressed={sort === option.value}
+                onClick={() => setSort(option.value)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="jobs-font-buttons" role="group" aria-label="채용공고 글자 크기">
+          <span>글자 크기</span>
+          {fontSizeOptions.map((option) => (
+            <button
+              type="button"
+              key={option.value}
+              className={fontSize === option.value ? 'active' : ''}
+              aria-pressed={fontSize === option.value}
+              onClick={() => setFontSize(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {jobs.isLoading && <div className="loading-panel">공고를 불러오는 중…</div>}
@@ -610,7 +711,7 @@ export function JobsPage() {
             </nav>
           </header>
           <div className="job-calendar-legend" aria-label="일정 색상 안내">
-            <span className="schedule-start">시작일</span>
+            <span className="schedule-start">시작·확인일</span>
             <span className="schedule-deadline">마감일</span>
             <span className="schedule-rolling">상시</span>
           </div>
@@ -701,7 +802,7 @@ export function JobsPage() {
           if (!open) setExpandedDateKey(undefined);
         }}
         title={expandedDateKey ? `${dateLabel(expandedDateKey)} 채용 일정` : '채용 일정'}
-        description={`시작일과 마감일을 포함한 ${expandedDateEvents.length}개 일정을 확인하세요.`}
+        description={`시작·확인일과 마감일을 포함한 ${expandedDateEvents.length}개 일정을 확인하세요.`}
         items={expandedDateEvents}
         onSelect={setSelectedJobId}
       />
@@ -745,6 +846,21 @@ export function JobsPage() {
                             : `D-${days}`
                           : '마감일 미정'}
                     </span>
+                  </div>
+                  <div className="job-card-schedule" aria-label={`${job.title} 주요 일정`}>
+                    <div className="schedule-start">
+                      <span>시작·확인일</span>
+                      <strong>{latestLabel(startDate(job))}</strong>
+                    </div>
+                    <div
+                      className={`${job.rolling ? 'schedule-rolling' : 'schedule-deadline'} ${days !== undefined && days >= 0 && days <= 7 ? 'urgent' : ''}`}
+                    >
+                      <span>{job.rolling ? '상시채용' : '마감일'}</span>
+                      <strong>
+                        {job.rolling ? '채용 완료 시까지' : deadlineLabel(job.deadlineAt)}
+                      </strong>
+                      {!job.rolling && days !== undefined && days >= 0 && <b>D-{days}</b>}
+                    </div>
                   </div>
                   <div className="tag-row">
                     {job.techStack.map((tech) => (

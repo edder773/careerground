@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
   BookOpen,
   Brain,
@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
-import { api, json } from '../lib/api';
+import { api } from '../lib/api';
 
 type Unit = {
   id: string;
@@ -46,14 +46,10 @@ function LearningUnitModal({
   unit,
   index,
   onClose,
-  onReview,
-  reviewing,
 }: {
   unit: Unit;
   index: number;
   onClose: () => void;
-  onReview: (rating: number) => void;
-  reviewing: boolean;
 }) {
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -163,29 +159,12 @@ function LearningUnitModal({
             </div>
           </section>
         </div>
-        <footer>
-          <span>이 단원을 얼마나 이해했나요?</span>
-          <div className="rating-buttons" aria-label={`${unit.title} 이해도 기록`}>
-            {[1, 2, 3, 4, 5].map((rating) => (
-              <button
-                type="button"
-                key={rating}
-                disabled={reviewing}
-                onClick={() => onReview(rating)}
-                aria-label={`${unit.title} 이해도 ${rating}점`}
-              >
-                {rating}
-              </button>
-            ))}
-          </div>
-        </footer>
       </section>
     </div>
   );
 }
 
 export function LearningPage() {
-  const client = useQueryClient();
   const [selected, setSelected] = useState<{ unit: Unit; index: number }>();
   const [expandedSources, setExpandedSources] = useState<Set<string>>(new Set());
   const initializedSources = useRef(false);
@@ -201,16 +180,6 @@ export function LearningPage() {
     queryFn: () => api<unknown[]>('/learning/due'),
     staleTime: 60_000,
     refetchOnWindowFocus: false,
-  });
-  const review = useMutation({
-    mutationFn: ({ unitId, rating }: { unitId: string; rating: number }) =>
-      api('/learning/review', { method: 'POST', body: json({ unitId, rating }) }),
-    onSuccess: async () => {
-      await Promise.all([
-        client.invalidateQueries({ queryKey: ['learning'] }),
-        client.invalidateQueries({ queryKey: ['learning-due'] }),
-      ]);
-    },
   });
   useEffect(() => {
     if (initializedSources.current || !learning.data?.length) return;
@@ -317,8 +286,6 @@ export function LearningPage() {
           unit={selected.unit}
           index={selected.index}
           onClose={() => setSelected(undefined)}
-          reviewing={review.isPending}
-          onReview={(rating) => review.mutate({ unitId: selected.unit.id, rating })}
         />
       )}
     </div>
