@@ -85,8 +85,9 @@ test.describe('CareerGround MVP vertical slices', () => {
   test('filters problems and records a member-visible solution', async ({ page }) => {
     await page.getByRole('link', { name: '코딩테스트' }).first().click();
     await expect(page.getByRole('heading', { name: '코딩테스트' })).toBeVisible();
-    const dailySection = page.getByRole('region', { name: '오늘의 문제 2개' });
+    const dailySection = page.getByRole('region', { name: '오늘의 문제' });
     await expect(dailySection.locator('article')).toHaveCount(2);
+    await expect(dailySection.getByText(/오늘 두 문제|오늘의 두 문제/)).toHaveCount(0);
     await expect(dailySection.getByText('Lv. 1', { exact: true })).toBeVisible();
     await expect(dailySection.getByText('Lv. 2', { exact: true })).toBeVisible();
     await expect(dailySection.getByRole('link', { name: '다른 풀이 보기' })).toHaveCount(2);
@@ -144,6 +145,15 @@ test.describe('CareerGround MVP vertical slices', () => {
 
     await page.getByRole('button', { name: '기업 규모: 대기업' }).click();
     await page.getByRole('menuitem', { name: '선택 초기화' }).click();
+    await page.getByRole('button', { name: '직무: 전체' }).click();
+    const jobCategoryMenu = page.getByRole('menu', { name: '직무 복수 선택' });
+    await expect(jobCategoryMenu).toBeVisible();
+    await expect
+      .poll(() =>
+        jobCategoryMenu.evaluate((element) => element.scrollHeight > element.clientHeight),
+      )
+      .toBe(true);
+    await page.keyboard.press('Escape');
     await page.getByRole('button', { name: '달력' }).click();
     await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
     await expect(page.locator('.calendar-job strong').first()).toBeVisible();
@@ -152,6 +162,15 @@ test.describe('CareerGround MVP vertical slices', () => {
   test('records understanding and refreshes spaced-review state', async ({ page }) => {
     await page.getByRole('link', { name: '학습' }).first().click();
     await expect(page.getByRole('heading', { name: '학습 라이브러리' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: '데이터 분석 기초: 변수에서 가설검정까지' }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: '데이터 관계 읽기: 상관과 회귀' }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: '개발 입문: Git, 환경 구성, AI 코딩' }),
+    ).toBeVisible();
     await expect(page.getByRole('button', { name: /학습 시작/ })).toHaveCount(0);
     await page
       .getByRole('button', { name: /내용 보기/ })
@@ -169,7 +188,24 @@ test.describe('CareerGround MVP vertical slices', () => {
     await page.getByRole('link', { name: '랭킹' }).first().click();
     await expect(page.getByRole('table', { name: '코딩 랭킹' })).toBeVisible();
     await expect(page.getByText('동점은 같은 순위로 표시합니다.')).toBeVisible();
-    await expect(page.getByText(/사용자·문제별 한 번만 계산/)).toBeVisible();
+    await expect(page.getByText(/모든 멤버.*자동 계산/)).toBeVisible();
+  });
+
+  test('profile settings begin read-only and expose an explicit change action', async ({
+    page,
+  }) => {
+    await page.getByRole('link', { name: '설정' }).first().click();
+    await expect(page.getByRole('heading', { name: '설정' })).toBeVisible();
+    const displayName = page.getByLabel('표시 이름');
+    await expect(displayName).toBeDisabled();
+    await expect(page.getByRole('button', { name: '변경', exact: true })).toBeVisible();
+    await expect(page.getByText(/데이터 JSON 내보내기|데이터 삭제 요청/)).toHaveCount(0);
+    await expect(page.getByRole('checkbox', { name: /랭킹/ })).toHaveCount(0);
+    await page.getByRole('button', { name: '변경', exact: true }).click();
+    await expect(displayName).toBeEnabled();
+    await expect(page.getByRole('button', { name: '변경 저장' })).toBeVisible();
+    await page.getByRole('button', { name: '취소' }).click();
+    await expect(displayName).toBeDisabled();
   });
 
   test('searches across the workspace and marks notifications read', async ({ page }) => {
@@ -189,6 +225,7 @@ test.describe('CareerGround MVP vertical slices', () => {
     await login(page, 'admin@careerground.local');
     await page.getByRole('link', { name: '관리자' }).first().click();
     await expect(page.getByRole('heading', { name: '관리자 센터' })).toBeVisible();
+    await expect(page.getByText('AI 학습 처리', { exact: true })).toHaveCount(0);
     const now = new Date().toISOString();
     const companyName = `E2E 회사 ${Date.now()}`;
     const payload = {

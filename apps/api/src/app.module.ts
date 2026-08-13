@@ -19,7 +19,6 @@ import { LearningController } from './learning/learning.controller.js';
 import { LearningService } from './learning/learning.service.js';
 import { UtilityController } from './utility/utility.controller.js';
 import { UtilityService } from './utility/utility.service.js';
-import { StorageService } from './learning/storage.service.js';
 
 @Module({
   imports: [
@@ -45,7 +44,6 @@ import { StorageService } from './learning/storage.service.js';
     CodingService,
     JobsService,
     LearningService,
-    StorageService,
     UtilityService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: AccessGuard },

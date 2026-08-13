@@ -1,14 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  AlertTriangle,
-  FileJson,
-  History,
-  Settings2,
-  ShieldCheck,
-  Upload,
-  UserPlus,
-} from 'lucide-react';
+import { FileJson, History, Settings2, ShieldCheck, Upload, UserPlus } from 'lucide-react';
 import { api, json } from '../lib/api';
 
 type Overview = {
@@ -79,11 +71,6 @@ export function AdminPage() {
   const [jobPayload, setJobPayload] = useState('');
   const [jobFile, setJobFile] = useState<File>();
   const [learningPayload, setLearningPayload] = useState('');
-  const [sourceFile, setSourceFile] = useState<File>();
-  const [sourceTitle, setSourceTitle] = useState('');
-  const [sourceSubject, setSourceSubject] = useState('');
-  const [sourceCategory, setSourceCategory] = useState('');
-  const [sourceVersion, setSourceVersion] = useState('1.0');
   const [preview, setPreview] = useState<unknown>();
   const [message, setMessage] = useState('');
   const [levels, setLevels] = useState<number[]>([1, 2]);
@@ -147,27 +134,6 @@ export function AdminPage() {
         client.invalidateQueries({ queryKey: ['daily-challenge'] }),
         client.invalidateQueries({ queryKey: ['admin-audit-logs'] }),
       ]);
-    },
-  });
-  const uploadSource = useMutation({
-    mutationFn: () => {
-      const form = new FormData();
-      form.append('file', sourceFile!);
-      form.append('title', sourceTitle);
-      form.append('subject', sourceSubject);
-      form.append('category', sourceCategory);
-      form.append('version', sourceVersion);
-      return api<{ status: string }>('/learning/sources/upload', { method: 'POST', body: form });
-    },
-    onSuccess: async (data) => {
-      setSourceFile(undefined);
-      setSourceTitle('');
-      setMessage(
-        data.status === 'REQUIRES_MANUAL_PROCESSING'
-          ? '원본을 등록했습니다. PDF/DOCX는 수동 텍스트 추출이 필요합니다.'
-          : '학습 원본을 등록했습니다.',
-      );
-      await client.invalidateQueries({ queryKey: ['learning'] });
     },
   });
   const jobFileImport = useMutation({
@@ -264,75 +230,6 @@ export function AdminPage() {
               </div>
             ))}
           </div>
-        </section>
-        <section className="admin-card warning">
-          <header>
-            <AlertTriangle />
-            <div>
-              <h2>AI 학습 처리</h2>
-              <p>feature flag와 서버 자격증명이 모두 있어야 활성화됩니다.</p>
-            </div>
-          </header>
-          <p>
-            키가 없을 때 성공으로 표시하지 않으며, 구조화 package import 경로를 계속 사용할 수
-            있습니다.
-          </p>
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (sourceFile && sourceTitle && sourceSubject && sourceCategory)
-                uploadSource.mutate();
-            }}
-          >
-            <label>
-              학습 원본 파일
-              <input
-                type="file"
-                accept=".pdf,.docx,.md,.txt,.csv"
-                onChange={(event) => setSourceFile(event.target.files?.[0])}
-              />
-            </label>
-            <label>
-              자료 제목
-              <input value={sourceTitle} onChange={(event) => setSourceTitle(event.target.value)} />
-            </label>
-            <div className="form-row">
-              <label>
-                과목
-                <input
-                  value={sourceSubject}
-                  onChange={(event) => setSourceSubject(event.target.value)}
-                />
-              </label>
-              <label>
-                카테고리
-                <input
-                  value={sourceCategory}
-                  onChange={(event) => setSourceCategory(event.target.value)}
-                />
-              </label>
-              <label>
-                버전
-                <input
-                  value={sourceVersion}
-                  onChange={(event) => setSourceVersion(event.target.value)}
-                />
-              </label>
-            </div>
-            <button
-              className="primary-button compact"
-              disabled={
-                !sourceFile ||
-                !sourceTitle ||
-                !sourceSubject ||
-                !sourceCategory ||
-                uploadSource.isPending
-              }
-            >
-              <Upload /> 원본 등록
-            </button>
-            {uploadSource.isError && <div className="form-error">{uploadSource.error.message}</div>}
-          </form>
         </section>
       </div>
       <section className="admin-card admin-wide-card">

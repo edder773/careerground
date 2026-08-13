@@ -12,14 +12,11 @@ Rollback은 애플리케이션 image를 이전 tag로 돌리는 방식이 기본
 
 GitHub secrets:
 
-- `OPENAI_API_KEY`
-- `OPENAI_TROUBLESHOOTING_MODEL`
+- 선택형 트러블슈팅 문서 보강을 사용할 때만 `OPENAI_API_KEY`, `OPENAI_TROUBLESHOOTING_MODEL`
 - `SITES_AUTH_SHARED_SECRET`
 - 필요하면 `OPENAI_ADMIN_EMAILS`
 - Pages를 쓰는 경우 기본 `GITHUB_TOKEN` 외 추가 secret 불필요
 - 실제 배포를 붙일 경우 registry/cloud workload identity 값
-
-production S3 adapter가 배포 환경에 구현되지 않았다면 `STORAGE_DRIVER=local`을 단일 persistent volume에서만 사용하고 horizontal scale을 금지한다.
 
 ## OpenAI Sites 운영 앱
 

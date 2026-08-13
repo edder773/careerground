@@ -1,75 +1,16 @@
-import { createHash, randomUUID } from 'node:crypto';
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { learningImportSchema } from '@careerground/contracts';
 import sanitizeHtml from 'sanitize-html';
 import { PrismaService } from '../common/prisma.service.js';
 import { AuditService } from '../common/audit.service.js';
-import { StorageService } from './storage.service.js';
 import { dueAtFrom, nextReview } from './learning-domain.js';
-
-const allowed = new Map([
-  ['application/pdf', '.pdf'],
-  ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', '.docx'],
-  ['text/markdown', '.md'],
-  ['text/plain', '.txt'],
-  ['text/csv', '.csv'],
-]);
-type UploadFile = { originalname: string; buffer: Buffer; size: number; mimetype: string };
 
 @Injectable()
 export class LearningService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly storage: StorageService,
     private readonly audit: AuditService,
   ) {}
-
-  async upload(
-    actorId: string,
-    file: UploadFile,
-    meta: { title: string; subject: string; category: string; version: string },
-  ) {
-    const extension = `.${file.originalname.split('.').pop()?.toLowerCase()}`;
-    if (!allowed.has(file.mimetype) || allowed.get(file.mimetype) !== extension)
-      throw new BadRequestException('허용되지 않거나 MIME과 확장자가 일치하지 않는 파일입니다.');
-    const maxBytes = Number(process.env.MAX_UPLOAD_MB || 20) * 1024 * 1024;
-    if (file.size > maxBytes)
-      throw new BadRequestException(`파일은 ${process.env.MAX_UPLOAD_MB || 20}MB 이하여야 합니다.`);
-    const sha256 = createHash('sha256').update(file.buffer).digest('hex');
-    const duplicate = await this.prisma.learningSourceVersion.findUnique({
-      where: { sha256 },
-      include: { source: true },
-    });
-    if (duplicate)
-      throw new ConflictException({
-        message: '동일한 파일이 이미 등록되어 있습니다.',
-        sourceId: duplicate.sourceId,
-        title: duplicate.source.title,
-      });
-    const storageKey = `learning/${sha256.slice(0, 2)}/${sha256}-${randomUUID()}${extension}`;
-    await this.storage.put(storageKey, file.buffer);
-    const requiresManual = ['.pdf', '.docx'].includes(extension);
-    return this.prisma.learningSource.create({
-      data: {
-        title: meta.title,
-        subject: meta.subject,
-        category: meta.category,
-        publishedById: actorId,
-        status: requiresManual ? 'REQUIRES_MANUAL_PROCESSING' : 'UPLOADED',
-        versions: {
-          create: {
-            version: meta.version,
-            fileName: file.originalname,
-            mimeType: file.mimetype,
-            storageKey,
-            sha256,
-            extractionMeta: { requiresManualExtraction: requiresManual },
-          },
-        },
-      },
-      include: { versions: true },
-    });
-  }
 
   async preview(body: unknown) {
     const parsed = learningImportSchema.safeParse(body);
@@ -212,19 +153,5 @@ export class LearningService {
       orderBy: { nextReviewAt: 'asc' },
       take: 100,
     });
-  }
-
-  aiStatus() {
-    const enabled = process.env.AI_LEARNING_ENABLED === 'true';
-    return {
-      enabled,
-      configured:
-        enabled && Boolean(process.env.OPENAI_API_KEY && process.env.OPENAI_LEARNING_MODEL),
-      message: !enabled
-        ? 'AI 학습 생성을 사용하지 않도록 설정했습니다.'
-        : !process.env.OPENAI_API_KEY
-          ? '관리자가 OPENAI_API_KEY를 설정해야 합니다.'
-          : 'AI 처리를 사용할 수 있습니다.',
-    };
   }
 }

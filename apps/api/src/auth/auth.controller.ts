@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Headers, Patch, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Patch, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 import { codeLanguageSchema } from '@careerground/contracts';
@@ -15,7 +15,6 @@ const profileSchema = z.object({
     .nullable()
     .optional(),
   preferredLanguage: codeLanguageSchema,
-  rankingOptIn: z.boolean(),
   commentNotifications: z.boolean(),
   deadlineNotifications: z.boolean(),
   reviewNotifications: z.boolean(),
@@ -42,8 +41,6 @@ export class AuthController {
         avatarUrl: true,
         githubUsername: true,
         preferredLanguage: true,
-        rankingOptIn: true,
-        dataDeletionRequested: true,
         preference: true,
       },
     });
@@ -82,6 +79,7 @@ export class AuthController {
       where: { id: user.id },
       data: {
         ...profile,
+        rankingOptIn: true,
         avatarUrl: profile.avatarUrl || null,
         githubUsername: profile.githubUsername || null,
         preference: {
@@ -98,8 +96,6 @@ export class AuthController {
         avatarUrl: true,
         githubUsername: true,
         preferredLanguage: true,
-        rankingOptIn: true,
-        dataDeletionRequested: true,
         preference: true,
       },
     });
@@ -119,29 +115,6 @@ export class AuthController {
         createdAt: true,
       },
       orderBy: { displayName: 'asc' },
-    });
-  }
-
-  @Get('export')
-  exportData(@CurrentUser() user: AuthUser) {
-    return this.prisma.user.findUnique({
-      where: { id: user.id },
-      include: {
-        collections: { include: { items: true } },
-        notes: true,
-        savedJobs: true,
-        solutions: true,
-        learningProgress: true,
-      },
-    });
-  }
-
-  @Post('delete-request')
-  requestDeletion(@CurrentUser() user: AuthUser, @Headers('x-request-id') _requestId?: string) {
-    return this.prisma.user.update({
-      where: { id: user.id },
-      data: { dataDeletionRequested: new Date() },
-      select: { dataDeletionRequested: true, id: true },
     });
   }
 }

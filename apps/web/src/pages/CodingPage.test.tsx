@@ -55,10 +55,11 @@ describe('solution editor', () => {
         <CodingPage />
       </AuthProvider>,
     );
-    expect(await screen.findByRole('region', { name: '오늘의 문제 2개' })).toBeInTheDocument();
+    expect(await screen.findByRole('region', { name: '오늘의 문제' })).toBeInTheDocument();
+    expect(screen.queryByText(/오늘 두 문제|오늘의 두 문제/)).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: '데모 문제 원본 열기' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '데모 문제 Lv. 2 원본 열기' })).toBeInTheDocument();
-    const dailySection = screen.getByRole('region', { name: '오늘의 문제 2개' });
+    const dailySection = screen.getByRole('region', { name: '오늘의 문제' });
     expect(dailySection.querySelectorAll('a[href^="/solutions?"]')).toHaveLength(2);
     await user.click(screen.getAllByRole('button', { name: '풀이 기록' })[0]!);
     expect(screen.getByRole('dialog', { name: '데모 문제' })).toBeInTheDocument();

@@ -66,9 +66,7 @@ DB를 reset하면 로컬 데이터가 삭제되므로 대상 DB URL을 확인한
 - `OPENAI_AUTH_MOCK`: 로컬/E2E 전용 인증 헤더 mock; production에서는 무시
 - `MAX_ACTIVE_USERS`: 기본 10
 - `INTERNAL_SERVICE_SECRET`: daily challenge ensure endpoint 보호
-- `AI_LEARNING_ENABLED`: OpenAI 학습 처리를 명시적으로 켜는 flag
-- `OPENAI_API_KEY`, `OPENAI_LEARNING_MODEL`, `OPENAI_TROUBLESHOOTING_MODEL`: 서버/신뢰된 merge workflow에서만 사용
-- `STORAGE_DRIVER`: 현재 로컬 개발은 `local`; S3 운영 adapter는 배포 환경에서 별도 구현·주입 필요
+- `OPENAI_API_KEY`, `OPENAI_TROUBLESHOOTING_MODEL`: 선택형 트러블슈팅 문서 보강에만 사용하며, 없어도 변경 파일·테스트 결과 기반 기록은 생성됨
 
 실제 `.env*`, 업로드 파일, DB 볼륨, API 키는 Git에 포함하지 않는다.
 

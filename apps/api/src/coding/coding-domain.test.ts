@@ -49,6 +49,26 @@ describe('coding policies', () => {
     );
   });
 
+  it('automatically includes every active member in rankings', async () => {
+    const memberQuery = vi.fn(async () => [{ id: 'member', displayName: '자동 참여 멤버' }]);
+    const prisma = {
+      user: { findMany: memberQuery },
+      solution: { findMany: async () => [] },
+      dailyChallengeParticipation: { findMany: async () => [] },
+    };
+    const service = new CodingService(prisma as never, {} as never);
+
+    const result = await service.rankings();
+
+    expect(memberQuery).toHaveBeenCalledWith({
+      where: { isActive: true, deletedAt: null, role: 'MEMBER' },
+      select: { id: true, displayName: true },
+    });
+    expect(result.rows).toEqual([
+      expect.objectContaining({ displayName: '자동 참여 멤버', score: 0, rank: 1 }),
+    ]);
+  });
+
   it('returns the unique winner when two workers create today concurrently', async () => {
     const winners = new Map<number, Record<string, unknown>>();
     const problems = [
