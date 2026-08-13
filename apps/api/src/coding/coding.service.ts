@@ -42,11 +42,15 @@ export class CodingService implements OnApplicationBootstrap {
     }
   }
 
-  listProblems(userId: string, query: { level?: number; tag?: string }) {
+  listProblems(
+    userId: string,
+    query: { level?: number; tag?: string; track?: 'ALGORITHM' | 'SQL' },
+  ) {
     return this.prisma.codingProblem.findMany({
       where: {
         active: true,
         level: query.level,
+        track: query.track,
         ...(query.tag ? { tags: { has: query.tag } } : {}),
       },
       include: { progress: { where: { userId } }, _count: { select: { solutions: true } } },
@@ -54,7 +58,13 @@ export class CodingService implements OnApplicationBootstrap {
     });
   }
 
-  createProblem(data: { sourceUrl: string; displayTitle: string; level: number; tags: string[] }) {
+  createProblem(data: {
+    sourceUrl: string;
+    displayTitle: string;
+    level: number;
+    track: 'ALGORITHM' | 'SQL';
+    tags: string[];
+  }) {
     const url = new URL(data.sourceUrl);
     if (
       url.protocol !== 'https:' ||
@@ -298,9 +308,11 @@ export class CodingService implements OnApplicationBootstrap {
       create: { id: 1, allowedLevels: [1, 2], repeatExclusionDays: 60 },
       update: { allowedLevels: [1, 2] },
     });
-    return Promise.all(
-      [1, 2].map((levelSlot) => this.ensureTodayChallengeLevel(now, levelSlot, setting)),
-    );
+    return Promise.all([
+      this.ensureTodayChallengeLevel(now, 1, 'ALGORITHM', [1], setting),
+      this.ensureTodayChallengeLevel(now, 2, 'ALGORITHM', [2], setting),
+      this.ensureTodayChallengeLevel(now, 34, 'SQL', [3, 4], setting),
+    ]);
   }
 
   async ensureTodayChallenge(now = new Date()) {
@@ -310,6 +322,8 @@ export class CodingService implements OnApplicationBootstrap {
   private async ensureTodayChallengeLevel(
     now: Date,
     levelSlot: number,
+    track: 'ALGORITHM' | 'SQL',
+    levels: number[],
     setting: {
       repeatExclusionDays: number;
       allowRepeatRelaxation: boolean;
@@ -330,7 +344,8 @@ export class CodingService implements OnApplicationBootstrap {
       return this.prisma.codingProblem.findMany({
         where: {
           active: true,
-          level: levelSlot,
+          track,
+          level: { in: levels },
           id: { notIn: recent.map((x) => x.problemId) },
         },
       });
@@ -353,7 +368,8 @@ export class CodingService implements OnApplicationBootstrap {
           metadata: {
             configuredDays: setting.repeatExclusionDays,
             effectiveDays: days,
-            level: levelSlot,
+            track,
+            levels,
           },
         });
         break;
@@ -368,16 +384,16 @@ export class CodingService implements OnApplicationBootstrap {
         data: admins.map((admin) => ({
           userId: admin.id,
           type: 'IMPORT_ERROR' as const,
-          title: `오늘의 Lv. ${levelSlot} 문제 후보 없음`,
-          message: `레벨 ${levelSlot}과 ${setting.repeatExclusionDays}일 제외 조건을 만족하는 문제가 없습니다.`,
+          title: `오늘의 ${track === 'SQL' ? 'SQL' : `Lv. ${levelSlot}`} 문제 후보 없음`,
+          message: `${track === 'SQL' ? 'SQL Lv. 3~4' : `레벨 ${levelSlot}`}와 ${setting.repeatExclusionDays}일 제외 조건을 만족하는 문제가 없습니다.`,
           href: '/admin',
         })),
       });
       throw new ServiceUnavailableException(
-        `오늘의 Lv. ${levelSlot} 문제 후보가 없습니다. 관리자 설정을 확인하세요.`,
+        `오늘의 ${track === 'SQL' ? 'SQL Lv. 3~4' : `Lv. ${levelSlot}`} 문제 후보가 없습니다. 관리자 설정을 확인하세요.`,
       );
     }
-    const seed = `${kstDate.toISOString().slice(0, 10)}:level-${levelSlot}`;
+    const seed = `${kstDate.toISOString().slice(0, 10)}:${track.toLowerCase()}:${levels.join('-')}`;
     const selected = selectDeterministicProblem(candidates, seed);
     if (!selected) throw new ServiceUnavailableException();
     try {
@@ -387,7 +403,7 @@ export class CodingService implements OnApplicationBootstrap {
           levelSlot,
           problemId: selected.id,
           candidateCount: candidates.length,
-          allowedLevels: [levelSlot],
+          allowedLevels: levels,
           repeatWindowDays: effectiveRepeatDays,
           selectionSeed: createHash('sha256').update(seed).digest('hex').slice(0, 16),
           selectionReason:
@@ -406,7 +422,7 @@ export class CodingService implements OnApplicationBootstrap {
           userId: user.id,
           type: 'DAILY_CHALLENGE' as const,
           title: '오늘의 코딩테스트',
-          message: `Lv. ${levelSlot} · ${selected.displayTitle}`,
+          message: `${track === 'SQL' ? 'SQL · ' : ''}Lv. ${selected.level} · ${selected.displayTitle}`,
           href: '/coding',
         })),
       });

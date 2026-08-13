@@ -72,8 +72,9 @@ describe('coding policies', () => {
   it('returns the unique winner when two workers create today concurrently', async () => {
     const winners = new Map<number, Record<string, unknown>>();
     const problems = [
-      { id: 'problem-1', displayTitle: '동시성 Lv. 1', level: 1 },
-      { id: 'problem-2', displayTitle: '동시성 Lv. 2', level: 2 },
+      { id: 'problem-1', displayTitle: '동시성 Lv. 1', level: 1, track: 'ALGORITHM' },
+      { id: 'problem-2', displayTitle: '동시성 Lv. 2', level: 2, track: 'ALGORITHM' },
+      { id: 'problem-sql', displayTitle: '동시성 SQL', level: 3, track: 'SQL' },
     ];
     const dailyChallenge = {
       findUnique: async ({ where }: { where: { kstDate_levelSlot: { levelSlot: number } } }) =>
@@ -101,8 +102,10 @@ describe('coding policies', () => {
         }),
       },
       codingProblem: {
-        findMany: async ({ where }: { where: { level: number } }) =>
-          problems.filter((problem) => problem.level === where.level),
+        findMany: async ({ where }: { where: { track: string; level: { in: number[] } } }) =>
+          problems.filter(
+            (problem) => problem.track === where.track && where.level.in.includes(problem.level),
+          ),
       },
       user: { findMany: async () => [] },
       notification: { createMany: async () => ({ count: 0 }) },
@@ -116,16 +119,21 @@ describe('coding policies', () => {
     expect(first).toEqual([
       expect.objectContaining({ id: 'challenge-1', levelSlot: 1 }),
       expect.objectContaining({ id: 'challenge-2', levelSlot: 2 }),
+      expect.objectContaining({ id: 'challenge-34', levelSlot: 34 }),
     ]);
   });
 
-  it('selects exact Lv. 1 and Lv. 2 candidates with the repeat exclusion cutoff', async () => {
+  it('selects exact algorithm levels and SQL Lv. 3–4 with the repeat exclusion cutoff', async () => {
     const candidates = [
-      { id: 'problem-1', displayTitle: '레벨 1 문제', level: 1 },
-      { id: 'problem-2', displayTitle: '레벨 2 문제', level: 2 },
+      { id: 'problem-1', displayTitle: '레벨 1 문제', level: 1, track: 'ALGORITHM' },
+      { id: 'problem-2', displayTitle: '레벨 2 문제', level: 2, track: 'ALGORITHM' },
+      { id: 'problem-sql', displayTitle: 'SQL 레벨 3 문제', level: 3, track: 'SQL' },
     ];
-    const candidateQuery = vi.fn(async ({ where }: { where: { level: number } }) =>
-      candidates.filter((problem) => problem.level === where.level),
+    const candidateQuery = vi.fn(
+      async ({ where }: { where: { track: string; level: { in: number[] } } }) =>
+        candidates.filter(
+          (problem) => problem.track === where.track && where.level.in.includes(problem.level),
+        ),
     );
     const challengeQuery = vi.fn(async (_input: unknown) => [{ problemId: 'recent-problem' }]);
     const prisma = {
@@ -150,12 +158,30 @@ describe('coding policies', () => {
     };
     const service = new CodingService(prisma as never, {} as never);
     const result = await service.ensureTodayChallenges(new Date('2026-08-12T01:00:00Z'));
-    expect(result.map((challenge) => challenge.levelSlot)).toEqual([1, 2]);
+    expect(result.map((challenge) => challenge.levelSlot)).toEqual([1, 2, 34]);
     expect(candidateQuery).toHaveBeenCalledWith({
-      where: { active: true, level: 1, id: { notIn: ['recent-problem'] } },
+      where: {
+        active: true,
+        track: 'ALGORITHM',
+        level: { in: [1] },
+        id: { notIn: ['recent-problem'] },
+      },
     });
     expect(candidateQuery).toHaveBeenCalledWith({
-      where: { active: true, level: 2, id: { notIn: ['recent-problem'] } },
+      where: {
+        active: true,
+        track: 'ALGORITHM',
+        level: { in: [2] },
+        id: { notIn: ['recent-problem'] },
+      },
+    });
+    expect(candidateQuery).toHaveBeenCalledWith({
+      where: {
+        active: true,
+        track: 'SQL',
+        level: { in: [3, 4] },
+        id: { notIn: ['recent-problem'] },
+      },
     });
     const recentFilter = challengeQuery.mock.calls[0]?.[0] as {
       where: { kstDate: { gte: Date } };
@@ -164,14 +190,28 @@ describe('coding policies', () => {
   });
 
   it('relaxes only the repeat window when an ADMIN explicitly allows it and records an audit', async () => {
-    const levelOne = { id: 'problem-relaxed-1', displayTitle: '완화 후보', level: 1 };
-    const levelTwo = { id: 'problem-2', displayTitle: 'Lv. 2 후보', level: 2 };
+    const levelOne = {
+      id: 'problem-relaxed-1',
+      displayTitle: '완화 후보',
+      level: 1,
+      track: 'ALGORITHM',
+    };
+    const levelTwo = {
+      id: 'problem-2',
+      displayTitle: 'Lv. 2 후보',
+      level: 2,
+      track: 'ALGORITHM',
+    };
+    const sql = { id: 'problem-sql', displayTitle: 'SQL 후보', level: 3, track: 'SQL' };
     let levelOneCalls = 0;
-    const candidateQuery = vi.fn(async ({ where }: { where: { level: number } }) => {
-      if (where.level === 2) return [levelTwo];
-      levelOneCalls += 1;
-      return levelOneCalls === 1 ? [] : [levelOne];
-    });
+    const candidateQuery = vi.fn(
+      async ({ where }: { where: { track: string; level: { in: number[] } } }) => {
+        if (where.track === 'SQL') return [sql];
+        if (where.level.in.includes(2)) return [levelTwo];
+        levelOneCalls += 1;
+        return levelOneCalls === 1 ? [] : [levelOne];
+      },
+    );
     const audit = { record: vi.fn(async () => ({})) };
     const prisma = {
       dailyChallenge: {
@@ -197,9 +237,10 @@ describe('coding policies', () => {
     const result = await service.ensureTodayChallenges(new Date('2026-08-12T01:00:00Z'));
     expect(result[0]).toMatchObject({ repeatWindowDays: 30, allowedLevels: [1] });
     expect(result[1]).toMatchObject({ repeatWindowDays: 60, allowedLevels: [2] });
+    expect(result[2]).toMatchObject({ repeatWindowDays: 60, allowedLevels: [3, 4] });
     expect(audit.record).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'DAILY_CHALLENGE_REPEAT_WINDOW_RELAXED' }),
     );
-    expect(candidateQuery).toHaveBeenCalledTimes(3);
+    expect(candidateQuery).toHaveBeenCalledTimes(4);
   });
 });

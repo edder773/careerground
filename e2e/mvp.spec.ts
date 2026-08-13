@@ -86,11 +86,12 @@ test.describe('CareerGround MVP vertical slices', () => {
     await page.getByRole('link', { name: '코딩테스트' }).first().click();
     await expect(page.getByRole('heading', { name: '코딩테스트' })).toBeVisible();
     const dailySection = page.getByRole('region', { name: '오늘의 문제' });
-    await expect(dailySection.locator('article')).toHaveCount(2);
+    await expect(dailySection.locator('article')).toHaveCount(3);
     await expect(dailySection.getByText(/오늘 두 문제|오늘의 두 문제/)).toHaveCount(0);
     await expect(dailySection.getByText('Lv. 1', { exact: true })).toBeVisible();
     await expect(dailySection.getByText('Lv. 2', { exact: true })).toBeVisible();
-    await expect(dailySection.getByRole('link', { name: '다른 풀이 보기' })).toHaveCount(2);
+    await expect(dailySection.getByText(/SQL · Lv\. [34]/)).toBeVisible();
+    await expect(dailySection.getByRole('link', { name: '다른 풀이 보기' })).toHaveCount(3);
     const record = dailySection.getByRole('button', { name: '풀이 기록' }).first();
     await expect(record).toBeVisible();
     await record.click();
@@ -172,6 +173,7 @@ test.describe('CareerGround MVP vertical slices', () => {
       page.getByRole('heading', { name: '개발 입문: Git, 환경 구성, AI 코딩' }),
     ).toBeVisible();
     await expect(page.getByRole('button', { name: /학습 시작/ })).toHaveCount(0);
+    await expect(page.getByText('학습 전')).toHaveCount(0);
     await page
       .getByRole('button', { name: /내용 보기/ })
       .first()

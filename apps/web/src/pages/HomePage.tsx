@@ -47,7 +47,12 @@ export type Collection = {
 };
 type Challenge = {
   id: string;
-  problem: { displayTitle: string; level: number; sourceUrl: string };
+  problem: {
+    displayTitle: string;
+    level: number;
+    track: 'ALGORITHM' | 'SQL';
+    sourceUrl: string;
+  };
 };
 
 function SortableFolder({
@@ -211,7 +216,9 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
             <div className="today-problem-list">
               {challenge.data?.map((item) => (
                 <a key={item.id} href={item.problem.sourceUrl} target="_blank" rel="noreferrer">
-                  <small>Lv. {item.problem.level}</small>
+                  <small>
+                    {item.problem.track === 'SQL' ? 'SQL · ' : ''}Lv. {item.problem.level}
+                  </small>
                   <strong>{item.problem.displayTitle}</strong>
                   <b>열기</b>
                 </a>

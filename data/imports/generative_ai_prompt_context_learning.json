@@ -34,6 +34,14 @@
             "가능한 한 길게 답하게 한다."
           ]
         }
+      ],
+      "visuals": [
+        {
+          "src": "/learning/llm-capabilities-and-limits.jpg",
+          "alt": "LLM을 잘 쓰려면 한계부터 이해한다 관련 원본 PDF 슬라이드 캡처",
+          "caption": "제공된 PDF에서 ‘LLM을 잘 쓰려면 한계부터 이해한다’ 이해를 돕는 그림·표·코드 화면을 캡처했습니다.",
+          "page": 25
+        }
       ]
     },
     {
@@ -56,6 +64,14 @@
           "type": "SHORT_ANSWER",
           "prompt": "담당자가 없는 회의록 요약에서 모델의 임의 추정을 막는 출력 규칙을 한 문장으로 써보세요.",
           "answer": "자료에 담당자가 명시되지 않은 항목은 `미정`으로 표시하고 추정하지 않는다."
+        }
+      ],
+      "visuals": [
+        {
+          "src": "/learning/prompt-control-basics.jpg",
+          "alt": "프롬프트는 입력이 아니라 제어 장치다 관련 원본 PDF 슬라이드 캡처",
+          "caption": "제공된 PDF에서 ‘프롬프트는 입력이 아니라 제어 장치다’ 이해를 돕는 그림·표·코드 화면을 캡처했습니다.",
+          "page": 33
         }
       ]
     },
@@ -81,6 +97,14 @@
           "answer": "Context",
           "choices": ["Role", "Instruction", "Context", "Examples"]
         }
+      ],
+      "visuals": [
+        {
+          "src": "/learning/rice-framework.jpg",
+          "alt": "RICE로 빠르게 요구사항을 구조화한다 관련 원본 PDF 슬라이드 캡처",
+          "caption": "제공된 PDF에서 ‘RICE로 빠르게 요구사항을 구조화한다’ 이해를 돕는 그림·표·코드 화면을 캡처했습니다.",
+          "page": 49
+        }
       ]
     },
     {
@@ -105,6 +129,14 @@
           "answer": "Devil's advocate",
           "choices": ["Zero-shot", "Few-shot", "Devil's advocate"]
         }
+      ],
+      "visuals": [
+        {
+          "src": "/learning/prompting-techniques.jpg",
+          "alt": "문제에 맞는 프롬프팅 기법을 선택한다 관련 원본 PDF 슬라이드 캡처",
+          "caption": "제공된 PDF에서 ‘문제에 맞는 프롬프팅 기법을 선택한다’ 이해를 돕는 그림·표·코드 화면을 캡처했습니다.",
+          "page": 58
+        }
       ]
     },
     {
@@ -127,6 +159,14 @@
           "type": "SHORT_ANSWER",
           "prompt": "반복되는 주간 보고 업무에서 변수로 분리할 항목 두 가지를 써보세요.",
           "answer": "예: 보고 기간, 주요 성과, 이슈, 다음 주 계획, 대상 독자 중 두 가지"
+        }
+      ],
+      "visuals": [
+        {
+          "src": "/learning/format-and-meta-prompting.jpg",
+          "alt": "Markdown과 메타 프롬프트로 결과를 다듬는다 관련 원본 PDF 슬라이드 캡처",
+          "caption": "제공된 PDF에서 ‘Markdown과 메타 프롬프트로 결과를 다듬는다’ 이해를 돕는 그림·표·코드 화면을 캡처했습니다.",
+          "page": 73
         }
       ]
     },
@@ -155,6 +195,14 @@
             "파일 수정 후 테스트를 실행하고 실패하면 제한 횟수 안에서 수정한다.",
             "모든 문서를 한 번에 컨텍스트에 넣는다."
           ]
+        }
+      ],
+      "visuals": [
+        {
+          "src": "/learning/context-and-harness-engineering.jpg",
+          "alt": "좋은 대화를 넘어 좋은 작업 환경을 설계한다 관련 원본 PDF 슬라이드 캡처",
+          "caption": "제공된 PDF에서 ‘좋은 대화를 넘어 좋은 작업 환경을 설계한다’ 이해를 돕는 그림·표·코드 화면을 캡처했습니다.",
+          "page": 91
         }
       ]
     }

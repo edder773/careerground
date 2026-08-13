@@ -47,6 +47,7 @@ class SqliteD1 implements D1Database {
       'drizzle/0005_naive_blindfold.sql',
       'drizzle/0006_tense_iron_patriot.sql',
       'drizzle/0007_learning_catalog_expansion.sql',
+      'drizzle/0008_sql_track_learning_visuals.sql',
     ]) {
       const migration = readFileSync(file, 'utf8');
       for (const statement of migration.split('--> statement-breakpoint')) {
@@ -233,6 +234,9 @@ describe('Sites D1 API', () => {
     const problemCount = await db
       .prepare('SELECT COUNT(*) AS count FROM coding_problems WHERE active = 1')
       .first<{ count: number }>();
+    const sqlProblemCount = await db
+      .prepare("SELECT COUNT(*) AS count FROM coding_problems WHERE active = 1 AND track = 'SQL'")
+      .first<{ count: number }>();
     const dummyCount = await db
       .prepare(
         `SELECT
@@ -243,6 +247,7 @@ describe('Sites D1 API', () => {
 
     expect(jobCount?.count).toBe(47);
     expect(problemCount?.count).toBe(427);
+    expect(sqlProblemCount?.count).toBe(62);
     expect(dummyCount?.count).toBe(0);
 
     const jobs = await call('/api/v1/jobs?sort=new');
@@ -387,11 +392,35 @@ describe('Sites D1 API', () => {
   });
 
   it('persists coding progress, solution, reaction, and comment', async () => {
+    db.resetPreparedSql();
     const challenges = await call('/api/v1/coding/daily-challenges');
     expect(challenges.body).toEqual([
-      expect.objectContaining({ levelSlot: 1, problem: expect.objectContaining({ level: 1 }) }),
-      expect.objectContaining({ levelSlot: 2, problem: expect.objectContaining({ level: 2 }) }),
+      expect.objectContaining({
+        levelSlot: 1,
+        problem: expect.objectContaining({ level: 1, track: 'ALGORITHM' }),
+      }),
+      expect.objectContaining({
+        levelSlot: 2,
+        problem: expect.objectContaining({ level: 2, track: 'ALGORITHM' }),
+      }),
+      expect.objectContaining({
+        levelSlot: 34,
+        problem: expect.objectContaining({ track: 'SQL', level: expect.any(Number) }),
+      }),
     ]);
+    const dailyRows = challenges.body as unknown as Array<{
+      levelSlot: number;
+      problem: { level: number };
+    }>;
+    expect([3, 4]).toContain(dailyRows.find((item) => item.levelSlot === 34)?.problem.level);
+    expect(
+      db.preparedSql.filter((sql) => sql.includes('FROM coding_problems p')).length,
+    ).toBeLessThanOrEqual(3);
+
+    const sqlProblems = await call('/api/v1/coding/problems?track=SQL');
+    const sqlRows = sqlProblems.body as unknown as Array<{ track: string }>;
+    expect(sqlRows).toHaveLength(62);
+    expect(sqlRows.every((problem) => problem.track === 'SQL')).toBe(true);
     const challenge = await call('/api/v1/coding/daily-challenge');
     const daily = challenge.body as unknown as { id: string; problem: { id: string } };
     expect(daily.problem.id).toBeTruthy();
@@ -524,6 +553,14 @@ describe('Sites D1 API', () => {
       ]),
     );
     expect(memberLearning.body).toEqual(adminLearning.body);
+    const units = (
+      adminLearning.body as unknown as Array<{
+        units: Array<{ visuals: Array<{ src: string; page: number }> }>;
+      }>
+    ).flatMap((source) => source.units);
+    expect(units).toHaveLength(23);
+    expect(units.every((unit) => unit.visuals[0]?.src.startsWith('/learning/'))).toBe(true);
+    expect(units.every((unit) => unit.visuals[0]?.page > 0)).toBe(true);
   });
 
   it('automatically ranks members and does not expose export or deletion request routes', async () => {

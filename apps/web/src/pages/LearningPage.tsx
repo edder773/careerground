@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   BookOpen,
   Brain,
   CheckCircle2,
+  ChevronDown,
   Clock3,
-  Layers3,
+  ExternalLink,
+  Image as ImageIcon,
   MessageCircleQuestion,
   Sparkles,
   X,
@@ -19,6 +21,7 @@ type Unit = {
   title: string;
   summary: string;
   concepts: string[];
+  visuals?: Array<{ src: string; alt: string; caption: string; page: number }>;
   flashcards: Array<{ id: string; front: string; back: string }>;
   questions: Array<{ id: string; prompt: string; answer: string; choices?: string[] }>;
   progress: Array<{ completed: boolean; understanding: number; nextReviewAt: string }>;
@@ -89,6 +92,30 @@ function LearningUnitModal({
               <span key={concept}>{concept}</span>
             ))}
           </div>
+          {(unit.visuals?.length || 0) > 0 && (
+            <section className="learning-visual-section" aria-label="PDF 시각 자료">
+              <div className="learning-section-title">
+                <ImageIcon />
+                <div>
+                  <span>원본 자료</span>
+                  <h3>그림·표·코드로 이해하기</h3>
+                </div>
+              </div>
+              <div className="learning-visual-grid">
+                {unit.visuals?.map((visual) => (
+                  <figure key={visual.src}>
+                    <a href={visual.src} target="_blank" rel="noreferrer">
+                      <img src={visual.src} alt={visual.alt} loading="lazy" decoding="async" />
+                      <span>
+                        크게 보기 <ExternalLink />
+                      </span>
+                    </a>
+                    <figcaption>{visual.caption}</figcaption>
+                  </figure>
+                ))}
+              </div>
+            </section>
+          )}
           <article className="learning-markdown">
             <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{unit.summary}</ReactMarkdown>
           </article>
@@ -160,6 +187,8 @@ function LearningUnitModal({
 export function LearningPage() {
   const client = useQueryClient();
   const [selected, setSelected] = useState<{ unit: Unit; index: number }>();
+  const [expandedSources, setExpandedSources] = useState<Set<string>>(new Set());
+  const initializedSources = useRef(false);
   const learning = useQuery({
     queryKey: ['learning'],
     queryFn: () => api<Source[]>('/learning'),
@@ -183,13 +212,27 @@ export function LearningPage() {
       ]);
     },
   });
+  useEffect(() => {
+    if (initializedSources.current || !learning.data?.length) return;
+    initializedSources.current = true;
+    setExpandedSources(new Set([learning.data[0]!.id]));
+  }, [learning.data]);
+
+  const toggleSource = (sourceId: string) => {
+    setExpandedSources((current) => {
+      const next = new Set(current);
+      if (next.has(sourceId)) next.delete(sourceId);
+      else next.add(sourceId);
+      return next;
+    });
+  };
 
   return (
     <div className="learning-page">
       <section className="page-heading learning-heading">
         <div>
           <span className="eyebrow">
-            <Brain size={15} /> 이해 중심의 생성형 AI 학습
+            <Brain size={15} /> 이해 중심 학습
           </span>
           <h1>학습 라이브러리</h1>
           <p>개념을 짧게 익히고, 예시·플래시카드·복습 문제로 바로 확인하세요.</p>
@@ -204,7 +247,10 @@ export function LearningPage() {
       {learning.isError && <div className="error-panel">학습자료를 불러오지 못했습니다.</div>}
       <div className="learning-list">
         {learning.data?.map((source) => (
-          <section key={source.id} className="learning-source">
+          <section
+            key={source.id}
+            className={`learning-source ${expandedSources.has(source.id) ? 'expanded' : ''}`}
+          >
             <header>
               <div className="source-icon">
                 <BookOpen />
@@ -214,49 +260,55 @@ export function LearningPage() {
                   {source.subject} · {source.category}
                 </span>
                 <h2>{source.title}</h2>
-                <p>{source.units.length}개 모듈 · 원문을 복제하지 않고 실습형으로 재구성</p>
+                <p>{source.units.length}개 모듈 · 핵심 설명과 원본 슬라이드 캡처</p>
               </div>
+              <button
+                type="button"
+                className="learning-source-toggle"
+                aria-expanded={expandedSources.has(source.id)}
+                aria-controls={`learning-source-${source.id}`}
+                onClick={() => toggleSource(source.id)}
+              >
+                {expandedSources.has(source.id) ? '접기' : '펼치기'}
+                <ChevronDown />
+              </button>
             </header>
-            <div className="unit-grid">
-              {source.units.map((unit, index) => (
-                <article key={unit.id} className="learning-unit-card">
-                  <button
-                    type="button"
-                    className="learning-card-trigger"
-                    onClick={() => setSelected({ unit, index })}
-                    aria-label={`${unit.title} 내용 보기`}
-                  />
-                  <div className="learning-card-content">
-                    <div className="unit-top">
-                      <span className="module-number">{String(index + 1).padStart(2, '0')}</span>
-                      <span>
-                        {unit.progress[0]?.completed ? (
-                          <>
+            {expandedSources.has(source.id) && (
+              <div className="unit-grid" id={`learning-source-${source.id}`}>
+                {source.units.map((unit, index) => (
+                  <article key={unit.id} className="learning-unit-card">
+                    <button
+                      type="button"
+                      className="learning-card-trigger"
+                      onClick={() => setSelected({ unit, index })}
+                      aria-label={`${unit.title} 내용 보기`}
+                    />
+                    <div className="learning-card-content">
+                      <div className="unit-top">
+                        <span className="module-number">{String(index + 1).padStart(2, '0')}</span>
+                        {unit.progress[0]?.completed && (
+                          <span>
                             <CheckCircle2 /> 학습 완료
-                          </>
-                        ) : (
-                          <>
-                            <Layers3 /> 학습 전
-                          </>
+                          </span>
                         )}
-                      </span>
+                      </div>
+                      <h3>{unit.title}</h3>
+                      <p>{summaryPreview(unit.summary)}</p>
+                      <div className="tag-row">
+                        {unit.concepts.slice(0, 5).map((concept) => (
+                          <span key={concept}>{concept}</span>
+                        ))}
+                      </div>
+                      <div className="unit-counts">
+                        <span>플래시카드 {unit.flashcards.length}</span>
+                        <span>복습 문제 {unit.questions.length}</span>
+                        <span className="learning-card-open">카드를 눌러 바로 보기</span>
+                      </div>
                     </div>
-                    <h3>{unit.title}</h3>
-                    <p>{summaryPreview(unit.summary)}</p>
-                    <div className="tag-row">
-                      {unit.concepts.slice(0, 5).map((concept) => (
-                        <span key={concept}>{concept}</span>
-                      ))}
-                    </div>
-                    <div className="unit-counts">
-                      <span>플래시카드 {unit.flashcards.length}</span>
-                      <span>복습 문제 {unit.questions.length}</span>
-                      <span className="learning-card-open">카드를 눌러 바로 보기</span>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </section>
         ))}
       </div>

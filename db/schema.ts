@@ -114,6 +114,7 @@ export const codingProblems = sqliteTable(
     sourceUrl: text('source_url').notNull(),
     displayTitle: text('display_title').notNull(),
     level: integer('level').notNull(),
+    track: text('track').notNull().default('ALGORITHM'),
     tags: text('tags').notNull().default('[]'),
     position: integer('position').notNull().default(0),
     active: integer('active', { mode: 'boolean' }).notNull().default(true),
@@ -122,6 +123,7 @@ export const codingProblems = sqliteTable(
   (table) => [
     uniqueIndex('idx_coding_problems_source_url').on(table.sourceUrl),
     index('idx_coding_problems_level_position').on(table.level, table.position),
+    index('idx_coding_problems_track_level_position').on(table.track, table.level, table.position),
   ],
 );
 
@@ -349,6 +351,7 @@ export const learningUnits = sqliteTable(
     title: text('title').notNull(),
     summary: text('summary').notNull(),
     concepts: text('concepts').notNull().default('[]'),
+    visuals: text('visuals').notNull().default('[]'),
     position: integer('position').notNull().default(0),
     published: integer('published', { mode: 'boolean' }).notNull().default(true),
     ...timestamps,

@@ -13,13 +13,14 @@ type Problem = {
   id: string;
   displayTitle: string;
   level: number;
+  track: 'ALGORITHM' | 'SQL';
   tags: string[];
   sourceUrl: string;
   progress: Array<{ status: string; favorite: boolean }>;
   _count: { solutions: number };
 };
 type Challenge = { id: string; problemId: string; problem: Problem };
-type CodeLanguage = 'python' | 'java' | 'javascript' | 'cpp';
+type CodeLanguage = 'python' | 'java' | 'javascript' | 'cpp' | 'sql';
 
 function solutionsUrl(problem: Problem) {
   return `/solutions?${new URLSearchParams({
@@ -32,6 +33,7 @@ export function CodingPage() {
   const client = useQueryClient();
   const { user } = useAuth();
   const [level, setLevel] = useState('');
+  const [track, setTrack] = useState<'ALGORITHM' | 'SQL'>('ALGORITHM');
   const [selected, setSelected] = useState<Problem>();
   const [language, setLanguage] = useState<CodeLanguage>(user?.preferredLanguage || 'python');
   const [code, setCode] = useState('');
@@ -48,8 +50,12 @@ export function CodingPage() {
     return () => window.removeEventListener('keydown', closeOnEscape);
   }, [selected]);
   const problems = useQuery({
-    queryKey: ['problems', level],
-    queryFn: () => api<Problem[]>(`/coding/problems${level ? `?level=${level}` : ''}`),
+    queryKey: ['problems', track, level],
+    queryFn: () => {
+      const query = new URLSearchParams({ track });
+      if (level) query.set('level', level);
+      return api<Problem[]>(`/coding/problems?${query.toString()}`);
+    },
   });
   const challenge = useQuery({
     queryKey: ['daily-challenges'],
@@ -103,6 +109,7 @@ export function CodingPage() {
   const list = useMemo(() => problems.data || [], [problems.data]);
   const openEditor = (problem: Problem) => {
     setSelected(problem);
+    setLanguage(problem.track === 'SQL' ? 'sql' : user?.preferredLanguage || 'python');
     progress.mutate(problem.id);
   };
   return (
@@ -126,7 +133,9 @@ export function CodingPage() {
           <div className="daily-challenge-grid">
             {challenge.data.map((item) => (
               <article key={item.id}>
-                <span>Lv. {item.problem.level}</span>
+                <span>
+                  {item.problem.track === 'SQL' && 'SQL · '}Lv. {item.problem.level}
+                </span>
                 <strong>{item.problem.displayTitle}</strong>
                 <div className="tag-row">
                   {item.problem.tags.slice(0, 3).map((tag) => (
@@ -154,6 +163,30 @@ export function CodingPage() {
       )}
       <div className="filter-bar">
         <Filter />
+        <div className="problem-track-tabs" role="group" aria-label="문제 유형">
+          <button
+            type="button"
+            className={track === 'ALGORITHM' ? 'active' : ''}
+            aria-pressed={track === 'ALGORITHM'}
+            onClick={() => {
+              setTrack('ALGORITHM');
+              setLevel('');
+            }}
+          >
+            알고리즘
+          </button>
+          <button
+            type="button"
+            className={track === 'SQL' ? 'active' : ''}
+            aria-pressed={track === 'SQL'}
+            onClick={() => {
+              setTrack('SQL');
+              setLevel('');
+            }}
+          >
+            SQL
+          </button>
+        </div>
         <label>
           레벨
           <select value={level} onChange={(event) => setLevel(event.target.value)}>
@@ -174,6 +207,9 @@ export function CodingPage() {
           <article key={problem.id} className={dailyIds.has(problem.id) ? 'daily' : ''}>
             <div className="problem-top">
               <span className="level-pill">Lv. {problem.level}</span>
+              <span className={`track-pill ${problem.track === 'SQL' ? 'sql' : ''}`}>
+                {problem.track === 'SQL' ? 'SQL' : '알고리즘'}
+              </span>
               {dailyIds.has(problem.id) && <span className="today-pill">TODAY</span>}
               <button aria-label="즐겨찾기">
                 <Star size={17} fill={problem.progress[0]?.favorite ? 'currentColor' : 'none'} />
@@ -234,10 +270,16 @@ export function CodingPage() {
                     value={language}
                     onChange={(event) => setLanguage(event.target.value as CodeLanguage)}
                   >
-                    <option value="python">Python</option>
-                    <option value="java">Java</option>
-                    <option value="javascript">JavaScript</option>
-                    <option value="cpp">C++</option>
+                    {selected.track === 'SQL' ? (
+                      <option value="sql">SQL</option>
+                    ) : (
+                      <>
+                        <option value="python">Python</option>
+                        <option value="java">Java</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="cpp">C++</option>
+                      </>
+                    )}
                   </select>
                 </label>
                 <p className="solution-visibility-note">
