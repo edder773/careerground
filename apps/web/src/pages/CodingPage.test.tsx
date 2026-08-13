@@ -16,6 +16,13 @@ describe('solution editor', () => {
       progress: [],
       _count: { solutions: 0 },
     };
+    const levelTwoProblem = {
+      ...problem,
+      id: '22222222-2222-4222-8222-222222222222',
+      displayTitle: '데모 문제 Lv. 2',
+      level: 2,
+      sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/2',
+    };
     const calls: Array<{ url: string; body?: unknown }> = [];
     vi.stubGlobal(
       'fetch',
@@ -33,8 +40,12 @@ describe('solution editor', () => {
               onboardingCompleted: true,
             },
           });
-        if (url.endsWith('/coding/problems')) return response([problem]);
-        if (url.endsWith('/coding/daily-challenge')) return response({ id: 'daily', problem });
+        if (url.endsWith('/coding/problems')) return response([problem, levelTwoProblem]);
+        if (url.endsWith('/coding/daily-challenges'))
+          return response([
+            { id: 'daily-lv1', problemId: problem.id, problem },
+            { id: 'daily-lv2', problemId: levelTwoProblem.id, problem: levelTwoProblem },
+          ]);
         return response({});
       }),
     );
@@ -44,7 +55,13 @@ describe('solution editor', () => {
         <CodingPage />
       </AuthProvider>,
     );
-    await user.click(await screen.findByRole('button', { name: '풀이 기록' }));
+    expect(await screen.findByRole('region', { name: '오늘의 문제 2개' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '데모 문제 원본 열기' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '데모 문제 Lv. 2 원본 열기' })).toBeInTheDocument();
+    const dailySection = screen.getByRole('region', { name: '오늘의 문제 2개' });
+    expect(dailySection.querySelectorAll('a[href^="/solutions?"]')).toHaveLength(2);
+    await user.click(screen.getAllByRole('button', { name: '풀이 기록' })[0]!);
+    expect(screen.getByRole('dialog', { name: '데모 문제' })).toBeInTheDocument();
     const language = screen.getByRole('combobox', { name: '언어' });
     await waitFor(() => expect(language).toHaveValue('javascript'));
     expect(

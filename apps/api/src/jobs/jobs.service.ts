@@ -139,6 +139,7 @@ export class JobsService {
       tech?: string;
       sort?: string;
       saved?: boolean;
+      calendar?: boolean;
       deadlineFrom?: string;
       deadlineTo?: string;
     },
@@ -167,13 +168,39 @@ export class JobsService {
         region: filters.region ? { contains: filters.region, mode: 'insensitive' } : undefined,
         techStack: filters.tech ? { has: filters.tech } : undefined,
         savedBy: filters.saved ? { some: { userId } } : undefined,
-        deadlineAt:
-          deadlineFrom || deadlineTo
-            ? {
-                ...(deadlineFrom ? { gte: deadlineFrom } : {}),
-                ...(deadlineTo ? { lt: deadlineTo } : {}),
-              }
-            : undefined,
+        ...(filters.calendar && (deadlineFrom || deadlineTo)
+          ? {
+              OR: [
+                {
+                  deadlineAt: {
+                    ...(deadlineFrom ? { gte: deadlineFrom } : {}),
+                    ...(deadlineTo ? { lt: deadlineTo } : {}),
+                  },
+                },
+                {
+                  publishedAt: {
+                    ...(deadlineFrom ? { gte: deadlineFrom } : {}),
+                    ...(deadlineTo ? { lt: deadlineTo } : {}),
+                  },
+                },
+                {
+                  collectedAt: {
+                    ...(deadlineFrom ? { gte: deadlineFrom } : {}),
+                    ...(deadlineTo ? { lt: deadlineTo } : {}),
+                  },
+                },
+                { rolling: true },
+              ],
+            }
+          : {
+              deadlineAt:
+                deadlineFrom || deadlineTo
+                  ? {
+                      ...(deadlineFrom ? { gte: deadlineFrom } : {}),
+                      ...(deadlineTo ? { lt: deadlineTo } : {}),
+                    }
+                  : undefined,
+            }),
       },
       select: {
         id: true,
@@ -182,6 +209,8 @@ export class JobsService {
         region: true,
         remote: true,
         techStack: true,
+        publishedAt: true,
+        collectedAt: true,
         deadlineAt: true,
         rolling: true,
         summary: true,

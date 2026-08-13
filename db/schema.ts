@@ -157,10 +157,11 @@ export const dailyChallenges = sqliteTable(
   {
     id: text('id').primaryKey(),
     kstDate: text('kst_date').notNull(),
+    levelSlot: integer('level_slot').notNull().default(1),
     problemId: text('problem_id').notNull(),
     createdAt: text('created_at').notNull(),
   },
-  (table) => [uniqueIndex('idx_daily_challenges_date').on(table.kstDate)],
+  (table) => [uniqueIndex('idx_daily_challenges_date_level').on(table.kstDate, table.levelSlot)],
 );
 
 export const dailyChallengeParticipations = sqliteTable(

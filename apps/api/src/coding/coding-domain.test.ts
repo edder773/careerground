@@ -50,40 +50,63 @@ describe('coding policies', () => {
   });
 
   it('returns the unique winner when two workers create today concurrently', async () => {
-    let winner: Record<string, unknown> | null = null;
-    const problem = { id: 'problem-1', displayTitle: '동시성 문제', level: 1 };
+    const winners = new Map<number, Record<string, unknown>>();
+    const problems = [
+      { id: 'problem-1', displayTitle: '동시성 Lv. 1', level: 1 },
+      { id: 'problem-2', displayTitle: '동시성 Lv. 2', level: 2 },
+    ];
     const dailyChallenge = {
-      findUnique: async () => winner,
+      findUnique: async ({ where }: { where: { kstDate_levelSlot: { levelSlot: number } } }) =>
+        winners.get(where.kstDate_levelSlot.levelSlot) || null,
       findMany: async () => [],
-      create: async () => {
+      create: async ({ data }: { data: { levelSlot: number; problemId: string } }) => {
         await Promise.resolve();
-        if (winner) throw new Error('unique constraint');
-        winner = { id: 'challenge-1', problem };
+        if (winners.has(data.levelSlot)) throw new Error('unique constraint');
+        const winner = {
+          id: `challenge-${data.levelSlot}`,
+          ...data,
+          problem: problems.find((problem) => problem.id === data.problemId),
+        };
+        winners.set(data.levelSlot, winner);
         return winner;
       },
     };
     const prisma = {
       dailyChallenge,
       dailyChallengeSetting: {
-        upsert: async () => ({ allowedLevels: [1], repeatExclusionDays: 60 }),
+        upsert: async () => ({
+          allowedLevels: [1, 2],
+          repeatExclusionDays: 60,
+          allowRepeatRelaxation: false,
+        }),
       },
-      codingProblem: { findMany: async () => [problem] },
+      codingProblem: {
+        findMany: async ({ where }: { where: { level: number } }) =>
+          problems.filter((problem) => problem.level === where.level),
+      },
       user: { findMany: async () => [] },
       notification: { createMany: async () => ({ count: 0 }) },
     };
     const service = new CodingService(prisma as never, {} as never);
     const [first, second] = await Promise.all([
-      service.ensureTodayChallenge(new Date('2026-08-12T01:00:00Z')),
-      service.ensureTodayChallenge(new Date('2026-08-12T01:00:00Z')),
+      service.ensureTodayChallenges(new Date('2026-08-12T01:00:00Z')),
+      service.ensureTodayChallenges(new Date('2026-08-12T01:00:00Z')),
     ]);
     expect(first).toEqual(second);
-    expect(first).toMatchObject({ id: 'challenge-1' });
+    expect(first).toEqual([
+      expect.objectContaining({ id: 'challenge-1', levelSlot: 1 }),
+      expect.objectContaining({ id: 'challenge-2', levelSlot: 2 }),
+    ]);
   });
 
-  it('applies allowed levels and the repeat exclusion cutoff to candidate selection', async () => {
-    const candidateQuery = vi.fn(async (_input: unknown) => [
-      { id: 'problem-2', displayTitle: '레벨 문제', level: 2 },
-    ]);
+  it('selects exact Lv. 1 and Lv. 2 candidates with the repeat exclusion cutoff', async () => {
+    const candidates = [
+      { id: 'problem-1', displayTitle: '레벨 1 문제', level: 1 },
+      { id: 'problem-2', displayTitle: '레벨 2 문제', level: 2 },
+    ];
+    const candidateQuery = vi.fn(async ({ where }: { where: { level: number } }) =>
+      candidates.filter((problem) => problem.level === where.level),
+    );
     const challengeQuery = vi.fn(async (_input: unknown) => [{ problemId: 'recent-problem' }]);
     const prisma = {
       dailyChallenge: {
@@ -95,16 +118,24 @@ describe('coding policies', () => {
         }),
       },
       dailyChallengeSetting: {
-        upsert: async () => ({ allowedLevels: [2, 3], repeatExclusionDays: 30 }),
+        upsert: async () => ({
+          allowedLevels: [1, 2],
+          repeatExclusionDays: 30,
+          allowRepeatRelaxation: false,
+        }),
       },
       codingProblem: { findMany: candidateQuery },
       user: { findMany: async () => [] },
       notification: { createMany: async () => ({ count: 0 }) },
     };
     const service = new CodingService(prisma as never, {} as never);
-    await service.ensureTodayChallenge(new Date('2026-08-12T01:00:00Z'));
+    const result = await service.ensureTodayChallenges(new Date('2026-08-12T01:00:00Z'));
+    expect(result.map((challenge) => challenge.levelSlot)).toEqual([1, 2]);
     expect(candidateQuery).toHaveBeenCalledWith({
-      where: { active: true, level: { in: [2, 3] }, id: { notIn: ['recent-problem'] } },
+      where: { active: true, level: 1, id: { notIn: ['recent-problem'] } },
+    });
+    expect(candidateQuery).toHaveBeenCalledWith({
+      where: { active: true, level: 2, id: { notIn: ['recent-problem'] } },
     });
     const recentFilter = challengeQuery.mock.calls[0]?.[0] as {
       where: { kstDate: { gte: Date } };
@@ -113,8 +144,14 @@ describe('coding policies', () => {
   });
 
   it('relaxes only the repeat window when an ADMIN explicitly allows it and records an audit', async () => {
-    const problem = { id: 'problem-relaxed', displayTitle: '완화 후보', level: 2 };
-    const candidateQuery = vi.fn().mockResolvedValueOnce([]).mockResolvedValueOnce([problem]);
+    const levelOne = { id: 'problem-relaxed-1', displayTitle: '완화 후보', level: 1 };
+    const levelTwo = { id: 'problem-2', displayTitle: 'Lv. 2 후보', level: 2 };
+    let levelOneCalls = 0;
+    const candidateQuery = vi.fn(async ({ where }: { where: { level: number } }) => {
+      if (where.level === 2) return [levelTwo];
+      levelOneCalls += 1;
+      return levelOneCalls === 1 ? [] : [levelOne];
+    });
     const audit = { record: vi.fn(async () => ({})) };
     const prisma = {
       dailyChallenge: {
@@ -127,7 +164,7 @@ describe('coding policies', () => {
       },
       dailyChallengeSetting: {
         upsert: async () => ({
-          allowedLevels: [2],
+          allowedLevels: [1, 2],
           repeatExclusionDays: 60,
           allowRepeatRelaxation: true,
         }),
@@ -137,11 +174,12 @@ describe('coding policies', () => {
       notification: { createMany: async () => ({ count: 0 }) },
     };
     const service = new CodingService(prisma as never, audit as never);
-    const result = await service.ensureTodayChallenge(new Date('2026-08-12T01:00:00Z'));
-    expect(result).toMatchObject({ repeatWindowDays: 30, allowedLevels: [2] });
+    const result = await service.ensureTodayChallenges(new Date('2026-08-12T01:00:00Z'));
+    expect(result[0]).toMatchObject({ repeatWindowDays: 30, allowedLevels: [1] });
+    expect(result[1]).toMatchObject({ repeatWindowDays: 60, allowedLevels: [2] });
     expect(audit.record).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'DAILY_CHALLENGE_REPEAT_WINDOW_RELAXED' }),
     );
-    expect(candidateQuery).toHaveBeenCalledTimes(2);
+    expect(candidateQuery).toHaveBeenCalledTimes(3);
   });
 });

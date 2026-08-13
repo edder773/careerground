@@ -36,6 +36,7 @@ export class JobsController {
       tech: query.tech,
       sort: query.sort,
       saved: query.saved === 'true',
+      calendar: query.calendar === 'true',
       deadlineFrom: query.deadlineFrom,
       deadlineTo: query.deadlineTo,
     });

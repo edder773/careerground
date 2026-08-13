@@ -85,17 +85,26 @@ test.describe('CareerGround MVP vertical slices', () => {
   test('filters problems and records a member-visible solution', async ({ page }) => {
     await page.getByRole('link', { name: '코딩테스트' }).first().click();
     await expect(page.getByRole('heading', { name: '코딩테스트' })).toBeVisible();
-    const record = page
-      .locator('.problem-grid article.daily')
-      .getByRole('button', { name: '풀이 기록' });
+    const dailySection = page.getByRole('region', { name: '오늘의 문제 2개' });
+    await expect(dailySection.locator('article')).toHaveCount(2);
+    await expect(dailySection.getByText('Lv. 1', { exact: true })).toBeVisible();
+    await expect(dailySection.getByText('Lv. 2', { exact: true })).toBeVisible();
+    await expect(dailySection.getByRole('link', { name: '다른 풀이 보기' })).toHaveCount(2);
+    const record = dailySection.getByRole('button', { name: '풀이 기록' }).first();
     await expect(record).toBeVisible();
     await record.click();
+    await expect(page.getByRole('dialog', { name: /.+/ })).toBeVisible();
     const description = `다른 멤버 공개 검증 ${Date.now()}`;
     await page.getByLabel('언어').selectOption('javascript');
     await page.locator('.cm-content').fill('function solution(value) { return value; }');
     await page.getByLabel('풀이 설명').fill(description);
     await page.getByRole('button', { name: '해결 기록 저장' }).click();
     await expect(page.locator('.editor-panel')).toBeHidden();
+
+    await dailySection.getByRole('link', { name: '다른 풀이 보기' }).first().click();
+    await expect(page).toHaveURL(/\/solutions\?problemId=/);
+    await expect(page.getByRole('heading', { name: /다른 풀이/ })).toBeVisible();
+    await expect(page.getByText(description)).toBeVisible();
 
     await logout(page);
     await login(page, `solution-reader-${Date.now()}@example.com`);

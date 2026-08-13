@@ -1,4 +1,4 @@
-import { cleanup, screen, waitFor } from '@testing-library/react';
+import { cleanup, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { JobsPage } from './JobsPage';
@@ -63,6 +63,9 @@ describe('domain pages', () => {
     const deadlineAt = new Date(
       Date.UTC(now.getFullYear(), now.getMonth(), 15, 6, 0, 0),
     ).toISOString();
+    const collectedAt = new Date(
+      Date.UTC(now.getFullYear(), now.getMonth(), 5, 6, 0, 0),
+    ).toISOString();
     const job = {
       id: '11111111-1111-4111-8111-111111111111',
       title: '신입 플랫폼 엔지니어',
@@ -70,6 +73,7 @@ describe('domain pages', () => {
       region: '서울',
       remote: false,
       techStack: ['TypeScript'],
+      collectedAt,
       deadlineAt,
       rolling: false,
       summary: '신입 서비스 개발 포지션',
@@ -95,12 +99,25 @@ describe('domain pages', () => {
     expect(screen.queryByText(/마지막 확인/)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '달력' }));
+    const legend = await screen.findByLabelText('일정 색상 안내');
+    expect(within(legend).getByText('시작일')).toBeInTheDocument();
+    expect(within(legend).getByText('마감일')).toBeInTheDocument();
+    expect(within(legend).getByText('상시')).toBeInTheDocument();
     await user.click(
-      await screen.findByRole('button', { name: '캘린더테크 신입 플랫폼 엔지니어 상세 보기' }),
+      await screen.findByRole('button', {
+        name: '캘린더테크 신입 플랫폼 엔지니어 마감일 상세 보기',
+      }),
     );
-    expect(screen.getByRole('heading', { name: '캘린더테크' })).toBeInTheDocument();
+    const dialog = screen.getByRole('dialog', { name: '캘린더테크' });
+    expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveTextContent('신입 플랫폼 엔지니어');
     expect(
-      calls.some((call) => call.url.includes('deadlineFrom=') && call.url.includes('deadlineTo=')),
+      calls.some(
+        (call) =>
+          call.url.includes('calendar=true') &&
+          call.url.includes('deadlineFrom=') &&
+          call.url.includes('deadlineTo='),
+      ),
     ).toBe(true);
   });
 
@@ -152,10 +169,12 @@ describe('domain pages', () => {
           {
             id: '11111111-1111-4111-8111-111111111111',
             title: '포커스',
-            summary: '요약',
+            summary: '# 포커스의 핵심\n\n키보드 사용자가 흐름을 놓치지 않게 설계합니다.',
             concepts: ['키보드'],
-            flashcards: [],
-            questions: [],
+            flashcards: [{ id: 'f', front: '포커스란?', back: '현재 입력 위치입니다.' }],
+            questions: [
+              { id: 'q', prompt: '왜 필요한가요?', answer: '현재 위치를 알기 위해서입니다.' },
+            ],
             progress: [],
           },
         ],
@@ -174,6 +193,10 @@ describe('domain pages', () => {
     );
     const user = userEvent.setup();
     renderPage(<LearningPage />);
+    await user.click(await screen.findByRole('button', { name: /학습 시작/ }));
+    expect(screen.getByRole('dialog', { name: '포커스' })).toHaveTextContent('포커스의 핵심');
+    expect(screen.getByText('포커스란?')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '닫기' }));
     await user.click(await screen.findByRole('button', { name: '이해도 4점' }));
     await waitFor(() =>
       expect(

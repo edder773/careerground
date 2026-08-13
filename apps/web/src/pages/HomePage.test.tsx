@@ -48,15 +48,25 @@ describe('folder workspace', () => {
         }
         if (url.endsWith('/dashboard'))
           return response({ recentJobs: 4, expiringJobs: 1, dueReviews: 2 });
-        if (url.endsWith('/coding/daily-challenge'))
-          return response({
-            id: 'challenge',
-            problem: {
-              displayTitle: '오늘의 데모',
-              level: 2,
-              sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/1',
+        if (url.endsWith('/coding/daily-challenges'))
+          return response([
+            {
+              id: 'challenge-lv1',
+              problem: {
+                displayTitle: '오늘의 Lv. 1',
+                level: 1,
+                sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/1',
+              },
             },
-          });
+            {
+              id: 'challenge-lv2',
+              problem: {
+                displayTitle: '오늘의 Lv. 2',
+                level: 2,
+                sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/2',
+              },
+            },
+          ]);
         return response({});
       }),
     );
@@ -66,6 +76,8 @@ describe('folder workspace', () => {
     const user = userEvent.setup();
     renderPage(<HomePage viewMode="grid" />);
     expect(await screen.findByText('취업 준비')).toBeInTheDocument();
+    expect(await screen.findByText('오늘의 Lv. 1')).toBeInTheDocument();
+    expect(screen.getByText('오늘의 Lv. 2')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /새 폴더/ }));
     await user.type(screen.getByRole('textbox', { name: '폴더 이름' }), '코테 모음');
     await user.click(screen.getByRole('button', { name: '만들기' }));

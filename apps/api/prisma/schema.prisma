@@ -501,7 +501,8 @@ model DailyChallengeSetting {
 
 model DailyChallenge {
   id               String                        @id @default(uuid()) @db.Uuid
-  kstDate          DateTime                      @unique @db.Date
+  kstDate          DateTime                      @db.Date
+  levelSlot        Int
   problemId        String                        @db.Uuid
   candidateCount   Int
   allowedLevels    Int[]
@@ -512,6 +513,7 @@ model DailyChallenge {
   problem          CodingProblem                 @relation(fields: [problemId], references: [id])
   participations   DailyChallengeParticipation[]
 
+  @@unique([kstDate, levelSlot])
   @@index([createdAt])
 }
 
