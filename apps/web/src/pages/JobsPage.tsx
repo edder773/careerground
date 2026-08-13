@@ -41,7 +41,8 @@ const sizeLabels: Record<string, string> = {
   MID: '중견기업',
   SMALL: '중소기업',
   STARTUP: '스타트업',
-  UNCLASSIFIED: '규모 미분류',
+  FOREIGN: '외국계',
+  UNCLASSIFIED: '규모 확인 필요',
 };
 const applicationLabels: Record<string, string> = {
   INTERESTED: '관심',
@@ -147,6 +148,13 @@ export function JobsPage() {
   const [selectedJobId, setSelectedJobId] = useState<string>();
 
   const bounds = monthBounds(visibleMonth);
+  const categories = useQuery({
+    queryKey: ['jobs', 'categories'],
+    queryFn: () => api<string[]>('/jobs/categories'),
+    staleTime: 10 * 60_000,
+    gcTime: 30 * 60_000,
+    refetchOnWindowFocus: false,
+  });
   const query = new URLSearchParams({
     ...(companySize ? { companySize } : {}),
     ...(category ? { category } : {}),
@@ -253,16 +261,7 @@ export function JobsPage() {
           직무
           <select value={category} onChange={(event) => setCategory(event.target.value)}>
             <option value="">전체 IT 직무</option>
-            {[
-              '백엔드',
-              '프론트엔드',
-              '데이터 엔지니어링',
-              'AI/ML',
-              'DevOps/SRE',
-              '정보보안',
-              'QA/테스트',
-              '공기업 전산 일반',
-            ].map((value) => (
+            {(categories.data || []).map((value) => (
               <option key={value}>{value}</option>
             ))}
           </select>

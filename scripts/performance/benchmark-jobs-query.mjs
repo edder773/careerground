@@ -20,6 +20,8 @@ function migrate(file) {
 }
 
 migrate('drizzle/0000_loose_shooting_star.sql');
+migrate('drizzle/0003_import_careerground_catalog.sql');
+database.exec('DELETE FROM jobs;');
 
 const insert = database.prepare(
   `INSERT INTO jobs
@@ -58,7 +60,7 @@ for (let index = 0; index < 50_000; index += 1) {
 }
 database.exec('COMMIT');
 if (variant === 'optimized') {
-  migrate('drizzle/0003_sparkling_logan.sql');
+  migrate('drizzle/0004_melodic_xavin.sql');
 }
 
 const select =
@@ -73,6 +75,7 @@ const sql = `SELECT ${select}
                FROM jobs j${indexHint}
                LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ?
               WHERE j.status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
+                AND j.career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
               ORDER BY j.created_at DESC LIMIT 100`;
 const query = database.prepare(sql);
 

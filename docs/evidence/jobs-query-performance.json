@@ -10,17 +10,17 @@
   "command": "node scripts/performance/benchmark-jobs-query.mjs baseline|optimized",
   "iterations": 100,
   "baseline": {
-    "medianMs": 5.457,
-    "p95Ms": 5.891,
+    "medianMs": 20.153,
+    "p95Ms": 21.329,
     "plan": [
-      "SEARCH j USING INDEX idx_jobs_status_deadline (status=?)",
+      "SCAN j",
       "SEARCH sj USING INDEX idx_saved_jobs_user_job (user_id=? AND job_id=?) LEFT-JOIN",
       "USE TEMP B-TREE FOR ORDER BY"
     ]
   },
   "optimized": {
-    "medianMs": 0.139,
-    "p95Ms": 0.181,
+    "medianMs": 0.137,
+    "p95Ms": 0.196,
     "plan": [
       "SCAN j USING INDEX idx_jobs_created_status",
       "SEARCH sj USING INDEX idx_saved_jobs_user_job (user_id=? AND job_id=?) LEFT-JOIN"

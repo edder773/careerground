@@ -14,26 +14,46 @@ describe('domain pages', () => {
   });
   afterEach(cleanup);
 
-  it('applies company-size and job-category filters', async () => {
+  it('builds job categories from the catalog and applies the selected filters', async () => {
+    const catalog = [
+      {
+        id: 'job-1',
+        title: 'Fullstack Engineer',
+        category: 'AI 풀스택 개발',
+        region: '서울',
+        remote: false,
+        techStack: ['Python'],
+        rolling: true,
+        summary: 'AI 서비스 개발',
+        sourceUrl: 'https://example.test/jobs/1',
+        company: { name: 'Hudson AI', size: 'STARTUP' },
+        source: { name: '로켓펀치' },
+        savedBy: [],
+      },
+    ];
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
         calls.push({ url, method: init?.method || 'GET' });
-        return response([]);
+        return response(url.endsWith('/jobs/categories') ? ['AI 풀스택 개발'] : catalog);
       }),
     );
     const user = userEvent.setup();
     renderPage(<JobsPage />);
     await user.selectOptions(await screen.findByRole('combobox', { name: '기업 규모' }), 'LARGE');
-    await user.selectOptions(screen.getByRole('combobox', { name: '직무' }), '백엔드');
+    await user.selectOptions(
+      await screen.findByRole('combobox', { name: '직무' }),
+      'AI 풀스택 개발',
+    );
     await waitFor(() =>
       expect(
-        calls.some(
-          (call) =>
-            call.url.includes('companySize=LARGE') &&
-            call.url.includes(encodeURIComponent('백엔드')),
-        ),
+        calls.some((call) => {
+          const params = new URL(call.url, 'https://careerground.example').searchParams;
+          return (
+            params.get('companySize') === 'LARGE' && params.get('category') === 'AI 풀스택 개발'
+          );
+        }),
       ).toBe(true),
     );
   });
@@ -61,8 +81,9 @@ describe('domain pages', () => {
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
-        calls.push({ url: String(input), method: init?.method || 'GET' });
-        return response([job]);
+        const url = String(input);
+        calls.push({ url, method: init?.method || 'GET' });
+        return response(url.endsWith('/jobs/categories') ? ['백엔드'] : [job]);
       }),
     );
     const user = userEvent.setup();

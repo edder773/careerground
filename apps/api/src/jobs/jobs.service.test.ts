@@ -48,4 +48,15 @@ describe('JobsService list', () => {
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
+
+  it('returns distinct active entry-level categories', async () => {
+    const findMany = vi.fn().mockResolvedValue([{ category: 'AI 풀스택 개발' }]);
+    const prisma = { jobPosting: { findMany } } as unknown as PrismaService;
+    const jobs = new JobsService(prisma, {} as AuditService);
+
+    await expect(jobs.categories()).resolves.toEqual(['AI 풀스택 개발']);
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ distinct: ['category'], select: { category: true }, take: 100 }),
+    );
+  });
 });

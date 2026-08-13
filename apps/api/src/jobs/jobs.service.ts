@@ -195,6 +195,20 @@ export class JobsService {
     });
   }
 
+  async categories() {
+    const rows = await this.prisma.jobPosting.findMany({
+      where: {
+        status: { in: ['ACTIVE', 'DEADLINE_UNKNOWN'] },
+        careerScope: { in: ['NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE'] },
+      },
+      distinct: ['category'],
+      select: { category: true },
+      orderBy: { category: 'asc' },
+      take: 100,
+    });
+    return rows.map((row) => row.category);
+  }
+
   save(userId: string, jobId: string, status: ApplicationStatus, memo: string) {
     return this.prisma.savedJob.upsert({
       where: { userId_jobId: { userId, jobId } },

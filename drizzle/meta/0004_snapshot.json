@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "35283a18-31c3-4193-851a-f357c153606b",
-  "prevId": "88b34ba0-788b-4b99-bde4-091bec1c7ac5",
+  "id": "b9c35185-083a-40b4-b1b6-e6623995a40b",
+  "prevId": "35283a18-31c3-4193-851a-f357c153606b",
   "tables": {
     "audit_logs": {
       "name": "audit_logs",
@@ -61,18 +61,12 @@
       "indexes": {
         "idx_audit_logs_action_created": {
           "name": "idx_audit_logs_action_created",
-          "columns": [
-            "action",
-            "created_at"
-          ],
+          "columns": ["action", "created_at"],
           "isUnique": false
         },
         "idx_audit_logs_actor_created": {
           "name": "idx_audit_logs_actor_created",
-          "columns": [
-            "actor_id",
-            "created_at"
-          ],
+          "columns": ["actor_id", "created_at"],
           "isUnique": false
         }
       },
@@ -154,17 +148,12 @@
       "indexes": {
         "idx_coding_problems_source_url": {
           "name": "idx_coding_problems_source_url",
-          "columns": [
-            "source_url"
-          ],
+          "columns": ["source_url"],
           "isUnique": true
         },
         "idx_coding_problems_level_position": {
           "name": "idx_coding_problems_level_position",
-          "columns": [
-            "level",
-            "position"
-          ],
+          "columns": ["level", "position"],
           "isUnique": false
         }
       },
@@ -230,19 +219,12 @@
       "indexes": {
         "idx_collection_items_target": {
           "name": "idx_collection_items_target",
-          "columns": [
-            "collection_id",
-            "item_type",
-            "target_id"
-          ],
+          "columns": ["collection_id", "item_type", "target_id"],
           "isUnique": true
         },
         "idx_collection_items_position": {
           "name": "idx_collection_items_position",
-          "columns": [
-            "collection_id",
-            "position"
-          ],
+          "columns": ["collection_id", "position"],
           "isUnique": false
         }
       },
@@ -331,19 +313,12 @@
       "indexes": {
         "idx_collections_user_parent_position": {
           "name": "idx_collections_user_parent_position",
-          "columns": [
-            "user_id",
-            "parent_id",
-            "position"
-          ],
+          "columns": ["user_id", "parent_id", "position"],
           "isUnique": false
         },
         "idx_collections_user_deleted": {
           "name": "idx_collections_user_deleted",
-          "columns": [
-            "user_id",
-            "deleted_at"
-          ],
+          "columns": ["user_id", "deleted_at"],
           "isUnique": false
         }
       },
@@ -394,18 +369,12 @@
       "indexes": {
         "idx_daily_participations_challenge_user": {
           "name": "idx_daily_participations_challenge_user",
-          "columns": [
-            "challenge_id",
-            "user_id"
-          ],
+          "columns": ["challenge_id", "user_id"],
           "isUnique": true
         },
         "idx_daily_participations_user": {
           "name": "idx_daily_participations_user",
-          "columns": [
-            "user_id",
-            "completed_at"
-          ],
+          "columns": ["user_id", "completed_at"],
           "isUnique": false
         }
       },
@@ -497,9 +466,7 @@
       "indexes": {
         "idx_daily_challenges_date": {
           "name": "idx_daily_challenges_date",
-          "columns": [
-            "kst_date"
-          ],
+          "columns": ["kst_date"],
           "isUnique": true
         }
       },
@@ -604,10 +571,7 @@
       "indexes": {
         "idx_import_batches_kind_checksum": {
           "name": "idx_import_batches_kind_checksum",
-          "columns": [
-            "kind",
-            "checksum"
-          ],
+          "columns": ["kind", "checksum"],
           "isUnique": true
         }
       },
@@ -792,25 +756,42 @@
       "indexes": {
         "idx_jobs_source_url": {
           "name": "idx_jobs_source_url",
-          "columns": [
-            "source_url"
-          ],
+          "columns": ["source_url"],
           "isUnique": true
         },
         "idx_jobs_status_deadline": {
           "name": "idx_jobs_status_deadline",
-          "columns": [
-            "status",
-            "deadline_at"
-          ],
+          "columns": ["status", "deadline_at"],
           "isUnique": false
         },
         "idx_jobs_category_created": {
           "name": "idx_jobs_category_created",
-          "columns": [
-            "category",
-            "created_at"
-          ],
+          "columns": ["category", "created_at"],
+          "isUnique": false
+        },
+        "idx_jobs_created_status": {
+          "name": "idx_jobs_created_status",
+          "columns": ["created_at", "status"],
+          "isUnique": false
+        },
+        "idx_jobs_category_created_status": {
+          "name": "idx_jobs_category_created_status",
+          "columns": ["category", "created_at", "status"],
+          "isUnique": false
+        },
+        "idx_jobs_size_created_status": {
+          "name": "idx_jobs_size_created_status",
+          "columns": ["company_size", "created_at", "status"],
+          "isUnique": false
+        },
+        "idx_jobs_company_status": {
+          "name": "idx_jobs_company_status",
+          "columns": ["company_name", "status"],
+          "isUnique": false
+        },
+        "idx_jobs_deadline_status": {
+          "name": "idx_jobs_deadline_status",
+          "columns": ["deadline_at", "status"],
           "isUnique": false
         }
       },
@@ -899,18 +880,12 @@
       "indexes": {
         "idx_learning_progress_user_unit": {
           "name": "idx_learning_progress_user_unit",
-          "columns": [
-            "user_id",
-            "unit_id"
-          ],
+          "columns": ["user_id", "unit_id"],
           "isUnique": true
         },
         "idx_learning_progress_user_due": {
           "name": "idx_learning_progress_user_due",
-          "columns": [
-            "user_id",
-            "next_review_at"
-          ],
+          "columns": ["user_id", "next_review_at"],
           "isUnique": false
         }
       },
@@ -1104,18 +1079,12 @@
       "indexes": {
         "idx_learning_units_source_anchor": {
           "name": "idx_learning_units_source_anchor",
-          "columns": [
-            "source_id",
-            "anchor"
-          ],
+          "columns": ["source_id", "anchor"],
           "isUnique": true
         },
         "idx_learning_units_source_position": {
           "name": "idx_learning_units_source_position",
-          "columns": [
-            "source_id",
-            "position"
-          ],
+          "columns": ["source_id", "position"],
           "isUnique": false
         }
       },
@@ -1166,10 +1135,7 @@
       "indexes": {
         "idx_note_revisions_note_revision": {
           "name": "idx_note_revisions_note_revision",
-          "columns": [
-            "note_id",
-            "revision"
-          ],
+          "columns": ["note_id", "revision"],
           "isUnique": true
         }
       },
@@ -1264,10 +1230,7 @@
       "indexes": {
         "idx_notes_user_updated": {
           "name": "idx_notes_user_updated",
-          "columns": [
-            "user_id",
-            "updated_at"
-          ],
+          "columns": ["user_id", "updated_at"],
           "isUnique": false
         }
       },
@@ -1346,11 +1309,7 @@
       "indexes": {
         "idx_notifications_user_read_created": {
           "name": "idx_notifications_user_read_created",
-          "columns": [
-            "user_id",
-            "read_at",
-            "created_at"
-          ],
+          "columns": ["user_id", "read_at", "created_at"],
           "isUnique": false
         }
       },
@@ -1425,18 +1384,12 @@
       "indexes": {
         "idx_problem_progress_user_problem": {
           "name": "idx_problem_progress_user_problem",
-          "columns": [
-            "user_id",
-            "problem_id"
-          ],
+          "columns": ["user_id", "problem_id"],
           "isUnique": true
         },
         "idx_problem_progress_user_status": {
           "name": "idx_problem_progress_user_status",
-          "columns": [
-            "user_id",
-            "status"
-          ],
+          "columns": ["user_id", "status"],
           "isUnique": false
         }
       },
@@ -1503,18 +1456,12 @@
       "indexes": {
         "idx_saved_jobs_user_job": {
           "name": "idx_saved_jobs_user_job",
-          "columns": [
-            "user_id",
-            "job_id"
-          ],
+          "columns": ["user_id", "job_id"],
           "isUnique": true
         },
         "idx_saved_jobs_user_status": {
           "name": "idx_saved_jobs_user_status",
-          "columns": [
-            "user_id",
-            "status"
-          ],
+          "columns": ["user_id", "status"],
           "isUnique": false
         }
       },
@@ -1600,17 +1547,12 @@
       "indexes": {
         "idx_solution_comments_solution_created": {
           "name": "idx_solution_comments_solution_created",
-          "columns": [
-            "solution_id",
-            "created_at"
-          ],
+          "columns": ["solution_id", "created_at"],
           "isUnique": false
         },
         "idx_solution_comments_parent": {
           "name": "idx_solution_comments_parent",
-          "columns": [
-            "parent_id"
-          ],
+          "columns": ["parent_id"],
           "isUnique": false
         }
       },
@@ -1654,10 +1596,7 @@
       "indexes": {
         "idx_solution_reactions_solution_user": {
           "name": "idx_solution_reactions_solution_user",
-          "columns": [
-            "solution_id",
-            "user_id"
-          ],
+          "columns": ["solution_id", "user_id"],
           "isUnique": true
         }
       },
@@ -1715,10 +1654,7 @@
       "indexes": {
         "idx_solution_revisions_solution_revision": {
           "name": "idx_solution_revisions_solution_revision",
-          "columns": [
-            "solution_id",
-            "revision"
-          ],
+          "columns": ["solution_id", "revision"],
           "isUnique": true
         }
       },
@@ -1857,19 +1793,12 @@
       "indexes": {
         "idx_solutions_problem_visibility_updated": {
           "name": "idx_solutions_problem_visibility_updated",
-          "columns": [
-            "problem_id",
-            "visibility",
-            "updated_at"
-          ],
+          "columns": ["problem_id", "visibility", "updated_at"],
           "isUnique": false
         },
         "idx_solutions_author_solved": {
           "name": "idx_solutions_author_solved",
-          "columns": [
-            "author_id",
-            "solved_at"
-          ],
+          "columns": ["author_id", "solved_at"],
           "isUnique": false
         }
       },
@@ -2011,16 +1940,12 @@
       "indexes": {
         "idx_users_site_user_id": {
           "name": "idx_users_site_user_id",
-          "columns": [
-            "site_user_id"
-          ],
+          "columns": ["site_user_id"],
           "isUnique": true
         },
         "idx_users_email": {
           "name": "idx_users_email",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "isUnique": true
         }
       },

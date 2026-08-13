@@ -1,4 +1,5 @@
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { fileURLToPath, URL } from 'node:url';
 import { build } from 'esbuild';
 
 await rm('dist', { recursive: true, force: true });
@@ -6,7 +7,7 @@ await mkdir('dist/server', { recursive: true });
 await mkdir('dist/client', { recursive: true });
 await cp('apps/web/dist', 'dist/client', { recursive: true });
 await build({
-  entryPoints: ['deployment/sites/worker.ts'],
+  entryPoints: [fileURLToPath(new URL('./worker.ts', import.meta.url))],
   outfile: 'dist/server/index.js',
   bundle: true,
   format: 'esm',
