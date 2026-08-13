@@ -531,21 +531,99 @@ async function solutionList(db: D1Database, userId: string, search: URLSearchPar
   );
 }
 
+function serializeJobRows(rows: Record<string, unknown>[]) {
+  return rows.map((row) => ({
+    id: row.id,
+    title: row.title,
+    category: row.category,
+    region: row.region,
+    remote: asBoolean(row.remote),
+    techStack: parseArray(row.tech_stack),
+    publishedAt: null,
+    collectedAt: row.collected_at,
+    deadlineAt: row.deadline_at,
+    rolling: asBoolean(row.rolling),
+    summary: row.summary,
+    sourceUrl: row.source_url,
+    company: { name: row.company_name, size: row.company_size },
+    source: { name: row.source_name, lastSuccessAt: row.last_verified_at },
+    savedBy: row.savedStatus ? [{ status: row.savedStatus, memo: row.savedMemo || '' }] : [],
+  }));
+}
+
+async function calendarJobList(
+  db: D1Database,
+  userId: string,
+  from: string,
+  to: string,
+  companySizes: string[],
+  categories: string[],
+) {
+  const filters: string[] = [];
+  const filterValues: unknown[] = [];
+  if (companySizes.length) {
+    filters.push(`j.company_size IN (${companySizes.map(() => '?').join(', ')})`);
+    filterValues.push(...companySizes);
+  }
+  if (categories.length) {
+    filters.push(`j.category IN (${categories.map(() => '?').join(', ')})`);
+    filterValues.push(...categories);
+  }
+  const select = (indexName: string, scheduleClause: string) => `
+    SELECT j.id, j.title, j.category, j.region, j.remote, j.tech_stack,
+           j.collected_at, j.deadline_at, j.rolling, j.summary, j.source_url, j.company_name,
+           j.company_size, j.source_name, j.last_verified_at,
+           sj.status AS savedStatus, sj.memo AS savedMemo
+      FROM jobs j INDEXED BY ${indexName}
+      LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ?
+     WHERE j.status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
+       AND j.career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
+       AND ${scheduleClause}
+       ${filters.length ? `AND ${filters.join(' AND ')}` : ''}
+     LIMIT 100`;
+  const statement = (indexName: string, scheduleClause: string, ...scheduleValues: unknown[]) =>
+    db.prepare(select(indexName, scheduleClause)).bind(userId, ...scheduleValues, ...filterValues);
+  const resultSets = await db.batch<Record<string, unknown>>([
+    statement('idx_jobs_calendar_deadline', 'j.deadline_at >= ? AND j.deadline_at < ?', from, to),
+    statement(
+      'idx_jobs_calendar_collected',
+      'j.collected_at >= ? AND j.collected_at < ?',
+      from,
+      to,
+    ),
+    statement(
+      'idx_jobs_calendar_created',
+      'j.collected_at IS NULL AND j.created_at >= ? AND j.created_at < ?',
+      from,
+      to,
+    ),
+    statement('idx_jobs_calendar_rolling', 'j.rolling = 1'),
+  ]);
+  const unique = new Map<string, Record<string, unknown>>();
+  for (const result of resultSets) {
+    for (const row of result.results || []) unique.set(String(row.id), row);
+  }
+  return serializeJobRows([...unique.values()]);
+}
+
 async function jobList(db: D1Database, userId: string, url: URL) {
   const clauses = [
     "j.status IN ('ACTIVE', 'DEADLINE_UNKNOWN')",
     "j.career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')",
   ];
   const values: unknown[] = [userId];
-  const companySize = url.searchParams.get('companySize');
-  const category = url.searchParams.get('category');
-  if (companySize) {
-    clauses.push('j.company_size = ?');
-    values.push(companySize);
+  const companySizes = [...new Set(url.searchParams.getAll('companySize').filter(Boolean))].slice(
+    0,
+    20,
+  );
+  const categories = [...new Set(url.searchParams.getAll('category').filter(Boolean))].slice(0, 20);
+  if (companySizes.length) {
+    clauses.push(`j.company_size IN (${companySizes.map(() => '?').join(', ')})`);
+    values.push(...companySizes);
   }
-  if (category) {
-    clauses.push('j.category = ?');
-    values.push(category);
+  if (categories.length) {
+    clauses.push(`j.category IN (${categories.map(() => '?').join(', ')})`);
+    values.push(...categories);
   }
   const deadlineFrom = url.searchParams.get('deadlineFrom');
   const deadlineTo = url.searchParams.get('deadlineTo');
@@ -564,12 +642,7 @@ async function jobList(db: D1Database, userId: string, url: URL) {
   if (calendar && deadlineFrom && deadlineTo) {
     const from = new Date(deadlineFrom).toISOString();
     const to = new Date(deadlineTo).toISOString();
-    clauses.push(`(
-      (j.deadline_at >= ? AND j.deadline_at < ?)
-      OR (COALESCE(j.collected_at, j.created_at) >= ? AND COALESCE(j.collected_at, j.created_at) < ?)
-      OR j.rolling = 1
-    )`);
-    values.push(from, to, from, to);
+    return calendarJobList(db, userId, from, to, companySizes, categories);
   } else {
     if (deadlineFrom) {
       clauses.push('j.deadline_at >= ?');
@@ -591,9 +664,9 @@ async function jobList(db: D1Database, userId: string, url: URL) {
       ? 'idx_jobs_deadline_status'
       : url.searchParams.get('sort') === 'company'
         ? 'idx_jobs_company_status'
-        : category
+        : categories.length
           ? 'idx_jobs_category_created_status'
-          : companySize
+          : companySizes.length
             ? 'idx_jobs_size_created_status'
             : 'idx_jobs_created_status';
   const rows = await all<Record<string, unknown>>(
@@ -608,23 +681,7 @@ async function jobList(db: D1Database, userId: string, url: URL) {
       ORDER BY ${order} LIMIT 100`,
     ...values,
   );
-  return rows.map((row) => ({
-    id: row.id,
-    title: row.title,
-    category: row.category,
-    region: row.region,
-    remote: asBoolean(row.remote),
-    techStack: parseArray(row.tech_stack),
-    publishedAt: null,
-    collectedAt: row.collected_at,
-    deadlineAt: row.deadline_at,
-    rolling: asBoolean(row.rolling),
-    summary: row.summary,
-    sourceUrl: row.source_url,
-    company: { name: row.company_name, size: row.company_size },
-    source: { name: row.source_name, lastSuccessAt: row.last_verified_at },
-    savedBy: row.savedStatus ? [{ status: row.savedStatus, memo: row.savedMemo || '' }] : [],
-  }));
+  return serializeJobRows(rows);
 }
 
 async function jobCategories(db: D1Database) {
@@ -640,61 +697,87 @@ async function jobCategories(db: D1Database) {
 }
 
 async function learningList(db: D1Database, userId: string) {
-  const sources = await all<Record<string, unknown>>(
-    db,
-    `SELECT id, title, subject, category, status, created_at AS createdAt, updated_at AS updatedAt
-       FROM learning_sources WHERE status IN ('READY', 'UPLOADED', 'REQUIRES_MANUAL_PROCESSING')
-      ORDER BY updated_at DESC`,
-  );
-  return Promise.all(
-    sources.map(async (source) => {
-      const units = await all<Record<string, unknown>>(
-        db,
-        `SELECT u.id, u.title, u.summary, u.concepts, u.position,
-                lp.completed, lp.understanding, lp.next_review_at AS nextReviewAt
-           FROM learning_units u
-           LEFT JOIN learning_progress lp ON lp.unit_id = u.id AND lp.user_id = ?
-          WHERE u.source_id = ? AND u.published = 1 ORDER BY u.position`,
-        userId,
-        source.id,
-      );
-      const withDetails = await Promise.all(
-        units.map(async (unit) => {
-          const [cards, questions] = await Promise.all([
-            all<Record<string, unknown>>(
-              db,
-              'SELECT id, front, back FROM flashcards WHERE unit_id = ? ORDER BY created_at',
-              unit.id,
-            ),
-            all<Record<string, unknown>>(
-              db,
-              'SELECT id, prompt, answer FROM learning_questions WHERE unit_id = ? ORDER BY created_at',
-              unit.id,
-            ),
-          ]);
-          return {
-            id: unit.id,
-            title: unit.title,
-            summary: unit.summary,
-            concepts: parseArray(unit.concepts),
-            flashcards: cards,
-            questions,
-            progress:
-              unit.completed === null || unit.completed === undefined
-                ? []
-                : [
-                    {
-                      completed: asBoolean(unit.completed),
-                      understanding: unit.understanding,
-                      nextReviewAt: unit.nextReviewAt,
-                    },
-                  ],
-          };
-        }),
-      );
-      return { ...source, units: withDetails };
-    }),
-  );
+  const [sources, units, cards, questions] = await Promise.all([
+    all<Record<string, unknown>>(
+      db,
+      `SELECT id, title, subject, category, status, created_at AS createdAt, updated_at AS updatedAt
+         FROM learning_sources
+        WHERE status IN ('READY', 'UPLOADED', 'REQUIRES_MANUAL_PROCESSING')
+        ORDER BY updated_at DESC`,
+    ),
+    all<Record<string, unknown>>(
+      db,
+      `SELECT u.id, u.source_id AS sourceId, u.title, u.summary, u.concepts, u.position,
+              lp.completed, lp.understanding, lp.next_review_at AS nextReviewAt
+         FROM learning_units u INDEXED BY idx_learning_units_published_source_position
+         JOIN learning_sources s ON s.id = u.source_id
+         LEFT JOIN learning_progress lp ON lp.unit_id = u.id AND lp.user_id = ?
+        WHERE u.published = 1
+          AND s.status IN ('READY', 'UPLOADED', 'REQUIRES_MANUAL_PROCESSING')
+        ORDER BY u.source_id, u.position`,
+      userId,
+    ),
+    all<Record<string, unknown>>(
+      db,
+      `SELECT f.id, f.unit_id AS unitId, f.front, f.back
+         FROM flashcards f INDEXED BY idx_flashcards_unit_created
+         JOIN learning_units u ON u.id = f.unit_id
+         JOIN learning_sources s ON s.id = u.source_id
+        WHERE u.published = 1
+          AND s.status IN ('READY', 'UPLOADED', 'REQUIRES_MANUAL_PROCESSING')
+        ORDER BY f.unit_id, f.created_at`,
+    ),
+    all<Record<string, unknown>>(
+      db,
+      `SELECT q.id, q.unit_id AS unitId, q.prompt, q.answer
+         FROM learning_questions q INDEXED BY idx_learning_questions_unit_created
+         JOIN learning_units u ON u.id = q.unit_id
+         JOIN learning_sources s ON s.id = u.source_id
+        WHERE u.published = 1
+          AND s.status IN ('READY', 'UPLOADED', 'REQUIRES_MANUAL_PROCESSING')
+        ORDER BY q.unit_id, q.created_at`,
+    ),
+  ]);
+
+  const cardsByUnit = new Map<string, Record<string, unknown>[]>();
+  for (const card of cards) {
+    const unitId = String(card.unitId);
+    cardsByUnit.set(unitId, [...(cardsByUnit.get(unitId) || []), card]);
+  }
+  const questionsByUnit = new Map<string, Record<string, unknown>[]>();
+  for (const question of questions) {
+    const unitId = String(question.unitId);
+    questionsByUnit.set(unitId, [...(questionsByUnit.get(unitId) || []), question]);
+  }
+  const unitsBySource = new Map<string, Record<string, unknown>[]>();
+  for (const unit of units) {
+    const sourceId = String(unit.sourceId);
+    const id = String(unit.id);
+    const detail = {
+      id: unit.id,
+      title: unit.title,
+      summary: unit.summary,
+      concepts: parseArray(unit.concepts),
+      flashcards: cardsByUnit.get(id) || [],
+      questions: questionsByUnit.get(id) || [],
+      progress:
+        unit.completed === null || unit.completed === undefined
+          ? []
+          : [
+              {
+                completed: asBoolean(unit.completed),
+                understanding: unit.understanding,
+                nextReviewAt: unit.nextReviewAt,
+              },
+            ],
+    };
+    unitsBySource.set(sourceId, [...(unitsBySource.get(sourceId) || []), detail]);
+  }
+
+  return sources.map((source) => ({
+    ...source,
+    units: unitsBySource.get(String(source.id)) || [],
+  }));
 }
 
 async function noteList(db: D1Database, userId: string) {

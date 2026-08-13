@@ -133,8 +133,8 @@ export class JobsService {
   async list(
     userId: string,
     filters: {
-      companySize?: string;
-      category?: string;
+      companySizes?: string[];
+      categories?: string[];
       region?: string;
       tech?: string;
       sort?: string;
@@ -163,8 +163,10 @@ export class JobsService {
       where: {
         status: { in: ['ACTIVE', 'DEADLINE_UNKNOWN'] },
         careerScope: { in: ['NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE'] },
-        company: filters.companySize ? { size: filters.companySize as CompanySize } : undefined,
-        category: filters.category,
+        company: filters.companySizes?.length
+          ? { size: { in: filters.companySizes as CompanySize[] } }
+          : undefined,
+        category: filters.categories?.length ? { in: filters.categories } : undefined,
         region: filters.region ? { contains: filters.region, mode: 'insensitive' } : undefined,
         techStack: filters.tech ? { has: filters.tech } : undefined,
         savedBy: filters.saved ? { some: { userId } } : undefined,

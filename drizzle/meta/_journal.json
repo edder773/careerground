@@ -43,6 +43,13 @@
       "when": 1786586401978,
       "tag": "0005_naive_blindfold",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1786590625663,
+      "tag": "0006_tense_iron_patriot",
+      "breakpoints": true
     }
   ]
 }

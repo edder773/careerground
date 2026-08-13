@@ -290,6 +290,8 @@ model Flashcard {
   back      String
   createdAt DateTime     @default(now())
   unit      LearningUnit @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@index([unitId, createdAt])
 }
 
 model LearningQuestion {
@@ -301,6 +303,8 @@ model LearningQuestion {
   choices   String[]
   createdAt DateTime     @default(now())
   unit      LearningUnit @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@index([unitId, createdAt])
 }
 
 model LearningProgress {
@@ -441,6 +445,10 @@ model JobPosting {
   @@index([status, createdAt])
   @@index([category, createdAt])
   @@index([status, category, createdAt])
+  @@index([status, careerScope, deadlineAt])
+  @@index([status, careerScope, publishedAt])
+  @@index([status, careerScope, collectedAt])
+  @@index([status, careerScope, rolling])
   @@index([companyId, title])
 }
 

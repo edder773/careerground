@@ -86,6 +86,23 @@ describe('JobsService list', () => {
     );
   });
 
+  it('combines multiple company sizes and job categories', async () => {
+    const { jobs, findMany } = service();
+    await jobs.list('user-id', {
+      companySizes: ['LARGE', 'MID'],
+      categories: ['백엔드', 'AI/ML'],
+    });
+
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          company: { size: { in: ['LARGE', 'MID'] } },
+          category: { in: ['백엔드', 'AI/ML'] },
+        }),
+      }),
+    );
+  });
+
   it('returns distinct active entry-level categories', async () => {
     const findMany = vi.fn().mockResolvedValue([{ category: 'AI 풀스택 개발' }]);
     const prisma = { jobPosting: { findMany } } as unknown as PrismaService;

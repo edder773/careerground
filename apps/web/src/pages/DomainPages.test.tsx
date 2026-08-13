@@ -41,17 +41,19 @@ describe('domain pages', () => {
     );
     const user = userEvent.setup();
     renderPage(<JobsPage />);
-    await user.selectOptions(await screen.findByRole('combobox', { name: '기업 규모' }), 'LARGE');
-    await user.selectOptions(
-      await screen.findByRole('combobox', { name: '직무' }),
-      'AI 풀스택 개발',
-    );
+    await user.click(await screen.findByRole('button', { name: '기업 규모: 전체' }));
+    await user.click(screen.getByRole('menuitemcheckbox', { name: '대기업' }));
+    await user.click(screen.getByRole('menuitemcheckbox', { name: '중견기업' }));
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: '직무: 전체' }));
+    await user.click(screen.getByRole('menuitemcheckbox', { name: 'AI 풀스택 개발' }));
     await waitFor(() =>
       expect(
         calls.some((call) => {
           const params = new URL(call.url, 'https://careerground.example').searchParams;
           return (
-            params.get('companySize') === 'LARGE' && params.get('category') === 'AI 풀스택 개발'
+            params.getAll('companySize').join(',') === 'LARGE,MID' &&
+            params.getAll('category').join(',') === 'AI 풀스택 개발'
           );
         }),
       ).toBe(true),
@@ -119,6 +121,75 @@ describe('domain pages', () => {
           call.url.includes('deadlineTo='),
       ),
     ).toBe(true);
+  });
+
+  it('opens rolling jobs and hidden daily events in dedicated dialogs', async () => {
+    const now = new Date();
+    const deadlineAt = new Date(
+      Date.UTC(now.getFullYear(), now.getMonth(), 18, 6, 0, 0),
+    ).toISOString();
+    const collectedAt = new Date(
+      Date.UTC(now.getFullYear(), now.getMonth(), 7, 6, 0, 0),
+    ).toISOString();
+    const catalog = [
+      ...Array.from({ length: 6 }, (_, index) => ({
+        id: `calendar-job-${index}`,
+        title: `신입 엔지니어 ${index + 1}`,
+        category: '백엔드',
+        region: '서울',
+        remote: false,
+        techStack: ['TypeScript'],
+        collectedAt,
+        deadlineAt,
+        rolling: false,
+        summary: '신입 서비스 개발 포지션',
+        sourceUrl: `https://careers.example.com/jobs/${index + 1}`,
+        company: { name: `일정회사 ${index + 1}`, size: 'MID' },
+        source: { name: 'Example Careers', lastSuccessAt: collectedAt },
+        savedBy: [],
+      })),
+      {
+        id: 'rolling-job',
+        title: '상시 신입 개발자',
+        category: '프론트엔드',
+        region: '서울',
+        remote: true,
+        techStack: ['React'],
+        collectedAt,
+        rolling: true,
+        summary: '상시채용 포지션',
+        sourceUrl: 'https://careers.example.com/jobs/rolling',
+        company: { name: '상시회사', size: 'STARTUP' },
+        source: { name: 'Example Careers', lastSuccessAt: collectedAt },
+        savedBy: [],
+      },
+    ];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) =>
+        response(String(input).endsWith('/jobs/categories') ? ['백엔드'] : catalog),
+      ),
+    );
+    const user = userEvent.setup();
+    renderPage(<JobsPage />);
+
+    await user.click(await screen.findByRole('button', { name: '달력' }));
+    await user.click(screen.getByRole('button', { name: /상시채용 확인하기/ }));
+    const rollingDialog = screen.getByRole('dialog', { name: '상시채용 공고' });
+    expect(rollingDialog).toHaveTextContent('상시회사');
+    await user.click(within(rollingDialog).getByRole('button', { name: '닫기' }));
+
+    const moreButtons = screen.getAllByRole('button', { name: /추가 공고 2개 보기/ });
+    expect(moreButtons).toHaveLength(2);
+    const more = moreButtons[1];
+    if (!more) throw new Error('두 번째 날짜의 추가 공고 버튼을 찾을 수 없습니다.');
+    await user.click(more);
+    const dayDialog = screen.getByRole('dialog', { name: /채용 일정/ });
+    expect(within(dayDialog).getAllByRole('button', { name: /상세 보기/ })).toHaveLength(6);
+    await user.click(
+      within(dayDialog).getByRole('button', { name: '일정회사 1 신입 엔지니어 1 상세 보기' }),
+    );
+    expect(screen.getByRole('dialog', { name: '일정회사 1' })).toHaveTextContent('신입 엔지니어 1');
   });
 
   it('posts a sanitized comment through the solution flow', async () => {
@@ -193,11 +264,11 @@ describe('domain pages', () => {
     );
     const user = userEvent.setup();
     renderPage(<LearningPage />);
-    await user.click(await screen.findByRole('button', { name: /학습 시작/ }));
+    expect(screen.queryByRole('button', { name: /학습 시작|이해도 4점/ })).not.toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: '포커스 내용 보기' }));
     expect(screen.getByRole('dialog', { name: '포커스' })).toHaveTextContent('포커스의 핵심');
     expect(screen.getByText('포커스란?')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: '닫기' }));
-    await user.click(await screen.findByRole('button', { name: '이해도 4점' }));
+    await user.click(screen.getByRole('button', { name: '포커스 이해도 4점' }));
     await waitFor(() =>
       expect(
         calls.some(
