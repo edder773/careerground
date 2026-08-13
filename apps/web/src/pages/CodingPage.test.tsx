@@ -99,7 +99,7 @@ describe('solution editor', () => {
     await user.click(screen.getByRole('button', { name: 'SQL' }));
     await waitFor(() =>
       expect(
-        Array.from(document.querySelectorAll('.problem-grid h3')).map(
+        Array.from(document.querySelectorAll('.problem-grid h2')).map(
           (heading) => heading.textContent,
         ),
       ).toEqual(['조건에 맞는 사용자 찾기']),

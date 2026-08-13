@@ -34,139 +34,139 @@ pnpm db:d1:generate
 
 상태는 작업 프롬프트가 지정한 분류만 사용한다. `다른 수정에 통합됨`은 해당 위험이 기준 경로 단일화 또는 더 큰 변경에 흡수되었음을 뜻한다. `기술적 이유로 미해결`은 일부 보완이 있더라도 감사 항목 전체의 완료 조건을 충족하지 못한 경우다.
 
-| ID   | 심각도 | 상태                               | 코드 경로                                  | 테스트/증거                       | 남은 위험                                |
-| ---- | ------ | ---------------------------------- | ------------------------------------------ | --------------------------------- | ---------------------------------------- |
-| A-01 | P0     | 완료                               | `worker.ts`, `backend-canonicalization.md` | D1 E2E, worker test               | PostgreSQL 전환은 별도 RFC 필요          |
-| A-02 | P1     | 다른 수정에 통합됨                 | `domain.ts`, `contracts`                   | typecheck, D1 API test            | D1 라우터 추가 분해 필요                 |
-| A-03 | P1     | 다른 수정에 통합됨                 | `contracts`, `domain.ts`                   | 공유 Zod import/PATCH tests       | 모든 응답 계약은 미전환                  |
-| A-04 | P2     | 기술적 이유로 미해결               | Nest coding controller                     | 정적 추적                         | 폐기 예정 Nest 중복 endpoint 잔존        |
-| A-05 | P1     | 완료                               | `d1-api.ts`, `AdminPage.tsx`               | web/D1 tests                      | D1에 큐·신고 기능 자체는 없음            |
-| A-06 | P1     | 완료                               | `d1-api.ts` ranking                        | D1 API test                       | 운영 KST 경계 표본 필요                  |
-| A-07 | P1     | 현재 코드에서 이미 해결됨          | D1 daily settings                          | Chromium E2E                      | Nest reference는 폐기 예정               |
-| A-08 | P2     | 기술적 이유로 미해결               | `drizzle/0003_*`                           | migration inspection              | 기존 대용량 data migration 잔존          |
-| A-09 | P1     | 운영 자격증명 부족으로 배포만 차단 | operations docs                            | 절차 review                       | 실제 export/restore 리허설 미수행        |
-| D-36 | P1     | 완료                               | `resolveUser`, admin overview              | role/cap regression test          | 동시 최초 가입의 강한 직렬화 필요        |
-| A-10 | P2     | 운영 자격증명 부족으로 배포만 차단 | Sites auth boundary                        | local identity tests              | 플랫폼 헤더 제거 정책 실환경 확인 필요   |
-| A-12 | P1     | 기술적 이유로 미해결               | D1 API                                     | 정적 추적                         | 사용자·경로별 rate limit 미구현          |
-| D-01 | P0     | 완료                               | problem progress PATCH                     | status/favorite/memo 보존 test    | 없음                                     |
-| D-02 | P0     | 완료                               | job application PATCH                      | memo/status 보존 test, E2E        | 없음                                     |
-| D-03 | P0     | 완료                               | job bookmark PATCH                         | bookmark/status 보존 test         | 없음                                     |
-| D-04 | P0     | 완료                               | shared source text, D1/Nest writes         | `< >` 원문 회귀 tests             | 렌더 sanitizer 지속 검증 필요            |
-| D-05 | P0     | 완료                               | job preview/commit D1 batch                | fault injection rollback test     | D1 batch 한도 모니터링 필요              |
-| D-06 | P0     | 완료                               | learning checksum/version batch            | rollback/idempotency tests        | 대형 package 한도 운영 측정 필요         |
-| D-07 | P1     | 완료                               | `import_previews`, Admin UI                | no-preview/mismatch/expiry tests  | token 보관 기간 운영 조정 가능           |
-| D-12 | P2     | 기술적 이유로 미해결               | Nest CSV parser                            | 정적 추적                         | reference CLI의 boolean variant 미지원   |
-| D-13 | P1     | 완료                               | job dry-run analyzer                       | create/update/review counts tests | field-level diff는 제한적                |
-| D-14 | P1     | 완료                               | batch checksum/result                      | duplicate commit test             | 동시 다중 isolate 검증 필요              |
-| D-08 | P1     | 완료                               | `normalizeCompanyName`                     | domain test                       | 공식 도메인 보조 키는 미수집             |
-| D-09 | P1     | 완료                               | job fingerprint/index                      | duplicate preview test            | fingerprint 충돌은 REVIEW 수동 판정      |
-| D-10 | P1     | 완료                               | job analyzer seen-set                      | package duplicate test            | 없음                                     |
-| D-11 | P1     | 완료                               | canonical URL allowlist                    | domain test                       | 신규 사이트별 tracking key 보강 필요     |
-| D-15 | P2     | 기술적 이유로 미해결               | source freshness metadata                  | 정적 추적                         | 과거 snapshot reconciliation 없음        |
-| D-16 | P1     | 기술적 이유로 미해결               | job import                                 | 정적 추적                         | 사라진 공고 자동 만료 없음               |
-| D-17 | P1     | 기술적 이유로 미해결               | D1 schema                                  | integrity checker                 | 기존 스키마 FK 전면 재구성 필요          |
-| D-18 | P1     | 다른 수정에 통합됨                 | collection target validator                | D1 collection tests               | DB 다형 FK는 없음                        |
-| D-25 | P2     | 기술적 이유로 미해결               | D1 schema                                  | runtime Zod 일부                  | 기존 TEXT enum CHECK 전면 적용 필요      |
-| D-26 | P2     | 기술적 이유로 미해결               | D1 JSON/TEXT fields                        | integrity checker                 | 고빈도 필드 정규화 필요                  |
-| D-19 | P1     | 완료                               | note/solution baseRevision                 | 409 conflict tests                | 병합 UI는 제한적                         |
-| D-21 | P1     | 기술적 이유로 미해결               | reaction toggle                            | 정적 추적                         | desired-state 원자 API 미구현            |
-| D-20 | P1     | 다른 수정에 통합됨                 | comment parent validator                   | D1 comment tests                  | DB 복합 FK는 없음                        |
-| D-22 | P1     | 다른 수정에 통합됨                 | canonical D1 comment/notification          | D1 comment tests                  | outbox는 미구현                          |
-| D-23 | P2     | 기술적 이유로 미해결               | report endpoint                            | 정적 추적                         | 중복 신고 도메인 응답 미완               |
-| D-24 | P1     | 기술적 이유로 미해결               | deadline notifications                     | 정적 추적                         | schedule dedupe key 없음                 |
-| D-32 | P1     | 다른 수정에 통합됨                 | notification preference gate               | D1 producer test                  | 모든 향후 producer가 공통 gate 사용 필요 |
-| U-02 | P1     | 완료                               | `NotificationsPage.tsx`                    | optimistic read/navigation E2E    | 삭제 target fallback 보강 가능           |
-| U-29 | P2     | 기술적 이유로 미해결               | unread endpoint/badge                      | web tests                         | 유형 filter와 cursor 미구현              |
-| D-27 | P1     | 완료                               | reorder sibling validator/batch            | collection E2E                    | fractional rank는 없음                   |
-| D-28 | P1     | 기술적 이유로 미해결               | collection soft delete                     | 정적 추적                         | trash/restore 정책 미구현                |
-| D-29 | P1     | 기술적 이유로 미해결               | learning review                            | 정적 추적                         | 동시 복습 기록 직렬화 필요               |
-| D-30 | P2     | 기술적 이유로 미해결               | review schedule                            | 정적 추적                         | due/completed 의미 재설계 필요           |
-| U-25 | P2     | 현재 코드에서 이미 해결됨          | Learning UI                                | Chromium learning E2E             | 없음                                     |
-| U-26 | P2     | 기술적 이유로 미해결               | learning questions                         | 정적 추적                         | 응답·채점·오답 이력 없음                 |
-| D-31 | P1     | 완료                               | profile PATCH, Settings UI                 | web/type tests                    | 없음                                     |
-| D-35 | P2     | 완료                               | profile URL validation                     | D1/web tests                      | 이미지 proxy/CSP는 운영 검증 필요        |
-| P-01 | P1     | 기술적 이유로 미해결               | jobs list                                  | synthetic benchmark               | cursor/total 미구현                      |
-| P-02 | P1     | 기술적 이유로 미해결               | problem list                               | 10k synthetic benchmark           | 500 상한만 적용, cursor 미구현           |
-| P-03 | P1     | 기술적 이유로 미해결               | solution list                              | 20k/100k benchmark                | 50 상한이나 list/detail 완전 분리 아님   |
-| P-04 | P1     | 완료                               | batched solution hydration                 | query-count benchmark             | 댓글 payload는 여전히 클 수 있음         |
-| P-05 | P1     | 완료                               | batched note revisions                     | query-count benchmark             | 목록 본문 축소 추가 가능                 |
-| P-06 | P1     | 기술적 이유로 미해결               | learning list                              | 정적 추적                         | source/unit 상세 분리 없음               |
-| P-07 | P1     | 완료                               | Map collection grouping                    | D1 tests                          | 없음                                     |
-| P-09 | P1     | 기술적 이유로 미해결               | global search                              | synthetic benchmark               | FTS와 cursor 없음                        |
-| P-10 | P1     | 다른 수정에 통합됨                 | D1 canonical ranking                       | D1 tests                          | 대규모 운영 집계 측정 필요               |
-| P-11 | P2     | 다른 수정에 통합됨                 | D1 canonical ranking                       | D1 tests                          | materialized aggregate 없음              |
-| P-13 | P2     | 기술적 이유로 미해결               | notification scheduler                     | 정적 추적                         | batch scheduler 미구현                   |
-| A-11 | P1     | 다른 수정에 통합됨                 | Nest proxy removal                         | worker test                       | D1 rate limit은 별도 A-12                |
-| P-08 | P1     | 완료                               | debounced global search                    | web/E2E search tests              | 최근 검색 저장은 없음                    |
-| P-12 | P1     | 다른 수정에 통합됨                 | canonical D1 batch import                  | fault injection test              | Nest CLI는 reference-only                |
-| P-14 | P2     | 완료                               | static read-only code block                | web tests, build                  | 편집기는 CodeMirror 유지                 |
-| P-15 | P2     | 완료                               | scoped query invalidation                  | web tests                         | 없음                                     |
-| P-16 | P2     | 기술적 이유로 미해결               | FolderSaveButton                           | 정적 추적                         | 전체 refetch 남음                        |
-| P-17 | P2     | 기술적 이유로 미해결               | `styles.css`                               | build size                        | CSS module/code split 미구현             |
-| P-18 | P2     | 기술적 이유로 미해결               | image assets                               | 정적 추적                         | 자산 재인코딩 미수행                     |
-| P-19 | P2     | 기술적 이유로 미해결               | jobs response                              | benchmark payload                 | list/detail DTO 분리 미완                |
-| P-20 | P2     | 완료                               | `api.ts`                                   | timeout/network/empty-body tests  | 브라우저별 AbortSignal 검증 필요         |
-| P-21 | P2     | 기술적 이유로 미해결               | deadline cron                              | 정적 추적                         | KST 경계 수정 미완                       |
-| P-22 | P2     | 현재 코드에서 이미 해결됨          | D1 queries                                 | repository search                 | 없음                                     |
-| P-23 | P2     | 완료                               | performance evidence disclaimer            | evidence JSON                     | 운영 수치는 별도 측정 필요               |
-| U-01 | P1     | 완료                               | search href/keyboard navigation            | Chromium E2E                      | focus target은 화면별 차이               |
-| U-03 | P1     | 완료                               | mobile core nav + More                     | responsive E2E                    | 정보구조 사용자 검증 필요                |
-| U-04 | P2     | 기술적 이유로 미해결               | AppShell view toggle                       | 정적 추적                         | 화면별 제어로 미분리                     |
-| U-05 | P2     | 기술적 이유로 미해결               | jobs URL params                            | web tests                         | coding/learning 일부 상태 미전환         |
-| U-06 | P1     | 완료                               | auth fatal/network states                  | auth tests                        | offline 전용 UI 보강 가능                |
-| U-07 | P2     | 완료                               | 404 route                                  | route test/build                  | 없음                                     |
-| U-08 | P2     | 완료                               | `AppErrorBoundary`                         | web tests                         | lazy chunk 자동 재시도는 제한적          |
-| U-09 | P1     | 완료                               | semantic folder button                     | axe/E2E                           | 없음                                     |
-| U-10 | P1     | 완료                               | tree-preserving optimistic reorder         | collection E2E                    | 없음                                     |
-| U-11 | P2     | 기술적 이유로 미해결               | folder hierarchy UI                        | 정적 추적                         | 이동/전체 breadcrumb 미완                |
-| U-12 | P1     | 기술적 이유로 미해결               | FolderSaveButton                           | 정적 추적                         | 다중 해제/이동 미구현                    |
-| U-13 | P1     | 완료                               | server job search/URL                      | Chromium E2E                      | 최근 검색은 없음                         |
-| U-14 | P1     | 기술적 이유로 미해결               | job list/calendar                          | visual evidence                   | 상세 행동 공통화 미완                    |
-| U-15 | P2     | 기술적 이유로 미해결               | calendar                                   | axe                               | WAI-ARIA grid 미구현                     |
-| U-16 | P1     | 완료                               | favorite PATCH + rollback                  | web/D1 tests                      | 없음                                     |
-| U-17 | P1     | 완료                               | editor open behavior                       | web regression test               | 첫 입력 시 상태 변경 정책은 저장 기준    |
-| U-18 | P1     | 완료                               | per-user/problem local draft               | web/E2E                           | 장기 draft retention 정책 없음           |
-| U-19 | P1     | 기술적 이유로 미해결               | solution complete flow                     | 정적 추적                         | 단일 transaction endpoint 없음           |
-| U-20 | P2     | 기술적 이유로 미해결               | CodeMirror languages                       | build                             | Java/C++ lazy extension 미완             |
-| U-21 | P0     | 완료                               | reply redacted DTO/UI                      | hidden reply regression test      | 없음                                     |
-| U-22 | P1     | 완료                               | solution-scoped reply state                | web tests                         | 없음                                     |
-| U-23 | P2     | 기술적 이유로 미해결               | revision diff                              | 정적 추적                         | Myers diff 미구현                        |
-| U-24 | P1     | 기술적 이유로 미해결               | baseRevision + 409                         | conflict test                     | 비교·병합 UX 미완                        |
-| U-27 | P1     | 기술적 이유로 미해결               | Notes dirty guard                          | web tests                         | autosave/local draft 미완                |
-| U-28 | P2     | 기술적 이유로 미해결               | notes soft delete                          | 정적 추적                         | trash/restore UI 없음                    |
-| U-30 | P2     | 기술적 이유로 미해결               | ranking disclosure                         | 정적 추적                         | KST 기간/신뢰 설명 미완                  |
-| U-31 | P1     | 완료                               | Settings load/error/dirty                  | web tests                         | 없음                                     |
-| U-32 | P2     | 완료                               | GitHub validator                           | web/D1 tests                      | 존재 여부 네트워크 확인은 안 함          |
-| U-33 | P2     | 기술적 이유로 미해결               | language preference model                  | contracts test                    | SQL track 분리 제품 결정 필요            |
-| U-34 | P1     | 완료                               | preview-bound commit UI/API                | D1/E2E import tests               | 없음                                     |
-| U-35 | P1     | 완료                               | summary/table preview + pending lock       | admin E2E                         | 100행 이상 virtual scroll은 없음         |
-| U-36 | P2     | 완료                               | unsupported D1 capability disclosure       | admin E2E                         | 큐/신고 기능 추가 시 workflow 필요       |
-| U-37 | P2     | 기술적 이유로 미해결               | brand config                               | repository search                 | 하드코딩 전면 제거 미완                  |
-| U-38 | P2     | 기술적 이유로 미해결               | page mutations                             | web tests                         | 공통 toast/rollback 전면 통일 미완       |
-| U-39 | P2     | 완료                               | jobId pending state                        | jobs E2E                          | 없음                                     |
-| U-40 | P2     | 기술적 이유로 미해결               | empty states                               | visual evidence                   | 최근 검색/현재 사용자 강조 미완          |
-| X-01 | P1     | 기술적 이유로 미해결               | manual overlays                            | axe                               | 공통 focus-trap dialog 전환 미완         |
-| X-02 | P1     | 기술적 이유로 미해결               | job calendar                               | axe                               | roving tabindex/grid 미구현              |
-| X-03 | P1     | 완료                               | semantic folder control                    | axe/E2E                           | 없음                                     |
-| X-04 | P2     | 기술적 이유로 미해결               | aria labels/pressed 일부                   | axe                               | 전 화면 live 상태 통일 미완              |
-| X-05 | P2     | 기술적 이유로 미해결               | form errors                                | axe                               | 전 필드 describedby/invalid 미완         |
-| X-09 | P2     | 현재 코드에서 이미 해결됨          | reduced-motion CSS                         | repository search                 | 없음                                     |
-| X-06 | P2     | 기술적 이유로 미해결               | mobile editor                              | 320/375 visual                    | 가상 키보드 실기기 검증 없음             |
-| X-07 | P2     | 완료                               | multi-route/dialog axe                     | visual E2E                        | manual SR testing은 X-10                 |
-| X-08 | P2     | 완료                               | Playwright projects/viewports              | browser config                    | 실기기 Safari는 별도                     |
-| X-10 | P2     | 기술적 이유로 미해결               | release checklist                          | axe/visual only                   | NVDA/VoiceOver·zoom 수동 증거 없음       |
-| O-01 | P1     | 완료                               | local D1 server Playwright                 | Chromium D1 E2E                   | production preview smoke 추가 가능       |
-| O-02 | P1     | 다른 수정에 통합됨                 | single D1 runtime path                     | architecture decision             | PostgreSQL 전환 시 parity 재도입 필요    |
-| O-03 | P1     | 기술적 이유로 미해결               | fault injection/conflict tests             | D1 tests                          | cron·다중 isolate 동시성 범위 미완       |
-| O-04 | P2     | 기술적 이유로 미해결               | performance script/evidence                | synthetic benchmark               | CI budget gate 미구현                    |
-| O-05 | P1     | 운영 자격증명 부족으로 배포만 차단 | recovery/integrity docs                    | local procedure review            | 자동 export와 restore drill 미수행       |
-| O-06 | P2     | 기술적 이유로 미해결               | requestId only                             | static review                     | metric/SLO/alert 미구현                  |
-| O-07 | P2     | 다른 수정에 통합됨                 | Nest non-runtime isolation                 | architecture doc                  | 향후 PostgreSQL 전환 시 재검토           |
-| O-08 | P2     | 완료                               | expand-only 0004, recovery doc             | migration generation/inspection   | D1 preview canary는 운영 필요            |
-| O-09 | P2     | 기술적 이유로 미해결               | shared critical Zod contracts              | tests/typecheck                   | 모든 response runtime parsing 미완       |
-| O-10 | P2     | 기술적 이유로 미해결               | visual screenshots/assertions              | visual E2E                        | pixel baseline 미구현                    |
-| D-34 | P2     | 완료                               | allowlist demotion + audit                 | role regression test              | 비상 복구 관리자 절차 운영 필요          |
-| D-33 | P0     | 완료                               | explicit admin allowlist                   | first-user MEMBER test/E2E        | allowlist 비밀 관리 필요                 |
+| ID   | 심각도 | 상태                               | 코드 경로                                     | 테스트/증거                       | 남은 위험                                |
+| ---- | ------ | ---------------------------------- | --------------------------------------------- | --------------------------------- | ---------------------------------------- |
+| A-01 | P0     | 완료                               | `worker.ts`, `backend-canonicalization.md`    | D1 E2E, worker test               | PostgreSQL 전환은 별도 RFC 필요          |
+| A-02 | P1     | 다른 수정에 통합됨                 | `domain.ts`, `contracts`                      | typecheck, D1 API test            | D1 라우터 추가 분해 필요                 |
+| A-03 | P1     | 다른 수정에 통합됨                 | `contracts`, `domain.ts`                      | 공유 Zod import/PATCH tests       | 모든 응답 계약은 미전환                  |
+| A-04 | P2     | 기술적 이유로 미해결               | Nest coding controller                        | 정적 추적                         | 폐기 예정 Nest 중복 endpoint 잔존        |
+| A-05 | P1     | 완료                               | `d1-api.ts`, `AdminPage.tsx`                  | web/D1 tests                      | D1에 큐·신고 기능 자체는 없음            |
+| A-06 | P1     | 완료                               | `d1-api.ts` ranking                           | D1 API test                       | 운영 KST 경계 표본 필요                  |
+| A-07 | P1     | 현재 코드에서 이미 해결됨          | D1 daily settings                             | Chromium E2E                      | Nest reference는 폐기 예정               |
+| A-08 | P2     | 기술적 이유로 미해결               | `drizzle/0003_*`                              | migration inspection              | 기존 대용량 data migration 잔존          |
+| A-09 | P1     | 운영 자격증명 부족으로 배포만 차단 | operations docs                               | 절차 review                       | 실제 export/restore 리허설 미수행        |
+| D-36 | P1     | 완료                               | `resolveUser`, admin overview                 | role/cap regression test          | 동시 최초 가입의 강한 직렬화 필요        |
+| A-10 | P2     | 운영 자격증명 부족으로 배포만 차단 | Sites auth boundary                           | local identity tests              | 플랫폼 헤더 제거 정책 실환경 확인 필요   |
+| A-12 | P1     | 기술적 이유로 미해결               | D1 API                                        | 정적 추적                         | 사용자·경로별 rate limit 미구현          |
+| D-01 | P0     | 완료                               | problem progress PATCH                        | status/favorite/memo 보존 test    | 없음                                     |
+| D-02 | P0     | 완료                               | job application PATCH                         | memo/status 보존 test, E2E        | 없음                                     |
+| D-03 | P0     | 완료                               | job bookmark PATCH                            | bookmark/status 보존 test         | 없음                                     |
+| D-04 | P0     | 완료                               | shared source text, D1/Nest writes            | `< >` 원문 회귀 tests             | 렌더 sanitizer 지속 검증 필요            |
+| D-05 | P0     | 완료                               | job preview/commit D1 batch                   | fault injection rollback test     | D1 batch 한도 모니터링 필요              |
+| D-06 | P0     | 완료                               | learning checksum/version batch               | rollback/idempotency tests        | 대형 package 한도 운영 측정 필요         |
+| D-07 | P1     | 완료                               | `import_previews`, Admin UI                   | no-preview/mismatch/expiry tests  | token 보관 기간 운영 조정 가능           |
+| D-12 | P2     | 기술적 이유로 미해결               | Nest CSV parser                               | 정적 추적                         | reference CLI의 boolean variant 미지원   |
+| D-13 | P1     | 완료                               | job dry-run analyzer                          | create/update/review counts tests | field-level diff는 제한적                |
+| D-14 | P1     | 완료                               | batch checksum/result                         | duplicate commit test             | 동시 다중 isolate 검증 필요              |
+| D-08 | P1     | 완료                               | `normalizeCompanyName`                        | domain test                       | 공식 도메인 보조 키는 미수집             |
+| D-09 | P1     | 완료                               | job fingerprint/index                         | duplicate preview test            | fingerprint 충돌은 REVIEW 수동 판정      |
+| D-10 | P1     | 완료                               | job analyzer seen-set                         | package duplicate test            | 없음                                     |
+| D-11 | P1     | 완료                               | canonical URL allowlist                       | domain test                       | 신규 사이트별 tracking key 보강 필요     |
+| D-15 | P2     | 기술적 이유로 미해결               | source freshness metadata                     | 정적 추적                         | 과거 snapshot reconciliation 없음        |
+| D-16 | P1     | 기술적 이유로 미해결               | job import                                    | 정적 추적                         | 사라진 공고 자동 만료 없음               |
+| D-17 | P1     | 기술적 이유로 미해결               | D1 schema                                     | integrity checker                 | 기존 스키마 FK 전면 재구성 필요          |
+| D-18 | P1     | 다른 수정에 통합됨                 | collection target validator                   | D1 collection tests               | DB 다형 FK는 없음                        |
+| D-25 | P2     | 기술적 이유로 미해결               | D1 schema                                     | runtime Zod 일부                  | 기존 TEXT enum CHECK 전면 적용 필요      |
+| D-26 | P2     | 기술적 이유로 미해결               | D1 JSON/TEXT fields                           | integrity checker                 | 고빈도 필드 정규화 필요                  |
+| D-19 | P1     | 완료                               | note/solution baseRevision                    | 409 conflict tests                | 병합 UI는 제한적                         |
+| D-21 | P1     | 기술적 이유로 미해결               | reaction toggle                               | 정적 추적                         | desired-state 원자 API 미구현            |
+| D-20 | P1     | 다른 수정에 통합됨                 | comment parent validator                      | D1 comment tests                  | DB 복합 FK는 없음                        |
+| D-22 | P1     | 다른 수정에 통합됨                 | canonical D1 comment/notification             | D1 comment tests                  | outbox는 미구현                          |
+| D-23 | P2     | 기술적 이유로 미해결               | report endpoint                               | 정적 추적                         | 중복 신고 도메인 응답 미완               |
+| D-24 | P1     | 기술적 이유로 미해결               | deadline notifications                        | 정적 추적                         | schedule dedupe key 없음                 |
+| D-32 | P1     | 다른 수정에 통합됨                 | notification preference gate                  | D1 producer test                  | 모든 향후 producer가 공통 gate 사용 필요 |
+| U-02 | P1     | 완료                               | `NotificationsPage.tsx`                       | optimistic read/navigation E2E    | 삭제 target fallback 보강 가능           |
+| U-29 | P2     | 기술적 이유로 미해결               | unread endpoint/badge                         | web tests                         | 유형 filter와 cursor 미구현              |
+| D-27 | P1     | 완료                               | reorder sibling validator/batch               | collection E2E                    | fractional rank는 없음                   |
+| D-28 | P1     | 기술적 이유로 미해결               | collection soft delete                        | 정적 추적                         | trash/restore 정책 미구현                |
+| D-29 | P1     | 기술적 이유로 미해결               | learning review                               | 정적 추적                         | 동시 복습 기록 직렬화 필요               |
+| D-30 | P2     | 기술적 이유로 미해결               | review schedule                               | 정적 추적                         | due/completed 의미 재설계 필요           |
+| U-25 | P2     | 현재 코드에서 이미 해결됨          | Learning UI                                   | Chromium learning E2E             | 없음                                     |
+| U-26 | P2     | 기술적 이유로 미해결               | learning questions                            | 정적 추적                         | 응답·채점·오답 이력 없음                 |
+| D-31 | P1     | 완료                               | profile PATCH, Settings UI                    | web/type tests                    | 없음                                     |
+| D-35 | P2     | 완료                               | profile URL validation                        | D1/web tests                      | 이미지 proxy/CSP는 운영 검증 필요        |
+| P-01 | P1     | 기술적 이유로 미해결               | jobs list                                     | synthetic benchmark               | cursor/total 미구현                      |
+| P-02 | P1     | 기술적 이유로 미해결               | problem list                                  | 10k synthetic benchmark           | 500 상한만 적용, cursor 미구현           |
+| P-03 | P1     | 기술적 이유로 미해결               | solution list                                 | 20k/100k benchmark                | 50 상한이나 list/detail 완전 분리 아님   |
+| P-04 | P1     | 완료                               | batched solution hydration                    | query-count benchmark             | 댓글 payload는 여전히 클 수 있음         |
+| P-05 | P1     | 완료                               | batched note revisions                        | query-count benchmark             | 목록 본문 축소 추가 가능                 |
+| P-06 | P1     | 기술적 이유로 미해결               | learning list                                 | 정적 추적                         | source/unit 상세 분리 없음               |
+| P-07 | P1     | 완료                               | Map collection grouping                       | D1 tests                          | 없음                                     |
+| P-09 | P1     | 기술적 이유로 미해결               | global search                                 | synthetic benchmark               | FTS와 cursor 없음                        |
+| P-10 | P1     | 다른 수정에 통합됨                 | D1 canonical ranking                          | D1 tests                          | 대규모 운영 집계 측정 필요               |
+| P-11 | P2     | 다른 수정에 통합됨                 | D1 canonical ranking                          | D1 tests                          | materialized aggregate 없음              |
+| P-13 | P2     | 기술적 이유로 미해결               | notification scheduler                        | 정적 추적                         | batch scheduler 미구현                   |
+| A-11 | P1     | 다른 수정에 통합됨                 | Nest proxy removal                            | worker test                       | D1 rate limit은 별도 A-12                |
+| P-08 | P1     | 완료                               | debounced global search                       | web/E2E search tests              | 최근 검색 저장은 없음                    |
+| P-12 | P1     | 다른 수정에 통합됨                 | canonical D1 batch import                     | fault injection test              | Nest CLI는 reference-only                |
+| P-14 | P2     | 완료                               | static read-only code block                   | web tests, build                  | 편집기는 CodeMirror 유지                 |
+| P-15 | P2     | 완료                               | scoped query invalidation                     | web tests                         | 없음                                     |
+| P-16 | P2     | 기술적 이유로 미해결               | FolderSaveButton                              | 정적 추적                         | 전체 refetch 남음                        |
+| P-17 | P2     | 기술적 이유로 미해결               | `styles.css`                                  | build size                        | CSS module/code split 미구현             |
+| P-18 | P2     | 기술적 이유로 미해결               | image assets                                  | 정적 추적                         | 자산 재인코딩 미수행                     |
+| P-19 | P2     | 기술적 이유로 미해결               | jobs response                                 | benchmark payload                 | list/detail DTO 분리 미완                |
+| P-20 | P2     | 완료                               | `api.ts`                                      | timeout/network/empty-body tests  | 브라우저별 AbortSignal 검증 필요         |
+| P-21 | P2     | 기술적 이유로 미해결               | deadline cron                                 | 정적 추적                         | KST 경계 수정 미완                       |
+| P-22 | P2     | 현재 코드에서 이미 해결됨          | D1 queries                                    | repository search                 | 없음                                     |
+| P-23 | P2     | 완료                               | performance evidence disclaimer               | evidence JSON                     | 운영 수치는 별도 측정 필요               |
+| U-01 | P1     | 완료                               | search href/keyboard navigation               | Chromium E2E                      | focus target은 화면별 차이               |
+| U-03 | P1     | 완료                               | mobile core nav + More                        | responsive E2E                    | 정보구조 사용자 검증 필요                |
+| U-04 | P2     | 기술적 이유로 미해결               | AppShell view toggle                          | 정적 추적                         | 화면별 제어로 미분리                     |
+| U-05 | P2     | 기술적 이유로 미해결               | jobs URL params                               | web tests                         | coding/learning 일부 상태 미전환         |
+| U-06 | P1     | 완료                               | auth fatal/network states                     | auth tests                        | offline 전용 UI 보강 가능                |
+| U-07 | P2     | 완료                               | 404 route                                     | route test/build                  | 없음                                     |
+| U-08 | P2     | 완료                               | `AppErrorBoundary`                            | web tests                         | lazy chunk 자동 재시도는 제한적          |
+| U-09 | P1     | 완료                               | semantic folder button                        | axe/E2E                           | 없음                                     |
+| U-10 | P1     | 완료                               | tree-preserving optimistic reorder            | collection E2E                    | 없음                                     |
+| U-11 | P2     | 기술적 이유로 미해결               | folder hierarchy UI                           | 정적 추적                         | 이동/전체 breadcrumb 미완                |
+| U-12 | P1     | 기술적 이유로 미해결               | FolderSaveButton                              | 정적 추적                         | 다중 해제/이동 미구현                    |
+| U-13 | P1     | 완료                               | server job search/URL                         | Chromium E2E                      | 최근 검색은 없음                         |
+| U-14 | P1     | 기술적 이유로 미해결               | job list/calendar                             | visual evidence                   | 상세 행동 공통화 미완                    |
+| U-15 | P2     | 기술적 이유로 미해결               | calendar                                      | axe                               | WAI-ARIA grid 미구현                     |
+| U-16 | P1     | 완료                               | favorite PATCH + rollback                     | web/D1 tests                      | 없음                                     |
+| U-17 | P1     | 완료                               | editor open behavior                          | web regression test               | 첫 입력 시 상태 변경 정책은 저장 기준    |
+| U-18 | P1     | 완료                               | per-user/problem local draft                  | web/E2E                           | 장기 draft retention 정책 없음           |
+| U-19 | P1     | 기술적 이유로 미해결               | solution complete flow                        | 정적 추적                         | 단일 transaction endpoint 없음           |
+| U-20 | P2     | 기술적 이유로 미해결               | CodeMirror languages                          | build                             | Java/C++ lazy extension 미완             |
+| U-21 | P0     | 완료                               | reply redacted DTO/UI                         | hidden reply regression test      | 없음                                     |
+| U-22 | P1     | 완료                               | solution-scoped reply state                   | web tests                         | 없음                                     |
+| U-23 | P2     | 기술적 이유로 미해결               | revision diff                                 | 정적 추적                         | Myers diff 미구현                        |
+| U-24 | P1     | 기술적 이유로 미해결               | baseRevision + 409                            | conflict test                     | 비교·병합 UX 미완                        |
+| U-27 | P1     | 기술적 이유로 미해결               | Notes dirty guard                             | web tests                         | autosave/local draft 미완                |
+| U-28 | P2     | 기술적 이유로 미해결               | notes soft delete                             | 정적 추적                         | trash/restore UI 없음                    |
+| U-30 | P2     | 기술적 이유로 미해결               | ranking disclosure                            | 정적 추적                         | KST 기간/신뢰 설명 미완                  |
+| U-31 | P1     | 완료                               | Settings load/error/dirty                     | web tests                         | 없음                                     |
+| U-32 | P2     | 완료                               | GitHub validator                              | web/D1 tests                      | 존재 여부 네트워크 확인은 안 함          |
+| U-33 | P2     | 기술적 이유로 미해결               | language preference model                     | contracts test                    | SQL track 분리 제품 결정 필요            |
+| U-34 | P1     | 완료                               | preview-bound commit UI/API                   | D1/E2E import tests               | 없음                                     |
+| U-35 | P1     | 완료                               | summary/table preview + pending lock          | admin E2E                         | 100행 이상 virtual scroll은 없음         |
+| U-36 | P2     | 완료                               | unsupported D1 capability disclosure          | admin E2E                         | 큐/신고 기능 추가 시 workflow 필요       |
+| U-37 | P2     | 기술적 이유로 미해결               | brand config                                  | repository search                 | 하드코딩 전면 제거 미완                  |
+| U-38 | P2     | 기술적 이유로 미해결               | page mutations                                | web tests                         | 공통 toast/rollback 전면 통일 미완       |
+| U-39 | P2     | 완료                               | jobId pending state                           | jobs E2E                          | 없음                                     |
+| U-40 | P2     | 기술적 이유로 미해결               | empty states                                  | visual evidence                   | 최근 검색/현재 사용자 강조 미완          |
+| X-01 | P1     | 기술적 이유로 미해결               | manual overlays                               | axe                               | 공통 focus-trap dialog 전환 미완         |
+| X-02 | P1     | 기술적 이유로 미해결               | job calendar                                  | axe                               | roving tabindex/grid 미구현              |
+| X-03 | P1     | 완료                               | semantic folder control                       | axe/E2E                           | 없음                                     |
+| X-04 | P2     | 기술적 이유로 미해결               | aria labels/pressed 일부                      | axe                               | 전 화면 live 상태 통일 미완              |
+| X-05 | P2     | 기술적 이유로 미해결               | form errors                                   | axe                               | 전 필드 describedby/invalid 미완         |
+| X-09 | P2     | 현재 코드에서 이미 해결됨          | reduced-motion CSS                            | repository search                 | 없음                                     |
+| X-06 | P2     | 기술적 이유로 미해결               | mobile editor                                 | 320/375 visual                    | 가상 키보드 실기기 검증 없음             |
+| X-07 | P2     | 완료                               | multi-route/dialog axe                        | visual E2E                        | manual SR testing은 X-10                 |
+| X-08 | P2     | 완료                               | Playwright projects/viewports                 | browser config                    | 실기기 Safari는 별도                     |
+| X-10 | P2     | 기술적 이유로 미해결               | release checklist                             | axe/visual only                   | NVDA/VoiceOver·zoom 수동 증거 없음       |
+| O-01 | P1     | 완료                               | local D1 server Playwright                    | Chromium D1 E2E                   | production preview smoke 추가 가능       |
+| O-02 | P1     | 다른 수정에 통합됨                 | single D1 runtime path                        | architecture decision             | PostgreSQL 전환 시 parity 재도입 필요    |
+| O-03 | P1     | 기술적 이유로 미해결               | fault injection/conflict tests                | D1 tests                          | cron·다중 isolate 동시성 범위 미완       |
+| O-04 | P2     | 기술적 이유로 미해결               | performance script/evidence                   | synthetic benchmark               | CI budget gate 미구현                    |
+| O-05 | P1     | 운영 자격증명 부족으로 배포만 차단 | recovery/integrity docs                       | local procedure review            | 자동 export와 restore drill 미수행       |
+| O-06 | P2     | 기술적 이유로 미해결               | requestId only                                | static review                     | metric/SLO/alert 미구현                  |
+| O-07 | P2     | 다른 수정에 통합됨                 | Nest non-runtime isolation                    | architecture doc                  | 향후 PostgreSQL 전환 시 재검토           |
+| O-08 | P2     | 완료                               | 최신 0009 이후 expand-only 0010, recovery doc | migration generation/inspection   | D1 preview canary는 운영 필요            |
+| O-09 | P2     | 기술적 이유로 미해결               | shared critical Zod contracts                 | tests/typecheck                   | 모든 response runtime parsing 미완       |
+| O-10 | P2     | 기술적 이유로 미해결               | visual screenshots/assertions                 | visual E2E                        | pixel baseline 미구현                    |
+| D-34 | P2     | 완료                               | allowlist demotion + audit                    | role regression test              | 비상 복구 관리자 절차 운영 필요          |
+| D-33 | P0     | 완료                               | explicit admin allowlist                      | first-user MEMBER test/E2E        | allowlist 비밀 관리 필요                 |
 
 ## 결과 요약
 

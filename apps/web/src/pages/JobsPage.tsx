@@ -979,9 +979,7 @@ export function JobsPage() {
                   <FolderSaveButton itemType="JOB_POSTING" targetId={job.id} label={job.title} />
                   <button
                     disabled={bookmark.isPending && bookmark.variables?.jobId === job.id}
-                    onClick={() =>
-                      bookmark.mutate({ jobId: job.id, bookmarked: !job.bookmarked })
-                    }
+                    onClick={() => bookmark.mutate({ jobId: job.id, bookmarked: !job.bookmarked })}
                     className={job.bookmarked ? 'saved' : ''}
                     aria-pressed={job.bookmarked}
                   >
@@ -993,9 +991,7 @@ export function JobsPage() {
                       <span className="sr-only">{job.title} 지원 상태</span>
                       <select
                         aria-label={`${job.title} 지원 상태`}
-                        disabled={
-                          application.isPending && application.variables?.jobId === job.id
-                        }
+                        disabled={application.isPending && application.variables?.jobId === job.id}
                         value={job.savedBy[0]?.status || 'INTERESTED'}
                         onChange={(event) =>
                           application.mutate({

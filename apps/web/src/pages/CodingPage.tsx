@@ -295,7 +295,7 @@ export function CodingPage() {
                 <Star size={17} fill={problem.progress[0]?.favorite ? 'currentColor' : 'none'} />
               </button>
             </div>
-            <h3>{problem.displayTitle}</h3>
+            <h2>{problem.displayTitle}</h2>
             <div className="tag-row">
               {problem.tags.map((tag) => (
                 <span key={tag}>{tag}</span>
