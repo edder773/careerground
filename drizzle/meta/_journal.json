@@ -22,6 +22,20 @@
       "when": 1786519113909,
       "tag": "0002_equal_hulk",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1786540965126,
+      "tag": "0003_import_careerground_catalog",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1786582505165,
+      "tag": "0004_melodic_xavin",
+      "breakpoints": true
     }
   ]
 }

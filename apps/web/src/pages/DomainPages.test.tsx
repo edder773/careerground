@@ -1,6 +1,6 @@
-import { screen, waitFor } from '@testing-library/react';
+import { cleanup, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { JobsPage } from './JobsPage';
 import { SolutionsPage } from './SolutionsPage';
 import { LearningPage } from './LearningPage';
@@ -12,29 +12,96 @@ describe('domain pages', () => {
   beforeEach(() => {
     calls.length = 0;
   });
+  afterEach(cleanup);
 
-  it('applies company-size and job-category filters', async () => {
+  it('builds job categories from the catalog and applies the selected filters', async () => {
+    const catalog = [
+      {
+        id: 'job-1',
+        title: 'Fullstack Engineer',
+        category: 'AI 풀스택 개발',
+        region: '서울',
+        remote: false,
+        techStack: ['Python'],
+        rolling: true,
+        summary: 'AI 서비스 개발',
+        sourceUrl: 'https://example.test/jobs/1',
+        company: { name: 'Hudson AI', size: 'STARTUP' },
+        source: { name: '로켓펀치' },
+        savedBy: [],
+      },
+    ];
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
         calls.push({ url, method: init?.method || 'GET' });
-        return response([]);
+        return response(url.endsWith('/jobs/categories') ? ['AI 풀스택 개발'] : catalog);
       }),
     );
     const user = userEvent.setup();
     renderPage(<JobsPage />);
     await user.selectOptions(await screen.findByRole('combobox', { name: '기업 규모' }), 'LARGE');
-    await user.selectOptions(screen.getByRole('combobox', { name: '직무' }), '백엔드');
+    await user.selectOptions(
+      await screen.findByRole('combobox', { name: '직무' }),
+      'AI 풀스택 개발',
+    );
     await waitFor(() =>
       expect(
-        calls.some(
-          (call) =>
-            call.url.includes('companySize=LARGE') &&
-            call.url.includes(encodeURIComponent('백엔드')),
-        ),
+        calls.some((call) => {
+          const params = new URL(call.url, 'https://careerground.example').searchParams;
+          return (
+            params.get('companySize') === 'LARGE' && params.get('category') === 'AI 풀스택 개발'
+          );
+        }),
       ).toBe(true),
     );
+  });
+
+  it('shows company deadlines in a monthly calendar with prominent source details', async () => {
+    const now = new Date();
+    const deadlineAt = new Date(
+      Date.UTC(now.getFullYear(), now.getMonth(), 15, 6, 0, 0),
+    ).toISOString();
+    const job = {
+      id: '11111111-1111-4111-8111-111111111111',
+      title: '신입 플랫폼 엔지니어',
+      category: '백엔드',
+      region: '서울',
+      remote: false,
+      techStack: ['TypeScript'],
+      deadlineAt,
+      rolling: false,
+      summary: '신입 서비스 개발 포지션',
+      sourceUrl: 'https://careers.example.com/jobs/1',
+      company: { name: '캘린더테크', size: 'MID' },
+      source: { name: 'Example Careers', lastSuccessAt: '2026-08-12T00:00:00.000Z' },
+      savedBy: [],
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        calls.push({ url, method: init?.method || 'GET' });
+        return response(url.endsWith('/jobs/categories') ? ['백엔드'] : [job]);
+      }),
+    );
+    const user = userEvent.setup();
+    renderPage(<JobsPage />);
+
+    expect(await screen.findByText('Example Careers')).toBeInTheDocument();
+    expect(screen.getByText('careers.example.com')).toBeInTheDocument();
+    expect(screen.getByText(/최신일/)).toBeInTheDocument();
+    expect(screen.queryByText(/마지막 확인/)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '달력' }));
+    await user.click(
+      await screen.findByRole('button', { name: '캘린더테크 신입 플랫폼 엔지니어 상세 보기' }),
+    );
+    expect(screen.getByRole('heading', { name: '캘린더테크' })).toBeInTheDocument();
+    expect(
+      calls.some((call) => call.url.includes('deadlineFrom=') && call.url.includes('deadlineTo=')),
+    ).toBe(true);
   });
 
   it('posts a sanitized comment through the solution flow', async () => {

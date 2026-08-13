@@ -521,7 +521,10 @@ async function solutionList(db: D1Database, userId: string, search: URLSearchPar
 }
 
 async function jobList(db: D1Database, userId: string, url: URL) {
-  const clauses = ["j.status IN ('ACTIVE', 'DEADLINE_UNKNOWN')"];
+  const clauses = [
+    "j.status IN ('ACTIVE', 'DEADLINE_UNKNOWN')",
+    "j.career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')",
+  ];
   const values: unknown[] = [userId];
   const companySize = url.searchParams.get('companySize');
   const category = url.searchParams.get('category');
@@ -533,16 +536,50 @@ async function jobList(db: D1Database, userId: string, url: URL) {
     clauses.push('j.category = ?');
     values.push(category);
   }
+  const deadlineFrom = url.searchParams.get('deadlineFrom');
+  const deadlineTo = url.searchParams.get('deadlineTo');
+  const deadlineFromTime = deadlineFrom ? Date.parse(deadlineFrom) : undefined;
+  const deadlineToTime = deadlineTo ? Date.parse(deadlineTo) : undefined;
+  if (
+    (deadlineFromTime !== undefined && Number.isNaN(deadlineFromTime)) ||
+    (deadlineToTime !== undefined && Number.isNaN(deadlineToTime)) ||
+    (deadlineFromTime !== undefined &&
+      deadlineToTime !== undefined &&
+      deadlineFromTime >= deadlineToTime)
+  ) {
+    throw new RouteError(400, '올바른 마감일 조회 범위가 필요합니다.');
+  }
+  if (deadlineFrom) {
+    clauses.push('j.deadline_at >= ?');
+    values.push(new Date(deadlineFrom).toISOString());
+  }
+  if (deadlineTo) {
+    clauses.push('j.deadline_at < ?');
+    values.push(new Date(deadlineTo).toISOString());
+  }
   const order =
     url.searchParams.get('sort') === 'deadline'
       ? 'j.deadline_at ASC'
       : url.searchParams.get('sort') === 'company'
         ? 'j.company_name ASC'
         : 'j.created_at DESC';
+  const indexName =
+    url.searchParams.get('sort') === 'deadline'
+      ? 'idx_jobs_deadline_status'
+      : url.searchParams.get('sort') === 'company'
+        ? 'idx_jobs_company_status'
+        : category
+          ? 'idx_jobs_category_created_status'
+          : companySize
+            ? 'idx_jobs_size_created_status'
+            : 'idx_jobs_created_status';
   const rows = await all<Record<string, unknown>>(
     db,
-    `SELECT j.*, sj.status AS savedStatus, sj.memo AS savedMemo
-       FROM jobs j
+    `SELECT j.id, j.title, j.category, j.region, j.remote, j.tech_stack,
+            j.deadline_at, j.rolling, j.summary, j.source_url, j.company_name,
+            j.company_size, j.source_name, j.last_verified_at,
+            sj.status AS savedStatus, sj.memo AS savedMemo
+       FROM jobs j INDEXED BY ${indexName}
        LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ?
       WHERE ${clauses.join(' AND ')}
       ORDER BY ${order} LIMIT 100`,
@@ -563,6 +600,18 @@ async function jobList(db: D1Database, userId: string, url: URL) {
     source: { name: row.source_name, lastSuccessAt: row.last_verified_at },
     savedBy: row.savedStatus ? [{ status: row.savedStatus, memo: row.savedMemo || '' }] : [],
   }));
+}
+
+async function jobCategories(db: D1Database) {
+  const rows = await all<{ category: string }>(
+    db,
+    `SELECT DISTINCT category
+       FROM jobs INDEXED BY idx_jobs_category_created_status
+      WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
+        AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
+      ORDER BY category LIMIT 100`,
+  );
+  return rows.map((row) => row.category);
 }
 
 async function learningList(db: D1Database, userId: string) {
@@ -679,7 +728,16 @@ async function jobImport(db: D1Database, user: UserRow, input: unknown, commit: 
       !cleanText(item.companyName) ||
       !cleanText(item.title) ||
       !cleanText(item.category);
-    const outcome = invalid ? 'REJECT' : careerScope === 'CAREER_ONLY' ? 'REJECT' : 'CREATE';
+    const needsReview =
+      cleanText(item.companySize, 'UNCLASSIFIED') === 'UNCLASSIFIED' ||
+      cleanText(item.status) === 'NEEDS_REVIEW';
+    const outcome = invalid
+      ? 'REJECT'
+      : careerScope === 'CAREER_ONLY'
+        ? 'REJECT'
+        : needsReview
+          ? 'REVIEW'
+          : 'CREATE';
     return {
       index,
       outcome,
@@ -687,7 +745,9 @@ async function jobImport(db: D1Database, user: UserRow, input: unknown, commit: 
         ? '필수 필드 누락'
         : careerScope === 'CAREER_ONLY'
           ? '경력직 전용 공고'
-          : '반영 가능',
+          : needsReview
+            ? '회사 규모 또는 공고 분류 검토 필요'
+            : '반영 가능',
       item,
     };
   });
@@ -697,11 +757,11 @@ async function jobImport(db: D1Database, user: UserRow, input: unknown, commit: 
     update: 0,
     duplicate: 0,
     rejected: analyzed.filter((row) => row.outcome === 'REJECT').length,
-    review: 0,
+    review: analyzed.filter((row) => row.outcome === 'REVIEW').length,
   };
   if (!commit) return { valid: true, counts, rows: analyzed };
   const timestamp = nowIso();
-  for (const row of analyzed.filter((value) => value.outcome === 'CREATE')) {
+  for (const row of analyzed.filter((value) => value.outcome !== 'REJECT')) {
     const item = row.item;
     const sourceUrl = new URL(cleanText(item.sourceUrl));
     sourceUrl.hash = '';
@@ -709,31 +769,43 @@ async function jobImport(db: D1Database, user: UserRow, input: unknown, commit: 
     await run(
       db,
       `INSERT INTO jobs
-         (id, company_name, company_size, source_name, source_url, title, category, region,
-          remote, tech_stack, deadline_at, rolling, summary, status, last_verified_at,
-          created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         (id, company_name, company_size, company_size_evidence, source_name, source_posting_id,
+          source_url, title, category, career_scope, career_evidence, employment_type, region,
+          remote, tech_stack, deadline_at, rolling, summary, status, collected_at,
+          last_verified_at, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(source_url) DO UPDATE SET
          company_name = excluded.company_name, company_size = excluded.company_size,
-         title = excluded.title, category = excluded.category, region = excluded.region,
+         company_size_evidence = excluded.company_size_evidence,
+         source_name = excluded.source_name, source_posting_id = excluded.source_posting_id,
+         title = excluded.title, category = excluded.category,
+         career_scope = excluded.career_scope, career_evidence = excluded.career_evidence,
+         employment_type = excluded.employment_type, region = excluded.region,
          remote = excluded.remote, tech_stack = excluded.tech_stack,
          deadline_at = excluded.deadline_at, rolling = excluded.rolling,
          summary = excluded.summary, status = excluded.status,
-         last_verified_at = excluded.last_verified_at, updated_at = excluded.updated_at`,
+         collected_at = excluded.collected_at, last_verified_at = excluded.last_verified_at,
+         updated_at = excluded.updated_at`,
       id,
       cleanText(item.companyName),
       cleanText(item.companySize, 'UNCLASSIFIED'),
+      cleanText(item.companySizeEvidence) || null,
       cleanText(item.sourceName, '관리자 import'),
+      cleanText(item.sourceId) || null,
       sourceUrl.toString(),
       cleanText(item.title),
       cleanText(item.category),
+      cleanText(item.careerScope, 'NEW_GRAD_ELIGIBLE'),
+      cleanText(item.careerEvidence),
+      cleanText(item.employmentType, 'FULL_TIME'),
       cleanText(item.region, '미정'),
       bool(item.remote) ? 1 : 0,
       JSON.stringify(Array.isArray(item.techStack) ? item.techStack.map(String) : []),
       typeof item.deadlineAt === 'string' ? item.deadlineAt : null,
       bool(item.rolling) ? 1 : 0,
       cleanText(item.summary),
-      cleanText(item.status, 'ACTIVE'),
+      row.outcome === 'REVIEW' ? 'NEEDS_REVIEW' : cleanText(item.status, 'ACTIVE'),
+      cleanText(item.collectedAt, timestamp),
       cleanText(item.lastVerifiedAt, timestamp),
       timestamp,
       timestamp,
@@ -1656,6 +1728,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     };
   }
 
+  if (method === 'GET' && path === '/jobs/categories') return jobCategories(db);
   if (method === 'GET' && path === '/jobs') return jobList(db, user.id, url);
   if (method === 'POST' && path === '/jobs/saved') {
     const body = await readJson(request);

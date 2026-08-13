@@ -139,8 +139,19 @@ export class JobsService {
       tech?: string;
       sort?: string;
       saved?: boolean;
+      deadlineFrom?: string;
+      deadlineTo?: string;
     },
   ) {
+    const deadlineFrom = filters.deadlineFrom ? new Date(filters.deadlineFrom) : undefined;
+    const deadlineTo = filters.deadlineTo ? new Date(filters.deadlineTo) : undefined;
+    if (
+      (deadlineFrom && Number.isNaN(deadlineFrom.getTime())) ||
+      (deadlineTo && Number.isNaN(deadlineTo.getTime())) ||
+      (deadlineFrom && deadlineTo && deadlineFrom >= deadlineTo)
+    ) {
+      throw new BadRequestException('올바른 마감일 조회 범위가 필요합니다.');
+    }
     const orderBy =
       filters.sort === 'deadline'
         ? { deadlineAt: 'asc' as const }
@@ -156,11 +167,46 @@ export class JobsService {
         region: filters.region ? { contains: filters.region, mode: 'insensitive' } : undefined,
         techStack: filters.tech ? { has: filters.tech } : undefined,
         savedBy: filters.saved ? { some: { userId } } : undefined,
+        deadlineAt:
+          deadlineFrom || deadlineTo
+            ? {
+                ...(deadlineFrom ? { gte: deadlineFrom } : {}),
+                ...(deadlineTo ? { lt: deadlineTo } : {}),
+              }
+            : undefined,
       },
-      include: { company: true, source: true, savedBy: { where: { userId } } },
+      select: {
+        id: true,
+        title: true,
+        category: true,
+        region: true,
+        remote: true,
+        techStack: true,
+        deadlineAt: true,
+        rolling: true,
+        summary: true,
+        sourceUrl: true,
+        company: { select: { name: true, size: true } },
+        source: { select: { name: true, lastSuccessAt: true } },
+        savedBy: { where: { userId }, select: { status: true, memo: true } },
+      },
       orderBy,
       take: 100,
     });
+  }
+
+  async categories() {
+    const rows = await this.prisma.jobPosting.findMany({
+      where: {
+        status: { in: ['ACTIVE', 'DEADLINE_UNKNOWN'] },
+        careerScope: { in: ['NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE'] },
+      },
+      distinct: ['category'],
+      select: { category: true },
+      orderBy: { category: 'asc' },
+      take: 100,
+    });
+    return rows.map((row) => row.category);
   }
 
   save(userId: string, jobId: string, status: ApplicationStatus, memo: string) {

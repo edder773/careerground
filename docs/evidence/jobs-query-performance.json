@@ -1,0 +1,30 @@
+{
+  "capturedAt": "2026-08-13T00:00:00+09:00",
+  "runtime": "Node.js 26.7.0 node:sqlite in-memory",
+  "dataset": {
+    "kind": "synthetic",
+    "rows": 50000,
+    "activeOrDeadlineUnknownRows": 20000,
+    "resultLimit": 100
+  },
+  "command": "node scripts/performance/benchmark-jobs-query.mjs baseline|optimized",
+  "iterations": 100,
+  "baseline": {
+    "medianMs": 20.153,
+    "p95Ms": 21.329,
+    "plan": [
+      "SCAN j",
+      "SEARCH sj USING INDEX idx_saved_jobs_user_job (user_id=? AND job_id=?) LEFT-JOIN",
+      "USE TEMP B-TREE FOR ORDER BY"
+    ]
+  },
+  "optimized": {
+    "medianMs": 0.137,
+    "p95Ms": 0.196,
+    "plan": [
+      "SCAN j USING INDEX idx_jobs_created_status",
+      "SEARCH sj USING INDEX idx_saved_jobs_user_job (user_id=? AND job_id=?) LEFT-JOIN"
+    ]
+  },
+  "scope": "Synthetic local query comparison only; this does not represent production network latency."
+}

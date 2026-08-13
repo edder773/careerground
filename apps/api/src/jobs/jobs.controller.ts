@@ -22,6 +22,11 @@ type UploadFile = { originalname: string; buffer: Buffer; size: number; mimetype
 export class JobsController {
   constructor(private readonly jobs: JobsService) {}
 
+  @Get('categories')
+  categories() {
+    return this.jobs.categories();
+  }
+
   @Get()
   list(@CurrentUser() user: AuthUser, @Query() query: Record<string, string | undefined>) {
     return this.jobs.list(user.id, {
@@ -31,6 +36,8 @@ export class JobsController {
       tech: query.tech,
       sort: query.sort,
       saved: query.saved === 'true',
+      deadlineFrom: query.deadlineFrom,
+      deadlineTo: query.deadlineTo,
     });
   }
 

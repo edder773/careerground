@@ -438,7 +438,9 @@ model JobPosting {
 
   @@unique([sourceId, sourcePostingId])
   @@index([status, deadlineAt])
+  @@index([status, createdAt])
   @@index([category, createdAt])
+  @@index([status, category, createdAt])
   @@index([companyId, title])
 }
 

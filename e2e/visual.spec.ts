@@ -43,6 +43,7 @@ test('captures responsive home screenshots and has no serious accessibility viol
 test('captures core domain screens', async ({ page }) => {
   await mkdir('test-results/visual', { recursive: true });
   await login(page, 'visual@careerground.local');
+  await page.setViewportSize({ width: 1440, height: 900 });
   const screens = [
     { href: '/coding', heading: '코딩테스트', name: 'coding' },
     { href: '/jobs', heading: '신입 IT 채용공고', name: 'jobs' },
@@ -65,14 +66,34 @@ test('captures core domain screens', async ({ page }) => {
         '이번 주 준비 기록',
       );
     }
+    if (screen.name === 'jobs') {
+      await expect(page.locator('.job-card').first()).toBeVisible();
+    }
     await page.screenshot({
       path: `test-results/visual/${screen.name}-desktop.png`,
       fullPage: true,
     });
+    if (screen.name === 'jobs') {
+      await page.getByRole('button', { name: '달력' }).click();
+      await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
+      await expect(page.locator('.calendar-job').first()).toBeVisible();
+      await page.screenshot({
+        path: 'test-results/visual/jobs-calendar-desktop-1440.png',
+        fullPage: true,
+      });
+    }
   }
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto('/notes');
   await expect(page.getByRole('heading', { name: '개인 노트' })).toBeVisible();
   await expect(page.getByRole('textbox', { name: '노트 제목' })).toHaveValue('이번 주 준비 기록');
   await page.screenshot({ path: 'test-results/visual/notes-mobile-375.png', fullPage: false });
+
+  await page.goto('/jobs');
+  await page.getByRole('button', { name: '달력' }).click();
+  await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
+  await page.screenshot({
+    path: 'test-results/visual/jobs-calendar-mobile-375.png',
+    fullPage: false,
+  });
 });
