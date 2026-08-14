@@ -3,8 +3,8 @@ title: 대용량 목록·중복 쓰기·삭제 복구를 함께 안정화한 후
 date: 2026-08-14
 tags: [d1, pagination, idempotency, recovery, accessibility, observability]
 generatedByAI: false
-pr: pending
-commit: pending
+pr: 20
+commit: c5d1aee29f52cadb18d3b45742ea1317d6a644f2
 evidence: docs/evidence/performance-pagination-2026-08-14.json
 ---
 
