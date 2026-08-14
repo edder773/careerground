@@ -70,6 +70,12 @@ export const jobImportSchema = z.object({
   version: z.literal('1.0'),
   collectedAt: z.string().datetime({ offset: true }),
   sourceCount: z.number().int().min(1),
+  snapshot: z
+    .object({
+      mode: z.literal('FULL'),
+      sources: z.array(z.string().trim().min(1).max(80)).min(1).max(200),
+    })
+    .optional(),
   items: z.array(jobImportItemSchema).min(1).max(5_000),
 });
 

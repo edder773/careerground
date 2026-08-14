@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
+  snapshotPathTemplate: '{testDir}/snapshots/{arg}-{projectName}{ext}',
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
@@ -17,7 +18,15 @@ export default defineConfig({
     locale: 'ko-KR',
     timezoneId: 'Asia/Seoul',
   },
-  expect: { timeout: 10_000 },
+  expect: {
+    timeout: 10_000,
+    toHaveScreenshot: {
+      animations: 'disabled',
+      caret: 'hide',
+      maxDiffPixelRatio: 0.03,
+      threshold: 0.3,
+    },
+  },
   timeout: 45_000,
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
@@ -31,7 +40,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'pnpm tsx deployment/sites/local-d1-server.ts',
+      command: 'node --import tsx deployment/sites/local-d1-server.ts',
       url: 'http://127.0.0.1:4000/api/v1/health/ready',
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,

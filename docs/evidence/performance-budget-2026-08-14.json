@@ -1,0 +1,42 @@
+{
+  "scope": "synthetic local D1 API budget gate",
+  "checkedAt": "2026-08-14T12:27:00+09:00",
+  "status": "pass",
+  "metrics": {
+    "jobsCursor": {
+      "p50Ms": 8.84,
+      "p95Ms": 9.5,
+      "dbQueryCount": 6,
+      "responseBytes": 26092
+    },
+    "codingProblemsCursor": {
+      "p50Ms": 1,
+      "p95Ms": 1.05,
+      "dbQueryCount": 6,
+      "responseBytes": 13166
+    },
+    "solutionsCursor": {
+      "p50Ms": 6.24,
+      "p95Ms": 6.46,
+      "dbQueryCount": 6,
+      "responseBytes": 4979
+    },
+    "notifications": {
+      "p50Ms": 1.28,
+      "p95Ms": 1.39,
+      "dbQueryCount": 5,
+      "responseBytes": 18552
+    },
+    "search": {
+      "p50Ms": 0.85,
+      "p95Ms": 0.99,
+      "dbQueryCount": 5,
+      "responseBytes": 302
+    }
+  },
+  "failures": [],
+  "limitations": [
+    "Local synthetic timing is a regression gate, not production network latency.",
+    "Peak RSS includes fixture generation and the in-process SQLite benchmark."
+  ]
+}

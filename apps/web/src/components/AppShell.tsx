@@ -24,9 +24,11 @@ import {
 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useQuery } from '@tanstack/react-query';
-import { brand } from '@careerground/config';
+import { brand, productLinks } from '@careerground/config';
 import { useAuth } from '../auth';
 import { api } from '../lib/api';
+import { ApiStatusRegion } from './ApiStatusRegion';
+import '../styles/shell.css';
 
 const navigation = [
   { to: '/', label: '홈', icon: Home },
@@ -74,6 +76,14 @@ export function AppShell({
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [activeResult, setActiveResult] = useState(0);
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem('cg-recent-searches') || '[]') as unknown;
+      return Array.isArray(parsed) ? parsed.map(String).slice(0, 5) : [];
+    } catch {
+      return [];
+    }
+  });
   const unread = useQuery({
     queryKey: ['notification-unread-count'],
     queryFn: () => api<{ count: number }>('/notifications/unread-count'),
@@ -115,6 +125,16 @@ export function AppShell({
   );
   useEffect(() => setActiveResult(0), [debouncedQuery, results.data]);
   const openResult = (item: SearchItem) => {
+    const term = query.trim();
+    if (term) {
+      const next = [term, ...recentSearches.filter((value) => value !== term)].slice(0, 5);
+      setRecentSearches(next);
+      try {
+        localStorage.setItem('cg-recent-searches', JSON.stringify(next));
+      } catch {
+        // Recent search history is an optional device preference.
+      }
+    }
     setSearchOpen(false);
     setQuery('');
     navigate(item.href);
@@ -176,7 +196,7 @@ export function AppShell({
       </nav>
       <a
         className="certification-link"
-        href="https://baeumzip.site"
+        href={productLinks.certificationLearning}
         target="_blank"
         rel="noreferrer"
         aria-label="배움집 자격증 학습 새 창에서 열기"
@@ -247,7 +267,7 @@ export function AppShell({
             <div className="breadcrumb">
               <span>{brand.shortName}</span>
               <ChevronRight size={14} />
-              <strong>{titles[location.pathname] || 'CareerGround'}</strong>
+              <strong>{titles[location.pathname] || brand.name}</strong>
             </div>
           </div>
           <div className="toolbar-actions">
@@ -261,22 +281,24 @@ export function AppShell({
               <span>검색</span>
               <kbd>⌘ K</kbd>
             </button>
-            <div className="view-toggle" aria-label="보기 방식">
-              <button
-                className={viewMode === 'grid' ? 'active' : ''}
-                onClick={() => onViewMode('grid')}
-                aria-label="그리드 보기"
-              >
-                <Grid2X2 />
-              </button>
-              <button
-                className={viewMode === 'list' ? 'active' : ''}
-                onClick={() => onViewMode('list')}
-                aria-label="목록 보기"
-              >
-                <List />
-              </button>
-            </div>
+            {location.pathname === '/' && (
+              <div className="view-toggle" aria-label="홈 폴더 보기 방식">
+                <button
+                  className={viewMode === 'grid' ? 'active' : ''}
+                  onClick={() => onViewMode('grid')}
+                  aria-label="그리드 보기"
+                >
+                  <Grid2X2 />
+                </button>
+                <button
+                  className={viewMode === 'list' ? 'active' : ''}
+                  onClick={() => onViewMode('list')}
+                  aria-label="목록 보기"
+                >
+                  <List />
+                </button>
+              </div>
+            )}
           </div>
         </header>
         <div className="page-content">{children}</div>
@@ -329,7 +351,17 @@ export function AppShell({
               aria-label="검색 결과"
               role={flatResults.length > 0 ? 'listbox' : 'status'}
             >
-              {query.length < 2 && <p>두 글자 이상 입력하세요.</p>}
+              {query.length < 2 && recentSearches.length === 0 && <p>두 글자 이상 입력하세요.</p>}
+              {query.length < 2 && recentSearches.length > 0 && (
+                <section className="recent-searches" aria-label="최근 검색어">
+                  <h3>최근 검색</h3>
+                  {recentSearches.map((term) => (
+                    <button key={term} type="button" onClick={() => setQuery(term)}>
+                      {term}
+                    </button>
+                  ))}
+                </section>
+              )}
               {results.isFetching && <p>검색 중…</p>}
               {results.isError && <p className="error-text">검색 결과를 불러오지 못했습니다.</p>}
               {results.data && (
@@ -367,6 +399,7 @@ export function AppShell({
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
+      <ApiStatusRegion />
     </div>
   );
 }

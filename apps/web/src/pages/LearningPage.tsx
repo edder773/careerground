@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Dialog from '@radix-ui/react-dialog';
 import {
   BookOpen,
@@ -15,8 +15,18 @@ import {
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
-import { api } from '../lib/api';
+import { useSearchParams } from 'react-router';
+import { api, json } from '../lib/api';
+import '../styles/learning.css';
 
+type UnitSummary = {
+  id: string;
+  title: string;
+  summaryPreview: string;
+  flashcardCount: number;
+  questionCount: number;
+  progress: Array<{ completed: boolean; nextReviewAt: string | null }>;
+};
 type Unit = {
   id: string;
   title: string;
@@ -24,10 +34,20 @@ type Unit = {
   concepts: string[];
   visuals?: Array<{ src: string; alt: string; caption: string; page: number }>;
   flashcards: Array<{ id: string; front: string; back: string }>;
-  questions: Array<{ id: string; prompt: string; answer: string; choices?: string[] }>;
-  progress: Array<{ completed: boolean; understanding: number; nextReviewAt: string }>;
+  questions: Array<{
+    id: string;
+    prompt: string;
+    attempts: Array<{ id: string; response: string; correct: boolean; attemptedAt: string }>;
+  }>;
+  progress: Array<{ completed: boolean; nextReviewAt: string | null }>;
 };
-type Source = { id: string; title: string; subject: string; category: string; units: Unit[] };
+type Source = {
+  id: string;
+  title: string;
+  subject: string;
+  category: string;
+  units: UnitSummary[];
+};
 
 function summaryPreview(markdown: string) {
   const paragraphs = markdown
@@ -44,14 +64,19 @@ function summaryPreview(markdown: string) {
 }
 
 function LearningUnitModal({
-  unit,
+  unitId,
   index,
   onClose,
 }: {
-  unit: Unit;
+  unitId: string;
   index: number;
   onClose: () => void;
 }) {
+  const unit = useQuery({
+    queryKey: ['learning-unit', unitId],
+    queryFn: () => api<Unit>(`/learning/units/${unitId}`),
+    staleTime: 5 * 60_000,
+  });
   return (
     <Dialog.Root
       open
@@ -66,7 +91,7 @@ function LearningUnitModal({
             <div>
               <span>MODULE {String(index + 1).padStart(2, '0')}</span>
               <Dialog.Title asChild>
-                <h2>{unit.title}</h2>
+                <h2>{unit.data?.title || '학습 단원'}</h2>
               </Dialog.Title>
             </div>
             <Dialog.Close type="button" aria-label="닫기">
@@ -74,81 +99,82 @@ function LearningUnitModal({
             </Dialog.Close>
           </header>
           <div className="learning-modal-content">
-            <div className="learning-concept-map" aria-label="핵심 개념">
-              {unit.concepts.map((concept) => (
-                <span key={concept}>{concept}</span>
-              ))}
-            </div>
-            {(unit.visuals?.length || 0) > 0 && (
-              <section className="learning-visual-section" aria-label="PDF 시각 자료">
-                <div className="learning-section-title">
-                  <ImageIcon />
-                  <div>
-                    <span>원본 자료</span>
-                    <h3>그림·표·코드로 이해하기</h3>
-                  </div>
-                </div>
-                <div className="learning-visual-grid">
-                  {unit.visuals?.map((visual) => (
-                    <figure key={visual.src}>
-                      <a href={visual.src} target="_blank" rel="noreferrer">
-                        <img src={visual.src} alt={visual.alt} loading="lazy" decoding="async" />
-                        <span>
-                          크게 보기 <ExternalLink />
-                        </span>
-                      </a>
-                      <figcaption>{visual.caption}</figcaption>
-                    </figure>
+            {unit.isLoading && <div className="loading-panel">학습 내용을 불러오는 중…</div>}
+            {unit.isError && <div className="error-panel">학습 내용을 불러오지 못했습니다.</div>}
+            {unit.data && (
+              <>
+                <div className="learning-concept-map" aria-label="핵심 개념">
+                  {unit.data.concepts.map((concept) => (
+                    <span key={concept}>{concept}</span>
                   ))}
                 </div>
-              </section>
+                {(unit.data.visuals?.length || 0) > 0 && (
+                  <section className="learning-visual-section" aria-label="PDF 시각 자료">
+                    <div className="learning-section-title">
+                      <ImageIcon />
+                      <div>
+                        <span>원본 자료</span>
+                        <h3>그림·표·코드로 이해하기</h3>
+                      </div>
+                    </div>
+                    <div className="learning-visual-grid">
+                      {unit.data.visuals?.map((visual) => (
+                        <figure key={visual.src}>
+                          <a href={visual.src} target="_blank" rel="noreferrer">
+                            <img
+                              src={visual.src}
+                              alt={visual.alt}
+                              loading="lazy"
+                              decoding="async"
+                            />
+                            <span>
+                              크게 보기 <ExternalLink />
+                            </span>
+                          </a>
+                          <figcaption>{visual.caption}</figcaption>
+                        </figure>
+                      ))}
+                    </div>
+                  </section>
+                )}
+                <article className="learning-markdown">
+                  <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
+                    {unit.data.summary}
+                  </ReactMarkdown>
+                </article>
+                <section className="learning-recall-section">
+                  <div className="learning-section-title">
+                    <Sparkles />
+                    <div>
+                      <span>기억 꺼내기</span>
+                      <h3>플래시카드</h3>
+                    </div>
+                  </div>
+                  <div className="learning-flashcards">
+                    {unit.data.flashcards.map((card) => (
+                      <details key={card.id}>
+                        <summary>{card.front}</summary>
+                        <p>{card.back}</p>
+                      </details>
+                    ))}
+                  </div>
+                </section>
+                <section className="learning-recall-section">
+                  <div className="learning-section-title">
+                    <MessageCircleQuestion />
+                    <div>
+                      <span>이해 확인</span>
+                      <h3>복습 문제</h3>
+                    </div>
+                  </div>
+                  <div className="learning-questions">
+                    {unit.data.questions.map((question) => (
+                      <LearningQuestion key={question.id} question={question} unitId={unitId} />
+                    ))}
+                  </div>
+                </section>
+              </>
             )}
-            <article className="learning-markdown">
-              <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{unit.summary}</ReactMarkdown>
-            </article>
-            <section className="learning-recall-section">
-              <div className="learning-section-title">
-                <Sparkles />
-                <div>
-                  <span>기억 꺼내기</span>
-                  <h3>플래시카드</h3>
-                </div>
-              </div>
-              <div className="learning-flashcards">
-                {unit.flashcards.map((card) => (
-                  <details key={card.id}>
-                    <summary>{card.front}</summary>
-                    <p>{card.back}</p>
-                  </details>
-                ))}
-              </div>
-            </section>
-            <section className="learning-recall-section">
-              <div className="learning-section-title">
-                <MessageCircleQuestion />
-                <div>
-                  <span>이해 확인</span>
-                  <h3>복습 문제</h3>
-                </div>
-              </div>
-              <div className="learning-questions">
-                {unit.questions.map((question) => (
-                  <details key={question.id}>
-                    <summary>{question.prompt}</summary>
-                    {question.choices && question.choices.length > 0 && (
-                      <ul>
-                        {question.choices.map((choice) => (
-                          <li key={choice}>{choice}</li>
-                        ))}
-                      </ul>
-                    )}
-                    <p>
-                      <strong>정답</strong> {question.answer}
-                    </p>
-                  </details>
-                ))}
-              </div>
-            </section>
           </div>
         </Dialog.Content>
       </Dialog.Portal>
@@ -156,8 +182,66 @@ function LearningUnitModal({
   );
 }
 
+function LearningQuestion({
+  question,
+  unitId,
+}: {
+  question: Unit['questions'][number];
+  unitId: string;
+}) {
+  const client = useQueryClient();
+  const [response, setResponse] = useState('');
+  const answer = useMutation({
+    mutationFn: () =>
+      api<{ correct: boolean; answer: string }>(`/learning/questions/${question.id}/answer`, {
+        method: 'POST',
+        body: json({ response }),
+      }),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['learning-unit', unitId] }),
+  });
+  return (
+    <form
+      className="learning-question-form"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (response.trim()) answer.mutate();
+      }}
+    >
+      <label htmlFor={`question-${question.id}`}>{question.prompt}</label>
+      <div>
+        <input
+          id={`question-${question.id}`}
+          value={response}
+          onChange={(event) => setResponse(event.target.value)}
+          aria-invalid={answer.data ? !answer.data.correct : undefined}
+          aria-describedby={answer.data ? `question-result-${question.id}` : undefined}
+        />
+        <button type="submit" disabled={!response.trim() || answer.isPending}>
+          {answer.isPending ? '채점 중…' : '채점하기'}
+        </button>
+      </div>
+      {answer.data && (
+        <p
+          id={`question-result-${question.id}`}
+          role="status"
+          className={answer.data.correct ? 'success-text' : 'error-text'}
+        >
+          {answer.data.correct ? '정답입니다.' : `다시 확인해보세요. 정답: ${answer.data.answer}`}
+        </p>
+      )}
+      {question.attempts.length > 0 && (
+        <small>
+          이전 시도 {question.attempts.length}회 · 오답{' '}
+          {question.attempts.filter((attempt) => !attempt.correct).length}회
+        </small>
+      )}
+    </form>
+  );
+}
+
 export function LearningPage() {
-  const [selected, setSelected] = useState<{ unit: Unit; index: number }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selected, setSelected] = useState<{ unitId: string; index: number }>();
   const [expandedSources, setExpandedSources] = useState<Set<string>>(new Set());
   const initializedSources = useRef(false);
   const learning = useQuery({
@@ -178,6 +262,18 @@ export function LearningPage() {
     initializedSources.current = true;
     setExpandedSources(new Set([learning.data[0]!.id]));
   }, [learning.data]);
+  useEffect(() => {
+    const requested = searchParams.get('unit');
+    if (!requested || !learning.data) return;
+    for (const source of learning.data) {
+      const index = source.units.findIndex((unit) => unit.id === requested);
+      if (index >= 0) {
+        setExpandedSources((current) => new Set(current).add(source.id));
+        setSelected({ unitId: requested, index });
+        return;
+      }
+    }
+  }, [learning.data, searchParams]);
 
   const toggleSource = (sourceId: string) => {
     setExpandedSources((current) => {
@@ -241,7 +337,12 @@ export function LearningPage() {
                     <button
                       type="button"
                       className="learning-card-trigger"
-                      onClick={() => setSelected({ unit, index })}
+                      onClick={() => {
+                        setSelected({ unitId: unit.id, index });
+                        const next = new URLSearchParams(searchParams);
+                        next.set('unit', unit.id);
+                        setSearchParams(next, { replace: true });
+                      }}
                       aria-label={`${unit.title} 내용 보기`}
                     />
                     <div className="learning-card-content">
@@ -254,15 +355,10 @@ export function LearningPage() {
                         )}
                       </div>
                       <h3>{unit.title}</h3>
-                      <p>{summaryPreview(unit.summary)}</p>
-                      <div className="tag-row">
-                        {unit.concepts.slice(0, 5).map((concept) => (
-                          <span key={concept}>{concept}</span>
-                        ))}
-                      </div>
+                      <p>{summaryPreview(unit.summaryPreview)}</p>
                       <div className="unit-counts">
-                        <span>플래시카드 {unit.flashcards.length}</span>
-                        <span>복습 문제 {unit.questions.length}</span>
+                        <span>플래시카드 {unit.flashcardCount}</span>
+                        <span>복습 문제 {unit.questionCount}</span>
                         <span className="learning-card-open">카드를 눌러 바로 보기</span>
                       </div>
                     </div>
@@ -275,9 +371,14 @@ export function LearningPage() {
       </div>
       {selected && (
         <LearningUnitModal
-          unit={selected.unit}
+          unitId={selected.unitId}
           index={selected.index}
-          onClose={() => setSelected(undefined)}
+          onClose={() => {
+            setSelected(undefined);
+            const next = new URLSearchParams(searchParams);
+            next.delete('unit');
+            setSearchParams(next, { replace: true });
+          }}
         />
       )}
     </div>

@@ -7,6 +7,44 @@ describe('import contracts', () => {
     expect(parsed.success).toBe(false);
   });
 
+  it('accepts only explicit authoritative full snapshot declarations', () => {
+    const item = {
+      sourceName: 'example',
+      sourceUrl: 'https://jobs.example.com/1',
+      companyName: 'Example',
+      title: '신입 개발자',
+      category: '백엔드',
+      careerScope: 'NEW_GRAD_ONLY',
+      careerEvidence: '신입',
+      companySize: 'SMALL',
+      employmentType: 'FULL_TIME',
+      region: '서울',
+      remote: false,
+      techStack: [],
+      rolling: true,
+      collectedAt: '2026-08-14T00:00:00.000Z',
+      lastVerifiedAt: '2026-08-14T00:00:00.000Z',
+      summary: '공고',
+      status: 'ACTIVE',
+    };
+    const base = {
+      version: '1.0',
+      collectedAt: '2026-08-14T00:00:00.000Z',
+      sourceCount: 1,
+      items: [item],
+    };
+    expect(
+      jobImportSchema.parse({
+        ...base,
+        snapshot: { mode: 'FULL', sources: ['example'] },
+      }).snapshot,
+    ).toEqual({ mode: 'FULL', sources: ['example'] });
+    expect(
+      jobImportSchema.safeParse({ ...base, snapshot: { mode: 'DELTA', sources: ['example'] } })
+        .success,
+    ).toBe(false);
+  });
+
   it('requires learning source evidence anchors and checksums', () => {
     const parsed = learningImportSchema.safeParse({
       version: '1.0',

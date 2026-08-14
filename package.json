@@ -34,10 +34,13 @@
     "docs:build": "pnpm --filter @careerground/docs build",
     "sites:build": "pnpm --filter @careerground/contracts build && pnpm --filter @careerground/web build:sites && node deployment/sites/build.mjs",
     "sites:typecheck": "tsc --noEmit --strict --skipLibCheck --target ES2022 --module NodeNext --moduleResolution NodeNext --types node --lib ES2022,DOM deployment/sites/d1.ts deployment/sites/d1-api.ts deployment/sites/worker.ts deployment/sites/local-d1.ts deployment/sites/local-d1-server.ts",
-    "evidence:collect": "tsx scripts/troubleshooting/collect-evidence.ts",
-    "troubleshoot:generate": "tsx scripts/troubleshooting/generate.ts",
-    "troubleshoot:validate": "tsx scripts/troubleshooting/validate.ts",
-    "evidence:optimize-images": "tsx scripts/troubleshooting/optimize-images.ts",
+    "evidence:collect": "node --import tsx scripts/troubleshooting/collect-evidence.ts",
+    "troubleshoot:generate": "node --import tsx scripts/troubleshooting/generate.ts",
+    "troubleshoot:validate": "node --import tsx scripts/troubleshooting/validate.ts",
+    "evidence:optimize-images": "node --import tsx scripts/troubleshooting/optimize-images.ts",
+    "learning:optimize-images": "node scripts/optimize-learning-images.mjs",
+    "performance:budget": "node scripts/performance/check-budgets.mjs",
+    "recovery:drill": "node --import tsx scripts/data-integrity/restore-drill.mjs",
     "prepare": "husky"
   },
   "lint-staged": {

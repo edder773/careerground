@@ -184,17 +184,3 @@ export class CodingController {
     return this.coding.rankings();
   }
 }
-
-@ApiTags('internal')
-@Controller('internal/daily-challenge')
-export class DailyChallengeInternalController {
-  constructor(private readonly coding: CodingService) {}
-
-  @Public()
-  @Post('ensure')
-  ensure(@Headers('x-internal-secret') secret?: string) {
-    if (!secret || secret !== process.env.INTERNAL_SERVICE_SECRET)
-      throw new BadRequestException('invalid internal secret');
-    return this.coding.ensureTodayChallenges();
-  }
-}

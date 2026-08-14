@@ -1,0 +1,33 @@
+name: Production SLO smoke
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-slo-smoke
+  cancel-in-progress: true
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check public D1 readiness and latency budget
+        shell: bash
+        run: |
+          result="$(curl --silent --show-error --fail --max-time 10 \
+            --write-out $'\n%{http_code} %{time_total}' \
+            https://careerground-workspace.edder773.chatgpt.site/api/v1/health/ready)"
+          body="$(printf '%s\n' "$result" | head -n 1)"
+          metrics="$(printf '%s\n' "$result" | tail -n 1)"
+          status="$(printf '%s' "$metrics" | cut -d' ' -f1)"
+          seconds="$(printf '%s' "$metrics" | cut -d' ' -f2)"
+          test "$status" = "200"
+          printf '%s' "$body" | jq -e '.status == "ok" and .database == "d1"'
+          awk -v actual="$seconds" 'BEGIN { if (actual > 2.5) exit 1 }'
+          printf 'health_status=%s latency_seconds=%s\n' "$status" "$seconds"

@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { JobImport } from '@careerground/contracts';
-import { analyzeJobImport, canonicalizeJobUrl, normalizeCompany } from './jobs-domain.js';
+import {
+  analyzeJobImport,
+  canonicalizeJobUrl,
+  normalizeCompany,
+  parseCsvBoolean,
+} from './jobs-domain.js';
 import { JobsService } from './jobs.service.js';
 
 const base: JobImport = {
@@ -45,6 +50,16 @@ describe('job import policy', () => {
   it('marks an identical import URL as an update', () => {
     const existing = new Set([canonicalizeJobUrl(base.items[0]!.sourceUrl)]);
     expect(analyzeJobImport(base, existing).counts.update).toBe(1);
+  });
+
+  it('parses common CSV boolean variants without truthy string coercion', () => {
+    for (const value of ['true', '1', 'yes', 'Y', 't', '예', '네']) {
+      expect(parseCsvBoolean(value, 'remote')).toBe(true);
+    }
+    for (const value of ['false', '0', 'no', 'N', 'f', '아니오', '아니요', '']) {
+      expect(parseCsvBoolean(value, 'remote')).toBe(false);
+    }
+    expect(() => parseCsvBoolean('sometimes', 'remote')).toThrow(/remote/);
   });
 
   it('returns the original batch when the same checksum is committed again', async () => {

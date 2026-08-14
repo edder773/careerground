@@ -28,6 +28,24 @@ node scripts/data-integrity/check-d1.mjs /secure-temporary-path/careerground-exp
 6. 증거에는 건수와 checksum만 남기고 이메일·노트·코드 원문은 남기지 않는다.
 7. 훈련 DB와 임시 export는 조직의 보존 정책에 따라 폐기한다.
 
+저장소의 D1 호환 스키마는 다음 명령으로 매 CI 및 배포 전에 격리 복구를 실제 수행한다.
+
+```bash
+pnpm recovery:drill
+```
+
+이 명령은 전체 migration/seed를 적용한 원본에 비식별 사용자·노트 revision을 추가한 뒤,
+Node SQLite backup API로 snapshot을 만들고 다시 별도 DB로 복원한다. 복원 전후 테이블 건수,
+민감 원문 대신 SHA-256, `integrity_check`, `foreign_key_check`를 비교하고 임시 파일은 즉시
+삭제한다. 2026-08-14 실행은 315 pages/1,290,240 bytes를 snapshot하고 1.58ms에 복원했으며,
+RPO mutation 0, FK 위반 0, 건수 차이 0으로 통과했다. 원본 결과는
+`docs/evidence/recovery-drill-2026-08-14.json`에 있다. 이 시간은 로컬 합성 측정이며 운영 RTO가
+아니다.
+
+현재 설치된 Sites connector는 운영 DB export/restore 작업을 노출하지 않는다. 따라서 운영
+개인 데이터를 우회 추출하지 않았으며, 관리면에서 export 기능이 제공될 때 위 절차의 1~7을
+운영 snapshot으로 재실행해야 한다. 이 플랫폼 제한을 해제되지 않은 운영 증거로 과장하지 않는다.
+
 ## 장애 시 의사결정
 
 - 앱 코드만 문제라면 이전 정상 Sites version을 재배포한다.

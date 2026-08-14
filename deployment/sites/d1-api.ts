@@ -441,6 +441,87 @@ async function ensureDeadlineNotifications(db: D1Database, user: UserRow) {
   if (statements.length) await db.batch(statements);
 }
 
+export async function runScheduledMaintenance(env: D1Env) {
+  const db = env.DB;
+  const ownerId = newId();
+  const startedAt = nowIso();
+  const leaseUntil = new Date(Date.now() + 4 * 60_000).toISOString();
+  const lease = await first<{ ownerId: string }>(
+    db,
+    `INSERT INTO scheduler_leases (name, owner_id, lease_until, updated_at)
+     VALUES ('notifications-and-expiry', ?, ?, ?)
+     ON CONFLICT(name) DO UPDATE SET
+       owner_id = excluded.owner_id, lease_until = excluded.lease_until,
+       updated_at = excluded.updated_at
+     WHERE scheduler_leases.lease_until <= excluded.updated_at
+     RETURNING owner_id AS ownerId`,
+    ownerId,
+    leaseUntil,
+    startedAt,
+  );
+  if (lease?.ownerId !== ownerId) return { acquired: false, expiredJobs: 0, notifications: 0 };
+  let notifications = 0;
+  try {
+    const expired = await run(
+      db,
+      `UPDATE jobs SET status = 'EXPIRED', updated_at = ?
+        WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND rolling = 0
+          AND deadline_at IS NOT NULL AND deadline_at < ?`,
+      startedAt,
+      startedAt,
+    );
+    const users = await all<UserRow>(db, `${userSelect} WHERE is_active = 1`);
+    for (const user of users) {
+      await ensureDeadlineNotifications(db, user);
+      if (!asBoolean(user.reviewNotifications)) continue;
+      const dueUnits = await all<{ unitId: string; title: string; nextReviewAt: string }>(
+        db,
+        `SELECT lp.unit_id AS unitId, u.title, lp.next_review_at AS nextReviewAt
+           FROM learning_progress lp JOIN learning_units u ON u.id = lp.unit_id
+          WHERE lp.user_id = ? AND lp.completed = 1 AND lp.mastered_at IS NULL
+            AND lp.next_review_at IS NOT NULL AND lp.next_review_at <= ?
+          ORDER BY lp.next_review_at LIMIT 50`,
+        user.id,
+        startedAt,
+      );
+      if (!dueUnits.length) continue;
+      const results = await db.batch(
+        dueUnits.map((unit) =>
+          db
+            .prepare(
+              `INSERT INTO notifications
+                 (id, user_id, type, title, message, href, dedupe_key, created_at)
+               VALUES (?, ?, 'LEARNING_REVIEW', '복습할 단원이 있습니다', ?, ?, ?, ?)
+               ON CONFLICT(user_id, dedupe_key) DO NOTHING`,
+            )
+            .bind(
+              newId(),
+              user.id,
+              unit.title,
+              `/learning?unit=${unit.unitId}`,
+              `learning-review:${unit.unitId}:${unit.nextReviewAt.slice(0, 10)}`,
+              startedAt,
+            ),
+        ),
+      );
+      notifications += results.reduce((sum, result) => sum + Number(result.meta?.changes || 0), 0);
+    }
+    return {
+      acquired: true,
+      expiredJobs: Number(expired.meta?.changes || 0),
+      notifications,
+      completedAt: nowIso(),
+    };
+  } finally {
+    await run(
+      db,
+      'DELETE FROM scheduler_leases WHERE name = ? AND owner_id = ?',
+      'notifications-and-expiry',
+      ownerId,
+    );
+  }
+}
+
 async function profile(db: D1Database, userId: string) {
   const row = await first<UserRow>(db, `${userSelect} WHERE id = ?`, userId);
   if (!row) throw new RouteError(404, '사용자를 찾을 수 없습니다.');
@@ -709,17 +790,22 @@ async function solutionList(db: D1Database, userId: string, search: URLSearchPar
   const rows = await all<SolutionRow>(
     db,
     `SELECT s.id, s.problem_id AS problemId, s.author_id AS authorId, s.title, s.language,
-            s.code, s.description, s.time_complexity AS timeComplexity,
-            s.space_complexity AS spaceComplexity, s.lessons, s.solved, s.visibility,
+            substr(s.description, 1, 240) AS descriptionPreview,
+            s.time_complexity AS timeComplexity, s.space_complexity AS spaceComplexity,
+            s.solved, s.visibility,
             s.current_rev AS currentRev, s.created_at AS createdAt, s.updated_at AS updatedAt,
             u.display_name AS authorDisplayName,
-            p.display_title AS problemTitle, p.level AS problemLevel
+            p.display_title AS problemTitle, p.level AS problemLevel,
+            (SELECT COUNT(*) FROM solution_reactions sr WHERE sr.solution_id = s.id) AS reactionCount,
+            EXISTS(SELECT 1 FROM solution_reactions sr WHERE sr.solution_id = s.id AND sr.user_id = ?) AS reactedByMe,
+            (SELECT COUNT(*) FROM solution_comments sc WHERE sc.solution_id = s.id) AS commentCount
        FROM solutions s
        JOIN users u ON u.id = s.author_id
        JOIN coding_problems p ON p.id = s.problem_id
       WHERE ${clauses.join(' AND ')}
       ORDER BY s.updated_at DESC, s.id DESC
       LIMIT ?`,
+    userId,
     ...values,
     limit + (paged ? 1 : 0),
   );
@@ -736,90 +822,24 @@ async function solutionList(db: D1Database, userId: string, search: URLSearchPar
         )?.count || 0,
       )
     : pageRows.length;
-  if (!pageRows.length)
-    return paged ? ({ items: [], nextCursor: null, total } satisfies CursorPage<never>) : [];
-  const placeholders = pageRows.map(() => '?').join(',');
-  const ids = pageRows.map((row) => row.id);
-  const [revisions, reactions, commentRows] = await Promise.all([
-    all<Record<string, unknown>>(
-      db,
-      `SELECT id, solution_id AS solutionId, revision, code, description, created_at AS createdAt
-         FROM solution_revisions
-        WHERE solution_id IN (${placeholders}) ORDER BY solution_id, revision DESC`,
-      ...ids,
-    ),
-    all<Record<string, unknown>>(
-      db,
-      `SELECT id, solution_id AS solutionId, user_id AS userId, created_at AS createdAt
-         FROM solution_reactions WHERE solution_id IN (${placeholders})`,
-      ...ids,
-    ),
-    all<Record<string, unknown>>(
-      db,
-      `SELECT c.id, c.solution_id AS solutionId, c.parent_id AS parentId, c.markdown,
-              c.deleted_at AS deletedAt, c.hidden_at AS hiddenAt, c.created_at AS createdAt,
-              u.id AS authorId, u.display_name AS authorDisplayName
-         FROM solution_comments c JOIN users u ON u.id = c.author_id
-        WHERE c.solution_id IN (${placeholders}) ORDER BY c.solution_id, c.created_at`,
-      ...ids,
-    ),
-  ]);
-  const group = (items: Record<string, unknown>[]) => {
-    const grouped = new Map<string, Record<string, unknown>[]>();
-    for (const item of items) {
-      const id = String(item.solutionId);
-      grouped.set(id, [...(grouped.get(id) || []), item]);
-    }
-    return grouped;
-  };
-  const revisionsBySolution = group(revisions);
-  const reactionsBySolution = group(reactions);
-  const commentsBySolution = group(commentRows);
-  const items = pageRows.map((row) => {
-    const comments = commentsBySolution.get(row.id) || [];
-    const mapComment = (comment: Record<string, unknown>) => {
-      const deleted = Boolean(comment.deletedAt);
-      const hidden = Boolean(comment.hiddenAt);
-      return {
-        id: comment.id,
-        markdown: deleted || hidden ? null : comment.markdown,
-        redacted: deleted ? ('DELETED' as const) : hidden ? ('HIDDEN' as const) : null,
-        deletedAt: comment.deletedAt,
-        hiddenAt: comment.hiddenAt,
-        createdAt: comment.createdAt,
-        author: { id: comment.authorId, displayName: comment.authorDisplayName },
-        replies: [] as unknown[],
-      };
-    };
-    const solutionReactions = reactionsBySolution.get(row.id) || [];
-    return {
-      id: row.id,
-      problemId: row.problemId,
-      title: row.title,
-      language: row.language,
-      code: row.code,
-      description: row.description,
-      timeComplexity: row.timeComplexity,
-      spaceComplexity: row.spaceComplexity,
-      lessons: row.lessons,
-      solved: asBoolean(row.solved),
-      visibility: row.visibility,
-      currentRev: row.currentRev,
-      canEdit: row.authorId === userId,
-      revisions: (revisionsBySolution.get(row.id) || []).slice(0, 10),
-      reactions: solutionReactions,
-      reactionCount: solutionReactions.length,
-      reactedByMe: solutionReactions.some((reaction) => reaction.userId === userId),
-      comments: comments
-        .filter((comment) => !comment.parentId)
-        .map((comment) => ({
-          ...mapComment(comment),
-          replies: comments.filter((reply) => reply.parentId === comment.id).map(mapComment),
-        })),
-      author: { id: row.authorId, displayName: row.authorDisplayName },
-      problem: { displayTitle: row.problemTitle, level: row.problemLevel },
-    };
-  });
+  const items = pageRows.map((row) => ({
+    id: row.id,
+    problemId: row.problemId,
+    title: row.title,
+    language: row.language,
+    descriptionPreview: Reflect.get(row, 'descriptionPreview'),
+    timeComplexity: row.timeComplexity,
+    spaceComplexity: row.spaceComplexity,
+    solved: asBoolean(row.solved),
+    visibility: row.visibility,
+    currentRev: row.currentRev,
+    canEdit: row.authorId === userId,
+    reactionCount: Number(Reflect.get(row, 'reactionCount') || 0),
+    reactedByMe: asBoolean(Reflect.get(row, 'reactedByMe')),
+    commentCount: Number(Reflect.get(row, 'commentCount') || 0),
+    author: { id: row.authorId, displayName: row.authorDisplayName },
+    problem: { displayTitle: row.problemTitle, level: row.problemLevel },
+  }));
   if (!paged) return items;
   const last = pageRows.at(-1);
   return {
@@ -827,6 +847,80 @@ async function solutionList(db: D1Database, userId: string, search: URLSearchPar
     nextCursor: hasMore && last ? encodeCursor({ updatedAt: last.updatedAt, id: last.id }) : null,
     total,
   } satisfies CursorPage<(typeof items)[number]>;
+}
+
+async function solutionDetail(db: D1Database, userId: string, solutionId: string) {
+  const row = await first<SolutionRow>(
+    db,
+    `SELECT s.id, s.problem_id AS problemId, s.author_id AS authorId, s.title, s.language,
+            s.code, s.description, s.time_complexity AS timeComplexity,
+            s.space_complexity AS spaceComplexity, s.lessons, s.solved, s.visibility,
+            s.current_rev AS currentRev, s.created_at AS createdAt, s.updated_at AS updatedAt,
+            u.display_name AS authorDisplayName,
+            p.display_title AS problemTitle, p.level AS problemLevel
+       FROM solutions s
+       JOIN users u ON u.id = s.author_id
+       JOIN coding_problems p ON p.id = s.problem_id
+      WHERE s.id = ? AND s.deleted_at IS NULL
+        AND (s.visibility = 'MEMBERS' OR s.author_id = ?)`,
+    solutionId,
+    userId,
+  );
+  if (!row) throw new RouteError(404, '풀이를 찾을 수 없습니다.');
+  const [revisions, reactions, comments] = await Promise.all([
+    all<Record<string, unknown>>(
+      db,
+      `SELECT id, revision, code, description, created_at AS createdAt
+         FROM solution_revisions WHERE solution_id = ? ORDER BY revision DESC LIMIT 10`,
+      solutionId,
+    ),
+    all<Record<string, unknown>>(
+      db,
+      `SELECT id, user_id AS userId, created_at AS createdAt
+         FROM solution_reactions WHERE solution_id = ?`,
+      solutionId,
+    ),
+    all<Record<string, unknown>>(
+      db,
+      `SELECT c.id, c.parent_id AS parentId, c.markdown, c.deleted_at AS deletedAt,
+              c.hidden_at AS hiddenAt, c.created_at AS createdAt,
+              u.id AS authorId, u.display_name AS authorDisplayName
+         FROM solution_comments c JOIN users u ON u.id = c.author_id
+        WHERE c.solution_id = ? ORDER BY c.created_at`,
+      solutionId,
+    ),
+  ]);
+  const mapComment = (comment: Record<string, unknown>) => {
+    const deleted = Boolean(comment.deletedAt);
+    const hidden = Boolean(comment.hiddenAt);
+    return {
+      id: comment.id,
+      markdown: deleted || hidden ? null : comment.markdown,
+      redacted: deleted ? ('DELETED' as const) : hidden ? ('HIDDEN' as const) : null,
+      deletedAt: comment.deletedAt,
+      hiddenAt: comment.hiddenAt,
+      createdAt: comment.createdAt,
+      author: { id: comment.authorId, displayName: comment.authorDisplayName },
+      replies: [] as unknown[],
+    };
+  };
+  return {
+    ...row,
+    solved: asBoolean(row.solved),
+    canEdit: row.authorId === userId,
+    revisions,
+    reactions,
+    reactionCount: reactions.length,
+    reactedByMe: reactions.some((reaction) => reaction.userId === userId),
+    comments: comments
+      .filter((comment) => !comment.parentId)
+      .map((comment) => ({
+        ...mapComment(comment),
+        replies: comments.filter((reply) => reply.parentId === comment.id).map(mapComment),
+      })),
+    author: { id: row.authorId, displayName: row.authorDisplayName },
+    problem: { displayTitle: row.problemTitle, level: row.problemLevel },
+  };
 }
 
 function serializeJobRows(rows: Record<string, unknown>[]) {
@@ -878,7 +972,8 @@ async function calendarJobList(
   }
   const select = (indexName: string, scheduleClause: string) => `
     SELECT j.id, j.title, j.category, j.region, j.remote, j.tech_stack,
-           j.collected_at, j.deadline_at, j.rolling, j.summary, j.source_url, j.company_name,
+           j.collected_at, j.deadline_at, j.rolling, substr(j.summary, 1, 320) AS summary,
+           j.source_url, j.company_name,
            j.company_size, j.source_name, j.last_verified_at,
            sj.status AS savedStatus, sj.memo AS savedMemo, sj.bookmarked AS savedBookmarked
       FROM jobs j INDEXED BY ${indexName}
@@ -1014,7 +1109,8 @@ async function jobList(db: D1Database, userId: string, url: URL) {
   const rows = await all<Record<string, unknown>>(
     db,
     `SELECT j.id, j.title, j.category, j.region, j.remote, j.tech_stack,
-            j.collected_at, j.deadline_at, j.rolling, j.summary, j.source_url, j.company_name,
+            j.collected_at, j.deadline_at, j.rolling, substr(j.summary, 1, 320) AS summary,
+            j.source_url, j.company_name,
             j.company_size, j.source_name, j.last_verified_at,
             sj.status AS savedStatus, sj.memo AS savedMemo, sj.bookmarked AS savedBookmarked
        FROM jobs j ${calendar ? '' : `INDEXED BY ${indexName}`}
@@ -1051,6 +1147,25 @@ async function jobList(db: D1Database, userId: string, url: URL) {
   } satisfies CursorPage<(typeof items)[number]>;
 }
 
+async function jobDetail(db: D1Database, userId: string, jobId: string) {
+  const row = await first<Record<string, unknown>>(
+    db,
+    `SELECT j.id, j.title, j.category, j.region, j.remote,
+            COALESCE((SELECT json_group_array(jts.name) FROM job_tech_stacks jts WHERE jts.job_id = j.id), j.tech_stack) AS tech_stack,
+            j.collected_at, j.deadline_at, j.rolling, j.summary, j.source_url,
+            j.company_name, j.company_size, j.source_name, j.last_verified_at,
+            sj.status AS savedStatus, sj.memo AS savedMemo, sj.bookmarked AS savedBookmarked
+       FROM jobs j
+       LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ?
+      WHERE j.id = ? AND j.status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
+        AND j.career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
+    userId,
+    jobId,
+  );
+  if (!row) throw new RouteError(404, '채용공고를 찾을 수 없습니다.');
+  return serializeJobRows([row])[0];
+}
+
 async function jobCategories(db: D1Database) {
   const rows = await all<{ category: string }>(
     db,
@@ -1064,7 +1179,7 @@ async function jobCategories(db: D1Database) {
 }
 
 async function learningList(db: D1Database, userId: string) {
-  const [sources, units, cards, questions] = await Promise.all([
+  const [sources, units] = await Promise.all([
     all<Record<string, unknown>>(
       db,
       `SELECT id, title, subject, category, status, created_at AS createdAt, updated_at AS updatedAt
@@ -1074,8 +1189,11 @@ async function learningList(db: D1Database, userId: string) {
     ),
     all<Record<string, unknown>>(
       db,
-      `SELECT u.id, u.source_id AS sourceId, u.title, u.summary, u.concepts, u.visuals, u.position,
-              lp.completed, lp.understanding, lp.next_review_at AS nextReviewAt
+      `SELECT u.id, u.source_id AS sourceId, u.title,
+              substr(u.summary, 1, 320) AS summaryPreview, u.position,
+              (SELECT COUNT(*) FROM flashcards f WHERE f.unit_id = u.id) AS flashcardCount,
+              (SELECT COUNT(*) FROM learning_questions q WHERE q.unit_id = u.id) AS questionCount,
+              lp.completed, lp.next_review_at AS nextReviewAt
          FROM learning_units u INDEXED BY idx_learning_units_published_source_position
          JOIN learning_sources s ON s.id = u.source_id
          LEFT JOIN learning_progress lp ON lp.unit_id = u.id AND lp.user_id = ?
@@ -1084,68 +1202,208 @@ async function learningList(db: D1Database, userId: string) {
         ORDER BY u.source_id, u.position`,
       userId,
     ),
-    all<Record<string, unknown>>(
-      db,
-      `SELECT f.id, f.unit_id AS unitId, f.front, f.back
-         FROM flashcards f INDEXED BY idx_flashcards_unit_created
-         JOIN learning_units u ON u.id = f.unit_id
-         JOIN learning_sources s ON s.id = u.source_id
-        WHERE u.published = 1
-          AND s.status IN ('READY', 'UPLOADED', 'REQUIRES_MANUAL_PROCESSING')
-        ORDER BY f.unit_id, f.created_at`,
-    ),
-    all<Record<string, unknown>>(
-      db,
-      `SELECT q.id, q.unit_id AS unitId, q.prompt, q.answer
-         FROM learning_questions q INDEXED BY idx_learning_questions_unit_created
-         JOIN learning_units u ON u.id = q.unit_id
-         JOIN learning_sources s ON s.id = u.source_id
-        WHERE u.published = 1
-          AND s.status IN ('READY', 'UPLOADED', 'REQUIRES_MANUAL_PROCESSING')
-        ORDER BY q.unit_id, q.created_at`,
-    ),
   ]);
-
-  const cardsByUnit = new Map<string, Record<string, unknown>[]>();
-  for (const card of cards) {
-    const unitId = String(card.unitId);
-    cardsByUnit.set(unitId, [...(cardsByUnit.get(unitId) || []), card]);
-  }
-  const questionsByUnit = new Map<string, Record<string, unknown>[]>();
-  for (const question of questions) {
-    const unitId = String(question.unitId);
-    questionsByUnit.set(unitId, [...(questionsByUnit.get(unitId) || []), question]);
-  }
   const unitsBySource = new Map<string, Record<string, unknown>[]>();
   for (const unit of units) {
     const sourceId = String(unit.sourceId);
-    const id = String(unit.id);
-    const detail = {
+    const summary = {
       id: unit.id,
       title: unit.title,
-      summary: unit.summary,
-      concepts: parseArray(unit.concepts),
-      visuals: parseJsonArray(unit.visuals),
-      flashcards: cardsByUnit.get(id) || [],
-      questions: questionsByUnit.get(id) || [],
+      summaryPreview: unit.summaryPreview,
+      flashcardCount: Number(unit.flashcardCount || 0),
+      questionCount: Number(unit.questionCount || 0),
       progress:
         unit.completed === null || unit.completed === undefined
           ? []
           : [
               {
                 completed: asBoolean(unit.completed),
-                understanding: unit.understanding,
                 nextReviewAt: unit.nextReviewAt,
               },
             ],
     };
-    unitsBySource.set(sourceId, [...(unitsBySource.get(sourceId) || []), detail]);
+    unitsBySource.set(sourceId, [...(unitsBySource.get(sourceId) || []), summary]);
   }
 
   return sources.map((source) => ({
     ...source,
     units: unitsBySource.get(String(source.id)) || [],
   }));
+}
+
+async function learningUnitDetail(db: D1Database, userId: string, unitId: string) {
+  const unit = await first<Record<string, unknown>>(
+    db,
+    `SELECT u.id, u.source_id AS sourceId, u.title, u.summary, u.concepts, u.visuals,
+            s.title AS sourceTitle, s.subject, s.category,
+            lp.completed, lp.next_review_at AS nextReviewAt
+       FROM learning_units u
+       JOIN learning_sources s ON s.id = u.source_id
+       LEFT JOIN learning_progress lp ON lp.unit_id = u.id AND lp.user_id = ?
+      WHERE u.id = ? AND u.published = 1
+        AND s.status IN ('READY', 'UPLOADED', 'REQUIRES_MANUAL_PROCESSING')`,
+    userId,
+    unitId,
+  );
+  if (!unit) throw new RouteError(404, '학습 단원을 찾을 수 없습니다.');
+  const [flashcards, questions, attempts] = await Promise.all([
+    all<Record<string, unknown>>(
+      db,
+      `SELECT id, front, back FROM flashcards
+        WHERE unit_id = ? ORDER BY created_at`,
+      unitId,
+    ),
+    all<Record<string, unknown>>(
+      db,
+      `SELECT id, prompt FROM learning_questions
+        WHERE unit_id = ? ORDER BY created_at`,
+      unitId,
+    ),
+    all<Record<string, unknown>>(
+      db,
+      `SELECT a.id, a.question_id AS questionId, a.response, a.correct,
+              a.attempted_at AS attemptedAt
+         FROM learning_question_attempts a
+         JOIN learning_questions q ON q.id = a.question_id
+        WHERE a.user_id = ? AND q.unit_id = ?
+        ORDER BY a.attempted_at DESC LIMIT 100`,
+      userId,
+      unitId,
+    ),
+  ]);
+  return {
+    ...unit,
+    concepts: parseArray(unit.concepts),
+    visuals: parseJsonArray(unit.visuals),
+    flashcards,
+    questions: questions.map((question) => ({
+      ...question,
+      attempts: attempts
+        .filter((attempt) => attempt.questionId === question.id)
+        .map((attempt) => ({ ...attempt, correct: asBoolean(attempt.correct) })),
+    })),
+    progress:
+      unit.completed === null || unit.completed === undefined
+        ? []
+        : [{ completed: asBoolean(unit.completed), nextReviewAt: unit.nextReviewAt }],
+  };
+}
+
+async function recordLearningReview(
+  db: D1Database,
+  userId: string,
+  unitId: string,
+  rating: number,
+) {
+  const unit = await first<{ id: string }>(
+    db,
+    'SELECT id FROM learning_units WHERE id = ? AND published = 1',
+    unitId,
+  );
+  if (!unit) throw new RouteError(404, '학습 단원을 찾을 수 없습니다.');
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const current = await first<{
+      repetitionCount: number;
+      intervalDays: number;
+      reviewVersion: number;
+      completedAt: string | null;
+    }>(
+      db,
+      `SELECT repetition_count AS repetitionCount, interval_days AS intervalDays,
+              review_version AS reviewVersion, completed_at AS completedAt
+         FROM learning_progress WHERE user_id = ? AND unit_id = ?`,
+      userId,
+      unitId,
+    );
+    const repetitionCount = rating <= 2 ? 0 : Number(current?.repetitionCount || 0) + 1;
+    const previousIntervalDays = Math.max(1, Number(current?.intervalDays || 1));
+    const intervalDays =
+      rating <= 2
+        ? 1
+        : repetitionCount === 1
+          ? 1
+          : repetitionCount === 2
+            ? 3
+            : Math.max(4, previousIntervalDays * 2);
+    const timestamp = nowIso();
+    const nextReviewAt = new Date(Date.now() + intervalDays * 86_400_000).toISOString();
+    const masteredAt = rating === 5 && repetitionCount >= 3 ? timestamp : null;
+    const scheduledReviewAt = masteredAt ? null : nextReviewAt;
+    const expectedVersion = Number(current?.reviewVersion || 0);
+    const result = current
+      ? await run(
+          db,
+          `UPDATE learning_progress
+              SET completed = 1, understanding = ?, last_studied_at = ?, next_review_at = ?,
+                  repetition_count = ?, interval_days = ?, review_version = review_version + 1,
+                  completed_at = COALESCE(completed_at, ?), mastered_at = COALESCE(mastered_at, ?),
+                  updated_at = ?
+            WHERE user_id = ? AND unit_id = ? AND review_version = ?`,
+          rating,
+          timestamp,
+          scheduledReviewAt,
+          repetitionCount,
+          intervalDays,
+          timestamp,
+          masteredAt,
+          timestamp,
+          userId,
+          unitId,
+          expectedVersion,
+        )
+      : await run(
+          db,
+          `INSERT INTO learning_progress
+             (id, user_id, unit_id, completed, understanding, last_studied_at, next_review_at,
+              repetition_count, interval_days, review_version, completed_at, mastered_at, updated_at)
+           VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, 1, ?, ?, ?)
+           ON CONFLICT(user_id, unit_id) DO NOTHING`,
+          newId(),
+          userId,
+          unitId,
+          rating,
+          timestamp,
+          scheduledReviewAt,
+          repetitionCount,
+          intervalDays,
+          timestamp,
+          masteredAt,
+          timestamp,
+        );
+    if (Number(result.meta?.changes || 0) !== 1) continue;
+    const sequence = expectedVersion + 1;
+    await run(
+      db,
+      `INSERT INTO learning_review_events
+         (id, user_id, unit_id, sequence, rating, previous_interval_days,
+          next_interval_days, next_review_at, reviewed_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      newId(),
+      userId,
+      unitId,
+      sequence,
+      rating,
+      previousIntervalDays,
+      intervalDays,
+      nextReviewAt,
+      timestamp,
+    );
+    return {
+      userId,
+      unitId,
+      completed: true,
+      mastered: Boolean(masteredAt),
+      nextReviewAt: scheduledReviewAt,
+      repetitionCount,
+      intervalDays,
+      reviewVersion: sequence,
+    };
+  }
+  throw new RouteError(
+    409,
+    '동시에 복습 기록이 변경되었습니다. 다시 시도해주세요.',
+    'REVIEW_CONFLICT',
+  );
 }
 
 async function noteList(db: D1Database, userId: string) {
@@ -1358,14 +1616,21 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
     originalCount: analyzed.counts.original,
     rejectedCount: analyzed.counts.rejected,
   };
-  const result = { batch, counts: analyzed.counts, idempotent: false };
-  const statements = analyzed.rows
+  const acceptedRows = analyzed.rows
     .filter((row) => !['REJECT', 'DUPLICATE'].includes(row.outcome))
-    .map((row) => {
-      const item = row.item;
-      return db
-        .prepare(
-          `INSERT INTO jobs
+    .map((row) => ({ ...row, persistedId: row.existingId || newId() }));
+  const snapshotSources = analyzed.body.snapshot?.sources || [];
+  const result = {
+    batch,
+    counts: analyzed.counts,
+    snapshot: { mode: analyzed.body.snapshot?.mode || 'DELTA', sources: snapshotSources },
+    idempotent: false,
+  };
+  const statements = acceptedRows.map((row) => {
+    const item = row.item;
+    return db
+      .prepare(
+        `INSERT INTO jobs
              (id, company_name, company_size, company_size_evidence, source_name,
               source_posting_id, source_url, title, category, career_scope, career_evidence,
               employment_type, region, remote, tech_stack, deadline_at, rolling, summary,
@@ -1383,34 +1648,34 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
              summary = excluded.summary, status = excluded.status,
              fingerprint = excluded.fingerprint, collected_at = excluded.collected_at,
              last_verified_at = excluded.last_verified_at, updated_at = excluded.updated_at`,
-        )
-        .bind(
-          row.existingId || newId(),
-          item.companyName,
-          item.companySize,
-          item.companySizeEvidence || null,
-          item.sourceName,
-          item.sourceId || null,
-          row.canonicalUrl,
-          item.title,
-          item.category,
-          item.careerScope,
-          item.careerEvidence,
-          item.employmentType,
-          item.region,
-          item.remote ? 1 : 0,
-          JSON.stringify(item.techStack),
-          item.deadlineAt || null,
-          item.rolling ? 1 : 0,
-          item.summary,
-          row.outcome === 'REVIEW' ? 'NEEDS_REVIEW' : item.status,
-          row.fingerprint,
-          item.collectedAt,
-          item.lastVerifiedAt,
-          timestamp,
-          timestamp,
-        );
-    });
+      )
+      .bind(
+        row.persistedId,
+        item.companyName,
+        item.companySize,
+        item.companySizeEvidence || null,
+        item.sourceName,
+        item.sourceId || null,
+        row.canonicalUrl,
+        item.title,
+        item.category,
+        item.careerScope,
+        item.careerEvidence,
+        item.employmentType,
+        item.region,
+        item.remote ? 1 : 0,
+        JSON.stringify(item.techStack),
+        item.deadlineAt || null,
+        item.rolling ? 1 : 0,
+        item.summary,
+        row.outcome === 'REVIEW' ? 'NEEDS_REVIEW' : item.status,
+        row.fingerprint,
+        item.collectedAt,
+        item.lastVerifiedAt,
+        timestamp,
+        timestamp,
+      );
+  });
   statements.push(
     db
       .prepare(
@@ -1427,6 +1692,51 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
         timestamp,
         timestamp,
       ),
+  );
+  for (const sourceName of snapshotSources) {
+    const observed = acceptedRows.filter((row) => row.item.sourceName === sourceName);
+    const observedUrls = [...new Set(observed.map((row) => row.canonicalUrl))];
+    const snapshotId = newId();
+    const missingClause = observedUrls.length
+      ? `AND source_url NOT IN (${observedUrls.map(() => '?').join(',')})`
+      : '';
+    statements.push(
+      db
+        .prepare(
+          `INSERT INTO job_source_snapshots
+             (id, source_name, collected_at, observed_count, expired_count, import_batch_id, created_at)
+           VALUES (?, ?, ?, ?,
+             (SELECT COUNT(*) FROM jobs
+               WHERE source_name = ? AND status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
+                 AND last_verified_at < ? ${missingClause}),
+             ?, ?)`,
+        )
+        .bind(
+          snapshotId,
+          sourceName,
+          analyzed.body.collectedAt,
+          observed.length,
+          sourceName,
+          analyzed.body.collectedAt,
+          ...observedUrls,
+          batchId,
+          timestamp,
+        ),
+      ...observed.map((row) =>
+        db
+          .prepare('INSERT INTO job_source_snapshot_items (snapshot_id, job_id) VALUES (?, ?)')
+          .bind(snapshotId, row.persistedId),
+      ),
+      db
+        .prepare(
+          `UPDATE jobs SET status = 'REMOVED', updated_at = ?
+            WHERE source_name = ? AND status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
+              AND last_verified_at < ? ${missingClause}`,
+        )
+        .bind(timestamp, sourceName, analyzed.body.collectedAt, ...observedUrls),
+    );
+  }
+  statements.push(
     db
       .prepare('UPDATE import_previews SET consumed_at = ? WHERE token = ? AND consumed_at IS NULL')
       .bind(timestamp, loaded.preview.token),
@@ -1848,16 +2158,48 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     const body = await readJson(request);
     const name = body.name === undefined ? String(current.name) : cleanText(body.name);
     if (!name) throw new RouteError(400, '폴더 이름이 필요합니다.');
+    let parentId = current.parent_id as string | null;
+    if (Object.hasOwn(body, 'parentId')) {
+      parentId = typeof body.parentId === 'string' && body.parentId ? body.parentId : null;
+      if (parentId === collectionMatch[1]) {
+        throw new RouteError(409, '폴더를 자기 자신 안으로 이동할 수 없습니다.');
+      }
+      if (parentId) {
+        const parent = await first<{ id: string }>(
+          db,
+          `SELECT id FROM collections
+            WHERE id = ? AND user_id = ? AND deleted_at IS NULL`,
+          parentId,
+          user.id,
+        );
+        if (!parent) throw new RouteError(404, '이동할 상위 폴더를 찾을 수 없습니다.');
+        const descendant = await first<{ id: string }>(
+          db,
+          `WITH RECURSIVE descendants(id) AS (
+             SELECT id FROM collections WHERE parent_id = ? AND user_id = ? AND deleted_at IS NULL
+             UNION ALL
+             SELECT c.id FROM collections c JOIN descendants d ON c.parent_id = d.id
+              WHERE c.user_id = ? AND c.deleted_at IS NULL
+           ) SELECT id FROM descendants WHERE id = ?`,
+          collectionMatch[1],
+          user.id,
+          user.id,
+          parentId,
+        );
+        if (descendant) throw new RouteError(409, '하위 폴더 안으로 이동할 수 없습니다.');
+      }
+    }
     await run(
       db,
-      'UPDATE collections SET name = ?, icon = ?, color = ?, updated_at = ? WHERE id = ?',
+      'UPDATE collections SET name = ?, icon = ?, color = ?, parent_id = ?, updated_at = ? WHERE id = ?',
       name,
       body.icon === undefined ? current.icon : cleanText(body.icon, 'folder'),
       body.color === undefined ? current.color : cleanText(body.color, 'amber'),
+      parentId,
       nowIso(),
       collectionMatch[1],
     );
-    return { ...current, name, items: [] };
+    return { ...current, name, parentId, items: [] };
   }
   if (collectionMatch && method === 'DELETE') {
     const current = await first<{ id: string }>(
@@ -1953,6 +2295,26 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     }
     return { id, collectionId: owned.id, itemType, targetId, label: cleanText(body.label) || null };
   }
+  const collectionItemDeleteMatch = path.match(/^\/collections\/([^/]+)\/items\/([^/]+)$/);
+  if (collectionItemDeleteMatch && method === 'DELETE') {
+    const result = await run(
+      db,
+      `DELETE FROM collection_items
+        WHERE id = ? AND collection_id = ?
+          AND EXISTS (
+            SELECT 1 FROM collections c
+             WHERE c.id = collection_items.collection_id AND c.user_id = ?
+               AND c.deleted_at IS NULL
+          )`,
+      collectionItemDeleteMatch[2],
+      collectionItemDeleteMatch[1],
+      user.id,
+    );
+    if (Number(result.meta?.changes || 0) !== 1) {
+      throw new RouteError(404, '저장된 폴더 항목을 찾을 수 없습니다.');
+    }
+    return new Response(null, { status: 204 });
+  }
 
   if (method === 'GET' && path === '/dashboard') {
     const now = nowIso();
@@ -1988,62 +2350,71 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
   if (method === 'GET' && path === '/search') {
     const query = cleanText(url.searchParams.get('q'));
     if (query.length < 2) throw new RouteError(400, '검색어는 2자 이상이어야 합니다.');
-    const like = `%${query}%`;
-    const [folders, notes, jobs, codingProblems, foundSolutions, learning] = await Promise.all([
-      all<{ id: string; name: string }>(
-        db,
-        'SELECT id, name FROM collections WHERE user_id = ? AND deleted_at IS NULL AND name LIKE ? LIMIT 10',
-        user.id,
-        like,
-      ),
-      all<{ id: string; title: string; updatedAt: string }>(
-        db,
-        `SELECT id, title, updated_at AS updatedAt FROM notes WHERE deleted_at IS NULL AND user_id = ? AND (title LIKE ? OR markdown LIKE ?) LIMIT 10`,
-        user.id,
-        like,
-        like,
-      ),
-      all<{ id: string; title: string; companyName: string }>(
-        db,
-        'SELECT id, title, company_name AS companyName FROM jobs WHERE title LIKE ? OR company_name LIKE ? LIMIT 10',
-        like,
-        like,
-      ),
-      all<{ id: string; displayTitle: string; level: string }>(
-        db,
-        'SELECT id, display_title AS displayTitle, level FROM coding_problems WHERE active = 1 AND display_title LIKE ? LIMIT 10',
-        like,
-      ),
-      all<{ id: string; title: string }>(
-        db,
-        `SELECT id, title FROM solutions WHERE deleted_at IS NULL AND (visibility = 'MEMBERS' OR author_id = ?) AND title LIKE ? LIMIT 10`,
-        user.id,
-        like,
-      ),
-      all<{ id: string; title: string; summary: string; sourceTitle: string }>(
-        db,
-        `SELECT u.id, u.title, u.summary, s.title AS sourceTitle FROM learning_units u JOIN learning_sources s ON s.id = u.source_id WHERE u.published = 1 AND (u.title LIKE ? OR u.summary LIKE ?) LIMIT 10`,
-        like,
-        like,
-      ),
-    ]);
+    const limit = cursorLimit(url.searchParams, 30, 60);
+    const cursor = decodeCursor<{ offset?: unknown }>(url.searchParams.get('cursor'));
+    const offset = Math.max(0, int(cursor?.offset, 0));
+    const match = query
+      .replace(/["*:^{}()[\]]/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 8)
+      .map((token) => `"${token}"*`)
+      .join(' AND ');
+    if (!match) throw new RouteError(400, '검색 가능한 문자를 입력해주세요.');
+    const rows = await all<{
+      kind: string;
+      id: string;
+      title: string;
+      snippet: string;
+    }>(
+      db,
+      `SELECT kind, entity_id AS id, title,
+              snippet(workspace_search, 4, '', '', ' … ', 18) AS snippet
+         FROM workspace_search
+        WHERE workspace_search MATCH ? AND (owner_id = '' OR owner_id = ?)
+        ORDER BY rowid
+        LIMIT ? OFFSET ?`,
+      match,
+      user.id,
+      limit + 1,
+      offset,
+    );
+    const hasMore = rows.length > limit;
+    const pageRows = hasMore ? rows.slice(0, limit) : rows;
+    const grouped: Record<string, Array<Record<string, unknown>>> = {
+      folders: [],
+      notes: [],
+      jobs: [],
+      problems: [],
+      solutions: [],
+      learning: [],
+    };
+    const groupName = (kind: string) => (kind === 'codingProblems' ? 'problems' : kind);
+    const href = (kind: string, id: string) =>
+      kind === 'folders'
+        ? `/?folder=${id}`
+        : kind === 'notes'
+          ? `/notes?note=${id}`
+          : kind === 'jobs'
+            ? `/jobs?job=${id}`
+            : kind === 'codingProblems'
+              ? `/coding?problem=${id}`
+              : kind === 'solutions'
+                ? `/solutions?solution=${id}`
+                : `/learning?unit=${id}`;
+    for (const row of pageRows) {
+      const group = groupName(row.kind);
+      grouped[group]?.push({
+        id: row.id,
+        title: row.title,
+        snippet: row.snippet,
+        href: href(row.kind, row.id),
+      });
+    }
     return {
       query,
-      folders: folders.map((item) => ({ ...item, href: `/?folder=${String(item.id)}` })),
-      notes: notes.map((item) => ({ ...item, href: `/notes?note=${String(item.id)}` })),
-      jobs: jobs.map((item) => ({ ...item, href: `/jobs?job=${String(item.id)}` })),
-      problems: codingProblems.map((item) => ({
-        ...item,
-        href: `/coding?problem=${String(item.id)}`,
-      })),
-      solutions: foundSolutions.map((item) => ({
-        ...item,
-        href: `/solutions?solution=${String(item.id)}`,
-      })),
-      learning: learning.map((item) => ({
-        ...item,
-        href: `/learning?unit=${String(item.id)}`,
-      })),
+      ...grouped,
+      nextCursor: hasMore ? encodeCursor({ offset: offset + limit }) : null,
     };
   }
 
@@ -2059,12 +2430,47 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     return { count: Number(row?.count || 0) };
   }
   if (method === 'GET' && path === '/notifications') {
-    return all(
+    const allowedTypes = new Set(['COMMENT', 'REPLY', 'JOB_DEADLINE', 'LEARNING_REVIEW', 'SYSTEM']);
+    const type = cleanText(url.searchParams.get('type'));
+    if (type && !allowedTypes.has(type)) {
+      throw new RouteError(400, '지원하지 않는 알림 유형입니다.');
+    }
+    const paged = cursorPageRequested(url.searchParams);
+    const limit = paged ? cursorLimit(url.searchParams, 30, 100) : 100;
+    const cursor = paged
+      ? decodeCursor<{ createdAt?: unknown; id?: unknown }>(url.searchParams.get('cursor'))
+      : null;
+    const clauses = ['user_id = ?', '(expires_at IS NULL OR expires_at > ?)'];
+    const values: unknown[] = [user.id, nowIso()];
+    if (type) {
+      clauses.push('type = ?');
+      values.push(type);
+    }
+    if (cursor) {
+      const createdAt = cleanText(cursor.createdAt);
+      const id = cleanText(cursor.id);
+      if (!createdAt || !id) {
+        throw new RouteError(400, '올바른 cursor가 필요합니다.', 'INVALID_CURSOR');
+      }
+      clauses.push('(created_at < ? OR (created_at = ? AND id < ?))');
+      values.push(createdAt, createdAt, id);
+    }
+    const rows = await all<Record<string, unknown>>(
       db,
-      `SELECT id, type, title, message, href, read_at AS readAt, created_at AS createdAt FROM notifications WHERE user_id = ? AND (expires_at IS NULL OR expires_at > ?) ORDER BY created_at DESC LIMIT 100`,
-      user.id,
-      nowIso(),
+      `SELECT id, type, title, message, href, read_at AS readAt, created_at AS createdAt
+         FROM notifications WHERE ${clauses.join(' AND ')}
+        ORDER BY created_at DESC, id DESC LIMIT ?`,
+      ...values,
+      limit + (paged ? 1 : 0),
     );
+    if (!paged) return rows;
+    const hasMore = rows.length > limit;
+    const items = hasMore ? rows.slice(0, limit) : rows;
+    const last = items.at(-1);
+    return {
+      items,
+      nextCursor: hasMore && last ? encodeCursor({ createdAt: last.createdAt, id: last.id }) : null,
+    };
   }
   if (method === 'PATCH' && path === '/notifications/read-all') {
     const result = await run(
@@ -2361,13 +2767,35 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
   }
   if (method === 'GET' && path === '/coding/solutions')
     return solutionList(db, user.id, url.searchParams);
-  if (method === 'POST' && path === '/coding/solutions') {
+  const solutionDetailMatch = path.match(/^\/coding\/solutions\/([^/]+)$/);
+  if (solutionDetailMatch && method === 'GET') {
+    return solutionDetail(db, user.id, solutionDetailMatch[1]);
+  }
+  if (
+    method === 'POST' &&
+    (path === '/coding/solutions' || path === '/coding/solutions/complete')
+  ) {
     const body = await readJson(request);
     const code = typeof body.code === 'string' ? body.code : '';
     if (bool(body.solved) && !code.trim())
       throw new RouteError(400, '해결 기록에는 코드가 필요합니다.');
     const timestamp = nowIso();
     const problemId = cleanText(body.problemId);
+    const challengeId = cleanText(body.challengeId);
+    if (path.endsWith('/complete') && !challengeId) {
+      throw new RouteError(400, '오늘의 문제 식별자가 필요합니다.');
+    }
+    const challenge = challengeId
+      ? await first<{ id: string }>(
+          db,
+          'SELECT id FROM daily_challenges WHERE id = ? AND problem_id = ?',
+          challengeId,
+          problemId,
+        )
+      : null;
+    if (challengeId && !challenge) {
+      throw new RouteError(409, '선택한 오늘의 문제와 풀이 문제가 일치하지 않습니다.');
+    }
     const language = cleanText(body.language);
     if (!solutionLanguages.has(language)) {
       throw new RouteError(400, '지원하는 코드 언어를 선택해주세요.');
@@ -2435,6 +2863,18 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
             bool(body.solved) ? timestamp : null,
             timestamp,
           ),
+        ...(challenge
+          ? [
+              db
+                .prepare(
+                  `INSERT INTO daily_challenge_participations
+                     (id, challenge_id, user_id, completed_at, created_at)
+                   VALUES (?, ?, ?, ?, ?)
+                   ON CONFLICT(challenge_id, user_id) DO UPDATE SET completed_at = excluded.completed_at`,
+                )
+                .bind(newId(), challenge.id, user.id, timestamp, timestamp),
+            ]
+          : []),
       ]);
       return { id: body.id, currentRev: revision };
     }
@@ -2478,6 +2918,18 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
           bool(body.solved) ? timestamp : null,
           timestamp,
         ),
+      ...(challenge
+        ? [
+            db
+              .prepare(
+                `INSERT INTO daily_challenge_participations
+                   (id, challenge_id, user_id, completed_at, created_at)
+                 VALUES (?, ?, ?, ?, ?)
+                 ON CONFLICT(challenge_id, user_id) DO UPDATE SET completed_at = excluded.completed_at`,
+              )
+              .bind(newId(), challenge.id, user.id, timestamp, timestamp),
+          ]
+        : []),
     ]);
     return { id, problemId, authorId: user.id, currentRev: 1, createdAt: timestamp };
   }
@@ -2586,19 +3038,40 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     };
   }
   if (method === 'GET' && path === '/coding/rankings') {
+    const now = new Date();
+    const kstParts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(now);
+    const todayKst = new Date(`${kstParts}T00:00:00+09:00`);
+    const weekdayName = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Seoul',
+      weekday: 'short',
+    }).format(now);
+    const weekday = Math.max(
+      0,
+      ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(weekdayName),
+    );
+    const weekStart = new Date(todayKst);
+    weekStart.setUTCDate(weekStart.getUTCDate() - ((weekday + 6) % 7));
+    const monthStart = new Date(`${kstParts.slice(0, 7)}-01T00:00:00+09:00`);
     const [rows, activity] = await Promise.all([
       all<Record<string, unknown>>(
         db,
         `SELECT u.id AS userId, u.display_name AS displayName,
               COUNT(DISTINCT CASE WHEN s.solved = 1 THEN s.problem_id END) AS score,
-              COUNT(DISTINCT CASE WHEN s.solved = 1 AND s.solved_at >= datetime('now', '-7 day') THEN s.problem_id END) AS weekly,
-              COUNT(DISTINCT CASE WHEN s.solved = 1 AND s.solved_at >= datetime('now', '-30 day') THEN s.problem_id END) AS monthly,
+              COUNT(DISTINCT CASE WHEN s.solved = 1 AND s.solved_at >= ? THEN s.problem_id END) AS weekly,
+              COUNT(DISTINCT CASE WHEN s.solved = 1 AND s.solved_at >= ? THEN s.problem_id END) AS monthly,
               COUNT(DISTINCT dp.challenge_id) AS challengeCount
          FROM users u
          LEFT JOIN solutions s ON s.author_id = u.id AND s.deleted_at IS NULL
          LEFT JOIN daily_challenge_participations dp ON dp.user_id = u.id AND dp.completed_at IS NOT NULL
         WHERE u.is_active = 1 AND u.role = 'MEMBER'
         GROUP BY u.id, u.display_name ORDER BY score DESC, u.display_name`,
+        weekStart.toISOString(),
+        monthStart.toISOString(),
       ),
       all<{ userId: string; date: string }>(
         db,
@@ -2630,7 +3103,15 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     let previousScore: number | null = null;
     return {
       calculatedAt: nowIso(),
-      selfReported: true,
+      currentUserId: user.id,
+      selfReported: false,
+      periods: {
+        timezone: 'Asia/Seoul',
+        weeklyStart: weekStart.toISOString(),
+        monthlyStart: monthStart.toISOString(),
+      },
+      methodology:
+        '모든 멤버의 저장된 SOLVED 풀이를 사용자·문제별 한 번만 자동 계산하며 관리자와 삭제된 풀이는 제외합니다.',
       rows: rows.map((row, index) => {
         const score = Number(row.score || 0);
         if (previousScore !== score) rank = index + 1;
@@ -2650,6 +3131,8 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
 
   if (method === 'GET' && path === '/jobs/categories') return jobCategories(db);
   if (method === 'GET' && path === '/jobs') return jobList(db, user.id, url);
+  const jobDetailMatch = path.match(/^\/jobs\/([^/]+)$/);
+  if (jobDetailMatch && method === 'GET') return jobDetail(db, user.id, jobDetailMatch[1]);
   const savedJobMatch = path.match(/^\/jobs\/([^/]+)\/(application|bookmark)$/);
   if ((method === 'POST' && path === '/jobs/saved') || (method === 'PATCH' && savedJobMatch)) {
     const body = await readJson(request);
@@ -2733,10 +3216,54 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
   }
 
   if (method === 'GET' && path === '/learning') return learningList(db, user.id);
+  const learningUnitMatch = path.match(/^\/learning\/units\/([^/]+)$/);
+  if (learningUnitMatch && method === 'GET') {
+    return learningUnitDetail(db, user.id, learningUnitMatch[1]);
+  }
+  const learningAnswerMatch = path.match(/^\/learning\/questions\/([^/]+)\/answer$/);
+  if (learningAnswerMatch && method === 'POST') {
+    const body = await readJson(request);
+    const response = sourceText(body.response).trim();
+    if (!response || response.length > 4_000) {
+      throw new RouteError(400, '답안을 1~4,000자로 입력해주세요.');
+    }
+    const question = await first<{ id: string; answer: string }>(
+      db,
+      `SELECT q.id, q.answer FROM learning_questions q
+        JOIN learning_units u ON u.id = q.unit_id
+       WHERE q.id = ? AND u.published = 1`,
+      learningAnswerMatch[1],
+    );
+    if (!question) throw new RouteError(404, '복습 문제를 찾을 수 없습니다.');
+    const normalizeAnswer = (value: string) =>
+      value.normalize('NFKC').trim().toLocaleLowerCase('ko-KR').replace(/\s+/g, ' ');
+    const correct = normalizeAnswer(response) === normalizeAnswer(question.answer);
+    const attemptedAt = nowIso();
+    const id = newId();
+    await run(
+      db,
+      `INSERT INTO learning_question_attempts
+         (id, user_id, question_id, response, correct, attempted_at)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      id,
+      user.id,
+      question.id,
+      response,
+      correct ? 1 : 0,
+      attemptedAt,
+    );
+    return { id, questionId: question.id, response, correct, answer: question.answer, attemptedAt };
+  }
   if (method === 'GET' && path === '/learning/due') {
     return all(
       db,
-      `SELECT lp.*, u.title, s.title AS sourceTitle FROM learning_progress lp JOIN learning_units u ON u.id = lp.unit_id JOIN learning_sources s ON s.id = u.source_id WHERE lp.user_id = ? AND lp.next_review_at <= ? ORDER BY lp.next_review_at LIMIT 100`,
+      `SELECT lp.*, u.title, s.title AS sourceTitle
+         FROM learning_progress lp
+         JOIN learning_units u ON u.id = lp.unit_id
+         JOIN learning_sources s ON s.id = u.source_id
+        WHERE lp.user_id = ? AND lp.completed = 1 AND lp.mastered_at IS NULL
+          AND lp.next_review_at IS NOT NULL AND lp.next_review_at <= ?
+        ORDER BY lp.next_review_at LIMIT 100`,
       user.id,
       nowIso(),
     );
@@ -2745,45 +3272,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     const body = await readJson(request);
     const unitId = cleanText(body.unitId);
     const rating = Math.min(5, Math.max(1, int(body.rating, 1)));
-    const current = await first<{ repetitionCount: number; intervalDays: number }>(
-      db,
-      'SELECT repetition_count AS repetitionCount, interval_days AS intervalDays FROM learning_progress WHERE user_id = ? AND unit_id = ?',
-      user.id,
-      unitId,
-    );
-    const repetitionCount = rating <= 2 ? 0 : Number(current?.repetitionCount || 0) + 1;
-    const intervalDays =
-      rating <= 2
-        ? 1
-        : repetitionCount === 1
-          ? 1
-          : repetitionCount === 2
-            ? 3
-            : Math.max(4, Number(current?.intervalDays || 1) * 2);
-    const timestamp = nowIso();
-    const nextReviewAt = new Date(Date.now() + intervalDays * 86_400_000).toISOString();
-    await run(
-      db,
-      `INSERT INTO learning_progress (id, user_id, unit_id, completed, understanding, last_studied_at, next_review_at, repetition_count, interval_days, updated_at) VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id, unit_id) DO UPDATE SET completed = 1, understanding = excluded.understanding, last_studied_at = excluded.last_studied_at, next_review_at = excluded.next_review_at, repetition_count = excluded.repetition_count, interval_days = excluded.interval_days, updated_at = excluded.updated_at`,
-      newId(),
-      user.id,
-      unitId,
-      rating,
-      timestamp,
-      nextReviewAt,
-      repetitionCount,
-      intervalDays,
-      timestamp,
-    );
-    return {
-      userId: user.id,
-      unitId,
-      completed: true,
-      understanding: rating,
-      nextReviewAt,
-      repetitionCount,
-      intervalDays,
-    };
+    return recordLearningReview(db, user.id, unitId, rating);
   }
   if (method === 'POST' && path === '/learning/import/preview') {
     return previewLearningImport(db, user, await readJson(request));

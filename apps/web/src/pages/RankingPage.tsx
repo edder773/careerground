@@ -1,10 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { Award, CalendarDays, Flame, Trophy } from 'lucide-react';
 import { api } from '../lib/api';
+import '../styles/notifications.css';
 
 type Ranking = {
   calculatedAt: string;
+  currentUserId: string;
   selfReported: boolean;
+  periods: { timezone: string; weeklyStart: string; monthlyStart: string };
+  methodology: string;
   rows: Array<{
     userId: string;
     displayName: string;
@@ -38,7 +42,8 @@ export function RankingPage() {
         <div>
           <strong>동점은 같은 순위로 표시합니다.</strong>
           <span>
-            모든 멤버의 SOLVED 풀이를 사용자·문제별 한 번만 자동 계산하며 관리자는 제외됩니다.
+            {ranking.data?.methodology ||
+              '모든 멤버의 SOLVED 풀이를 사용자·문제별 한 번만 자동 계산하며 관리자는 제외됩니다.'}
           </span>
         </div>
       </div>
@@ -55,7 +60,12 @@ export function RankingPage() {
           <span>오늘의 문제</span>
         </div>
         {ranking.data?.rows.map((row) => (
-          <div className={`ranking-row rank-${row.rank}`} role="row" key={row.userId}>
+          <div
+            className={`ranking-row rank-${row.rank} ${row.userId === ranking.data.currentUserId ? 'current-user' : ''}`}
+            role="row"
+            aria-current={row.userId === ranking.data.currentUserId ? 'true' : undefined}
+            key={row.userId}
+          >
             <span>{row.rank <= 3 ? <span className="medal">{row.rank}</span> : row.rank}</span>
             <strong>{row.displayName}</strong>
             <span>{row.score}</span>
@@ -74,7 +84,10 @@ export function RankingPage() {
       </div>
       {ranking.data && (
         <small className="calculated-at">
-          집계 시각 {new Date(ranking.data.calculatedAt).toLocaleString('ko-KR')}
+          기준: Asia/Seoul · 주간{' '}
+          {new Date(ranking.data.periods.weeklyStart).toLocaleDateString('ko-KR')}부터 · 월간{' '}
+          {new Date(ranking.data.periods.monthlyStart).toLocaleDateString('ko-KR')}부터 · 집계 시각{' '}
+          {new Date(ranking.data.calculatedAt).toLocaleString('ko-KR')}
         </small>
       )}
     </div>

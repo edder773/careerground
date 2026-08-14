@@ -1,0 +1,62 @@
+{
+  "schema": "careerground-recovery-drill/v1",
+  "checkedAt": "2026-08-14T03:27:36.561Z",
+  "scope": "local D1-compatible SQLite snapshot and isolated restore",
+  "status": "pass",
+  "snapshot": {
+    "bytes": 1290240,
+    "pages": 315,
+    "durationMs": 1.63
+  },
+  "restore": {
+    "pages": 315,
+    "durationMs": 1.39,
+    "rpoMutations": 0
+  },
+  "integrity": {
+    "before": "ok",
+    "after": "ok",
+    "foreignKeyViolationsBefore": 0,
+    "foreignKeyViolationsAfter": 0,
+    "countMismatch": [],
+    "fixtureChecksumMatched": true
+  },
+  "tableCounts": {
+    "users": 1,
+    "collections": 0,
+    "collection_items": 0,
+    "notes": 1,
+    "note_revisions": 1,
+    "jobs": 121,
+    "saved_jobs": 0,
+    "coding_problems": 427,
+    "problem_progress": 0,
+    "solutions": 0,
+    "solution_comments": 0,
+    "solution_reactions": 0,
+    "solution_revisions": 0,
+    "learning_sources": 4,
+    "learning_units": 23,
+    "learning_progress": 0,
+    "learning_questions": 23,
+    "learning_question_attempts": 0,
+    "learning_review_events": 0,
+    "flashcards": 46,
+    "notifications": 0,
+    "audit_logs": 0,
+    "daily_challenge_settings": 1,
+    "daily_challenges": 0,
+    "daily_challenge_participations": 0,
+    "import_batches": 3,
+    "import_previews": 0,
+    "job_tech_stacks": 399,
+    "job_source_snapshots": 0,
+    "job_source_snapshot_items": 0,
+    "request_rate_limits": 0,
+    "scheduler_leases": 0
+  },
+  "limitations": [
+    "Sites does not expose a production database export/restore operation through the installed connector.",
+    "This drill validates the application schema and D1-compatible SQLite recovery path without copying production personal data."
+  ]
+}

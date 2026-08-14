@@ -11,7 +11,7 @@ import { AuditService } from './common/audit.service.js';
 import { HealthController } from './health.controller.js';
 import { CollectionsController } from './collections/collections.controller.js';
 import { CollectionsService } from './collections/collections.service.js';
-import { CodingController, DailyChallengeInternalController } from './coding/coding.controller.js';
+import { CodingController } from './coding/coding.controller.js';
 import { CodingService } from './coding/coding.service.js';
 import { JobsController } from './jobs/jobs.controller.js';
 import { JobsService } from './jobs/jobs.service.js';
@@ -31,7 +31,6 @@ import { UtilityService } from './utility/utility.service.js';
     AuthController,
     CollectionsController,
     CodingController,
-    DailyChallengeInternalController,
     JobsController,
     LearningController,
     UtilityController,

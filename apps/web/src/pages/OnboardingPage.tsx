@@ -39,7 +39,10 @@ export function OnboardingPage() {
             <span>내 작업대를 준비해볼까요?</span>
           </div>
         </div>
-        <form onSubmit={submit}>
+        <form
+          onSubmit={submit}
+          aria-describedby={complete.isError ? 'onboarding-submit-error' : undefined}
+        >
           <span className="onboarding-step">첫 설정</span>
           <h1>어떻게 불러드릴까요?</h1>
           <p>풀이 기록과 댓글에 표시할 이름을 직접 입력해주세요.</p>
@@ -54,6 +57,8 @@ export function OnboardingPage() {
               placeholder="예: 김그라운드"
               autoComplete="name"
               required
+              aria-invalid={complete.isError || undefined}
+              aria-describedby={complete.isError ? 'onboarding-submit-error' : undefined}
             />
           </label>
           <fieldset>
@@ -76,7 +81,9 @@ export function OnboardingPage() {
             </div>
           </fieldset>
           {complete.isError && (
-            <div className="form-error">첫 설정을 저장하지 못했습니다. 다시 시도해주세요.</div>
+            <div className="form-error" id="onboarding-submit-error" role="alert">
+              첫 설정을 저장하지 못했습니다. 다시 시도해주세요.
+            </div>
           )}
           <button
             className="primary-button onboarding-submit"

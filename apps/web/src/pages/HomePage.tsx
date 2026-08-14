@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { api, json } from '../lib/api';
 import type { ViewMode } from '../components/AppShell';
+import '../styles/home.css';
 
 type CollectionItem = { id: string; itemType: string; targetId: string; label?: string };
 export type Collection = {
@@ -138,6 +139,20 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
     [collections.data],
   );
   const activeFolder = (collections.data || []).find((folder) => folder.id === selected);
+  const breadcrumbs = useMemo(() => {
+    if (!activeFolder) return [];
+    const result: Collection[] = [activeFolder];
+    const seen = new Set([activeFolder.id]);
+    let parentId = activeFolder.parentId;
+    while (parentId && !seen.has(parentId)) {
+      seen.add(parentId);
+      const parent = collections.data?.find((folder) => folder.id === parentId);
+      if (!parent) break;
+      result.unshift(parent);
+      parentId = parent.parentId;
+    }
+    return result;
+  }, [activeFolder, collections.data]);
   useEffect(() => {
     if (
       requestedFolder &&
@@ -195,6 +210,14 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
       setRenaming(false);
       await client.invalidateQueries({ queryKey: ['collections'] });
     },
+  });
+  const moveFolder = useMutation({
+    mutationFn: (parentId: string | null) =>
+      api(`/collections/${activeFolder!.id}`, {
+        method: 'PATCH',
+        body: json({ parentId }),
+      }),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['collections'] }),
   });
   const addLink = useMutation({
     mutationFn: () =>
@@ -384,6 +407,19 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
       </section>
       {activeFolder && (
         <section className="section-block collection-detail">
+          <nav className="folder-breadcrumbs" aria-label="폴더 경로">
+            <button type="button" onClick={() => setSelected(undefined)}>
+              내 폴더
+            </button>
+            {breadcrumbs.map((folder) => (
+              <span key={folder.id}>
+                <span aria-hidden="true">/</span>
+                <button type="button" onClick={() => setSelected(folder.id)}>
+                  {folder.name}
+                </button>
+              </span>
+            ))}
+          </nav>
           <div className="section-title">
             <div>
               <h2>{activeFolder?.name || '폴더 미리보기'}</h2>
@@ -412,6 +448,23 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
                 >
                   <FolderPlus /> 하위 폴더
                 </button>
+                <label className="folder-move-control">
+                  <span>이동</span>
+                  <select
+                    value={activeFolder.parentId || ''}
+                    disabled={moveFolder.isPending}
+                    onChange={(event) => moveFolder.mutate(event.target.value || null)}
+                  >
+                    <option value="">내 폴더</option>
+                    {(collections.data || [])
+                      .filter((folder) => folder.id !== activeFolder.id)
+                      .map((folder) => (
+                        <option key={folder.id} value={folder.id}>
+                          {folder.name}
+                        </option>
+                      ))}
+                  </select>
+                </label>
                 <button
                   className="ghost-button danger"
                   onClick={() => {

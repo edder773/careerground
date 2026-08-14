@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { handleD1Api } from './d1-api.js';
+import { handleD1Api, runScheduledMaintenance } from './d1-api.js';
 import { LocalD1 } from './local-d1.js';
 
 const adminHeaders = {
@@ -87,6 +87,10 @@ describe('Sites D1 API', () => {
         onboardingCompleted: true,
       },
     });
+
+    const unauthenticated = await call('/api/v1/auth/me', {}, {});
+    expect(unauthenticated.response.status).toBe(401);
+    expect(unauthenticated.body).toMatchObject({ code: 'UNAUTHORIZED' });
   });
 
   it('rate limits each user and normalized route with Retry-After', async () => {
@@ -495,12 +499,17 @@ describe('Sites D1 API', () => {
         id: saved.id,
         language: 'javascript',
         visibility: 'MEMBERS',
-        reactions: [expect.any(Object)],
         reactionCount: 1,
         reactedByMe: false,
-        comments: [expect.objectContaining({ markdown: '좋은 풀이입니다.' })],
+        commentCount: 1,
       }),
     ]);
+    const detail = await call(`/api/v1/coding/solutions/${saved.id}`, {}, memberHeaders);
+    expect(detail.body).toMatchObject({
+      id: saved.id,
+      reactions: [expect.any(Object)],
+      comments: [expect.objectContaining({ markdown: '좋은 풀이입니다.' })],
+    });
     const pagedSolutions = await call(
       `/api/v1/coding/solutions?problemId=${daily.problem.id}&page=cursor&limit=1`,
       {},
@@ -560,7 +569,13 @@ describe('Sites D1 API', () => {
     const learning = await call('/api/v1/learning');
     const source = (learning.body as unknown as Array<{ units: Array<{ id: string }> }>)[0];
     expect(source.units.length).toBeGreaterThan(0);
-    expect(source.units[0]).toMatchObject({ summary: 'List<String>과 a < b를 그대로 학습합니다.' });
+    expect(source.units[0]).toMatchObject({
+      summaryPreview: 'List<String>과 a < b를 그대로 학습합니다.',
+    });
+    const unitDetail = await call(`/api/v1/learning/units/${source.units[0].id}`);
+    expect(unitDetail.body).toMatchObject({
+      summary: 'List<String>과 a < b를 그대로 학습합니다.',
+    });
     await call('/api/v1/learning/review', {
       method: 'POST',
       body: JSON.stringify({ unitId: source.units[0].id, rating: 4 }),
@@ -573,7 +588,7 @@ describe('Sites D1 API', () => {
           units: expect.arrayContaining([
             expect.objectContaining({
               id: source.units[0].id,
-              progress: [expect.objectContaining({ completed: true, understanding: 4 })],
+              progress: [expect.objectContaining({ completed: true })],
             }),
           ]),
         }),
@@ -583,6 +598,64 @@ describe('Sites D1 API', () => {
     const search = await call('/api/v1/search?q=HTTP');
     expect(search.response.status).toBe(200);
     expect(search.body).toMatchObject({ query: 'HTTP' });
+  });
+
+  it('grades learning answers without exposing the answer before an attempt', async () => {
+    const library = await call('/api/v1/learning');
+    const unit = (library.body as unknown as Array<{ units: Array<{ id: string }> }>).flatMap(
+      (source) => source.units,
+    )[0];
+    const detail = await call(`/api/v1/learning/units/${unit.id}`);
+    const question = (detail.body.questions as Array<{ id: string; answer?: string }>)[0];
+    expect(question).toBeDefined();
+    expect(question.answer).toBeUndefined();
+
+    const wrong = await call(`/api/v1/learning/questions/${question.id}/answer`, {
+      method: 'POST',
+      body: JSON.stringify({ response: '의도적으로 틀린 답' }),
+    });
+    expect(wrong.body).toMatchObject({ questionId: question.id, correct: false });
+    expect(wrong.body.answer).toEqual(expect.any(String));
+
+    const refreshed = await call(`/api/v1/learning/units/${unit.id}`);
+    expect(refreshed.body.questions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: question.id,
+          attempts: [expect.objectContaining({ correct: false })],
+        }),
+      ]),
+    );
+  });
+
+  it('serializes review versions and schedules mastered units consistently', async () => {
+    const library = await call('/api/v1/learning');
+    const unitId = (library.body as unknown as Array<{ units: Array<{ id: string }> }>).flatMap(
+      (source) => source.units,
+    )[0].id;
+
+    for (let index = 0; index < 3; index += 1) {
+      const review = await call('/api/v1/learning/review', {
+        method: 'POST',
+        body: JSON.stringify({ unitId, rating: 5 }),
+      });
+      expect(review.response.status).toBe(200);
+      expect(review.body).toMatchObject({ reviewVersion: index + 1 });
+    }
+
+    const progress = await db
+      .prepare(
+        'SELECT review_version AS reviewVersion, mastered_at AS masteredAt, next_review_at AS nextReviewAt FROM learning_progress WHERE unit_id = ?',
+      )
+      .bind(unitId)
+      .first<{ reviewVersion: number; masteredAt: string | null; nextReviewAt: string | null }>();
+    const events = await db
+      .prepare('SELECT sequence FROM learning_review_events WHERE unit_id = ? ORDER BY sequence')
+      .bind(unitId)
+      .all<{ sequence: number }>();
+    expect(progress).toMatchObject({ reviewVersion: 3, masteredAt: expect.any(String) });
+    expect(progress?.nextReviewAt).toBeNull();
+    expect(events.results.map((event) => event.sequence)).toEqual([1, 2, 3]);
   });
 
   it('creates one deduplicated deadline notification across repeated reads', async () => {
@@ -611,7 +684,88 @@ describe('Sites D1 API', () => {
     expect(count?.count).toBe(1);
   });
 
-  it('loads the complete learning library with four bulk queries', async () => {
+  it('runs scheduled expiry and review notifications under a single lease', async () => {
+    await call('/api/v1/auth/me');
+    const user = await db
+      .prepare("SELECT id FROM users WHERE site_user_id = 'site-admin'")
+      .first<{ id: string }>();
+    const unit = await db
+      .prepare('SELECT id FROM learning_units WHERE published = 1 LIMIT 1')
+      .first<{ id: string }>();
+    const timestamp = new Date().toISOString();
+    await db
+      .prepare(
+        `INSERT INTO learning_progress
+           (id, user_id, unit_id, understanding, repetition_count, interval_days,
+            next_review_at, completed, review_version, completed_at, last_studied_at, updated_at)
+         VALUES (?, ?, ?, 4, 1, 1, ?, 1, 1, ?, ?, ?)`,
+      )
+      .bind('scheduled-progress', user!.id, unit!.id, timestamp, timestamp, timestamp, timestamp)
+      .run();
+    await db
+      .prepare(
+        "UPDATE jobs SET deadline_at = ?, rolling = 0, status = 'ACTIVE' WHERE id = (SELECT id FROM jobs LIMIT 1)",
+      )
+      .bind(new Date(Date.now() - 86_400_000).toISOString())
+      .run();
+
+    const result = await runScheduledMaintenance({ DB: db });
+    expect(result).toMatchObject({ acquired: true });
+    expect(result.expiredJobs).toBeGreaterThan(0);
+    expect(result.notifications).toBe(1);
+
+    await db
+      .prepare(
+        "INSERT INTO scheduler_leases (name, owner_id, lease_until, updated_at) VALUES ('notifications-and-expiry', 'other-worker', ?, ?)",
+      )
+      .bind(new Date(Date.now() + 60_000).toISOString(), timestamp)
+      .run();
+    expect(await runScheduledMaintenance({ DB: db })).toEqual({
+      acquired: false,
+      expiredJobs: 0,
+      notifications: 0,
+    });
+  });
+
+  it('filters notifications and traverses a stable cursor', async () => {
+    await call('/api/v1/auth/me');
+    const user = await db
+      .prepare("SELECT id FROM users WHERE site_user_id = 'site-admin'")
+      .first<{ id: string }>();
+    for (let index = 0; index < 3; index += 1) {
+      await db
+        .prepare(
+          `INSERT INTO notifications
+             (id, user_id, type, title, message, created_at)
+           VALUES (?, ?, ?, ?, '', ?)`,
+        )
+        .bind(
+          `cursor-notification-${index}`,
+          user!.id,
+          index === 2 ? 'COMMENT' : 'SYSTEM',
+          `알림 ${index}`,
+          new Date(Date.now() - index * 1_000).toISOString(),
+        )
+        .run();
+    }
+    const firstPage = await call('/api/v1/notifications?type=SYSTEM&page=cursor&limit=1');
+    expect(firstPage.body).toMatchObject({
+      items: [expect.objectContaining({ type: 'SYSTEM' })],
+      nextCursor: expect.any(String),
+    });
+    const cursor = String(firstPage.body.nextCursor);
+    const secondPage = await call(
+      `/api/v1/notifications?type=SYSTEM&page=cursor&limit=1&cursor=${encodeURIComponent(cursor)}`,
+    );
+    expect(secondPage.body).toMatchObject({
+      items: [expect.objectContaining({ type: 'SYSTEM' })],
+    });
+    expect((secondPage.body.items as Array<{ id: string }>)[0].id).not.toBe(
+      (firstPage.body.items as Array<{ id: string }>)[0].id,
+    );
+  });
+
+  it('loads the learning summary library with two bounded queries', async () => {
     db.resetPreparedSql();
     const learning = await call('/api/v1/learning');
     const learningQueries = db.preparedSql.filter((sql) =>
@@ -619,7 +773,7 @@ describe('Sites D1 API', () => {
     );
 
     expect(learning.response.status).toBe(200);
-    expect(learningQueries).toHaveLength(4);
+    expect(learningQueries).toHaveLength(2);
   });
 
   it('publishes all reconstructed PDF learning sources to every signed-in member', async () => {
@@ -640,12 +794,22 @@ describe('Sites D1 API', () => {
     expect(memberLearning.body).toEqual(adminLearning.body);
     const units = (
       adminLearning.body as unknown as Array<{
-        units: Array<{ visuals: Array<{ src: string; page: number }> }>;
+        units: Array<{ id: string }>;
       }>
     ).flatMap((source) => source.units);
     expect(units).toHaveLength(23);
-    expect(units.every((unit) => unit.visuals[0]?.src.startsWith('/learning/'))).toBe(true);
-    expect(units.every((unit) => unit.visuals[0]?.page > 0)).toBe(true);
+    const details = [];
+    for (const unit of units) {
+      details.push(await call(`/api/v1/learning/units/${unit.id}`, {}, memberHeaders));
+    }
+    expect(
+      details.every((detail) =>
+        (detail.body.visuals as Array<{ src: string }>)[0]?.src.startsWith('/learning/'),
+      ),
+    ).toBe(true);
+    expect(
+      details.every((detail) => (detail.body.visuals as Array<{ page: number }>)[0]?.page > 0),
+    ).toBe(true);
   });
 
   it('automatically ranks members and does not expose export or deletion request routes', async () => {
@@ -772,6 +936,68 @@ describe('Sites D1 API', () => {
     expect(retried.body).toMatchObject({ idempotent: true });
   });
 
+  it('reconciles a declared full source snapshot and marks disappeared jobs removed', async () => {
+    const secondTimestamp = new Date().toISOString();
+    const firstTimestamp = new Date(Date.parse(secondTimestamp) - 1_000).toISOString();
+    const item = (sourceUrl: string, title: string, timestamp: string) => ({
+      sourceName: 'snapshot-fixture',
+      sourceUrl,
+      companyName: '스냅샷 회사',
+      title,
+      category: '백엔드',
+      careerScope: 'NEW_GRAD_ONLY',
+      careerEvidence: '신입 지원 가능',
+      companySize: 'SMALL',
+      employmentType: 'FULL_TIME',
+      region: '서울',
+      remote: false,
+      techStack: ['TypeScript'],
+      rolling: true,
+      collectedAt: timestamp,
+      lastVerifiedAt: timestamp,
+      summary: 'authoritative snapshot fixture',
+      status: 'ACTIVE',
+    });
+    const commit = async (timestamp: string, items: ReturnType<typeof item>[]) => {
+      const preview = await call('/api/v1/jobs/import/preview', {
+        method: 'POST',
+        body: JSON.stringify({
+          version: '1.0',
+          collectedAt: timestamp,
+          sourceCount: 1,
+          snapshot: { mode: 'FULL', sources: ['snapshot-fixture'] },
+          items,
+        }),
+      });
+      expect(preview.response.status).toBe(200);
+      const approval = preview.body as { previewToken: string; checksum: string };
+      return call('/api/v1/jobs/import/commit', {
+        method: 'POST',
+        body: JSON.stringify(approval),
+      });
+    };
+
+    await commit(firstTimestamp, [
+      item('https://example.test/jobs/snapshot-kept', '계속 게시되는 공고', firstTimestamp),
+      item('https://example.test/jobs/snapshot-removed', '사라질 공고', firstTimestamp),
+    ]);
+    await commit(secondTimestamp, [
+      item('https://example.test/jobs/snapshot-kept', '계속 게시되는 공고', secondTimestamp),
+    ]);
+    const latestSnapshot = await db
+      .prepare(
+        "SELECT expired_count AS expiredCount FROM job_source_snapshots WHERE source_name = 'snapshot-fixture' ORDER BY collected_at DESC LIMIT 1",
+      )
+      .first<{ expiredCount: number }>();
+    expect(latestSnapshot?.expiredCount).toBe(1);
+    const disappeared = await db
+      .prepare(
+        "SELECT status FROM jobs WHERE source_url = 'https://example.test/jobs/snapshot-removed'",
+      )
+      .first<{ status: string }>();
+    expect(disappeared?.status).toBe('REMOVED');
+  });
+
   it('redacts hidden replies in the API response', async () => {
     await call('/api/v1/auth/me', {}, memberHeaders);
     const problem = await db
@@ -808,10 +1034,9 @@ describe('Sites D1 API', () => {
       .prepare('UPDATE solution_comments SET hidden_at = ? WHERE id = ?')
       .bind(new Date().toISOString(), reply.body.id)
       .run();
-    const listed = await call('/api/v1/coding/solutions', {}, memberHeaders);
-    const comments = (
-      listed.body as unknown as Array<{ comments: Array<{ replies: unknown[] }> }>
-    )[0]?.comments;
+    const listed = await call(`/api/v1/coding/solutions/${solutionId}`, {}, memberHeaders);
+    const comments = (listed.body as unknown as { comments: Array<{ replies: unknown[] }> })
+      .comments;
     expect(comments?.[0]?.replies).toEqual([
       expect.objectContaining({ markdown: null, redacted: 'HIDDEN' }),
     ]);

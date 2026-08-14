@@ -9,12 +9,15 @@ import {
 import * as Dialog from '@radix-ui/react-dialog';
 import { Link, useSearchParams } from 'react-router';
 import CodeMirror from '@uiw/react-codemirror';
-import { javascript } from '@codemirror/lang-javascript';
-import { python } from '@codemirror/lang-python';
 import { Code2, ExternalLink, Filter, Flame, Save, Star } from 'lucide-react';
 import { api, json } from '../lib/api';
 import { FolderSaveButton } from '../components/FolderSaveButton';
 import { useAuth } from '../auth';
+import {
+  codeEditorAccessibility,
+  loadLanguageExtensions,
+  type EditorExtensions,
+} from '../lib/code-editor';
 
 type Problem = {
   id: string;
@@ -40,16 +43,36 @@ function solutionsUrl(problem: Problem) {
 export function CodingPage() {
   const client = useQueryClient();
   const { user } = useAuth();
-  const [searchParams] = useSearchParams();
-  const [level, setLevel] = useState('');
-  const [track, setTrack] = useState<'ALGORITHM' | 'SQL'>('ALGORITHM');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [level, setLevel] = useState(searchParams.get('level') || '');
+  const [track, setTrack] = useState<'ALGORITHM' | 'SQL'>(
+    searchParams.get('track') === 'SQL' ? 'SQL' : 'ALGORITHM',
+  );
   const [selected, setSelected] = useState<Problem>();
   const [language, setLanguage] = useState<CodeLanguage>(user?.preferredLanguage || 'python');
   const [code, setCode] = useState('');
   const [description, setDescription] = useState('');
+  const [editorExtensions, setEditorExtensions] = useState<EditorExtensions>([]);
   useEffect(() => {
     if (user?.preferredLanguage) setLanguage(user.preferredLanguage);
   }, [user?.preferredLanguage]);
+  useEffect(() => {
+    let active = true;
+    void loadLanguageExtensions(language).then((extensions) => {
+      if (active) setEditorExtensions(extensions);
+    });
+    return () => {
+      active = false;
+    };
+  }, [language]);
+  useEffect(() => {
+    const next = new URLSearchParams(searchParams);
+    if (track === 'SQL') next.set('track', track);
+    else next.delete('track');
+    if (level) next.set('level', level);
+    else next.delete('level');
+    if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true });
+  }, [level, searchParams, setSearchParams, track]);
   const problems = useInfiniteQuery({
     queryKey: ['problems', track, level],
     initialPageParam: null as string | null,
@@ -67,7 +90,10 @@ export function CodingPage() {
   });
   const save = useMutation({
     mutationFn: async () => {
-      const solution = await api('/coding/solutions', {
+      const activeChallenge = challenge.data?.find(
+        (item) => selected && item.problem.id === selected.id,
+      );
+      return api(activeChallenge ? '/coding/solutions/complete' : '/coding/solutions', {
         method: 'POST',
         body: json({
           problemId: selected!.id,
@@ -77,15 +103,9 @@ export function CodingPage() {
           description,
           lessons: '',
           solved: true,
+          challengeId: activeChallenge?.id,
         }),
       });
-      const activeChallenge = challenge.data?.find(
-        (item) => selected && item.problem.id === selected.id,
-      );
-      if (activeChallenge) {
-        await api(`/coding/daily-challenge/${activeChallenge.id}/complete`, { method: 'POST' });
-      }
-      return solution;
     },
     onSuccess: async () => {
       if (selected) localStorage.removeItem(`cg-solution-draft:${selected.id}`);
@@ -371,7 +391,10 @@ export function CodingPage() {
                   닫기
                 </button>
               </div>
-              <form onSubmit={submit}>
+              <form
+                onSubmit={submit}
+                aria-describedby={save.isError ? 'solution-submit-error' : undefined}
+              >
                 <div className="form-row">
                   <label>
                     언어
@@ -401,13 +424,7 @@ export function CodingPage() {
                     <CodeMirror
                       value={code}
                       height="260px"
-                      extensions={
-                        language === 'python'
-                          ? [python()]
-                          : language === 'javascript'
-                            ? [javascript()]
-                            : []
-                      }
+                      extensions={[codeEditorAccessibility, ...editorExtensions]}
                       onChange={setCode}
                     />
                   </div>
@@ -419,9 +436,15 @@ export function CodingPage() {
                     onChange={(event) => setDescription(event.target.value)}
                     rows={5}
                     placeholder="접근 방식, 복잡도, 배운 점을 Markdown으로 남겨보세요."
+                    aria-invalid={save.isError || undefined}
+                    aria-describedby={save.isError ? 'solution-submit-error' : undefined}
                   />
                 </label>
-                {save.isError && <div className="form-error">{save.error.message}</div>}
+                {save.isError && (
+                  <div className="form-error" id="solution-submit-error" role="alert">
+                    {save.error.message}
+                  </div>
+                )}
                 <button className="primary-button" disabled={!code.trim() || save.isPending}>
                   <Save /> {save.isPending ? '저장 중…' : '해결 기록 저장'}
                 </button>

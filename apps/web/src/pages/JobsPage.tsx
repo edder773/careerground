@@ -186,7 +186,20 @@ function SourceDetails({ job, compact = false }: { job: Job; compact?: boolean }
   );
 }
 
-function JobDetailModal({ job, onClose }: { job: Job; onClose: () => void }) {
+function JobDetailModal({
+  job,
+  onClose,
+  onBookmark,
+  onApplication,
+  pending,
+}: {
+  job: Job;
+  onClose: () => void;
+  onBookmark: (bookmarked: boolean) => void;
+  onApplication: (patch: { status?: string; memo?: string }) => void;
+  pending: boolean;
+}) {
+  const [memo, setMemo] = useState(job.savedBy[0]?.memo || '');
   return (
     <DialogPrimitive.Root
       open
@@ -249,6 +262,46 @@ function JobDetailModal({ job, onClose }: { job: Job; onClose: () => void }) {
           </div>
           <footer>
             <FolderSaveButton itemType="JOB_POSTING" targetId={job.id} label={job.title} />
+            <button
+              type="button"
+              className={job.bookmarked ? 'saved' : ''}
+              aria-pressed={job.bookmarked}
+              disabled={pending}
+              onClick={() => onBookmark(!job.bookmarked)}
+            >
+              <Bookmark fill={job.bookmarked ? 'currentColor' : 'none'} />
+              {job.bookmarked ? '관심 공고' : '관심 저장'}
+            </button>
+            {job.savedBy.length > 0 && (
+              <label className="application-status">
+                <span className="sr-only">{job.title} 지원 상태</span>
+                <select
+                  value={job.savedBy[0]?.status || 'INTERESTED'}
+                  disabled={pending}
+                  onChange={(event) => onApplication({ status: event.target.value })}
+                >
+                  {Object.entries(applicationLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            {job.savedBy.length > 0 && (
+              <label className="application-memo">
+                <span className="sr-only">{job.title} 지원 메모</span>
+                <textarea
+                  rows={2}
+                  value={memo}
+                  onChange={(event) => setMemo(event.target.value)}
+                  onBlur={() => {
+                    if (memo !== job.savedBy[0]?.memo) onApplication({ memo });
+                  }}
+                  placeholder="지원 메모"
+                />
+              </label>
+            )}
             <a href={job.sourceUrl} target="_blank" rel="noreferrer">
               {job.source.name}에서 보기 <ExternalLink />
             </a>
@@ -667,6 +720,7 @@ export function JobsPage() {
   useEffect(() => {
     if (!requestedJob || !jobRows.length) return;
     document.getElementById(`job-${requestedJob}`)?.scrollIntoView({ block: 'center' });
+    setSelectedJobId(requestedJob);
   }, [jobRows, requestedJob]);
 
   const calendarData = useMemo(() => {
@@ -694,7 +748,14 @@ export function JobsPage() {
         rollingJobs.length + [...grouped.values()].reduce((sum, events) => sum + events.length, 0),
     };
   }, [jobRows]);
-  const selectedJob = jobRows.find((job) => job.id === selectedJobId);
+  const selectedJobSummary = jobRows.find((job) => job.id === selectedJobId);
+  const selectedJobDetail = useQuery({
+    queryKey: ['jobs', 'detail', selectedJobId],
+    queryFn: () => api<Job>(`/jobs/${selectedJobId}`),
+    enabled: Boolean(selectedJobId),
+    staleTime: 60_000,
+  });
+  const selectedJob = selectedJobDetail.data || selectedJobSummary;
   const expandedDateEvents = expandedDateKey
     ? calendarData.eventsByDate.get(expandedDateKey) || []
     : [];
@@ -1007,7 +1068,13 @@ export function JobsPage() {
       />
 
       {selectedJob && (
-        <JobDetailModal job={selectedJob} onClose={() => setSelectedJobId(undefined)} />
+        <JobDetailModal
+          job={selectedJob}
+          onClose={() => setSelectedJobId(undefined)}
+          onBookmark={(bookmarked) => bookmark.mutate({ jobId: selectedJob.id, bookmarked })}
+          onApplication={(patch) => application.mutate({ jobId: selectedJob.id, patch })}
+          pending={bookmark.isPending || application.isPending}
+        />
       )}
 
       {viewMode === 'list' && (

@@ -207,13 +207,24 @@ describe('domain pages', () => {
   it('posts a sanitized comment through the solution flow', async () => {
     const solution = {
       id: '11111111-1111-4111-8111-111111111111',
+      problemId: 'problem-1',
       title: '풀이 기록',
       language: 'javascript',
       code: 'const answer = 1;',
       description: '설명',
+      descriptionPreview: '설명',
+      solved: true,
+      currentRev: 1,
+      canEdit: true,
+      reactionCount: 0,
+      reactedByMe: false,
+      commentCount: 0,
       author: { displayName: '김그라운드' },
       problem: { displayTitle: '데모 문제', level: 1 },
       reactions: [],
+      revisions: [
+        { id: 'revision-1', revision: 1, code: 'const answer = 1;', description: '설명' },
+      ],
       comments: [],
     };
     vi.stubGlobal(
@@ -222,17 +233,19 @@ describe('domain pages', () => {
         const url = String(input);
         const body = init?.body ? JSON.parse(String(init.body)) : undefined;
         calls.push({ url, method: init?.method || 'GET', body });
-        return response(
-          url.includes('/coding/solutions?')
-            ? { items: [solution], nextCursor: null, total: 1 }
-            : { id: 'comment' },
-        );
+        if (url.includes('/coding/solutions?')) {
+          return response({ items: [solution], nextCursor: null, total: 1 });
+        }
+        if ((init?.method || 'GET') === 'GET' && url.endsWith(`/coding/solutions/${solution.id}`)) {
+          return response(solution);
+        }
+        return response({ id: 'comment' });
       }),
     );
     const user = userEvent.setup();
     renderPage(<SolutionsPage />);
-    await user.click(await screen.findByRole('button', { name: '댓글 남기기' }));
-    await user.type(screen.getByRole('textbox', { name: '댓글' }), '좋은 설명입니다.');
+    await user.click(await screen.findByRole('button', { name: /코드·revision·댓글 보기/ }));
+    await user.type(await screen.findByRole('textbox', { name: '댓글' }), '좋은 설명입니다.');
     await user.click(screen.getByRole('button', { name: '등록' }));
     await waitFor(() =>
       expect(
@@ -246,6 +259,16 @@ describe('domain pages', () => {
   });
 
   it('opens learning content without an understanding rating prompt', async () => {
+    const detail = {
+      id: '11111111-1111-4111-8111-111111111111',
+      title: '포커스',
+      summary: '# 포커스의 핵심\n\n키보드 사용자가 흐름을 놓치지 않게 설계합니다.',
+      concepts: ['키보드'],
+      visuals: [],
+      flashcards: [{ id: 'f', front: '포커스란?', back: '현재 입력 위치입니다.' }],
+      questions: [{ id: 'q', prompt: '왜 필요한가요?', attempts: [] }],
+      progress: [],
+    };
     const source = [
       {
         id: 's',
@@ -256,12 +279,9 @@ describe('domain pages', () => {
           {
             id: '11111111-1111-4111-8111-111111111111',
             title: '포커스',
-            summary: '# 포커스의 핵심\n\n키보드 사용자가 흐름을 놓치지 않게 설계합니다.',
-            concepts: ['키보드'],
-            flashcards: [{ id: 'f', front: '포커스란?', back: '현재 입력 위치입니다.' }],
-            questions: [
-              { id: 'q', prompt: '왜 필요한가요?', answer: '현재 위치를 알기 위해서입니다.' },
-            ],
+            summaryPreview: detail.summary,
+            flashcardCount: 1,
+            questionCount: 1,
             progress: [],
           },
         ],
@@ -275,6 +295,7 @@ describe('domain pages', () => {
         calls.push({ url, method: init?.method || 'GET', body });
         if (url.endsWith('/learning')) return response(source);
         if (url.endsWith('/learning/due')) return response([]);
+        if (url.endsWith(`/learning/units/${detail.id}`)) return response(detail);
         return response({});
       }),
     );
@@ -295,7 +316,14 @@ describe('domain pages', () => {
       vi.fn(() =>
         response({
           calculatedAt: '2026-08-12T00:00:00Z',
-          selfReported: true,
+          currentUserId: 'u',
+          selfReported: false,
+          periods: {
+            timezone: 'Asia/Seoul',
+            weeklyStart: '2026-08-10T00:00:00+09:00',
+            monthlyStart: '2026-08-01T00:00:00+09:00',
+          },
+          methodology: '모든 멤버의 SOLVED 풀이를 자동 계산합니다.',
           rows: [
             {
               userId: 'u',
