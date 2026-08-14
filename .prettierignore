@@ -3,6 +3,7 @@ dist
 coverage
 pnpm-lock.yaml
 apps/api/src/generated
+apps/web/public/*.svg
 playwright-report
 test-results
 data/imports/*.json
