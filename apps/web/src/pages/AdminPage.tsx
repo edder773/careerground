@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { FileJson, History, Settings2, ShieldCheck, Upload, UserPlus } from 'lucide-react';
+import {
+  AlertTriangle,
+  Download,
+  FileJson,
+  History,
+  Settings2,
+  ShieldCheck,
+  Upload,
+  UserPlus,
+} from 'lucide-react';
 import { api, json } from '../lib/api';
 
 type Overview = {
@@ -19,6 +28,12 @@ type DailySetting = {
   allowedLevels: number[];
   repeatExclusionDays: number;
   allowRepeatRelaxation: boolean;
+};
+type Readiness = {
+  status: 'ok' | 'not-ready';
+  database: 'd1';
+  schema: { expectedVersion: string; appliedVersion: string | null; ready: boolean };
+  canary: { jobs: number; problems: number; learning: number; searchRows: number } | null;
 };
 
 type AdminUser = {
@@ -56,6 +71,14 @@ type ImportPreview = {
   unitCount?: number;
   flashcardCount?: number;
   questionCount?: number;
+  snapshot?: { mode: 'FULL'; sources: string[] } | null;
+  removalCandidates?: Array<{
+    id: string;
+    sourceName: string;
+    companyName: string;
+    title: string;
+    sourceUrl: string;
+  }>;
 };
 type ActivePreview = {
   kind: 'jobs' | 'learning';
@@ -73,6 +96,11 @@ export function AdminPage() {
   const dailySetting = useQuery({
     queryKey: ['admin-daily-setting'],
     queryFn: () => api<DailySetting>('/admin/daily-challenge-setting'),
+  });
+  const readiness = useQuery({
+    queryKey: ['admin-readiness'],
+    queryFn: () => api<Readiness>('/health/ready'),
+    refetchInterval: 60_000,
   });
   const users = useQuery({
     queryKey: ['admin-users'],
@@ -103,7 +131,11 @@ export function AdminPage() {
   const [problemUrl, setProblemUrl] = useState('');
   const [problemTitle, setProblemTitle] = useState('');
   const [problemLevel, setProblemLevel] = useState(1);
+  const [problemTrack, setProblemTrack] = useState<'ALGORITHM' | 'SQL'>('ALGORITHM');
   const [problemTags, setProblemTags] = useState('');
+  const [previewPage, setPreviewPage] = useState(0);
+  const [reviewAcknowledged, setReviewAcknowledged] = useState(false);
+  const [removalAcknowledged, setRemovalAcknowledged] = useState(false);
   useEffect(() => {
     if (!dailySetting.data) return;
     setLevels(dailySetting.data.allowedLevels);
@@ -120,6 +152,13 @@ export function AdminPage() {
           body: json({
             previewToken: preview.data.previewToken,
             checksum: preview.data.checksum,
+            acknowledgeAllRows: reviewAcknowledged,
+            reviewedRowCount:
+              preview.kind === 'jobs'
+                ? preview.data.rows?.length || 0
+                : preview.data.unitCount || 0,
+            acknowledgeRemovals: removalAcknowledged,
+            removalCount: preview.data.removalCandidates?.length || 0,
           }),
         });
       }
@@ -142,6 +181,9 @@ export function AdminPage() {
           signature,
           data: data as ImportPreview,
         });
+        setPreviewPage(0);
+        setReviewAcknowledged(false);
+        setRemovalAcknowledged(false);
       }
     },
   });
@@ -192,6 +234,9 @@ export function AdminPage() {
     onSuccess: (data) => {
       const signature = jobFile ? `${jobFile.name}:${jobFile.size}:${jobFile.lastModified}` : '';
       setPreview({ kind: 'jobs', source: 'file', signature, data });
+      setPreviewPage(0);
+      setReviewAcknowledged(false);
+      setRemovalAcknowledged(false);
     },
   });
   const commitFilePreview = useMutation({
@@ -204,6 +249,10 @@ export function AdminPage() {
         body: json({
           previewToken: preview.data.previewToken,
           checksum: preview.data.checksum,
+          acknowledgeAllRows: reviewAcknowledged,
+          reviewedRowCount: preview.data.rows?.length || 0,
+          acknowledgeRemovals: removalAcknowledged,
+          removalCount: preview.data.removalCandidates?.length || 0,
         }),
       });
     },
@@ -226,6 +275,7 @@ export function AdminPage() {
           sourceUrl: problemUrl,
           displayTitle: problemTitle,
           level: problemLevel,
+          track: problemTrack,
           tags: problemTags
             .split(',')
             .map((tag) => tag.trim())
@@ -238,6 +288,21 @@ export function AdminPage() {
       setProblemTags('');
       setMessage('프로그래머스 원본 링크 문제를 등록했습니다.');
       await client.invalidateQueries({ queryKey: ['admin-coding-problems'] });
+    },
+  });
+  const updateUser = useMutation({
+    mutationFn: ({ id, role, isActive }: Pick<AdminUser, 'id' | 'role' | 'isActive'>) =>
+      api(`/auth/users/${id}`, {
+        method: 'PATCH',
+        body: json({ role, isActive }),
+      }),
+    onSuccess: async () => {
+      setMessage('사용자 접근 권한을 변경하고 감사 로그에 기록했습니다.');
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ['admin-users'] }),
+        client.invalidateQueries({ queryKey: ['admin-overview'] }),
+        client.invalidateQueries({ queryKey: ['admin-audit-logs'] }),
+      ]);
     },
   });
   return (
@@ -268,10 +333,18 @@ export function AdminPage() {
           <span>최근 import batch</span>
         </article>
         <article>
-          <strong>미지원</strong>
-          <span>D1 처리 큐·신고 워크플로</span>
+          <strong>{readiness.data?.status === 'ok' ? '정상' : '확인 필요'}</strong>
+          <span>D1 schema {readiness.data?.schema.appliedVersion || '조회 중'}</span>
         </article>
       </section>
+      {readiness.isError && (
+        <div className="error-panel" role="alert">
+          운영 준비 상태를 확인하지 못했습니다.
+          <button type="button" onClick={() => void readiness.refetch()}>
+            다시 확인
+          </button>
+        </div>
+      )}
       <div className="admin-grid">
         <section className="admin-card">
           <header>
@@ -286,7 +359,38 @@ export function AdminPage() {
               <div key={user.id}>
                 <strong>{user.displayName}</strong>
                 <span>{user.email}</span>
-                <small>{user.role}</small>
+                <label>
+                  <span className="sr-only">{user.displayName} 역할</span>
+                  <select
+                    value={user.role}
+                    disabled={updateUser.isPending}
+                    onChange={(event) =>
+                      updateUser.mutate({
+                        id: user.id,
+                        role: event.target.value as AdminUser['role'],
+                        isActive: user.isActive,
+                      })
+                    }
+                  >
+                    <option value="MEMBER">멤버</option>
+                    <option value="ADMIN">관리자</option>
+                  </select>
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={user.isActive}
+                    disabled={updateUser.isPending}
+                    onChange={(event) =>
+                      updateUser.mutate({
+                        id: user.id,
+                        role: user.role,
+                        isActive: event.target.checked,
+                      })
+                    }
+                  />
+                  활성
+                </label>
               </div>
             ))}
           </div>
@@ -336,6 +440,16 @@ export function AdminPage() {
                     Lv. {level}
                   </option>
                 ))}
+              </select>
+            </label>
+            <label>
+              문제 유형
+              <select
+                value={problemTrack}
+                onChange={(event) => setProblemTrack(event.target.value as 'ALGORITHM' | 'SQL')}
+              >
+                <option value="ALGORITHM">알고리즘</option>
+                <option value="SQL">SQL</option>
               </select>
             </label>
             <label>
@@ -403,7 +517,15 @@ export function AdminPage() {
               />
               후보가 없으면 제외 기간을 완화
             </label>
-            <button className="primary-button compact" disabled={!levels.length}>
+            <button
+              className="primary-button compact"
+              disabled={
+                !dailySetting.data ||
+                dailySetting.isLoading ||
+                settingMutation.isPending ||
+                !levels.length
+              }
+            >
               규칙 저장
             </button>
           </form>
@@ -505,7 +627,9 @@ export function AdminPage() {
                   importMutation.isPending ||
                   preview?.kind !== 'jobs' ||
                   preview.source !== 'text' ||
-                  preview.signature !== jobPayload
+                  preview.signature !== jobPayload ||
+                  !reviewAcknowledged ||
+                  (Boolean(preview.data.removalCandidates?.length) && !removalAcknowledged)
                 }
                 onClick={() => importMutation.mutate({ type: 'jobs', commit: true })}
               >
@@ -525,7 +649,9 @@ export function AdminPage() {
                   commitFilePreview.isPending ||
                   preview?.kind !== 'jobs' ||
                   preview.source !== 'file' ||
-                  preview.signature !== `${jobFile.name}:${jobFile.size}:${jobFile.lastModified}`
+                  preview.signature !== `${jobFile.name}:${jobFile.size}:${jobFile.lastModified}` ||
+                  !reviewAcknowledged ||
+                  (Boolean(preview.data.removalCandidates?.length) && !removalAcknowledged)
                 }
                 onClick={() => commitFilePreview.mutate()}
               >
@@ -562,7 +688,8 @@ export function AdminPage() {
                   importMutation.isPending ||
                   preview?.kind !== 'learning' ||
                   preview.source !== 'text' ||
-                  preview.signature !== learningPayload
+                  preview.signature !== learningPayload ||
+                  !reviewAcknowledged
                 }
                 onClick={() => importMutation.mutate({ type: 'learning', commit: true })}
               >
@@ -592,30 +719,99 @@ export function AdminPage() {
               </dl>
             )}
             {preview.data.rows && (
-              <div className="table-scroll" tabIndex={0}>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>행</th>
-                      <th>판정</th>
-                      <th>회사</th>
-                      <th>공고</th>
-                      <th>사유</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {preview.data.rows.slice(0, 100).map((row) => (
-                      <tr key={`${row.index}-${row.title}`}>
-                        <td>{row.index + 1}</td>
-                        <td>{row.outcome}</td>
-                        <td>{row.companyName}</td>
-                        <td>{row.title}</td>
-                        <td>{row.reason}</td>
+              <>
+                <button
+                  type="button"
+                  className="ghost-button"
+                  onClick={() => {
+                    const blob = new Blob([JSON.stringify(preview.data, null, 2)], {
+                      type: 'application/json',
+                    });
+                    const href = URL.createObjectURL(blob);
+                    const anchor = document.createElement('a');
+                    anchor.href = href;
+                    anchor.download = `careerground-${preview.kind}-preview-${preview.data.checksum.slice(0, 12)}.json`;
+                    anchor.click();
+                    URL.revokeObjectURL(href);
+                  }}
+                >
+                  <Download /> 전체 diff 다운로드
+                </button>
+                <div className="table-scroll" tabIndex={0}>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>행</th>
+                        <th>판정</th>
+                        <th>회사</th>
+                        <th>공고</th>
+                        <th>사유</th>
                       </tr>
+                    </thead>
+                    <tbody>
+                      {preview.data.rows
+                        .slice(previewPage * 100, previewPage * 100 + 100)
+                        .map((row) => (
+                          <tr key={`${row.index}-${row.title}`}>
+                            <td>{row.index + 1}</td>
+                            <td>{row.outcome}</td>
+                            <td>{row.companyName}</td>
+                            <td>{row.title}</td>
+                            <td>{row.reason}</td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+                <nav className="preview-pagination" aria-label="미리보기 페이지">
+                  <button
+                    type="button"
+                    disabled={previewPage === 0}
+                    onClick={() => setPreviewPage((page) => page - 1)}
+                  >
+                    이전 100행
+                  </button>
+                  <span>
+                    {previewPage + 1} / {Math.max(1, Math.ceil(preview.data.rows.length / 100))}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={(previewPage + 1) * 100 >= preview.data.rows.length}
+                    onClick={() => setPreviewPage((page) => page + 1)}
+                  >
+                    다음 100행
+                  </button>
+                </nav>
+              </>
+            )}
+            {(preview.data.removalCandidates?.length || 0) > 0 && (
+              <section className="import-removal-warning" role="alert">
+                <AlertTriangle />
+                <div>
+                  <strong>
+                    FULL snapshot 제거 대상 {preview.data.removalCandidates?.length}건
+                  </strong>
+                  <p>승인하면 아래 공고가 REMOVED 상태로 바뀝니다.</p>
+                  <ul>
+                    {preview.data.removalCandidates?.slice(0, 20).map((job) => (
+                      <li key={job.id}>
+                        {job.sourceName} · {job.companyName} · {job.title}
+                      </li>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </ul>
+                  {(preview.data.removalCandidates?.length || 0) > 20 && (
+                    <small>나머지는 전체 diff 다운로드에서 확인할 수 있습니다.</small>
+                  )}
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={removalAcknowledged}
+                      onChange={(event) => setRemovalAcknowledged(event.target.checked)}
+                    />
+                    제거 대상 전체를 별도로 확인했습니다.
+                  </label>
+                </div>
+              </section>
             )}
             {preview.data.source && (
               <p>
@@ -623,6 +819,14 @@ export function AdminPage() {
                 {preview.data.flashcardCount ?? 0}개 · 문항 {preview.data.questionCount ?? 0}개
               </p>
             )}
+            <label className="import-review-ack">
+              <input
+                type="checkbox"
+                checked={reviewAcknowledged}
+                onChange={(event) => setReviewAcknowledged(event.target.checked)}
+              />
+              화면의 전체 페이지와 다운로드 diff를 검토했습니다.
+            </label>
           </section>
         )}
       </section>

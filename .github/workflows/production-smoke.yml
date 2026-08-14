@@ -17,17 +17,40 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Check public D1 readiness and latency budget
+      - name: Check public site, security, API boundaries and D1 readiness
         shell: bash
         run: |
+          base='https://careerground-workspace.edder773.chatgpt.site'
+          live="$(curl --silent --show-error --fail --max-time 10 "$base/api/v1/health/live")"
+          printf '%s' "$live" | jq -e '.status == "ok" and .database == "d1"'
+
           result="$(curl --silent --show-error --fail --max-time 10 \
             --write-out $'\n%{http_code} %{time_total}' \
-            https://careerground-workspace.edder773.chatgpt.site/api/v1/health/ready)"
+            "$base/api/v1/health/ready")"
           body="$(printf '%s\n' "$result" | head -n 1)"
           metrics="$(printf '%s\n' "$result" | tail -n 1)"
           status="$(printf '%s' "$metrics" | cut -d' ' -f1)"
           seconds="$(printf '%s' "$metrics" | cut -d' ' -f2)"
           test "$status" = "200"
-          printf '%s' "$body" | jq -e '.status == "ok" and .database == "d1"'
+          printf '%s' "$body" | jq -e '
+            .status == "ok" and .database == "d1" and
+            .schema.ready == true and
+            (.schema.expectedVersion == .schema.appliedVersion) and
+            (.canary.jobs | type == "number") and
+            (.canary.problems | type == "number") and
+            (.canary.learning | type == "number") and
+            (.canary.searchRows | type == "number")
+          '
           awk -v actual="$seconds" 'BEGIN { if (actual > 2.5) exit 1 }'
+
+          headers="$(curl --silent --show-error --fail --max-time 10 --head "$base/")"
+          printf '%s' "$headers" | grep -qi '^content-security-policy:'
+          printf '%s' "$headers" | grep -qi '^x-content-type-options: nosniff'
+          curl --silent --show-error --fail --max-time 10 "$base/" | grep -q '<div id="root"></div>'
+          curl --silent --show-error --fail --max-time 10 "$base/favicon.svg" >/dev/null
+
+          auth_status="$(curl --silent --show-error --max-time 10 --output /tmp/auth-body \
+            --write-out '%{http_code}' "$base/api/v1/auth/me")"
+          test "$auth_status" = '401'
+          jq -e '.code == "UNAUTHORIZED"' /tmp/auth-body
           printf 'health_status=%s latency_seconds=%s\n' "$status" "$seconds"

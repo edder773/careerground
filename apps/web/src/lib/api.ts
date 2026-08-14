@@ -32,7 +32,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   if (init.body && !(init.body instanceof FormData))
     headers.set('content-type', 'application/json');
-  const timeout = AbortSignal.timeout(15_000);
+  const timeout = AbortSignal.timeout(path.includes('/import/') ? 60_000 : 15_000);
   const signal = init.signal ? AbortSignal.any([init.signal, timeout]) : timeout;
   let response: Response;
   try {
@@ -73,7 +73,29 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (response.status === 204 || response.headers.get('content-length') === '0') {
     return undefined as T;
   }
-  const payload: unknown = await response.json();
+  if (!response.headers.get('content-type')?.includes('application/json')) {
+    const error = new ApiError(
+      '서버가 JSON이 아닌 응답을 반환했습니다.',
+      502,
+      response.headers.get('x-request-id') || undefined,
+      'INVALID_API_RESPONSE',
+    );
+    announceApiFailure(error.message);
+    throw error;
+  }
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch {
+    const error = new ApiError(
+      '서버 JSON 응답을 해석하지 못했습니다.',
+      502,
+      response.headers.get('x-request-id') || undefined,
+      'INVALID_API_RESPONSE',
+    );
+    announceApiFailure(error.message);
+    throw error;
+  }
   const parsed = responseSchemaFor(path, init.method || 'GET').safeParse(payload);
   if (!parsed.success) {
     const error = new ApiError(

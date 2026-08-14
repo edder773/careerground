@@ -63,6 +63,8 @@ type SearchItem = {
   displayTitle?: string;
 };
 
+const searchItemKey = (group: string, item: SearchItem) => `${group}:${item.id}`;
+
 export function AppShell({
   children,
   viewMode,
@@ -76,9 +78,12 @@ export function AppShell({
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [activeResult, setActiveResult] = useState(0);
+  const recentSearchKey = `cg-recent-searches:v2:${user?.id || 'anonymous'}`;
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     try {
-      const parsed = JSON.parse(localStorage.getItem('cg-recent-searches') || '[]') as unknown;
+      const parsed = JSON.parse(
+        localStorage.getItem(`cg-recent-searches:v2:${user?.id || 'anonymous'}`) || '[]',
+      ) as unknown;
       return Array.isArray(parsed) ? parsed.map(String).slice(0, 5) : [];
     } catch {
       return [];
@@ -87,7 +92,18 @@ export function AppShell({
   const unread = useQuery({
     queryKey: ['notification-unread-count'],
     queryFn: () => api<{ count: number }>('/notifications/unread-count'),
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
   });
+  useEffect(() => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(recentSearchKey) || '[]') as unknown;
+      setRecentSearches(Array.isArray(parsed) ? parsed.map(String).slice(0, 5) : []);
+      localStorage.removeItem('cg-recent-searches');
+    } catch {
+      setRecentSearches([]);
+    }
+  }, [recentSearchKey]);
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedQuery(query.trim()), 300);
     return () => window.clearTimeout(timer);
@@ -130,7 +146,7 @@ export function AppShell({
       const next = [term, ...recentSearches.filter((value) => value !== term)].slice(0, 5);
       setRecentSearches(next);
       try {
-        localStorage.setItem('cg-recent-searches', JSON.stringify(next));
+        localStorage.setItem(recentSearchKey, JSON.stringify(next));
       } catch {
         // Recent search history is an optional device preference.
       }
@@ -279,7 +295,11 @@ export function AppShell({
             >
               <Search size={17} />
               <span>검색</span>
-              <kbd>⌘ K</kbd>
+              <kbd>
+                {typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
+                  ? '⌘ K'
+                  : 'Ctrl K'}
+              </kbd>
             </button>
             {location.pathname === '/' && (
               <div className="view-toggle" aria-label="홈 폴더 보기 방식">
@@ -327,16 +347,27 @@ export function AppShell({
               <Search />
               <span className="sr-only">검색어</span>
               <input
+                role="combobox"
+                aria-autocomplete="list"
+                aria-controls="workspace-search-results"
+                aria-expanded={searchOpen}
+                aria-activedescendant={
+                  flatResults[activeResult]
+                    ? `search-option-${encodeURIComponent(searchItemKey(flatResults[activeResult].group, flatResults[activeResult]))}`
+                    : undefined
+                }
                 autoFocus
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === 'ArrowDown') {
                     event.preventDefault();
-                    setActiveResult((current) => Math.min(current + 1, flatResults.length - 1));
+                    if (flatResults.length > 0)
+                      setActiveResult((current) => Math.min(current + 1, flatResults.length - 1));
                   } else if (event.key === 'ArrowUp') {
                     event.preventDefault();
-                    setActiveResult((current) => Math.max(0, current - 1));
+                    if (flatResults.length > 0)
+                      setActiveResult((current) => Math.max(0, current - 1));
                   } else if (event.key === 'Enter' && flatResults[activeResult]) {
                     event.preventDefault();
                     openResult(flatResults[activeResult]);
@@ -346,6 +377,7 @@ export function AppShell({
               />
             </label>
             <div
+              id="workspace-search-results"
               className="search-results"
               aria-live="polite"
               aria-label="검색 결과"
@@ -354,7 +386,22 @@ export function AppShell({
               {query.length < 2 && recentSearches.length === 0 && <p>두 글자 이상 입력하세요.</p>}
               {query.length < 2 && recentSearches.length > 0 && (
                 <section className="recent-searches" aria-label="최근 검색어">
-                  <h3>최근 검색</h3>
+                  <header>
+                    <h3>최근 검색</h3>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRecentSearches([]);
+                        try {
+                          localStorage.removeItem(recentSearchKey);
+                        } catch {
+                          // Device history is optional.
+                        }
+                      }}
+                    >
+                      모두 지우기
+                    </button>
+                  </header>
                   {recentSearches.map((term) => (
                     <button key={term} type="button" onClick={() => setQuery(term)}>
                       {term}
@@ -371,22 +418,34 @@ export function AppShell({
                     Array.isArray(items) && items.length > 0 ? (
                       <section key={group} role="group" aria-label={group}>
                         <h3>{group}</h3>
-                        {items.slice(0, 5).map((item, index) => (
-                          <button
-                            key={String(item.id || index)}
-                            role="option"
-                            aria-selected={flatResults[activeResult]?.id === item.id}
-                            className={flatResults[activeResult]?.id === item.id ? 'active' : ''}
-                            onMouseEnter={() =>
-                              setActiveResult(
-                                flatResults.findIndex((result) => result.id === item.id),
+                        {items.map((item, index) => {
+                          const key = searchItemKey(group, item);
+                          const activeKey = flatResults[activeResult]
+                            ? searchItemKey(
+                                flatResults[activeResult].group,
+                                flatResults[activeResult],
                               )
-                            }
-                            onClick={() => openResult(item)}
-                          >
-                            {String(item.title || item.name || item.displayTitle || '검색 결과')}
-                          </button>
-                        ))}
+                            : '';
+                          return (
+                            <button
+                              id={`search-option-${encodeURIComponent(key)}`}
+                              key={key || `${group}:${index}`}
+                              role="option"
+                              aria-selected={activeKey === key}
+                              className={activeKey === key ? 'active' : ''}
+                              onMouseEnter={() =>
+                                setActiveResult(
+                                  flatResults.findIndex(
+                                    (result) => searchItemKey(result.group, result) === key,
+                                  ),
+                                )
+                              }
+                              onClick={() => openResult(item)}
+                            >
+                              {String(item.title || item.name || item.displayTitle || '검색 결과')}
+                            </button>
+                          );
+                        })}
                       </section>
                     ) : null,
                   )}

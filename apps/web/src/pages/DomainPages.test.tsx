@@ -47,6 +47,13 @@ describe('domain pages', () => {
     await user.click(within(filter).getByRole('checkbox', { name: '대기업' }));
     await user.click(within(filter).getByRole('checkbox', { name: '중견기업' }));
     await user.click(within(filter).getByRole('checkbox', { name: 'AI 풀스택 개발' }));
+    expect(
+      calls.some((call) => {
+        const params = new URL(call.url, 'https://careerground.example').searchParams;
+        return params.has('companySize') || params.has('category');
+      }),
+    ).toBe(false);
+    await user.click(within(filter).getByRole('button', { name: '3개 조건 적용' }));
     await waitFor(() =>
       expect(
         calls.some((call) => {
@@ -58,7 +65,6 @@ describe('domain pages', () => {
         }),
       ).toBe(true),
     );
-    await user.click(within(filter).getByRole('button', { name: '3개 조건 적용' }));
     await user.click(screen.getByRole('button', { name: '마감 임박순' }));
     await waitFor(() =>
       expect(calls.some((call) => call.url.includes('sort=deadline'))).toBe(true),

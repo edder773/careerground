@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import {
   DndContext,
   KeyboardSensor,
@@ -22,7 +22,10 @@ import {
   BellRing,
   BookOpen,
   BriefcaseBusiness,
+  ChevronDown,
+  ChevronUp,
   Code2,
+  ExternalLink,
   Folder,
   FolderPlus,
   GripVertical,
@@ -37,7 +40,13 @@ import { api, json } from '../lib/api';
 import type { ViewMode } from '../components/AppShell';
 import '../styles/home.css';
 
-type CollectionItem = { id: string; itemType: string; targetId: string; label?: string };
+type CollectionItem = {
+  id: string;
+  itemType: string;
+  targetId: string;
+  label?: string;
+  position?: number;
+};
 export type Collection = {
   id: string;
   name: string;
@@ -57,6 +66,17 @@ type Challenge = {
     sourceUrl: string;
   };
 };
+
+function itemHref(item: CollectionItem) {
+  const encoded = encodeURIComponent(item.targetId);
+  if (item.itemType === 'EXTERNAL_LINK') return item.targetId;
+  if (item.itemType === 'NOTE') return `/notes?note=${encoded}`;
+  if (item.itemType === 'JOB_POSTING') return `/jobs?job=${encoded}`;
+  if (item.itemType === 'CODING_PROBLEM') return `/coding?problem=${encoded}`;
+  if (item.itemType === 'SOLUTION') return `/solutions?solution=${encoded}`;
+  if (item.itemType === 'LEARNING_UNIT') return `/learning?unit=${encoded}`;
+  return undefined;
+}
 
 function SortableFolder({
   folder,
@@ -101,7 +121,7 @@ function SortableFolder({
 
 export function HomePage({ viewMode }: { viewMode: ViewMode }) {
   const client = useQueryClient();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const collections = useQuery({
     queryKey: ['collections'],
     queryFn: () => api<Collection[]>('/collections'),
@@ -177,7 +197,7 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
       setName('');
       setCreating(false);
       setCreateParentId(null);
-      setSelected(folder.id);
+      selectFolder(folder.id);
       await client.invalidateQueries({ queryKey: ['collections'] });
     },
   });
@@ -235,7 +255,7 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
   const deleteFolder = useMutation({
     mutationFn: (id: string) => api(`/collections/${id}`, { method: 'DELETE' }),
     onSuccess: async () => {
-      setSelected(undefined);
+      selectFolder(undefined);
       await Promise.all([
         client.invalidateQueries({ queryKey: ['collections'] }),
         client.invalidateQueries({ queryKey: ['collection-trash'] }),
@@ -251,6 +271,42 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
       ]);
     },
   });
+  const removeItem = useMutation({
+    mutationFn: ({ folderId, itemId }: { folderId: string; itemId: string }) =>
+      api(`/collections/${folderId}/items/${itemId}`, { method: 'DELETE' }),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['collections'] }),
+  });
+  const moveItem = useMutation({
+    mutationFn: ({
+      folderId,
+      itemId,
+      targetCollectionId,
+    }: {
+      folderId: string;
+      itemId: string;
+      targetCollectionId: string;
+    }) =>
+      api(`/collections/${folderId}/items/${itemId}`, {
+        method: 'PATCH',
+        body: json({ targetCollectionId }),
+      }),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['collections'] }),
+  });
+  const reorderItems = useMutation({
+    mutationFn: ({ folderId, ids }: { folderId: string; ids: string[] }) =>
+      api(`/collections/${folderId}/items/reorder`, {
+        method: 'PATCH',
+        body: json({ ids }),
+      }),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['collections'] }),
+  });
+  const selectFolder = (id?: string) => {
+    setSelected(id);
+    const next = new URLSearchParams(searchParams);
+    if (id) next.set('folder', id);
+    else next.delete('folder');
+    setSearchParams(next, { replace: true });
+  };
   const dragEnd = (event: DragEndEvent) => {
     if (!event.over || event.active.id === event.over.id) return;
     const before = folders.findIndex((folder) => folder.id === event.active.id);
@@ -288,27 +344,27 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
             </div>
           </div>
         </article>
-        <article>
+        <Link to="/learning?mode=due" className="today-summary-link">
           <BookOpen />
           <div>
             <strong>{dashboard.data?.dueReviews ?? '—'}</strong>
             <span>오늘 복습</span>
           </div>
-        </article>
-        <article>
+        </Link>
+        <Link to="/jobs?sort=new" className="today-summary-link">
           <BriefcaseBusiness />
           <div>
             <strong>{dashboard.data?.recentJobs ?? '—'}</strong>
             <span>신규 공고</span>
           </div>
-        </article>
-        <article>
+        </Link>
+        <Link to="/jobs?saved=1&sort=deadline" className="today-summary-link">
           <BellRing />
           <div>
             <strong>{dashboard.data?.expiringJobs ?? '—'}</strong>
             <span>마감 임박</span>
           </div>
-        </article>
+        </Link>
       </section>
       <section className="page-heading finder-canvas-heading">
         <div>
@@ -397,7 +453,7 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
                   key={folder.id}
                   folder={folder}
                   selected={selected === folder.id}
-                  onSelect={() => setSelected(folder.id)}
+                  onSelect={() => selectFolder(folder.id)}
                   viewMode={viewMode}
                 />
               ))}
@@ -408,13 +464,13 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
       {activeFolder && (
         <section className="section-block collection-detail">
           <nav className="folder-breadcrumbs" aria-label="폴더 경로">
-            <button type="button" onClick={() => setSelected(undefined)}>
+            <button type="button" onClick={() => selectFolder(undefined)}>
               내 폴더
             </button>
             {breadcrumbs.map((folder) => (
               <span key={folder.id}>
                 <span aria-hidden="true">/</span>
-                <button type="button" onClick={() => setSelected(folder.id)}>
+                <button type="button" onClick={() => selectFolder(folder.id)}>
                   {folder.name}
                 </button>
               </span>
@@ -543,7 +599,7 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
               {(collections.data || [])
                 .filter((folder) => folder.parentId === activeFolder.id)
                 .map((folder) => (
-                  <button key={folder.id} onClick={() => setSelected(folder.id)}>
+                  <button key={folder.id} onClick={() => selectFolder(folder.id)}>
                     <Folder /> <span>{folder.name}</span>
                   </button>
                 ))}
@@ -551,11 +607,87 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
           )}
           {activeFolder && (
             <div className="item-list">
-              {activeFolder.items.map((item) => (
+              {activeFolder.items.map((item, itemIndex) => (
                 <article key={item.id}>
-                  <span className="item-type">{item.itemType.replaceAll('_', ' ')}</span>
-                  <strong>{item.label || item.targetId}</strong>
-                  <Star size={16} />
+                  <div>
+                    <span className="item-type">{item.itemType.replaceAll('_', ' ')}</span>
+                    <strong>{item.label || item.targetId}</strong>
+                  </div>
+                  <div className="item-actions">
+                    {itemHref(item) && item.itemType === 'EXTERNAL_LINK' ? (
+                      <a href={itemHref(item)} target="_blank" rel="noreferrer">
+                        원본 열기 <ExternalLink />
+                      </a>
+                    ) : itemHref(item) ? (
+                      <Link to={itemHref(item)!}>원본 열기</Link>
+                    ) : (
+                      <span>원본을 찾을 수 없음</span>
+                    )}
+                    <label>
+                      <select
+                        aria-label={`${item.label || item.targetId} 이동할 폴더`}
+                        value={activeFolder.id}
+                        disabled={moveItem.isPending}
+                        onChange={(event) =>
+                          moveItem.mutate({
+                            folderId: activeFolder.id,
+                            itemId: item.id,
+                            targetCollectionId: event.target.value,
+                          })
+                        }
+                      >
+                        {(collections.data || []).map((folder) => (
+                          <option key={folder.id} value={folder.id}>
+                            {folder.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <button
+                      type="button"
+                      className="ghost-button compact"
+                      aria-label={`${item.label || item.targetId} 위로 이동`}
+                      disabled={itemIndex === 0 || reorderItems.isPending}
+                      onClick={() => {
+                        const ids = activeFolder.items.map((entry) => entry.id);
+                        [ids[itemIndex - 1], ids[itemIndex]] = [
+                          ids[itemIndex]!,
+                          ids[itemIndex - 1]!,
+                        ];
+                        reorderItems.mutate({ folderId: activeFolder.id, ids });
+                      }}
+                    >
+                      <ChevronUp />
+                    </button>
+                    <button
+                      type="button"
+                      className="ghost-button compact"
+                      aria-label={`${item.label || item.targetId} 아래로 이동`}
+                      disabled={
+                        itemIndex === activeFolder.items.length - 1 || reorderItems.isPending
+                      }
+                      onClick={() => {
+                        const ids = activeFolder.items.map((entry) => entry.id);
+                        [ids[itemIndex], ids[itemIndex + 1]] = [
+                          ids[itemIndex + 1]!,
+                          ids[itemIndex]!,
+                        ];
+                        reorderItems.mutate({ folderId: activeFolder.id, ids });
+                      }}
+                    >
+                      <ChevronDown />
+                    </button>
+                    <button
+                      type="button"
+                      className="ghost-button danger compact"
+                      disabled={removeItem.isPending && removeItem.variables?.itemId === item.id}
+                      onClick={() =>
+                        removeItem.mutate({ folderId: activeFolder.id, itemId: item.id })
+                      }
+                    >
+                      <Trash2 /> 폴더에서 제거
+                    </button>
+                  </div>
                 </article>
               ))}
             </div>
@@ -563,26 +695,26 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
         </section>
       )}
       <section className="virtual-folders">
-        <article>
+        <Link to="/notes">
           <RotateCcw />
           <strong>최근 항목</strong>
           <span>최근 수정된 자료</span>
-        </article>
-        <article>
+        </Link>
+        <Link to="/coding">
           <Star />
           <strong>즐겨찾기</strong>
           <span>중요 표시 항목</span>
-        </article>
-        <article>
+        </Link>
+        <Link to="/jobs?saved=1">
           <BriefcaseBusiness />
           <strong>관심 공고</strong>
           <span>지원 후보 모음</span>
-        </article>
-        <article>
+        </Link>
+        <Link to="/learning?mode=due">
           <BookOpen />
           <strong>복습 예정</strong>
           <span>간격 반복 일정</span>
-        </article>
+        </Link>
       </section>
       {Boolean(trash.data?.length) && (
         <details className="trash-recovery">

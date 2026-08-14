@@ -1,35 +1,35 @@
 {
   "scope": "synthetic local D1 API budget gate",
-  "checkedAt": "2026-08-14T12:27:00+09:00",
+  "checkedAt": "2026-08-14T16:04:00+09:00",
   "status": "pass",
   "metrics": {
     "jobsCursor": {
-      "p50Ms": 8.84,
-      "p95Ms": 9.5,
+      "p50Ms": 8.48,
+      "p95Ms": 8.76,
       "dbQueryCount": 6,
       "responseBytes": 26092
     },
     "codingProblemsCursor": {
-      "p50Ms": 1,
-      "p95Ms": 1.05,
+      "p50Ms": 1.02,
+      "p95Ms": 1.08,
       "dbQueryCount": 6,
       "responseBytes": 13166
     },
     "solutionsCursor": {
-      "p50Ms": 6.24,
-      "p95Ms": 6.46,
+      "p50Ms": 5.94,
+      "p95Ms": 6.22,
       "dbQueryCount": 6,
       "responseBytes": 4979
     },
     "notifications": {
-      "p50Ms": 1.28,
-      "p95Ms": 1.39,
+      "p50Ms": 1.38,
+      "p95Ms": 1.48,
       "dbQueryCount": 5,
       "responseBytes": 18552
     },
     "search": {
-      "p50Ms": 0.85,
-      "p95Ms": 0.99,
+      "p50Ms": 36.74,
+      "p95Ms": 36.87,
       "dbQueryCount": 5,
       "responseBytes": 302
     }
@@ -37,6 +37,7 @@
   "failures": [],
   "limitations": [
     "Local synthetic timing is a regression gate, not production network latency.",
-    "Peak RSS includes fixture generation and the in-process SQLite benchmark."
+    "Peak RSS includes fixture generation and the in-process SQLite benchmark.",
+    "Search now ranks 81,000 common-token matches by FTS relevance instead of insertion rowid; the 36.87 ms p95 is the measured relevance trade-off and remains below the 150 ms budget."
   ]
 }

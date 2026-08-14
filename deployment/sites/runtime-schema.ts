@@ -1,6 +1,13 @@
 import { all, first, run, type D1Database } from './d1.js';
 
 const schemaPromises = new WeakMap<D1Database, Promise<void>>();
+export const EXPECTED_SCHEMA_VERSION = '0016_full_audit_hardening';
+
+const ledgerSchema = `CREATE TABLE IF NOT EXISTS app_schema_migrations (
+  version text PRIMARY KEY NOT NULL,
+  checksum text NOT NULL,
+  applied_at text NOT NULL
+)`;
 
 const additiveSchema = [
   `CREATE TABLE IF NOT EXISTS job_source_snapshots (
@@ -68,6 +75,7 @@ const additiveSchema = [
   'CREATE INDEX IF NOT EXISTS idx_learning_question_attempts_user_question ON learning_question_attempts(user_id, question_id, attempted_at)',
   'CREATE UNIQUE INDEX IF NOT EXISTS idx_learning_review_events_sequence ON learning_review_events(user_id, unit_id, sequence)',
   'CREATE INDEX IF NOT EXISTS idx_learning_review_events_user_reviewed ON learning_review_events(user_id, reviewed_at)',
+  'CREATE INDEX IF NOT EXISTS idx_notifications_user_read_expiry_created ON notifications(user_id, read_at, expires_at, created_at)',
 ] as const;
 
 const searchTriggers = [
@@ -218,37 +226,111 @@ async function addLearningProgressColumns(db: D1Database) {
   }
 }
 
-async function applyRuntimeSchema(db: D1Database) {
+async function addLearningQuestionColumns(db: D1Database) {
+  const columns = await all<{ name: string }>(db, 'PRAGMA table_info(learning_questions)');
+  const names = new Set(columns.map((column) => column.name));
+  const missing = [
+    ['type', "ALTER TABLE learning_questions ADD COLUMN type text DEFAULT 'SHORT_ANSWER' NOT NULL"],
+    ['choices', "ALTER TABLE learning_questions ADD COLUMN choices text DEFAULT '[]' NOT NULL"],
+  ] as const;
+  for (const [name, sql] of missing) {
+    if (names.has(name)) continue;
+    try {
+      await run(db, sql);
+    } catch (error) {
+      if (!String(error).toLowerCase().includes('duplicate column')) throw error;
+    }
+  }
+}
+
+async function addJobColumns(db: D1Database) {
+  const columns = await all<{ name: string }>(db, 'PRAGMA table_info(jobs)');
+  if (columns.some((column) => column.name === 'published_at')) return;
+  try {
+    await run(db, 'ALTER TABLE jobs ADD COLUMN published_at text');
+  } catch (error) {
+    if (!String(error).toLowerCase().includes('duplicate column')) throw error;
+  }
+}
+
+export type RuntimeSchemaState = {
+  ready: boolean;
+  expectedVersion: string;
+  appliedVersion: string | null;
+  tableCount: number;
+  triggerCount: number;
+  progressColumnCount: number;
+  questionColumnCount: number;
+  jobColumnCount: number;
+};
+
+export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchemaState> {
   const state = await first<{
     tableCount: number;
     triggerCount: number;
     progressColumnCount: number;
+    questionColumnCount: number;
+    jobColumnCount: number;
   }>(
     db,
     `SELECT
        (SELECT COUNT(*) FROM sqlite_schema
          WHERE type = 'table' AND name IN (
-           'job_source_snapshot_items', 'job_source_snapshots', 'job_tech_stacks',
-           'learning_question_attempts', 'learning_review_events', 'scheduler_leases',
-           'workspace_search'
+           'app_schema_migrations', 'job_source_snapshot_items', 'job_source_snapshots',
+           'job_tech_stacks', 'learning_question_attempts', 'learning_review_events',
+           'scheduler_leases', 'workspace_search'
          )) AS tableCount,
        (SELECT COUNT(*) FROM sqlite_schema
          WHERE type = 'trigger' AND name GLOB 'trg_*_search_*') AS triggerCount,
        (SELECT COUNT(*) FROM pragma_table_info('learning_progress')
-         WHERE name IN ('review_version', 'completed_at', 'mastered_at')) AS progressColumnCount`,
+         WHERE name IN ('review_version', 'completed_at', 'mastered_at')) AS progressColumnCount,
+       (SELECT COUNT(*) FROM pragma_table_info('learning_questions')
+         WHERE name IN ('type', 'choices')) AS questionColumnCount,
+       (SELECT COUNT(*) FROM pragma_table_info('jobs')
+         WHERE name = 'published_at') AS jobColumnCount`,
   );
-  if (
-    Number(state?.tableCount) === 7 &&
-    Number(state?.triggerCount) === 18 &&
-    Number(state?.progressColumnCount) === 3
-  ) {
-    return;
-  }
+  const tableCount = Number(state?.tableCount || 0);
+  const triggerCount = Number(state?.triggerCount || 0);
+  const progressColumnCount = Number(state?.progressColumnCount || 0);
+  const questionColumnCount = Number(state?.questionColumnCount || 0);
+  const jobColumnCount = Number(state?.jobColumnCount || 0);
+  const ledger =
+    tableCount === 8
+      ? await first<{ version: string }>(
+          db,
+          'SELECT version FROM app_schema_migrations ORDER BY applied_at DESC LIMIT 1',
+        )
+      : null;
+  const appliedVersion = ledger?.version || null;
+  return {
+    ready:
+      tableCount === 8 &&
+      triggerCount === 18 &&
+      progressColumnCount === 3 &&
+      questionColumnCount === 2 &&
+      jobColumnCount === 1 &&
+      appliedVersion === EXPECTED_SCHEMA_VERSION,
+    expectedVersion: EXPECTED_SCHEMA_VERSION,
+    appliedVersion,
+    tableCount,
+    triggerCount,
+    progressColumnCount,
+    questionColumnCount,
+    jobColumnCount,
+  };
+}
 
+async function applyRuntimeSchema(db: D1Database) {
+  const state = await inspectRuntimeSchema(db);
+  if (state.ready) return;
+
+  await run(db, ledgerSchema);
   // Parent tables must exist before SQLite can prepare child-table statements.
   for (const sql of additiveSchema.slice(0, 6)) await run(db, sql);
   await db.batch(additiveSchema.slice(6).map((sql) => db.prepare(sql)));
   await addLearningProgressColumns(db);
+  await addLearningQuestionColumns(db);
+  await addJobColumns(db);
   await run(
     db,
     `CREATE VIRTUAL TABLE IF NOT EXISTS workspace_search USING fts5(
@@ -261,8 +343,22 @@ async function applyRuntimeSchema(db: D1Database) {
     )`,
   );
   await db.batch(searchBackfill.map((sql) => db.prepare(sql)));
-  // Trigger count acts as the completion marker, so it is written after backfill.
+  await db.batch(
+    searchTriggers.map((sql) => {
+      const name = sql.match(/CREATE TRIGGER IF NOT EXISTS ([^ ]+)/)?.[1];
+      if (!name) throw new Error('검색 트리거 이름을 확인하지 못했습니다.');
+      return db.prepare(`DROP TRIGGER IF EXISTS ${name}`);
+    }),
+  );
   await db.batch(searchTriggers.map((sql) => db.prepare(sql)));
+  await run(
+    db,
+    `INSERT OR REPLACE INTO app_schema_migrations (version, checksum, applied_at)
+     VALUES (?, ?, ?)`,
+    EXPECTED_SCHEMA_VERSION,
+    'sha256:69fa089214693f323703a327d853996d67129c136f80b8997cfc79a4a43b797d',
+    new Date().toISOString(),
+  );
 }
 
 export async function ensureRuntimeSchema(db: D1Database) {

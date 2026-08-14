@@ -49,39 +49,53 @@ export function RankingPage() {
       </div>
       {ranking.isLoading && <div className="loading-panel">랭킹 계산 중…</div>}
       {ranking.isError && <div className="error-panel">랭킹을 불러오지 못했습니다.</div>}
-      <div className="ranking-table" role="table" aria-label="코딩 랭킹">
-        <div className="ranking-row header" role="row">
-          <span>순위</span>
-          <span>멤버</span>
-          <span>누적</span>
-          <span>주간</span>
-          <span>월간</span>
-          <span>연속</span>
-          <span>오늘의 문제</span>
+      {ranking.data?.rows.length === 0 ? (
+        <div className="empty-panel">
+          <Trophy />
+          <h3>아직 집계할 풀이가 없습니다</h3>
+          <p>첫 풀이를 저장하면 랭킹에 자동 반영됩니다.</p>
         </div>
-        {ranking.data?.rows.map((row) => (
-          <div
-            className={`ranking-row rank-${row.rank} ${row.userId === ranking.data.currentUserId ? 'current-user' : ''}`}
-            role="row"
-            aria-current={row.userId === ranking.data.currentUserId ? 'true' : undefined}
-            key={row.userId}
-          >
-            <span>{row.rank <= 3 ? <span className="medal">{row.rank}</span> : row.rank}</span>
-            <strong>{row.displayName}</strong>
-            <span>{row.score}</span>
-            <span>{row.weekly}</span>
-            <span>{row.monthly}</span>
-            <span>
-              <Flame />
-              {row.streak}일
-            </span>
-            <span>
-              <CalendarDays />
-              {row.challengeCount}회
-            </span>
-          </div>
-        ))}
-      </div>
+      ) : (
+        <div className="ranking-table-scroll">
+          <table className="ranking-table">
+            <caption className="sr-only">코딩 랭킹</caption>
+            <thead>
+              <tr>
+                <th scope="col">순위</th>
+                <th scope="col">멤버</th>
+                <th scope="col">누적</th>
+                <th scope="col">주간</th>
+                <th scope="col">월간</th>
+                <th scope="col">연속</th>
+                <th scope="col">오늘의 문제</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ranking.data?.rows.map((row) => (
+                <tr
+                  className={`rank-${row.rank} ${row.userId === ranking.data.currentUserId ? 'current-user' : ''}`}
+                  aria-current={row.userId === ranking.data.currentUserId ? 'true' : undefined}
+                  key={row.userId}
+                >
+                  <td>{row.rank <= 3 ? <span className="medal">{row.rank}</span> : row.rank}</td>
+                  <th scope="row">{row.displayName}</th>
+                  <td>{row.score}</td>
+                  <td>{row.weekly}</td>
+                  <td>{row.monthly}</td>
+                  <td>
+                    <Flame />
+                    {row.streak}일
+                  </td>
+                  <td>
+                    <CalendarDays />
+                    {row.challengeCount}회
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       {ranking.data && (
         <small className="calculated-at">
           기준: Asia/Seoul · 주간{' '}

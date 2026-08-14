@@ -82,7 +82,7 @@ test('captures core domain screens', async ({ page }) => {
         .getByRole('textbox', { name: '노트 내용' })
         .fill('# 이번 주 준비\n\n- 코딩테스트 복습\n- 지원 공고 정리');
       await page.getByRole('button', { name: /^저장$/ }).click();
-      await expect(page.getByRole('button', { name: /^저장$/ })).toBeEnabled();
+      await expect(page.getByRole('button', { name: /^저장$/ })).toBeDisabled();
       await expect(page.getByRole('textbox', { name: '노트 제목' })).toHaveValue(
         '이번 주 준비 기록',
       );

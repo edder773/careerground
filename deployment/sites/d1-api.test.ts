@@ -16,6 +16,20 @@ const memberHeaders = {
   'oai-authenticated-user-full-name-encoding': 'percent-encoded-utf-8',
 };
 
+const importApproval = (preview: Record<string, unknown>, reviewedRowCount: number) => {
+  const removalCount = Array.isArray(preview.removalCandidates)
+    ? preview.removalCandidates.length
+    : 0;
+  return {
+    previewToken: preview.previewToken,
+    checksum: preview.checksum,
+    acknowledgeAllRows: true,
+    reviewedRowCount,
+    acknowledgeRemovals: removalCount > 0,
+    removalCount,
+  };
+};
+
 describe('Sites D1 API', () => {
   let db: LocalD1;
 
@@ -154,6 +168,37 @@ describe('Sites D1 API', () => {
         items: [expect.objectContaining({ label: '포트폴리오' })],
       }),
     ]);
+
+    const target = await call('/api/v1/collections', {
+      method: 'POST',
+      body: JSON.stringify({ name: '이동 대상', icon: 'folder', color: 'amber' }),
+    });
+    const targetFolder = target.body as { id: string };
+    const secondItem = await call(`/api/v1/collections/${targetFolder.id}/items`, {
+      method: 'POST',
+      body: JSON.stringify({
+        itemType: 'EXTERNAL_LINK',
+        targetId: 'https://example.com/resume',
+        label: '이력서',
+      }),
+    });
+    const moved = await call(`/api/v1/collections/${folder.id}/items/${item.body.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ targetCollectionId: targetFolder.id }),
+    });
+    expect(moved.body).toMatchObject({ collectionId: targetFolder.id });
+    const reordered = await call(`/api/v1/collections/${targetFolder.id}/items/reorder`, {
+      method: 'PATCH',
+      body: JSON.stringify({ ids: [item.body.id, secondItem.body.id] }),
+    });
+    expect(reordered.body).toMatchObject({ ids: [item.body.id, secondItem.body.id] });
+    const afterMove = (await call('/api/v1/collections')).body as unknown as Array<{
+      id: string;
+      items: Array<{ id: string }>;
+    }>;
+    expect(
+      afterMove.find((entry) => entry.id === targetFolder.id)?.items.map((entry) => entry.id),
+    ).toEqual([item.body.id, secondItem.body.id]);
   });
 
   it('persists note revisions for the current user', async () => {
@@ -555,6 +600,12 @@ describe('Sites D1 API', () => {
               prompt: '생성 성공 상태 코드는?',
               answer: '201 Created',
             },
+            {
+              type: 'MULTIPLE_CHOICE',
+              prompt: '멱등한 HTTP 메서드는?',
+              answer: 'GET',
+              choices: ['POST', 'GET', 'PATCH'],
+            },
           ],
         },
       ],
@@ -563,7 +614,7 @@ describe('Sites D1 API', () => {
       method: 'POST',
       body: JSON.stringify(payload),
     });
-    const token = preview.body as { previewToken: string; checksum: string };
+    const token = importApproval(preview.body, payload.units.length);
     const imported = await call('/api/v1/learning/import/commit', {
       method: 'POST',
       body: JSON.stringify(token),
@@ -579,7 +630,34 @@ describe('Sites D1 API', () => {
     const unitDetail = await call(`/api/v1/learning/units/${source.units[0].id}`);
     expect(unitDetail.body).toMatchObject({
       summary: 'List<String>과 a < b를 그대로 학습합니다.',
+      questions: expect.arrayContaining([
+        expect.objectContaining({
+          type: 'MULTIPLE_CHOICE',
+          choices: ['POST', 'GET', 'PATCH'],
+        }),
+      ]),
     });
+    const multipleChoice = (
+      unitDetail.body as unknown as {
+        questions: Array<{ id: string; type: string }>;
+      }
+    ).questions.find((question) => question.type === 'MULTIPLE_CHOICE');
+    expect(multipleChoice).toBeTruthy();
+    const invalidChoice = await call(`/api/v1/learning/questions/${multipleChoice?.id}/answer`, {
+      method: 'POST',
+      body: JSON.stringify({ response: 'DELETE' }),
+    });
+    expect(invalidChoice.response.status).toBe(422);
+    const correctChoice = await call(`/api/v1/learning/questions/${multipleChoice?.id}/answer`, {
+      method: 'POST',
+      body: JSON.stringify({ response: 'GET' }),
+    });
+    expect(correctChoice.body).toMatchObject({ correct: true, answer: 'GET' });
+    const invalidRating = await call('/api/v1/learning/review', {
+      method: 'POST',
+      body: JSON.stringify({ unitId: source.units[0].id, rating: 8 }),
+    });
+    expect(invalidRating.response.status).toBe(422);
     await call('/api/v1/learning/review', {
       method: 'POST',
       body: JSON.stringify({ unitId: source.units[0].id, rating: 4 }),
@@ -662,7 +740,7 @@ describe('Sites D1 API', () => {
     expect(events.results.map((event) => event.sequence)).toEqual([1, 2, 3]);
   });
 
-  it('creates one deduplicated deadline notification across repeated reads', async () => {
+  it('keeps unread GET pure and creates deadline notifications in scheduled maintenance', async () => {
     await call('/api/v1/auth/me');
     const job = await db.prepare("SELECT id FROM jobs WHERE status = 'ACTIVE' LIMIT 1").first<{
       id: string;
@@ -680,12 +758,21 @@ describe('Sites D1 API', () => {
     await call('/api/v1/notifications/unread-count');
     await call('/api/v1/notifications/unread-count');
 
-    const count = await db
+    const beforeMaintenance = await db
       .prepare(
         "SELECT COUNT(*) AS count FROM notifications WHERE type = 'JOB_DEADLINE' AND user_id = (SELECT id FROM users WHERE site_user_id = 'site-admin')",
       )
       .first<{ count: number }>();
-    expect(count?.count).toBe(1);
+    expect(beforeMaintenance?.count).toBe(0);
+
+    const maintenance = await runScheduledMaintenance({ DB: db });
+    expect(maintenance).toMatchObject({ acquired: true, notifications: 1 });
+    const afterMaintenance = await db
+      .prepare(
+        "SELECT COUNT(*) AS count FROM notifications WHERE type = 'JOB_DEADLINE' AND user_id = (SELECT id FROM users WHERE site_user_id = 'site-admin')",
+      )
+      .first<{ count: number }>();
+    expect(afterMaintenance?.count).toBe(1);
   });
 
   it('runs scheduled expiry and review notifications under a single lease', async () => {
@@ -825,6 +912,7 @@ describe('Sites D1 API', () => {
 
     const ranking = await call('/api/v1/coding/rankings');
     expect(ranking.body).toMatchObject({
+      selfReported: true,
       rows: expect.arrayContaining([expect.objectContaining({ displayName: 'Member User' })]),
     });
 
@@ -906,7 +994,7 @@ describe('Sites D1 API', () => {
       method: 'POST',
       body: JSON.stringify(payload),
     });
-    const approval = preview.body as { previewToken: string; checksum: string };
+    const approval = importApproval(preview.body, payload.items.length);
     expect(approval.previewToken).toBeTruthy();
     const changed = await call('/api/v1/jobs/import/commit', {
       method: 'POST',
@@ -974,7 +1062,7 @@ describe('Sites D1 API', () => {
         }),
       });
       expect(preview.response.status).toBe(200);
-      const approval = preview.body as { previewToken: string; checksum: string };
+      const approval = importApproval(preview.body, items.length);
       return call('/api/v1/jobs/import/commit', {
         method: 'POST',
         body: JSON.stringify(approval),
@@ -1045,5 +1133,50 @@ describe('Sites D1 API', () => {
       expect.objectContaining({ markdown: null, redacted: 'HIDDEN' }),
     ]);
     expect(JSON.stringify(listed.body)).not.toContain('private reply');
+  });
+
+  it('lets owners edit and soft-delete comments and records member reports', async () => {
+    const problem = await db
+      .prepare('SELECT id FROM coding_problems WHERE active = 1 ORDER BY position LIMIT 1')
+      .first<{ id: string }>();
+    const solution = await call('/api/v1/coding/solutions', {
+      method: 'POST',
+      body: JSON.stringify({
+        problemId: problem!.id,
+        title: 'comment actions fixture',
+        language: 'javascript',
+        code: 'return true;',
+        description: '설명',
+        solved: true,
+      }),
+    });
+    const created = await call(`/api/v1/coding/solutions/${solution.body.id}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ markdown: '수정 전' }),
+    });
+    const edited = await call(`/api/v1/coding/comments/${created.body.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ markdown: '**수정 후**' }),
+    });
+    expect(edited.body).toMatchObject({ edited: true, markdown: '**수정 후**' });
+    const reported = await call(
+      `/api/v1/coding/comments/${created.body.id}/report`,
+      { method: 'POST', body: JSON.stringify({ reason: '검토가 필요한 댓글' }) },
+      memberHeaders,
+    );
+    expect(reported.body).toMatchObject({ reported: true });
+    const removed = await call(`/api/v1/coding/comments/${created.body.id}`, {
+      method: 'DELETE',
+    });
+    expect(removed.body).toMatchObject({ deleted: true });
+    const detail = await call(`/api/v1/coding/solutions/${solution.body.id}`);
+    expect(detail.body).toMatchObject({
+      comments: [expect.objectContaining({ markdown: null, redacted: 'DELETED' })],
+    });
+    const report = await db
+      .prepare("SELECT action FROM audit_logs WHERE action = 'COMMENT_REPORTED' AND target_id = ?")
+      .bind(created.body.id)
+      .first<{ action: string }>();
+    expect(report?.action).toBe('COMMENT_REPORTED');
   });
 });

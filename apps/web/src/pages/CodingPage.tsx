@@ -32,6 +32,44 @@ type Problem = {
 type Challenge = { id: string; problemId: string; problem: Problem };
 type CodeLanguage = 'python' | 'java' | 'javascript' | 'cpp' | 'sql';
 type CursorPage<T> = { items: T[]; nextCursor: string | null; total: number };
+type SolutionDraft = {
+  code: string;
+  description: string;
+  language: CodeLanguage;
+  savedAt: string;
+};
+
+const draftKey = (userId: string, problemId: string) =>
+  `cg-solution-draft:v2:${userId}:${problemId}`;
+
+function removeDraft(key: string) {
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    // Browser storage is an optional crash-recovery aid.
+  }
+}
+
+function readDraft(key: string): SolutionDraft | undefined {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(key) || 'null') as Partial<SolutionDraft>;
+    if (!parsed || typeof parsed.code !== 'string' || typeof parsed.description !== 'string') {
+      return undefined;
+    }
+    if (!['python', 'java', 'javascript', 'cpp', 'sql'].includes(String(parsed.language))) {
+      return undefined;
+    }
+    return {
+      code: parsed.code,
+      description: parsed.description,
+      language: parsed.language as CodeLanguage,
+      savedAt: typeof parsed.savedAt === 'string' ? parsed.savedAt : new Date().toISOString(),
+    };
+  } catch {
+    removeDraft(key);
+    return undefined;
+  }
+}
 
 function solutionsUrl(problem: Problem) {
   return `/solutions?${new URLSearchParams({
@@ -52,6 +90,7 @@ export function CodingPage() {
   const [language, setLanguage] = useState<CodeLanguage>(user?.preferredLanguage || 'python');
   const [code, setCode] = useState('');
   const [description, setDescription] = useState('');
+  const [restoredDraftAt, setRestoredDraftAt] = useState<string>();
   const [editorExtensions, setEditorExtensions] = useState<EditorExtensions>([]);
   useEffect(() => {
     if (user?.preferredLanguage) setLanguage(user.preferredLanguage);
@@ -108,7 +147,7 @@ export function CodingPage() {
       });
     },
     onSuccess: async () => {
-      if (selected) localStorage.removeItem(`cg-solution-draft:${selected.id}`);
+      if (selected && user) removeDraft(draftKey(user.id, selected.id));
       setSelected(undefined);
       setCode('');
       setDescription('');
@@ -158,12 +197,29 @@ export function CodingPage() {
     onSettled: () => client.invalidateQueries({ queryKey: ['problems'] }),
   });
   useEffect(() => {
-    if (!selected || (!code && !description)) return;
-    localStorage.setItem(
-      `cg-solution-draft:${selected.id}`,
-      JSON.stringify({ code, description, language }),
-    );
-  }, [code, description, language, selected]);
+    if (!selected || !user) return;
+    const key = draftKey(user.id, selected.id);
+    const timer = window.setTimeout(() => {
+      if (!code && !description) {
+        removeDraft(key);
+        return;
+      }
+      try {
+        window.localStorage.setItem(
+          key,
+          JSON.stringify({
+            code: code.slice(0, 200_000),
+            description: description.slice(0, 30_000),
+            language,
+            savedAt: new Date().toISOString(),
+          } satisfies SolutionDraft),
+        );
+      } catch {
+        // Explicit server save remains available when storage is full or unavailable.
+      }
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [code, description, language, selected, user]);
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
       if (!selected || (!code && !description)) return;
@@ -174,25 +230,20 @@ export function CodingPage() {
   }, [code, description, selected]);
   const openEditor = (problem: Problem) => {
     setSelected(problem);
+    setRestoredDraftAt(undefined);
     setLanguage(problem.track === 'SQL' ? 'sql' : user?.preferredLanguage || 'python');
-    const draft = localStorage.getItem(`cg-solution-draft:${problem.id}`);
+    removeDraft(`cg-solution-draft:${problem.id}`);
+    const key = user ? draftKey(user.id, problem.id) : undefined;
+    const draft = key ? readDraft(key) : undefined;
     if (!draft) {
       setCode('');
       setDescription('');
       return;
     }
-    try {
-      const parsed = JSON.parse(draft) as {
-        code?: string;
-        description?: string;
-        language?: CodeLanguage;
-      };
-      setCode(parsed.code || '');
-      setDescription(parsed.description || '');
-      if (parsed.language) setLanguage(parsed.language);
-    } catch {
-      localStorage.removeItem(`cg-solution-draft:${problem.id}`);
-    }
+    setCode(draft.code);
+    setDescription(draft.description);
+    setLanguage(draft.language);
+    setRestoredDraftAt(draft.savedAt);
   };
   const closeEditor = () => {
     if ((code || description) && !window.confirm('저장하지 않은 풀이가 있습니다. 닫을까요?'))
@@ -213,10 +264,23 @@ export function CodingPage() {
   );
   const problemTotal = problems.data?.pages[0]?.total || 0;
   const requestedProblem = searchParams.get('problem');
+  const requestedProblemQuery = useQuery({
+    queryKey: ['problem-detail', requestedProblem],
+    queryFn: () => api<Problem>(`/coding/problems/${requestedProblem}`),
+    enabled: Boolean(requestedProblem && !list.some((problem) => problem.id === requestedProblem)),
+  });
+  const displayList = useMemo(
+    () =>
+      requestedProblemQuery.data &&
+      !list.some((problem) => problem.id === requestedProblemQuery.data.id)
+        ? [requestedProblemQuery.data, ...list]
+        : list,
+    [list, requestedProblemQuery.data],
+  );
   useEffect(() => {
-    if (!requestedProblem || !list.length) return;
+    if (!requestedProblem || !displayList.length) return;
     document.getElementById(`problem-${requestedProblem}`)?.scrollIntoView({ block: 'center' });
-  }, [list, requestedProblem]);
+  }, [displayList, requestedProblem]);
   return (
     <div>
       <section className="page-heading">
@@ -266,6 +330,14 @@ export function CodingPage() {
           </div>
         </section>
       )}
+      {challenge.isError && (
+        <div className="error-panel" role="alert">
+          오늘의 문제를 준비하지 못했습니다.
+          <button type="button" onClick={() => void challenge.refetch()}>
+            다시 시도
+          </button>
+        </div>
+      )}
       <div className="filter-bar">
         <Filter />
         <div className="problem-track-tabs" role="group" aria-label="문제 유형">
@@ -310,7 +382,7 @@ export function CodingPage() {
       {problems.isLoading && <div className="loading-panel">문제 목록을 불러오는 중…</div>}
       {problems.isError && <div className="error-panel">문제 목록을 불러오지 못했습니다.</div>}
       <div className="problem-grid">
-        {list.map((problem) => (
+        {displayList.map((problem) => (
           <article
             key={problem.id}
             id={`problem-${problem.id}`}
@@ -343,7 +415,13 @@ export function CodingPage() {
               ))}
             </div>
             <p>
-              {problem._count.solutions}개 풀이 기록 · {problem.progress[0]?.status || 'UNTRIED'}
+              {problem._count.solutions}개 풀이 기록 ·{' '}
+              {{
+                UNTRIED: '미도전',
+                IN_PROGRESS: '풀이 중',
+                SOLVED: '해결 기록',
+                RETRY: '재도전',
+              }[problem.progress[0]?.status || 'UNTRIED'] || '미도전'}
             </p>
             <div className="card-actions">
               <a href={problem.sourceUrl} target="_blank" rel="noreferrer">
@@ -443,6 +521,25 @@ export function CodingPage() {
                 {save.isError && (
                   <div className="form-error" id="solution-submit-error" role="alert">
                     {save.error.message}
+                  </div>
+                )}
+                {restoredDraftAt && (
+                  <div className="draft-restored" role="status">
+                    <span>
+                      {new Date(restoredDraftAt).toLocaleString('ko-KR')}에 자동 저장한 초안을
+                      복원했습니다.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (user) removeDraft(draftKey(user.id, selected.id));
+                        setCode('');
+                        setDescription('');
+                        setRestoredDraftAt(undefined);
+                      }}
+                    >
+                      초안 폐기
+                    </button>
                   </div>
                 )}
                 <button className="primary-button" disabled={!code.trim() || save.isPending}>

@@ -1,5 +1,8 @@
 .notification-filter {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
   justify-content: flex-end;
   margin-bottom: 14px;
 }
@@ -10,7 +13,16 @@
   gap: 8px;
 }
 
-.ranking-row.current-user {
+.notification-unread-filter {
+  min-height: 44px;
+}
+
+.notification-load-more {
+  display: flex;
+  margin: 18px auto 0;
+}
+
+.ranking-table tr.current-user {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
   background: color-mix(in srgb, var(--accent) 8%, white);
