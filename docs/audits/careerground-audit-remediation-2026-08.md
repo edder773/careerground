@@ -9,7 +9,7 @@
 - 작업 지시: `careerground_codex_remediation_prompt_2026-08-13.md`
 - 운영 기준 경로: Sites Worker + D1. 결정 근거와 PostgreSQL 전환 조건은 `docs/architecture/backend-canonicalization.md`에 기록했다.
 
-실제 PostgreSQL 운영 인프라가 없으므로 백엔드를 강제 전환하지 않았다. Worker의 `API_ORIGIN` 분기를 제거해 D1만 운영 쓰기 경로로 남겼고 Nest 구현은 폐기 예정 reference로 격리했다. 2026-08-14 운영 readiness는 `200 {"status":"ok","database":"d1"}`, 헤더 없는 `/api/v1/auth/me`는 `401 UNAUTHORIZED`임을 직접 확인했다. 설치된 Sites 커넥터가 운영 D1 export/restore와 cron 등록을 제공하지 않는 범위, 그리고 실제 NVDA/VoiceOver 장비 검증은 코드 완료와 구분해 아래 표에 남겼다.
+실제 PostgreSQL 운영 인프라가 없으므로 백엔드를 강제 전환하지 않았다. Worker의 `API_ORIGIN` 분기를 제거해 D1만 운영 쓰기 경로로 남겼고 Nest 구현은 폐기 예정 reference로 격리했다. 2026-08-14 운영 readiness는 `200 {"status":"ok","database":"d1"}`, 헤더 없는 `/api/v1/auth/me`는 `401 UNAUTHORIZED`임을 직접 확인했다. 첫 감사 배포에서 운영 D1이 26개 구형 table에 머문 것도 실제 브라우저와 Worker log로 발견했으며, prepared statement 기반 runtime schema initialization과 legacy-shape 회귀 테스트로 additive table 6개·학습 column 3개·FTS backfill을 보강했다. 설치된 Sites 커넥터가 운영 D1 export/restore와 cron 등록을 제공하지 않는 범위, 그리고 실제 NVDA/VoiceOver 장비 검증은 코드 완료와 구분해 아래 표에 남겼다.
 
 ## 기준선과 검증
 
@@ -67,7 +67,7 @@ pnpm db:d1:generate
 | D-17 | P1     | 완료                      | `drizzle/0013_*`                              | FK integrity + migration tests    | 없음                                     |
 | D-18 | P1     | 다른 수정에 통합됨        | collection target validator                   | D1 collection tests               | DB 다형 FK는 없음                        |
 | D-25 | P2     | 완료                      | `db/schema.ts`, `drizzle/0013_*`              | migration + D1 regression         | enum 추가 시 순방향 migration 필요       |
-| D-26 | P2     | 완료                      | `job_tech_stacks`, search FTS                 | migration + performance gate      | 원문 JSON은 import evidence로 보존       |
+| D-26 | P2     | 완료                      | `job_tech_stacks`, runtime schema, search FTS | legacy upgrade + performance gate | 원문 JSON은 import evidence로 보존       |
 | D-19 | P1     | 완료                      | note/solution baseRevision                    | 409 conflict tests                | 병합 UI는 제한적                         |
 | D-21 | P1     | 완료                      | desired-state reaction PUT                    | 중복 PUT idempotency test         | 없음                                     |
 | D-20 | P1     | 다른 수정에 통합됨        | comment parent validator                      | D1 comment tests                  | DB 복합 FK는 없음                        |
@@ -92,7 +92,7 @@ pnpm db:d1:generate
 | P-05 | P1     | 완료                      | batched note revisions                        | query-count benchmark             | 목록 본문 축소 추가 가능                 |
 | P-06 | P1     | 완료                      | learning summary/detail API                   | D1 + web regression               | 없음                                     |
 | P-07 | P1     | 완료                      | Map collection grouping                       | D1 tests                          | 없음                                     |
-| P-09 | P1     | 완료                      | FTS5 global search + cursor                   | p95 1.24 ms, 5 queries            | local synthetic measurement              |
+| P-09 | P1     | 완료                      | FTS5 global search + runtime backfill         | legacy upgrade, p95 1.24 ms       | local synthetic performance measurement  |
 | P-10 | P1     | 다른 수정에 통합됨        | D1 canonical ranking                          | D1 tests                          | 대규모 운영 집계 측정 필요               |
 | P-11 | P2     | 다른 수정에 통합됨        | D1 canonical ranking                          | D1 tests                          | materialized aggregate 없음              |
 | P-13 | P2     | 기술적 이유로 미해결      | Worker scheduled handler + lease              | lease/dedupe D1 regression        | Sites connector가 cron 등록 미제공       |
@@ -162,7 +162,7 @@ pnpm db:d1:generate
 | O-05 | P1     | 기술적 이유로 미해결      | executable recovery drill/runbook             | 315 pages, checksum/FK pass       | Sites가 운영 D1 export/restore 미제공    |
 | O-06 | P2     | 완료                      | request/timing logs, SLO, 6h smoke            | headers + workflow                | 외부 paging 도구는 미연결                |
 | O-07 | P2     | 다른 수정에 통합됨        | Nest non-runtime isolation                    | architecture doc                  | 향후 PostgreSQL 전환 시 재검토           |
-| O-08 | P2     | 완료                      | 최신 0009 이후 expand-only 0010, recovery doc | migration generation/inspection   | D1 preview canary는 운영 필요            |
+| O-08 | P2     | 완료                      | migrations + `runtime-schema.ts`              | legacy-shape upgrade/idempotency  | table rebuild는 배포 전 canary 필요      |
 | O-09 | P2     | 완료                      | runtime response schemas                      | valid/invalid API response tests  | 비핵심 mutation은 recursive JSON gate    |
 | O-10 | P2     | 완료                      | committed pixel baselines                     | 1440×900, 375×812, 48 E2E         | OS 글꼴 차이는 허용 오차 3%              |
 | D-34 | P2     | 완료                      | allowlist demotion + audit                    | role regression test              | 비상 복구 관리자 절차 운영 필요          |
@@ -172,4 +172,4 @@ pnpm db:d1:generate
 
 P0는 9/9, P1은 64/66, P2는 54/56을 해결했다. 여기서 해결 수는 `완료`, `현재 코드에서 이미 해결됨`, `다른 수정에 통합됨`의 합이다. 131개 중 127개가 코드·자동 검증·운영 HTTP 검증으로 닫혔다. 남은 4개는 같은 제품 결함을 방치한 항목이 아니라 현재 도구 경계가 명확한 외부 검증 항목이다: 운영 D1 export/restore 2개(A-09/O-05), Sites cron 등록 1개(P-13), 실제 NVDA/VoiceOver·모바일 장비 1개(X-10). 각각 실행 가능한 local restore drill, lease가 있는 Worker scheduled handler, axe/keyboard/200%/가상 키보드 회귀와 수동 release checklist까지 마련했다.
 
-이번 잔여 조치에서는 전면 FK/CHECK, authoritative import snapshot, FTS5 cursor search, solution/job/learning list-detail 분리, 학습 CAS와 채점 이력, scheduler lease, 공통 runtime response validation, 다중 폴더, revision diff/conflict UX, route CSS/WebP, 성능 예산, 복구 drill, SLO/smoke, pixel baseline을 완료했다. 최종 자동 검증은 lint/typecheck/build/Sites build, 96개 unit·integration test, 48개 Playwright E2E가 모두 통과했다. 기존 migration을 파괴적으로 고치지 않고 새 순방향 migration만 추가한다.
+이번 잔여 조치에서는 전면 FK/CHECK, authoritative import snapshot, FTS5 cursor search와 운영 runtime initialization, solution/job/learning list-detail 분리, 학습 CAS와 채점 이력, scheduler lease, 공통 runtime response validation, 다중 폴더, revision diff/conflict UX, route CSS/WebP, 성능 예산, 복구 drill, SLO/smoke, pixel baseline을 완료했다. 최종 자동 검증은 lint/typecheck/build/Sites build, 97개 unit·integration test, 48개 Playwright E2E가 모두 통과했다. 기존 migration을 파괴적으로 고치지 않고 새 순방향 migration과 additive runtime upgrade만 적용한다.
