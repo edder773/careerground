@@ -154,7 +154,7 @@ dedupe key와 lease는 재시도에서도 중복 알림을 막는다.
 | `pnpm build`              | API/web/docs production build 통과                                                      |
 | `pnpm sites:build`        | Worker + static artifact build 통과                                                     |
 | `pnpm performance:budget` | 위반 0; jobs 8.76, coding 1.08, solutions 6.22, notifications 1.48, search 36.87 ms p95 |
-| `pnpm recovery:drill`     | 316 pages, snapshot 3.32 ms, restore 3.25 ms, integrity/FK/checksum 통과                |
+| `pnpm recovery:drill`     | 316 pages, snapshot 1.60 ms, restore 1.32 ms, integrity/FK/checksum 통과                |
 
 검색 p95는 변경 전 1.24 ms보다 커졌다. 이전 구현은 rowid 순으로 바로 잘랐지만 현재 구현은
 81,000개의 공통 토큰 합성 match를 FTS relevance로 정렬한다. 최초 BM25 구현의 65.82 ms에서

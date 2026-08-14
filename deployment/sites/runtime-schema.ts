@@ -356,7 +356,7 @@ async function applyRuntimeSchema(db: D1Database) {
     `INSERT OR REPLACE INTO app_schema_migrations (version, checksum, applied_at)
      VALUES (?, ?, ?)`,
     EXPECTED_SCHEMA_VERSION,
-    'sha256:6b79a50335a04b72767a29c9d3d2c90203e72147c48eeda90c227e02f666d37f',
+    'sha256:69fa089214693f323703a327d853996d67129c136f80b8997cfc79a4a43b797d',
     new Date().toISOString(),
   );
 }
