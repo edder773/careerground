@@ -25,6 +25,164 @@
   --shadow: 0 20px 60px rgba(25, 63, 66, 0.13);
 }
 
+.folder-open {
+  display: contents;
+  color: inherit;
+  text-align: inherit;
+}
+
+.static-code {
+  max-height: 28rem;
+  overflow: auto;
+  white-space: pre;
+  padding: 1rem;
+}
+
+.search-target {
+  outline: 3px solid var(--color-primary, #7c3aed);
+  outline-offset: 3px;
+}
+
+.nav-badge {
+  min-width: 1.25rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  background: #b42318;
+  color: #fff;
+  font-size: 0.7rem;
+  text-align: center;
+}
+
+.import-preview {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--line, #d8d5df);
+  border-radius: 1rem;
+}
+
+.import-preview > header,
+.preview-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+.preview-counts div {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.table-scroll {
+  max-height: 24rem;
+  overflow: auto;
+}
+
+.table-scroll table {
+  min-width: 48rem;
+}
+
+.settings-card > fieldset {
+  display: contents;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.trash-recovery,
+.notes-trash {
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+}
+
+.trash-recovery > summary,
+.notes-trash > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.trash-recovery > summary svg,
+.notes-trash > summary svg {
+  width: 17px;
+  height: 17px;
+}
+
+.trash-recovery > div,
+.notes-trash[open] {
+  border-top: 1px solid var(--line);
+}
+
+.trash-recovery article,
+.notes-trash > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+}
+
+.trash-recovery article > span,
+.notes-trash > div > span {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.notes-trash {
+  margin: 12px;
+  font-size: 0.84rem;
+}
+
+.notes-trash > div button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+}
+
+.notes-trash > div button svg {
+  width: 15px;
+  height: 15px;
+}
+
+@media (max-width: 375px) {
+  .page-content,
+  .job-card,
+  .solution-card,
+  .editor-panel,
+  .note-workspace {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .code-view,
+  .table-scroll,
+  .revision-diff {
+    max-width: calc(100vw - 2rem);
+    overflow-x: auto;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -895,7 +1053,7 @@ p {
   color: #5b6700;
   background: var(--accent);
 }
-.problem-grid h3 {
+.problem-grid h2 {
   margin: 14px 0 9px;
   overflow: hidden;
   white-space: nowrap;
@@ -995,6 +1153,11 @@ p {
   width: 12px;
 }
 .editor-panel {
+  position: fixed;
+  z-index: 111;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: min(900px, calc(100vw - 44px));
   max-height: calc(100vh - 64px);
   overflow-y: auto;
@@ -1199,6 +1362,27 @@ p {
   display: grid;
   gap: 10px;
 }
+.load-more-button {
+  display: block;
+  width: min(100%, 420px);
+  min-height: 44px;
+  margin: 20px auto 4px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.load-more-button:hover:not(:disabled) {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.load-more-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
 .job-card {
   min-width: 0;
   padding: 19px;
@@ -1267,7 +1451,7 @@ p {
 .job-main small {
   display: block;
   margin-top: 10px;
-  color: #8a9c9e;
+  color: #536568;
   font-size: 8px;
 }
 .job-actions {
@@ -1396,7 +1580,7 @@ p {
   margin: 12px 0;
   display: flex;
   gap: 10px;
-  color: #6f8385;
+  color: #536568;
   font-size: 8px;
 }
 .rating-buttons {
@@ -1511,6 +1695,11 @@ p {
   backdrop-filter: blur(7px);
 }
 .learning-unit-modal {
+  position: fixed;
+  z-index: 86;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: min(760px, 100%);
   max-height: min(820px, calc(100vh - 48px));
   overflow: hidden;
@@ -1749,7 +1938,7 @@ p {
 .problem-track-tabs button {
   min-height: 28px;
   padding: 0 11px;
-  color: #69707d;
+  color: #5f6672;
   background: transparent;
   border: 0;
   border-radius: 7px;
@@ -2939,7 +3128,7 @@ p {
 
 .notes-topbar p {
   margin: 0;
-  color: #737982;
+  color: #5f6570;
   font-size: 13px;
 }
 
@@ -3064,13 +3253,13 @@ p {
 
 .notes-sidebar .notes-list small {
   margin-top: 4px;
-  color: #7d828b;
+  color: #5f6570;
   font-size: 11px;
 }
 
 .notes-sidebar .notes-list time {
   margin-top: 5px;
-  color: #9a9ea6;
+  color: #5f6570;
   font-size: 10px;
 }
 
@@ -3104,7 +3293,7 @@ p {
 .note-workspace-header > div:first-child span,
 .note-workspace-header time {
   display: block;
-  color: #777d87;
+  color: #5f6570;
   font-size: 11px;
 }
 
@@ -3187,7 +3376,7 @@ p {
 
 .note-format-toolbar > span {
   margin-left: auto;
-  color: #989ca4;
+  color: #5f6570;
   font-size: 11px;
 }
 
@@ -3235,7 +3424,7 @@ p {
   align-items: center;
   gap: 7px;
   margin-bottom: 18px;
-  color: #737984;
+  color: #5f6570;
   font-size: 12px;
   font-weight: 750;
 }
@@ -3258,7 +3447,7 @@ p {
   display: flex;
   align-items: center;
   gap: 7px;
-  color: #6d737d;
+  color: #5f6570;
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
@@ -3356,7 +3545,7 @@ p {
     justify-content: center;
     gap: 6px;
     min-height: 34px;
-    color: #737984;
+    color: #5f6570;
     border: 0;
     border-radius: 8px;
     background: transparent;
@@ -4066,7 +4255,7 @@ body {
 
 .openai-login-card small {
   min-height: 24px;
-  color: #81858f;
+  color: #656974;
   font-size: 9px;
   line-height: 1.55;
 }
@@ -4967,7 +5156,7 @@ body {
   }
 
   .bottom-nav a {
-    color: #6f747d;
+    color: #5f6570;
   }
 
   .bottom-nav a.active {
@@ -5103,7 +5292,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  color: #687078;
+  color: #59616a;
   background: transparent;
   border: 0;
   border-radius: 9px;
@@ -5370,7 +5559,7 @@ body {
 
 .jobs-font-buttons > span {
   margin-right: 4px;
-  color: #747c85;
+  color: #616871;
   font-size: 10px;
   font-weight: 750;
 }
@@ -5764,7 +5953,7 @@ body {
 }
 
 .job-calendar-header span {
-  color: #767d86;
+  color: #616871;
   font-size: 9px;
   font-weight: 750;
 }
@@ -5879,7 +6068,7 @@ body {
 }
 
 .rolling-job-summary small {
-  color: #6f827a;
+  color: #53665e;
   font-size: 8px;
 }
 
@@ -5954,6 +6143,10 @@ body {
   background: #fafafb;
 }
 
+.calendar-week {
+  display: contents;
+}
+
 .calendar-day {
   min-width: 0;
   min-height: 110px;
@@ -5961,6 +6154,13 @@ body {
   background: white;
   border-right: 1px solid #e7e9ed;
   border-bottom: 1px solid #e7e9ed;
+}
+
+.calendar-day:focus-visible {
+  position: relative;
+  z-index: 2;
+  outline: 3px solid rgba(83, 101, 191, 0.34);
+  outline-offset: -3px;
 }
 
 .calendar-day:nth-child(7n + 1) {
@@ -5983,7 +6183,7 @@ body {
 }
 
 .calendar-day.outside > time {
-  color: #b2b6bd;
+  color: #666d75;
 }
 
 .calendar-day.today > time {
@@ -6169,6 +6369,11 @@ body {
 }
 
 .job-detail-modal {
+  position: fixed;
+  z-index: 81;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: min(590px, 100%);
   max-height: min(760px, calc(100vh - 48px));
   overflow-y: auto;

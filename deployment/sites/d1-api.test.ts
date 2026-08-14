@@ -1,85 +1,6 @@
-import { readFileSync } from 'node:fs';
-import { DatabaseSync, type StatementSync } from 'node:sqlite';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { handleD1Api } from './d1-api.js';
-import type { D1Database, D1PreparedStatement, D1Result } from './d1.js';
-
-class SqliteStatement implements D1PreparedStatement {
-  constructor(
-    private readonly statement: StatementSync,
-    private readonly values: unknown[] = [],
-    readonly sql = '',
-  ) {}
-
-  bind(...values: unknown[]) {
-    return new SqliteStatement(this.statement, values, this.sql);
-  }
-
-  async first<T>() {
-    return (this.statement.get(...this.values) as T | undefined) || null;
-  }
-
-  async all<T>(): Promise<D1Result<T>> {
-    return { success: true, results: this.statement.all(...this.values) as T[] };
-  }
-
-  async run<T>(): Promise<D1Result<T>> {
-    const result = this.statement.run(...this.values);
-    return {
-      success: true,
-      results: [],
-      meta: { changes: Number(result.changes), last_row_id: Number(result.lastInsertRowid) },
-    };
-  }
-}
-
-class SqliteD1 implements D1Database {
-  private readonly sqlite = new DatabaseSync(':memory:');
-  preparedSql: string[] = [];
-
-  constructor() {
-    for (const file of [
-      'drizzle/0000_loose_shooting_star.sql',
-      'drizzle/0001_seed.sql',
-      'drizzle/0002_equal_hulk.sql',
-      'drizzle/0003_import_careerground_catalog.sql',
-      'drizzle/0004_melodic_xavin.sql',
-      'drizzle/0005_naive_blindfold.sql',
-      'drizzle/0006_tense_iron_patriot.sql',
-      'drizzle/0007_learning_catalog_expansion.sql',
-      'drizzle/0008_sql_track_learning_visuals.sql',
-      'drizzle/0009_refresh_job_catalog.sql',
-    ]) {
-      const migration = readFileSync(file, 'utf8');
-      for (const statement of migration.split('--> statement-breakpoint')) {
-        if (statement.trim()) this.sqlite.exec(statement);
-      }
-    }
-  }
-
-  prepare(sql: string) {
-    this.preparedSql.push(sql);
-    return new SqliteStatement(this.sqlite.prepare(sql), [], sql);
-  }
-
-  resetPreparedSql() {
-    this.preparedSql = [];
-  }
-
-  async batch<T>(statements: D1PreparedStatement[]): Promise<D1Result<T>[]> {
-    return Promise.all(
-      statements.map((statement) =>
-        statement instanceof SqliteStatement && /^\s*(SELECT|WITH|PRAGMA)/i.test(statement.sql)
-          ? statement.all<T>()
-          : statement.run<T>(),
-      ),
-    );
-  }
-
-  close() {
-    this.sqlite.close();
-  }
-}
+import { LocalD1 } from './local-d1.js';
 
 const adminHeaders = {
   'oai-authenticated-user-id': 'site-admin',
@@ -96,31 +17,46 @@ const memberHeaders = {
 };
 
 describe('Sites D1 API', () => {
-  let db: SqliteD1;
+  let db: LocalD1;
 
   beforeEach(() => {
-    db = new SqliteD1();
+    db = new LocalD1();
   });
+
+  afterEach(() => db.close());
 
   async function call(
     path: string,
     init: RequestInit = {},
     headers: Record<string, string> = adminHeaders,
+    env: Record<string, string> = {},
   ) {
     const requestHeaders = new Headers(headers);
     if (init.body && !(init.body instanceof FormData))
       requestHeaders.set('content-type', 'application/json');
     const response = await handleD1Api(
       new Request(`https://careerground.example${path}`, { ...init, headers: requestHeaders }),
-      { DB: db },
+      {
+        DB: db,
+        OPENAI_ADMIN_EMAILS: 'admin@example.test',
+        MAX_ACTIVE_USERS: '100',
+        REQUEST_LOGGING: 'false',
+        ...env,
+      },
     );
     return { response, body: (await response.json()) as Record<string, unknown> };
   }
 
-  it('reports D1 readiness and provisions the first OpenAI user as admin', async () => {
+  it('provisions normal first users as MEMBER and only allowlisted users as ADMIN', async () => {
     const health = await call('/api/v1/health', {}, {});
     expect(health.response.status).toBe(200);
     expect(health.body).toMatchObject({ status: 'ok', database: 'd1' });
+    expect(health.response.headers.get('x-request-id')).toBeTruthy();
+    expect(health.response.headers.get('server-timing')).toMatch(/^app;dur=\d+\.\d$/);
+    expect(Number(health.response.headers.get('x-response-time-ms'))).toBeGreaterThanOrEqual(0);
+
+    const member = await call('/api/v1/auth/me', {}, memberHeaders);
+    expect(member.body).toMatchObject({ user: { role: 'MEMBER', onboardingCompleted: false } });
 
     const me = await call('/api/v1/auth/me');
     expect(me.response.status).toBe(200);
@@ -132,11 +68,6 @@ describe('Sites D1 API', () => {
         preferredLanguage: 'javascript',
         onboardingCompleted: false,
       },
-    });
-
-    const member = await call('/api/v1/auth/me', {}, memberHeaders);
-    expect(member.body).toMatchObject({
-      user: { role: 'MEMBER', onboardingCompleted: false },
     });
 
     const onboarding = await call(
@@ -156,6 +87,21 @@ describe('Sites D1 API', () => {
         onboardingCompleted: true,
       },
     });
+  });
+
+  it('rate limits each user and normalized route with Retry-After', async () => {
+    const env = { RATE_LIMIT_READS_PER_MINUTE: '2' };
+    expect((await call('/api/v1/auth/me', {}, adminHeaders, env)).response.status).toBe(200);
+    expect((await call('/api/v1/auth/me', {}, adminHeaders, env)).response.status).toBe(200);
+    const limited = await call('/api/v1/auth/me', {}, adminHeaders, env);
+    expect(limited.response.status).toBe(429);
+    expect(limited.response.headers.get('retry-after')).toMatch(/^\d+$/);
+    expect(limited.body).toMatchObject({
+      code: 'RATE_LIMITED',
+      details: { limit: 2, windowSeconds: 60 },
+    });
+
+    expect((await call('/api/v1/auth/me', {}, memberHeaders, env)).response.status).toBe(200);
   });
 
   it('persists a personal folder and external link', async () => {
@@ -184,28 +130,55 @@ describe('Sites D1 API', () => {
     expect(listed.body).toEqual([
       expect.objectContaining({
         id: folder.id,
-        name: 'scrscriptipt지원 준비/script',
+        name: '<scr<script>ipt>지원 준비</script>',
         items: [expect.objectContaining({ label: '포트폴리오' })],
       }),
     ]);
-    expect((listed.body as Array<{ name: string }>)[0]?.name).not.toMatch(/[<>]/);
+    await call(`/api/v1/collections/${folder.id}`, { method: 'DELETE' });
+    const trash = await call('/api/v1/collections/trash');
+    expect(trash.body).toEqual([
+      expect.objectContaining({ id: folder.id, name: '<scr<script>ipt>지원 준비</script>' }),
+    ]);
+    await call(`/api/v1/collections/${folder.id}/restore`, { method: 'POST' });
+    expect((await call('/api/v1/collections')).body).toEqual([
+      expect.objectContaining({
+        id: folder.id,
+        items: [expect.objectContaining({ label: '포트폴리오' })],
+      }),
+    ]);
   });
 
   it('persists note revisions for the current user', async () => {
+    const original =
+      'List<String>\nvector<pair<int, int>>\na < b && c > d\n<script>alert(1)</script>';
     const created = await call('/api/v1/notes', {
       method: 'POST',
-      body: JSON.stringify({ title: 'D1 메모', markdown: '첫 기록', visibility: 'MEMBERS' }),
+      body: JSON.stringify({ title: 'D1 메모', markdown: original, visibility: 'MEMBERS' }),
     });
     const note = created.body as { id: string };
-    await call('/api/v1/notes', {
+    expect(created.body).toMatchObject({ markdown: original });
+    const updated = await call('/api/v1/notes', {
       method: 'POST',
       body: JSON.stringify({
         id: note.id,
+        baseRevision: 1,
         title: 'D1 메모',
         markdown: '두 번째 기록',
         visibility: 'PRIVATE',
       }),
     });
+    expect(updated.response.status).toBe(200);
+    const conflict = await call('/api/v1/notes', {
+      method: 'POST',
+      body: JSON.stringify({
+        id: note.id,
+        baseRevision: 1,
+        title: '충돌 저장',
+        markdown: '덮어쓰면 안 됩니다.',
+      }),
+    });
+    expect(conflict.response.status).toBe(409);
+    expect(conflict.body).toMatchObject({ code: 'REVISION_CONFLICT' });
 
     const listed = await call('/api/v1/notes');
     expect(listed.body).toEqual([
@@ -226,6 +199,15 @@ describe('Sites D1 API', () => {
     const removed = await call(`/api/v1/notes/${note.id}`, { method: 'DELETE' });
     expect(removed.response.status).toBe(200);
     expect((await call('/api/v1/notes')).body).toEqual([]);
+    expect((await call('/api/v1/notes/trash')).body).toEqual([
+      expect.objectContaining({ id: note.id, title: 'D1 메모' }),
+    ]);
+    expect(
+      (await call(`/api/v1/notes/${note.id}/restore`, { method: 'POST' })).response.status,
+    ).toBe(200);
+    expect((await call('/api/v1/notes')).body).toEqual([
+      expect.objectContaining({ id: note.id, currentRev: 2 }),
+    ]);
   });
 
   it('replaces dummy records with the imported job and problem catalogs', async () => {
@@ -275,14 +257,19 @@ describe('Sites D1 API', () => {
 
     await call('/api/v1/jobs/saved', {
       method: 'POST',
-      body: JSON.stringify({ jobId: firstJob.id, status: 'APPLIED', memo: '' }),
+      body: JSON.stringify({ jobId: firstJob.id, status: 'APPLIED', memo: '지원 메모' }),
+    });
+    await call(`/api/v1/jobs/${firstJob.id}/bookmark`, {
+      method: 'PATCH',
+      body: JSON.stringify({ bookmarked: false }),
     });
     const saved = await call('/api/v1/jobs?sort=new');
     expect(saved.body).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: firstJob.id,
-          savedBy: [expect.objectContaining({ status: 'APPLIED' })],
+          bookmarked: false,
+          savedBy: [expect.objectContaining({ status: 'APPLIED', memo: '지원 메모' })],
         }),
       ]),
     );
@@ -294,6 +281,43 @@ describe('Sites D1 API', () => {
     expect(categories.body).toEqual(
       expect.arrayContaining(['AI 풀스택 개발', '백엔드', '프론트엔드']),
     );
+  });
+
+  it('returns stable cursor pages and totals for large shared catalogs', async () => {
+    const firstProblems = await call(
+      '/api/v1/coding/problems?track=ALGORITHM&page=cursor&limit=25',
+    );
+    const problemPage = firstProblems.body as unknown as {
+      items: Array<{ id: string }>;
+      nextCursor: string;
+      total: number;
+    };
+    expect(problemPage.items).toHaveLength(25);
+    expect(problemPage.total).toBe(365);
+    expect(problemPage.nextCursor).toBeTruthy();
+    const nextProblems = await call(
+      `/api/v1/coding/problems?track=ALGORITHM&page=cursor&limit=25&cursor=${encodeURIComponent(problemPage.nextCursor)}`,
+    );
+    const nextProblemPage = nextProblems.body as unknown as { items: Array<{ id: string }> };
+    expect(nextProblemPage.items).toHaveLength(25);
+    expect(nextProblemPage.items.map((item) => item.id)).not.toContain(
+      problemPage.items.at(-1)?.id,
+    );
+
+    const firstJobs = await call('/api/v1/jobs?sort=new&page=cursor&limit=20');
+    const jobPage = firstJobs.body as unknown as {
+      items: Array<{ id: string }>;
+      nextCursor: string;
+      total: number;
+    };
+    expect(jobPage.items).toHaveLength(20);
+    expect(jobPage.total).toBe(119);
+    const nextJobs = await call(
+      `/api/v1/jobs?sort=new&page=cursor&limit=20&cursor=${encodeURIComponent(jobPage.nextCursor)}`,
+    );
+    expect(
+      (nextJobs.body as unknown as { items: Array<{ id: string }> }).items.map((item) => item.id),
+    ).not.toContain(jobPage.items.at(-1)?.id);
   });
 
   it('accepts repeated company-size and category filters', async () => {
@@ -447,7 +471,14 @@ describe('Sites D1 API', () => {
       }),
     });
     const saved = solution.body as { id: string };
-    await call(`/api/v1/coding/solutions/${saved.id}/reaction`, { method: 'POST' });
+    await call(`/api/v1/coding/solutions/${saved.id}/reaction`, {
+      method: 'PUT',
+      body: JSON.stringify({ active: true }),
+    });
+    await call(`/api/v1/coding/solutions/${saved.id}/reaction`, {
+      method: 'PUT',
+      body: JSON.stringify({ active: true }),
+    });
     await call(`/api/v1/coding/solutions/${saved.id}/comments`, {
       method: 'POST',
       body: JSON.stringify({ markdown: '좋은 풀이입니다.' }),
@@ -465,9 +496,21 @@ describe('Sites D1 API', () => {
         language: 'javascript',
         visibility: 'MEMBERS',
         reactions: [expect.any(Object)],
+        reactionCount: 1,
+        reactedByMe: false,
         comments: [expect.objectContaining({ markdown: '좋은 풀이입니다.' })],
       }),
     ]);
+    const pagedSolutions = await call(
+      `/api/v1/coding/solutions?problemId=${daily.problem.id}&page=cursor&limit=1`,
+      {},
+      memberHeaders,
+    );
+    expect(pagedSolutions.body).toMatchObject({
+      items: [expect.objectContaining({ id: saved.id })],
+      nextCursor: null,
+      total: 1,
+    });
   });
 
   it('persists learning review state and returns searchable data', async () => {
@@ -477,40 +520,47 @@ describe('Sites D1 API', () => {
       )
       .first<{ count: number }>();
     expect(reconstructed?.count).toBe(6);
+    const payload = {
+      version: '1.0',
+      source: {
+        title: '테스트용 웹 기초',
+        subject: '소프트웨어 개발',
+        category: '백엔드',
+        sourceVersion: '1.0',
+        checksum: 'a'.repeat(64),
+      },
+      units: [
+        {
+          anchor: 'http-api',
+          title: 'HTTP API와 상태 코드',
+          summaryMarkdown: 'List<String>과 a < b를 그대로 학습합니다.',
+          concepts: ['HTTP'],
+          flashcards: [{ front: '멱등한 요청이란?', back: '반복해도 최종 상태가 같습니다.' }],
+          questions: [
+            {
+              type: 'SHORT_ANSWER',
+              prompt: '생성 성공 상태 코드는?',
+              answer: '201 Created',
+            },
+          ],
+        },
+      ],
+    };
+    const preview = await call('/api/v1/learning/import/preview', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    const token = preview.body as { previewToken: string; checksum: string };
     const imported = await call('/api/v1/learning/import/commit', {
       method: 'POST',
-      body: JSON.stringify({
-        version: '1.0',
-        source: {
-          title: '테스트용 웹 기초',
-          subject: '소프트웨어 개발',
-          category: '백엔드',
-          sourceVersion: '1.0',
-          checksum: 'a'.repeat(64),
-        },
-        units: [
-          {
-            anchor: 'http-api',
-            title: 'HTTP API와 상태 코드',
-            summaryMarkdown: '요청과 응답의 구조를 학습합니다.',
-            concepts: ['HTTP'],
-            flashcards: [{ front: '멱등한 요청이란?', back: '반복해도 최종 상태가 같습니다.' }],
-            questions: [
-              {
-                type: 'SHORT_ANSWER',
-                prompt: '생성 성공 상태 코드는?',
-                answer: '201 Created',
-              },
-            ],
-          },
-        ],
-      }),
+      body: JSON.stringify(token),
     });
     expect(imported.response.status).toBe(200);
 
     const learning = await call('/api/v1/learning');
     const source = (learning.body as unknown as Array<{ units: Array<{ id: string }> }>)[0];
     expect(source.units.length).toBeGreaterThan(0);
+    expect(source.units[0]).toMatchObject({ summary: 'List<String>과 a < b를 그대로 학습합니다.' });
     await call('/api/v1/learning/review', {
       method: 'POST',
       body: JSON.stringify({ unitId: source.units[0].id, rating: 4 }),
@@ -533,6 +583,32 @@ describe('Sites D1 API', () => {
     const search = await call('/api/v1/search?q=HTTP');
     expect(search.response.status).toBe(200);
     expect(search.body).toMatchObject({ query: 'HTTP' });
+  });
+
+  it('creates one deduplicated deadline notification across repeated reads', async () => {
+    await call('/api/v1/auth/me');
+    const job = await db.prepare("SELECT id FROM jobs WHERE status = 'ACTIVE' LIMIT 1").first<{
+      id: string;
+    }>();
+    const deadline = new Date(Date.now() + 3 * 86_400_000).toISOString();
+    await db
+      .prepare('UPDATE jobs SET deadline_at = ?, rolling = 0 WHERE id = ?')
+      .bind(deadline, job!.id)
+      .run();
+    await call('/api/v1/jobs/saved', {
+      method: 'POST',
+      body: JSON.stringify({ jobId: job!.id, bookmarked: true }),
+    });
+
+    await call('/api/v1/notifications/unread-count');
+    await call('/api/v1/notifications/unread-count');
+
+    const count = await db
+      .prepare(
+        "SELECT COUNT(*) AS count FROM notifications WHERE type = 'JOB_DEADLINE' AND user_id = (SELECT id FROM users WHERE site_user_id = 'site-admin')",
+      )
+      .first<{ count: number }>();
+    expect(count?.count).toBe(1);
   });
 
   it('loads the complete learning library with four bulk queries', async () => {
@@ -588,5 +664,157 @@ describe('Sites D1 API', () => {
     const deletionResponse = await call('/api/v1/auth/delete-request', { method: 'POST' });
     expect(exportResponse.response.status).toBe(404);
     expect(deletionResponse.response.status).toBe(404);
+  });
+
+  it('preserves problem memo and favorite across independent status patches', async () => {
+    const problem = await db
+      .prepare('SELECT id FROM coding_problems WHERE active = 1 ORDER BY position LIMIT 1')
+      .first<{ id: string }>();
+    expect(problem?.id).toBeTruthy();
+    const base = `/api/v1/coding/problems/${problem!.id}`;
+    await call(`${base}/memo`, {
+      method: 'PATCH',
+      body: JSON.stringify({ memo: 'List<String> a < b && c > d' }),
+    });
+    await call(`${base}/favorite`, {
+      method: 'PATCH',
+      body: JSON.stringify({ favorite: true }),
+    });
+    await call(`${base}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'IN_PROGRESS' }),
+    });
+    await call(`${base}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'SOLVED' }),
+    });
+    const progress = await db
+      .prepare('SELECT status, favorite, memo FROM problem_progress WHERE problem_id = ?')
+      .bind(problem!.id)
+      .first<{ status: string; favorite: number; memo: string }>();
+    expect(progress).toEqual({
+      status: 'SOLVED',
+      favorite: 1,
+      memo: 'List<String> a < b && c > d',
+    });
+  });
+
+  it('requires a matching preview token and rolls back an interrupted job import', async () => {
+    const timestamp = new Date().toISOString();
+    const payload = {
+      version: '1.0',
+      collectedAt: timestamp,
+      sourceCount: 1,
+      items: [
+        {
+          sourceName: 'regression-fixture',
+          sourceUrl: 'https://example.test/jobs/atomic-1?utm_source=test',
+          companyName: '주식회사 주사위게임',
+          title: '신입 백엔드 개발자',
+          category: '백엔드',
+          careerScope: 'NEW_GRAD_ONLY',
+          careerEvidence: '신입 지원 가능',
+          companySize: 'SMALL',
+          companySizeEvidence: '테스트 근거',
+          employmentType: 'FULL_TIME',
+          region: '서울',
+          remote: false,
+          techStack: ['TypeScript'],
+          rolling: true,
+          collectedAt: timestamp,
+          lastVerifiedAt: timestamp,
+          summary: '원자 import 회귀 테스트',
+          status: 'ACTIVE',
+        },
+      ],
+    };
+    const direct = await call('/api/v1/jobs/import/commit', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    expect(direct.response.status).toBe(422);
+
+    const preview = await call('/api/v1/jobs/import/preview', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    const approval = preview.body as { previewToken: string; checksum: string };
+    expect(approval.previewToken).toBeTruthy();
+    const changed = await call('/api/v1/jobs/import/commit', {
+      method: 'POST',
+      body: JSON.stringify({ ...approval, checksum: 'f'.repeat(64) }),
+    });
+    expect(changed.response.status).toBe(409);
+
+    const before = await db
+      .prepare('SELECT COUNT(*) AS count FROM jobs')
+      .first<{ count: number }>();
+    db.failNextBatch(1);
+    const interrupted = await call('/api/v1/jobs/import/commit', {
+      method: 'POST',
+      body: JSON.stringify(approval),
+    });
+    expect(interrupted.response.status).toBe(500);
+    const afterFailure = await db
+      .prepare('SELECT COUNT(*) AS count FROM jobs')
+      .first<{ count: number }>();
+    expect(afterFailure?.count).toBe(before?.count);
+
+    const committed = await call('/api/v1/jobs/import/commit', {
+      method: 'POST',
+      body: JSON.stringify(approval),
+    });
+    expect(committed.response.status).toBe(200);
+    const retried = await call('/api/v1/jobs/import/commit', {
+      method: 'POST',
+      body: JSON.stringify(approval),
+    });
+    expect(retried.body).toMatchObject({ idempotent: true });
+  });
+
+  it('redacts hidden replies in the API response', async () => {
+    await call('/api/v1/auth/me', {}, memberHeaders);
+    const problem = await db
+      .prepare('SELECT id FROM coding_problems WHERE active = 1 ORDER BY position LIMIT 1')
+      .first<{ id: string }>();
+    const solution = await call('/api/v1/coding/solutions', {
+      method: 'POST',
+      body: JSON.stringify({
+        problemId: problem!.id,
+        title: 'redaction fixture',
+        language: 'javascript',
+        code: 'return true;',
+        description: '설명',
+        solved: true,
+      }),
+    });
+    const solutionId = String(solution.body.id);
+    const parent = await call(`/api/v1/coding/solutions/${solutionId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ markdown: '부모 댓글' }),
+    });
+    const reply = await call(
+      `/api/v1/coding/solutions/${solutionId}/comments`,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          markdown: '<script>private reply</script>',
+          parentId: parent.body.id,
+        }),
+      },
+      memberHeaders,
+    );
+    await db
+      .prepare('UPDATE solution_comments SET hidden_at = ? WHERE id = ?')
+      .bind(new Date().toISOString(), reply.body.id)
+      .run();
+    const listed = await call('/api/v1/coding/solutions', {}, memberHeaders);
+    const comments = (
+      listed.body as unknown as Array<{ comments: Array<{ replies: unknown[] }> }>
+    )[0]?.comments;
+    expect(comments?.[0]?.replies).toEqual([
+      expect.objectContaining({ markdown: null, redacted: 'HIDDEN' }),
+    ]);
+    expect(JSON.stringify(listed.body)).not.toContain('private reply');
   });
 });

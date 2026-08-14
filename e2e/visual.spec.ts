@@ -1,14 +1,24 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { login } from './helpers';
 
 const viewports = [
   { name: 'desktop-1440', width: 1440, height: 900 },
   { name: 'tablet-1024', width: 1024, height: 768 },
+  { name: 'tablet-768', width: 768, height: 1024 },
   { name: 'mobile-375', width: 375, height: 812 },
   { name: 'mobile-320', width: 320, height: 568 },
 ] as const;
+
+async function expectNoSeriousViolations(page: Page) {
+  const results = await new AxeBuilder({ page }).analyze();
+  expect(
+    results.violations.filter((item) =>
+      ['critical', 'serious', 'moderate'].includes(item.impact || ''),
+    ),
+  ).toEqual([]);
+}
 
 test('captures responsive home screenshots and has no serious accessibility violations', async ({
   page,
@@ -21,6 +31,7 @@ test('captures responsive home screenshots and has no serious accessibility viol
     path: 'test-results/visual/login-openai-desktop.png',
     fullPage: false,
   });
+  await expectNoSeriousViolations(page);
   await login(page, 'visual@careerground.local');
   for (const viewport of viewports) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
@@ -34,13 +45,14 @@ test('captures responsive home screenshots and has no serious accessibility viol
   }
 
   await page.setViewportSize({ width: 1440, height: 900 });
-  const results = await new AxeBuilder({ page }).analyze();
-  expect(
-    results.violations.filter((item) => ['critical', 'serious'].includes(item.impact || '')),
-  ).toEqual([]);
+  await page.getByRole('button', { name: '검색' }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await expectNoSeriousViolations(page);
+  await page.keyboard.press('Escape');
 });
 
 test('captures core domain screens', async ({ page }) => {
+  test.setTimeout(120_000);
   await mkdir('test-results/visual', { recursive: true });
   await login(page, 'visual@careerground.local');
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -54,7 +66,7 @@ test('captures core domain screens', async ({ page }) => {
   ];
   for (const screen of screens) {
     await page.goto(screen.href);
-    await expect(page.getByRole('heading', { name: screen.heading })).toBeVisible();
+    await expect(page.getByRole('heading', { name: screen.heading, exact: true })).toBeVisible();
     if (screen.name === 'notes') {
       await page.getByRole('button', { name: '새 노트' }).first().click();
       await page.getByRole('textbox', { name: '노트 제목' }).fill('이번 주 준비 기록');
@@ -146,6 +158,7 @@ test('captures core domain screens', async ({ page }) => {
       });
       await page.getByRole('button', { name: '닫기' }).click();
     }
+    await expectNoSeriousViolations(page);
   }
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto('/notes');

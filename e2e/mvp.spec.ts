@@ -41,7 +41,7 @@ test.describe('CareerGround MVP vertical slices', () => {
     const renamed = `검증 폴더 ${suffix}`;
     await page.getByRole('button', { name: '새 폴더' }).click();
     await page.getByLabel('폴더 이름').fill(initialName);
-    await page.getByRole('button', { name: '만들기' }).click();
+    await page.getByRole('button', { name: '만들기', exact: true }).click();
     const folderCard = page.locator('.folder-card').filter({ hasText: initialName });
     await expect(folderCard).toBeVisible();
 
@@ -139,8 +139,8 @@ test.describe('CareerGround MVP vertical slices', () => {
     await filterDialog.getByRole('button', { name: '1개 조건 적용' }).click();
     const save = page.getByRole('button', { name: /관심 저장|관심 공고/ }).first();
     await expect(save).toBeVisible();
-    await save.click();
-    await expect(page.getByRole('button', { name: '관심 공고' }).first()).toBeVisible();
+    if ((await save.getAttribute('aria-pressed')) !== 'true') await save.click();
+    await expect(save).toHaveAttribute('aria-pressed', 'true');
     const status = page.getByLabel(/지원 상태/).first();
     await status.selectOption('APPLIED');
     await expect(status).toHaveValue('APPLIED');
@@ -167,6 +167,17 @@ test.describe('CareerGround MVP vertical slices', () => {
     await expect(page.locator('.jobs-page')).toHaveAttribute('data-font-size', 'large');
     await page.getByRole('button', { name: '달력' }).click();
     await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
+    const calendar = page.getByRole('grid', { name: /채용 일정/ });
+    const focusedDate = calendar.locator('[role="gridcell"][tabindex="0"]');
+    await expect(focusedDate).toHaveCount(1);
+    const dateBefore = await focusedDate.getAttribute('aria-label');
+    await focusedDate.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(calendar.locator('[role="gridcell"]:focus')).toHaveCount(1);
+    await expect(calendar.locator('[role="gridcell"]:focus')).not.toHaveAttribute(
+      'aria-label',
+      dateBefore || '',
+    );
     await expect(page.locator('.calendar-job strong').first()).toBeVisible();
   });
 
@@ -267,7 +278,7 @@ test.describe('CareerGround MVP vertical slices', () => {
     };
     await page.getByPlaceholder('job import schema JSON').fill(JSON.stringify(payload));
     await page.getByRole('button', { name: '미리보기', exact: true }).first().click();
-    await expect(page.locator('.preview-json')).toContainText('E2E 회사');
+    await expect(page.locator('.import-preview').first()).toContainText('E2E 회사');
     const jobCommit = page.waitForResponse(
       (response) =>
         response.url().endsWith('/jobs/import/commit') && response.request().method() === 'POST',
@@ -309,7 +320,7 @@ test.describe('CareerGround MVP vertical slices', () => {
       .getByPlaceholder('learning import schema JSON')
       .fill(JSON.stringify(learningPayload));
     await page.getByRole('button', { name: '미리보기', exact: true }).nth(1).click();
-    await expect(page.locator('.preview-json')).toContainText(learningTitle);
+    await expect(page.locator('.import-preview').last()).toContainText(learningTitle);
     const learningCommit = page.waitForResponse(
       (response) =>
         response.url().endsWith('/learning/import/commit') &&

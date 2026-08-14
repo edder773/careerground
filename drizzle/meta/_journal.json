@@ -71,6 +71,27 @@
       "when": 1786604779990,
       "tag": "0009_refresh_job_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1786634795627,
+      "tag": "0010_odd_mongoose",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1786668127348,
+      "tag": "0011_request_rate_limits",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1786668201789,
+      "tag": "0012_notification_dedupe",
+      "breakpoints": true
     }
   ]
 }

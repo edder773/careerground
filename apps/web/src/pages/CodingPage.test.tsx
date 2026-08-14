@@ -50,8 +50,10 @@ describe('solution editor', () => {
               onboardingCompleted: true,
             },
           });
-        if (url.includes('/coding/problems?'))
-          return response(url.includes('track=SQL') ? [sqlProblem] : [problem, levelTwoProblem]);
+        if (url.includes('/coding/problems?')) {
+          const items = url.includes('track=SQL') ? [sqlProblem] : [problem, levelTwoProblem];
+          return response({ items, nextCursor: null, total: items.length });
+        }
         if (url.endsWith('/coding/daily-challenges'))
           return response([
             { id: 'daily-lv1', problemId: problem.id, problem },
@@ -87,8 +89,6 @@ describe('solution editor', () => {
     expect(screen.queryByRole('combobox', { name: '공개 범위' })).not.toBeInTheDocument();
     expect(screen.getByText('저장한 풀이는 다른 멤버도 바로 볼 수 있습니다.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /해결 기록 저장/ })).toBeDisabled();
-    await waitFor(() => expect(calls.some((call) => call.url.includes('/progress'))).toBe(true));
-
     await user.click(screen.getByRole('button', { name: '닫기' }));
     await user.click(within(dailySection).getAllByRole('button', { name: '풀이 기록' })[2]!);
     const sqlLanguage = screen.getByRole('combobox', { name: '언어' });
@@ -101,10 +101,11 @@ describe('solution editor', () => {
     await user.click(screen.getByRole('button', { name: 'SQL' }));
     await waitFor(() =>
       expect(
-        Array.from(document.querySelectorAll('.problem-grid h3')).map(
+        Array.from(document.querySelectorAll('.problem-grid h2')).map(
           (heading) => heading.textContent,
         ),
       ).toEqual(['조건에 맞는 사용자 찾기']),
     );
+    expect(calls.some((call) => call.url.includes('/progress'))).toBe(false);
   });
 });

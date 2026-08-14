@@ -12,6 +12,7 @@ export class ApiError extends Error {
     message: string,
     readonly status: number,
     readonly requestId?: string,
+    readonly code = 'REQUEST_FAILED',
   ) {
     super(message);
   }
@@ -23,19 +24,41 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   if (init.body && !(init.body instanceof FormData))
     headers.set('content-type', 'application/json');
-  const response = await fetch(`${apiBaseUrl}${path}`, {
-    ...init,
-    headers,
-    credentials: 'include',
-  });
+  const timeout = AbortSignal.timeout(15_000);
+  const signal = init.signal ? AbortSignal.any([init.signal, timeout]) : timeout;
+  let response: Response;
+  try {
+    response = await fetch(`${apiBaseUrl}${path}`, {
+      ...init,
+      headers,
+      signal,
+      credentials: 'include',
+    });
+  } catch {
+    const timedOut = timeout.aborted;
+    throw new ApiError(
+      timedOut ? '요청 시간이 초과되었습니다. 다시 시도해주세요.' : '서버에 연결할 수 없습니다.',
+      0,
+      undefined,
+      timedOut ? 'TIMEOUT' : 'NETWORK_ERROR',
+    );
+  }
   if (!response.ok) {
     const body = (await response.json().catch(() => ({ message: response.statusText }))) as {
       message?: string;
       requestId?: string;
+      code?: string;
     };
-    throw new ApiError(body.message || '요청에 실패했습니다.', response.status, body.requestId);
+    throw new ApiError(
+      body.message || '요청에 실패했습니다.',
+      response.status,
+      body.requestId,
+      body.code,
+    );
   }
-  if (response.status === 204) return undefined as T;
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
+    return undefined as T;
+  }
   return response.json() as Promise<T>;
 }
 

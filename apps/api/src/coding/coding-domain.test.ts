@@ -43,10 +43,9 @@ describe('coding policies', () => {
     expect(mayEditComment({ id: 'b', role: 'ADMIN' }, 'a')).toBe(true);
   });
 
-  it('removes executable HTML while preserving markdown text', () => {
-    expect(cleanMarkdown('**설명** <script>alert(1)</script><img src=x onerror=alert(2)>')).toBe(
-      '**설명**',
-    );
+  it('preserves source text so the renderer can sanitize without data loss', () => {
+    const markdown = '**설명** List<String> a < b <script>alert(1)</script>';
+    expect(cleanMarkdown(markdown)).toBe(markdown);
   });
 
   it('automatically includes every active member in rankings', async () => {

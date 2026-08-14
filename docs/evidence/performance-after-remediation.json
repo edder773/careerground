@@ -1,0 +1,78 @@
+{
+  "generatedAt": "2026-08-13T15:38:13.735Z",
+  "environment": {
+    "runtime": "v24.19.0",
+    "database": "node:sqlite in-memory D1 compatibility adapter",
+    "scope": "synthetic local API benchmark; not production D1/network latency"
+  },
+  "dataset": {
+    "jobs": 50000,
+    "codingProblems": 10000,
+    "solutions": 20000,
+    "comments": 100000,
+    "notesPerUser": 1000,
+    "notificationsPerUser": 10000
+  },
+  "seedDurationMs": 4476.27,
+  "samplesPerEndpoint": 7,
+  "metrics": {
+    "jobs": {
+      "p50Ms": 2.05,
+      "p95Ms": 2.95,
+      "dbQueryCount": 4,
+      "responseBytes": 114460,
+      "peakRssBytes": 272146432
+    },
+    "jobsFilter": {
+      "p50Ms": 11.66,
+      "p95Ms": 12.09,
+      "dbQueryCount": 4,
+      "responseBytes": 92526,
+      "peakRssBytes": 274722816
+    },
+    "codingProblems": {
+      "p50Ms": 4.06,
+      "p95Ms": 4.84,
+      "dbQueryCount": 4,
+      "responseBytes": 110292,
+      "peakRssBytes": 278765568
+    },
+    "solutions": {
+      "p50Ms": 12.76,
+      "p95Ms": 21.32,
+      "dbQueryCount": 7,
+      "responseBytes": 99831,
+      "peakRssBytes": 280682496
+    },
+    "notes": {
+      "p50Ms": 1.11,
+      "p95Ms": 1.62,
+      "dbQueryCount": 5,
+      "responseBytes": 63301,
+      "peakRssBytes": 248352768
+    },
+    "notifications": {
+      "p50Ms": 1.64,
+      "p95Ms": 2.37,
+      "dbQueryCount": 4,
+      "responseBytes": 17955,
+      "peakRssBytes": 248705024
+    },
+    "search": {
+      "p50Ms": 0.6,
+      "p95Ms": 0.96,
+      "dbQueryCount": 9,
+      "responseBytes": 4614,
+      "peakRssBytes": 248782848
+    }
+  },
+  "browserMetrics": {
+    "initialRenderTime": "정량 측정 불가",
+    "filterChangeTime": "정량 측정 불가",
+    "reason": "브라우저 성능 추적과 운영 D1 자격증명이 이번 로컬 측정 범위에 없음"
+  },
+  "beforeComparison": {
+    "status": "정량 측정 불가",
+    "reason": "감사 전 동일 커밋·동일 합성 데이터의 측정 산출물이 없음"
+  }
+}

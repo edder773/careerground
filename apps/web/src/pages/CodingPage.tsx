@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query';
+import * as Dialog from '@radix-ui/react-dialog';
+import { Link, useSearchParams } from 'react-router';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
@@ -21,6 +28,7 @@ type Problem = {
 };
 type Challenge = { id: string; problemId: string; problem: Problem };
 type CodeLanguage = 'python' | 'java' | 'javascript' | 'cpp' | 'sql';
+type CursorPage<T> = { items: T[]; nextCursor: string | null; total: number };
 
 function solutionsUrl(problem: Problem) {
   return `/solutions?${new URLSearchParams({
@@ -32,6 +40,7 @@ function solutionsUrl(problem: Problem) {
 export function CodingPage() {
   const client = useQueryClient();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [level, setLevel] = useState('');
   const [track, setTrack] = useState<'ALGORITHM' | 'SQL'>('ALGORITHM');
   const [selected, setSelected] = useState<Problem>();
@@ -41,21 +50,16 @@ export function CodingPage() {
   useEffect(() => {
     if (user?.preferredLanguage) setLanguage(user.preferredLanguage);
   }, [user?.preferredLanguage]);
-  useEffect(() => {
-    if (!selected) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setSelected(undefined);
-    };
-    window.addEventListener('keydown', closeOnEscape);
-    return () => window.removeEventListener('keydown', closeOnEscape);
-  }, [selected]);
-  const problems = useQuery({
+  const problems = useInfiniteQuery({
     queryKey: ['problems', track, level],
-    queryFn: () => {
-      const query = new URLSearchParams({ track });
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam }) => {
+      const query = new URLSearchParams({ track, page: 'cursor', limit: '60' });
       if (level) query.set('level', level);
-      return api<Problem[]>(`/coding/problems?${query.toString()}`);
+      if (pageParam) query.set('cursor', pageParam);
+      return api<CursorPage<Problem>>(`/coding/problems?${query.toString()}`);
     },
+    getNextPageParam: (lastPage) => lastPage.nextCursor || undefined,
   });
   const challenge = useQuery({
     queryKey: ['daily-challenges'],
@@ -84,20 +88,97 @@ export function CodingPage() {
       return solution;
     },
     onSuccess: async () => {
+      if (selected) localStorage.removeItem(`cg-solution-draft:${selected.id}`);
       setSelected(undefined);
       setCode('');
       setDescription('');
       await client.invalidateQueries({ queryKey: ['problems'] });
     },
   });
-  const progress = useMutation({
-    mutationFn: (problemId: string) =>
-      api(`/coding/problems/${problemId}/progress`, {
+  const favorite = useMutation({
+    mutationFn: ({ problemId, active }: { problemId: string; active: boolean }) =>
+      api(`/coding/problems/${problemId}/favorite`, {
         method: 'PATCH',
-        body: json({ status: 'IN_PROGRESS' }),
+        body: json({ favorite: active }),
       }),
-    onSuccess: () => client.invalidateQueries({ queryKey: ['problems'] }),
+    onMutate: async ({ problemId, active }) => {
+      await client.cancelQueries({ queryKey: ['problems'] });
+      const snapshots = client.getQueriesData<InfiniteData<CursorPage<Problem>>>({
+        queryKey: ['problems'],
+      });
+      client.setQueriesData<InfiniteData<CursorPage<Problem>>>(
+        { queryKey: ['problems'] },
+        (current) =>
+          current
+            ? {
+                ...current,
+                pages: current.pages.map((page) => ({
+                  ...page,
+                  items: page.items.map((problem) =>
+                    problem.id === problemId
+                      ? {
+                          ...problem,
+                          progress: [
+                            {
+                              status: problem.progress[0]?.status || 'UNTRIED',
+                              favorite: active,
+                            },
+                          ],
+                        }
+                      : problem,
+                  ),
+                })),
+              }
+            : current,
+      );
+      return { snapshots };
+    },
+    onError: (_error, _variables, context) =>
+      context?.snapshots.forEach(([key, data]) => client.setQueryData(key, data)),
+    onSettled: () => client.invalidateQueries({ queryKey: ['problems'] }),
   });
+  useEffect(() => {
+    if (!selected || (!code && !description)) return;
+    localStorage.setItem(
+      `cg-solution-draft:${selected.id}`,
+      JSON.stringify({ code, description, language }),
+    );
+  }, [code, description, language, selected]);
+  useEffect(() => {
+    const warn = (event: BeforeUnloadEvent) => {
+      if (!selected || (!code && !description)) return;
+      event.preventDefault();
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [code, description, selected]);
+  const openEditor = (problem: Problem) => {
+    setSelected(problem);
+    setLanguage(problem.track === 'SQL' ? 'sql' : user?.preferredLanguage || 'python');
+    const draft = localStorage.getItem(`cg-solution-draft:${problem.id}`);
+    if (!draft) {
+      setCode('');
+      setDescription('');
+      return;
+    }
+    try {
+      const parsed = JSON.parse(draft) as {
+        code?: string;
+        description?: string;
+        language?: CodeLanguage;
+      };
+      setCode(parsed.code || '');
+      setDescription(parsed.description || '');
+      if (parsed.language) setLanguage(parsed.language);
+    } catch {
+      localStorage.removeItem(`cg-solution-draft:${problem.id}`);
+    }
+  };
+  const closeEditor = () => {
+    if ((code || description) && !window.confirm('저장하지 않은 풀이가 있습니다. 닫을까요?'))
+      return;
+    setSelected(undefined);
+  };
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (selected && code.trim()) save.mutate();
@@ -106,12 +187,16 @@ export function CodingPage() {
     () => new Set((challenge.data || []).map((item) => item.problem.id)),
     [challenge.data],
   );
-  const list = useMemo(() => problems.data || [], [problems.data]);
-  const openEditor = (problem: Problem) => {
-    setSelected(problem);
-    setLanguage(problem.track === 'SQL' ? 'sql' : user?.preferredLanguage || 'python');
-    progress.mutate(problem.id);
-  };
+  const list = useMemo(
+    () => problems.data?.pages.flatMap((page) => page.items) || [],
+    [problems.data],
+  );
+  const problemTotal = problems.data?.pages[0]?.total || 0;
+  const requestedProblem = searchParams.get('problem');
+  useEffect(() => {
+    if (!requestedProblem || !list.length) return;
+    document.getElementById(`problem-${requestedProblem}`)?.scrollIntoView({ block: 'center' });
+  }, [list, requestedProblem]);
   return (
     <div>
       <section className="page-heading">
@@ -198,24 +283,40 @@ export function CodingPage() {
             ))}
           </select>
         </label>
-        <span>문제를 선택해 코드와 풀이 과정을 기록하세요.</span>
+        <span>
+          {problemTotal.toLocaleString()}개 문제 · 문제를 선택해 코드와 풀이 과정을 기록하세요.
+        </span>
       </div>
       {problems.isLoading && <div className="loading-panel">문제 목록을 불러오는 중…</div>}
       {problems.isError && <div className="error-panel">문제 목록을 불러오지 못했습니다.</div>}
       <div className="problem-grid">
         {list.map((problem) => (
-          <article key={problem.id} className={dailyIds.has(problem.id) ? 'daily' : ''}>
+          <article
+            key={problem.id}
+            id={`problem-${problem.id}`}
+            className={`${dailyIds.has(problem.id) ? 'daily' : ''} ${problem.id === requestedProblem ? 'search-target' : ''}`}
+          >
             <div className="problem-top">
               <span className="level-pill">Lv. {problem.level}</span>
               <span className={`track-pill ${problem.track === 'SQL' ? 'sql' : ''}`}>
                 {problem.track === 'SQL' ? 'SQL' : '알고리즘'}
               </span>
               {dailyIds.has(problem.id) && <span className="today-pill">TODAY</span>}
-              <button aria-label="즐겨찾기">
+              <button
+                aria-label={`${problem.displayTitle} 즐겨찾기`}
+                aria-pressed={Boolean(problem.progress[0]?.favorite)}
+                disabled={favorite.isPending && favorite.variables?.problemId === problem.id}
+                onClick={() =>
+                  favorite.mutate({
+                    problemId: problem.id,
+                    active: !problem.progress[0]?.favorite,
+                  })
+                }
+              >
                 <Star size={17} fill={problem.progress[0]?.favorite ? 'currentColor' : 'none'} />
               </button>
             </div>
-            <h3>{problem.displayTitle}</h3>
+            <h2>{problem.displayTitle}</h2>
             <div className="tag-row">
               {problem.tags.map((tag) => (
                 <span key={tag}>{tag}</span>
@@ -239,86 +340,95 @@ export function CodingPage() {
           </article>
         ))}
       </div>
+      {problems.hasNextPage && (
+        <button
+          type="button"
+          className="load-more-button"
+          disabled={problems.isFetchingNextPage}
+          onClick={() => problems.fetchNextPage()}
+        >
+          {problems.isFetchingNextPage ? '문제를 불러오는 중…' : '문제 더 보기'}
+        </button>
+      )}
       {selected && (
-        <div
-          className="editor-backdrop"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.currentTarget === event.target) setSelected(undefined);
+        <Dialog.Root
+          open
+          onOpenChange={(open) => {
+            if (!open) closeEditor();
           }}
         >
-          <section
-            className="editor-panel"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="solution-editor-title"
-          >
-            <div className="editor-heading">
-              <div>
-                <span>새 풀이</span>
-                <h2 id="solution-editor-title">{selected.displayTitle}</h2>
-              </div>
-              <button className="ghost-button" onClick={() => setSelected(undefined)} autoFocus>
-                닫기
-              </button>
-            </div>
-            <form onSubmit={submit}>
-              <div className="form-row">
-                <label>
-                  언어
-                  <select
-                    value={language}
-                    onChange={(event) => setLanguage(event.target.value as CodeLanguage)}
-                  >
-                    {selected.track === 'SQL' ? (
-                      <option value="sql">SQL</option>
-                    ) : (
-                      <>
-                        <option value="python">Python</option>
-                        <option value="java">Java</option>
-                        <option value="javascript">JavaScript</option>
-                        <option value="cpp">C++</option>
-                      </>
-                    )}
-                  </select>
-                </label>
-                <p className="solution-visibility-note">
-                  저장한 풀이는 다른 멤버도 바로 볼 수 있습니다.
-                </p>
-              </div>
-              <label>
-                코드
-                <div className="code-editor">
-                  <CodeMirror
-                    value={code}
-                    height="260px"
-                    extensions={
-                      language === 'python'
-                        ? [python()]
-                        : language === 'javascript'
-                          ? [javascript()]
-                          : []
-                    }
-                    onChange={setCode}
-                  />
+          <Dialog.Portal>
+            <Dialog.Overlay className="editor-backdrop" />
+            <Dialog.Content className="editor-panel" aria-describedby={undefined}>
+              <div className="editor-heading">
+                <div>
+                  <span>새 풀이</span>
+                  <Dialog.Title asChild>
+                    <h2>{selected.displayTitle}</h2>
+                  </Dialog.Title>
                 </div>
-              </label>
-              <label>
-                풀이 설명
-                <textarea
-                  value={description}
-                  onChange={(event) => setDescription(event.target.value)}
-                  rows={5}
-                  placeholder="접근 방식, 복잡도, 배운 점을 Markdown으로 남겨보세요."
-                />
-              </label>
-              {save.isError && <div className="form-error">{save.error.message}</div>}
-              <button className="primary-button" disabled={!code.trim() || save.isPending}>
-                <Save /> {save.isPending ? '저장 중…' : '해결 기록 저장'}
-              </button>
-            </form>
-          </section>
-        </div>
+                <button className="ghost-button" type="button" onClick={closeEditor}>
+                  닫기
+                </button>
+              </div>
+              <form onSubmit={submit}>
+                <div className="form-row">
+                  <label>
+                    언어
+                    <select
+                      value={language}
+                      onChange={(event) => setLanguage(event.target.value as CodeLanguage)}
+                    >
+                      {selected.track === 'SQL' ? (
+                        <option value="sql">SQL</option>
+                      ) : (
+                        <>
+                          <option value="python">Python</option>
+                          <option value="java">Java</option>
+                          <option value="javascript">JavaScript</option>
+                          <option value="cpp">C++</option>
+                        </>
+                      )}
+                    </select>
+                  </label>
+                  <p className="solution-visibility-note">
+                    저장한 풀이는 다른 멤버도 바로 볼 수 있습니다.
+                  </p>
+                </div>
+                <label>
+                  코드
+                  <div className="code-editor">
+                    <CodeMirror
+                      value={code}
+                      height="260px"
+                      extensions={
+                        language === 'python'
+                          ? [python()]
+                          : language === 'javascript'
+                            ? [javascript()]
+                            : []
+                      }
+                      onChange={setCode}
+                    />
+                  </div>
+                </label>
+                <label>
+                  풀이 설명
+                  <textarea
+                    value={description}
+                    onChange={(event) => setDescription(event.target.value)}
+                    rows={5}
+                    placeholder="접근 방식, 복잡도, 배운 점을 Markdown으로 남겨보세요."
+                  />
+                </label>
+                {save.isError && <div className="form-error">{save.error.message}</div>}
+                <button className="primary-button" disabled={!code.trim() || save.isPending}>
+                  <Save /> {save.isPending ? '저장 중…' : '해결 기록 저장'}
+                </button>
+              </form>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
       )}
     </div>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import * as Dialog from '@radix-ui/react-dialog';
 import {
   BookOpen,
   Brain,
@@ -51,116 +52,107 @@ function LearningUnitModal({
   index: number;
   onClose: () => void;
 }) {
-  useEffect(() => {
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', closeOnEscape);
-    return () => window.removeEventListener('keydown', closeOnEscape);
-  }, [onClose]);
-
   return (
-    <div
-      className="learning-modal-backdrop"
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.currentTarget === event.target) onClose();
+    <Dialog.Root
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
       }}
     >
-      <section
-        className="learning-unit-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="learning-unit-title"
-      >
-        <header>
-          <div>
-            <span>MODULE {String(index + 1).padStart(2, '0')}</span>
-            <h2 id="learning-unit-title">{unit.title}</h2>
-          </div>
-          <button type="button" onClick={onClose} aria-label="닫기" autoFocus>
-            <X />
-          </button>
-        </header>
-        <div className="learning-modal-content">
-          <div className="learning-concept-map" aria-label="핵심 개념">
-            {unit.concepts.map((concept) => (
-              <span key={concept}>{concept}</span>
-            ))}
-          </div>
-          {(unit.visuals?.length || 0) > 0 && (
-            <section className="learning-visual-section" aria-label="PDF 시각 자료">
+      <Dialog.Portal>
+        <Dialog.Overlay className="learning-modal-backdrop" />
+        <Dialog.Content className="learning-unit-modal" aria-describedby={undefined}>
+          <header>
+            <div>
+              <span>MODULE {String(index + 1).padStart(2, '0')}</span>
+              <Dialog.Title asChild>
+                <h2>{unit.title}</h2>
+              </Dialog.Title>
+            </div>
+            <Dialog.Close type="button" aria-label="닫기">
+              <X />
+            </Dialog.Close>
+          </header>
+          <div className="learning-modal-content">
+            <div className="learning-concept-map" aria-label="핵심 개념">
+              {unit.concepts.map((concept) => (
+                <span key={concept}>{concept}</span>
+              ))}
+            </div>
+            {(unit.visuals?.length || 0) > 0 && (
+              <section className="learning-visual-section" aria-label="PDF 시각 자료">
+                <div className="learning-section-title">
+                  <ImageIcon />
+                  <div>
+                    <span>원본 자료</span>
+                    <h3>그림·표·코드로 이해하기</h3>
+                  </div>
+                </div>
+                <div className="learning-visual-grid">
+                  {unit.visuals?.map((visual) => (
+                    <figure key={visual.src}>
+                      <a href={visual.src} target="_blank" rel="noreferrer">
+                        <img src={visual.src} alt={visual.alt} loading="lazy" decoding="async" />
+                        <span>
+                          크게 보기 <ExternalLink />
+                        </span>
+                      </a>
+                      <figcaption>{visual.caption}</figcaption>
+                    </figure>
+                  ))}
+                </div>
+              </section>
+            )}
+            <article className="learning-markdown">
+              <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{unit.summary}</ReactMarkdown>
+            </article>
+            <section className="learning-recall-section">
               <div className="learning-section-title">
-                <ImageIcon />
+                <Sparkles />
                 <div>
-                  <span>원본 자료</span>
-                  <h3>그림·표·코드로 이해하기</h3>
+                  <span>기억 꺼내기</span>
+                  <h3>플래시카드</h3>
                 </div>
               </div>
-              <div className="learning-visual-grid">
-                {unit.visuals?.map((visual) => (
-                  <figure key={visual.src}>
-                    <a href={visual.src} target="_blank" rel="noreferrer">
-                      <img src={visual.src} alt={visual.alt} loading="lazy" decoding="async" />
-                      <span>
-                        크게 보기 <ExternalLink />
-                      </span>
-                    </a>
-                    <figcaption>{visual.caption}</figcaption>
-                  </figure>
+              <div className="learning-flashcards">
+                {unit.flashcards.map((card) => (
+                  <details key={card.id}>
+                    <summary>{card.front}</summary>
+                    <p>{card.back}</p>
+                  </details>
                 ))}
               </div>
             </section>
-          )}
-          <article className="learning-markdown">
-            <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{unit.summary}</ReactMarkdown>
-          </article>
-          <section className="learning-recall-section">
-            <div className="learning-section-title">
-              <Sparkles />
-              <div>
-                <span>기억 꺼내기</span>
-                <h3>플래시카드</h3>
+            <section className="learning-recall-section">
+              <div className="learning-section-title">
+                <MessageCircleQuestion />
+                <div>
+                  <span>이해 확인</span>
+                  <h3>복습 문제</h3>
+                </div>
               </div>
-            </div>
-            <div className="learning-flashcards">
-              {unit.flashcards.map((card) => (
-                <details key={card.id}>
-                  <summary>{card.front}</summary>
-                  <p>{card.back}</p>
-                </details>
-              ))}
-            </div>
-          </section>
-          <section className="learning-recall-section">
-            <div className="learning-section-title">
-              <MessageCircleQuestion />
-              <div>
-                <span>이해 확인</span>
-                <h3>복습 문제</h3>
+              <div className="learning-questions">
+                {unit.questions.map((question) => (
+                  <details key={question.id}>
+                    <summary>{question.prompt}</summary>
+                    {question.choices && question.choices.length > 0 && (
+                      <ul>
+                        {question.choices.map((choice) => (
+                          <li key={choice}>{choice}</li>
+                        ))}
+                      </ul>
+                    )}
+                    <p>
+                      <strong>정답</strong> {question.answer}
+                    </p>
+                  </details>
+                ))}
               </div>
-            </div>
-            <div className="learning-questions">
-              {unit.questions.map((question) => (
-                <details key={question.id}>
-                  <summary>{question.prompt}</summary>
-                  {question.choices && question.choices.length > 0 && (
-                    <ul>
-                      {question.choices.map((choice) => (
-                        <li key={choice}>{choice}</li>
-                      ))}
-                    </ul>
-                  )}
-                  <p>
-                    <strong>정답</strong> {question.answer}
-                  </p>
-                </details>
-              ))}
-            </div>
-          </section>
-        </div>
-      </section>
-    </div>
+            </section>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 

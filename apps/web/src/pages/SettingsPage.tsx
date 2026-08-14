@@ -41,6 +41,16 @@ export function SettingsPage() {
     setDeadlineNotifications(value.preference?.deadlineNotifications ?? true);
     setReviewNotifications(value.preference?.reviewNotifications ?? true);
   };
+  const dirty = Boolean(
+    profile.data &&
+    (displayName !== profile.data.displayName ||
+      githubUsername !== (profile.data.githubUsername || '') ||
+      avatarUrl !== (profile.data.avatarUrl || '') ||
+      preferredLanguage !== profile.data.preferredLanguage ||
+      commentNotifications !== (profile.data.preference?.commentNotifications ?? true) ||
+      deadlineNotifications !== (profile.data.preference?.deadlineNotifications ?? true) ||
+      reviewNotifications !== (profile.data.preference?.reviewNotifications ?? true)),
+  );
 
   useEffect(() => {
     if (profile.data && !editing) loadProfile(profile.data);
@@ -72,9 +82,8 @@ export function SettingsPage() {
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    if (editing && displayName.trim()) save.mutate();
+    if (editing && dirty && displayName.trim()) save.mutate();
   };
-
   const cancel = () => {
     if (profile.data) loadProfile(profile.data);
     setEditing(false);
@@ -97,7 +106,16 @@ export function SettingsPage() {
           {message}
         </div>
       )}
-      <form onSubmit={submit}>
+      {profile.isLoading && <div className="loading-panel">프로필을 불러오는 중…</div>}
+      {profile.isError && (
+        <div className="error-panel" role="alert">
+          프로필을 불러오지 못해 편집을 잠갔습니다.
+          <button type="button" onClick={() => void profile.refetch()}>
+            다시 시도
+          </button>
+        </div>
+      )}
+      <form onSubmit={submit} aria-busy={profile.isLoading}>
         <div className="settings-grid">
           <section className={`settings-card ${editing ? 'is-editing' : ''}`}>
             <header className="settings-card-header">
@@ -109,6 +127,7 @@ export function SettingsPage() {
                 <button
                   type="button"
                   className="outline-button compact"
+                  disabled={!profile.data || profile.isError || profile.isLoading}
                   onClick={() => {
                     setMessage('');
                     setEditing(true);
@@ -138,7 +157,7 @@ export function SettingsPage() {
               <input
                 value={githubUsername}
                 onChange={(event) => setGithubUsername(event.target.value)}
-                pattern="[a-zA-Z0-9-]{1,39}"
+                pattern="(?!-)(?!.*--)[a-zA-Z0-9-]{1,39}(?<!-)"
                 disabled={!editing}
               />
             </label>
@@ -166,7 +185,11 @@ export function SettingsPage() {
             </label>
             {editing && (
               <div className="settings-actions">
-                <button type="submit" className="primary-button compact" disabled={save.isPending}>
+                <button
+                  type="submit"
+                  className="primary-button compact"
+                  disabled={save.isPending || !dirty}
+                >
                   <Save /> 변경 저장
                 </button>
                 <button type="button" className="ghost-button compact" onClick={cancel}>

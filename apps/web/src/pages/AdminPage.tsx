@@ -12,8 +12,7 @@ type Overview = {
     originalCount: number;
     rejectedCount: number;
   }>;
-  processingQueue: unknown[];
-  commentReports: unknown[];
+  capabilities: { processingQueue: boolean; commentReports: boolean };
 };
 
 type DailySetting = {
@@ -41,6 +40,29 @@ type AuditLog = {
 
 type CodingProblem = { id: string; displayTitle: string; level: number };
 type DailyChallenge = { id: string; problemId: string; problem: CodingProblem };
+type ImportPreview = {
+  previewToken: string;
+  checksum: string;
+  expiresAt: string;
+  counts?: Record<string, number>;
+  rows?: Array<{
+    index: number;
+    outcome: string;
+    reason: string;
+    companyName: string;
+    title: string;
+  }>;
+  source?: { title?: string; sourceVersion?: string };
+  unitCount?: number;
+  flashcardCount?: number;
+  questionCount?: number;
+};
+type ActivePreview = {
+  kind: 'jobs' | 'learning';
+  source: 'text' | 'file';
+  signature: string;
+  data: ImportPreview;
+};
 
 export function AdminPage() {
   const client = useQueryClient();
@@ -71,7 +93,7 @@ export function AdminPage() {
   const [jobPayload, setJobPayload] = useState('');
   const [jobFile, setJobFile] = useState<File>();
   const [learningPayload, setLearningPayload] = useState('');
-  const [preview, setPreview] = useState<unknown>();
+  const [preview, setPreview] = useState<ActivePreview>();
   const [message, setMessage] = useState('');
   const [levels, setLevels] = useState<number[]>([1, 2]);
   const [repeatDays, setRepeatDays] = useState(60);
@@ -91,13 +113,35 @@ export function AdminPage() {
   const importMutation = useMutation({
     mutationFn: ({ type, commit }: { type: 'jobs' | 'learning'; commit: boolean }) => {
       const raw = type === 'jobs' ? jobPayload : learningPayload;
-      return api(`/${type}/import/${commit ? 'commit' : 'preview'}`, { method: 'POST', body: raw });
+      if (commit) {
+        if (!preview || preview.kind !== type) throw new Error('미리보기를 먼저 실행해주세요.');
+        return api(`/${type}/import/commit`, {
+          method: 'POST',
+          body: json({
+            previewToken: preview.data.previewToken,
+            checksum: preview.data.checksum,
+          }),
+        });
+      }
+      return api<ImportPreview>(`/${type}/import/preview`, { method: 'POST', body: raw });
     },
     onSuccess: (data, variables) => {
-      setPreview(data);
       if (variables.commit) {
         setMessage('transaction 반영이 완료되었습니다.');
-        client.invalidateQueries();
+        setPreview(undefined);
+        void Promise.all([
+          client.invalidateQueries({ queryKey: ['admin-overview'] }),
+          client.invalidateQueries({ queryKey: ['admin-audit-logs'] }),
+          client.invalidateQueries({ queryKey: [variables.type === 'jobs' ? 'jobs' : 'learning'] }),
+        ]);
+      } else {
+        const signature = variables.type === 'jobs' ? jobPayload : learningPayload;
+        setPreview({
+          kind: variables.type,
+          source: 'text',
+          signature,
+          data: data as ImportPreview,
+        });
       }
     },
   });
@@ -137,21 +181,41 @@ export function AdminPage() {
     },
   });
   const jobFileImport = useMutation({
-    mutationFn: (commit: boolean) => {
+    mutationFn: () => {
       const form = new FormData();
       form.append('file', jobFile!);
-      return api(`/jobs/import/file/${commit ? 'commit' : 'preview'}`, {
+      return api<ImportPreview>('/jobs/import/file/preview', {
         method: 'POST',
         body: form,
       });
     },
-    onSuccess: async (data, commit) => {
-      setPreview(data);
-      if (commit) {
-        setMessage('채용공고 파일을 transaction으로 반영했습니다.');
-        setJobFile(undefined);
-        await client.invalidateQueries();
+    onSuccess: (data) => {
+      const signature = jobFile ? `${jobFile.name}:${jobFile.size}:${jobFile.lastModified}` : '';
+      setPreview({ kind: 'jobs', source: 'file', signature, data });
+    },
+  });
+  const commitFilePreview = useMutation({
+    mutationFn: () => {
+      if (!preview || preview.kind !== 'jobs' || preview.source !== 'file') {
+        throw new Error('파일 미리보기를 먼저 실행해주세요.');
       }
+      return api('/jobs/import/commit', {
+        method: 'POST',
+        body: json({
+          previewToken: preview.data.previewToken,
+          checksum: preview.data.checksum,
+        }),
+      });
+    },
+    onSuccess: async () => {
+      setMessage('검토한 파일 checksum을 transaction으로 반영했습니다.');
+      setPreview(undefined);
+      setJobFile(undefined);
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ['admin-overview'] }),
+        client.invalidateQueries({ queryKey: ['admin-audit-logs'] }),
+        client.invalidateQueries({ queryKey: ['jobs'] }),
+      ]);
     },
   });
   const createProblem = useMutation({
@@ -204,12 +268,8 @@ export function AdminPage() {
           <span>최근 import batch</span>
         </article>
         <article>
-          <strong>{overview.data?.processingQueue.length ?? '—'}</strong>
-          <span>처리 검토</span>
-        </article>
-        <article>
-          <strong>{overview.data?.commentReports.length ?? '—'}</strong>
-          <span>댓글 신고</span>
+          <strong>미지원</strong>
+          <span>D1 처리 큐·신고 워크플로</span>
         </article>
       </section>
       <div className="admin-grid">
@@ -412,7 +472,10 @@ export function AdminPage() {
             </header>
             <textarea
               value={jobPayload}
-              onChange={(event) => setJobPayload(event.target.value)}
+              onChange={(event) => {
+                setJobPayload(event.target.value);
+                if (preview?.kind === 'jobs' && preview.source === 'text') setPreview(undefined);
+              }}
               rows={10}
               placeholder="job import schema JSON"
             />
@@ -421,20 +484,29 @@ export function AdminPage() {
               <input
                 type="file"
                 accept=".json,.csv,application/json,text/csv"
-                onChange={(event) => setJobFile(event.target.files?.[0])}
+                onChange={(event) => {
+                  setJobFile(event.target.files?.[0]);
+                  if (preview?.kind === 'jobs' && preview.source === 'file') setPreview(undefined);
+                }}
               />
             </label>
             <div>
               <button
                 className="ghost-button"
-                disabled={!jobPayload}
+                disabled={!jobPayload || importMutation.isPending}
                 onClick={() => importMutation.mutate({ type: 'jobs', commit: false })}
               >
                 미리보기
               </button>
               <button
                 className="primary-button compact"
-                disabled={!jobPayload}
+                disabled={
+                  !jobPayload ||
+                  importMutation.isPending ||
+                  preview?.kind !== 'jobs' ||
+                  preview.source !== 'text' ||
+                  preview.signature !== jobPayload
+                }
                 onClick={() => importMutation.mutate({ type: 'jobs', commit: true })}
               >
                 <Upload /> 승인 반영
@@ -442,14 +514,20 @@ export function AdminPage() {
               <button
                 className="ghost-button"
                 disabled={!jobFile || jobFileImport.isPending}
-                onClick={() => jobFileImport.mutate(false)}
+                onClick={() => jobFileImport.mutate()}
               >
                 파일 미리보기
               </button>
               <button
                 className="primary-button compact"
-                disabled={!jobFile || jobFileImport.isPending}
-                onClick={() => jobFileImport.mutate(true)}
+                disabled={
+                  !jobFile ||
+                  commitFilePreview.isPending ||
+                  preview?.kind !== 'jobs' ||
+                  preview.source !== 'file' ||
+                  preview.signature !== `${jobFile.name}:${jobFile.size}:${jobFile.lastModified}`
+                }
+                onClick={() => commitFilePreview.mutate()}
               >
                 <Upload /> 파일 승인 반영
               </button>
@@ -462,21 +540,30 @@ export function AdminPage() {
             </header>
             <textarea
               value={learningPayload}
-              onChange={(event) => setLearningPayload(event.target.value)}
+              onChange={(event) => {
+                setLearningPayload(event.target.value);
+                if (preview?.kind === 'learning') setPreview(undefined);
+              }}
               rows={10}
               placeholder="learning import schema JSON"
             />
             <div>
               <button
                 className="ghost-button"
-                disabled={!learningPayload}
+                disabled={!learningPayload || importMutation.isPending}
                 onClick={() => importMutation.mutate({ type: 'learning', commit: false })}
               >
                 미리보기
               </button>
               <button
                 className="primary-button compact"
-                disabled={!learningPayload}
+                disabled={
+                  !learningPayload ||
+                  importMutation.isPending ||
+                  preview?.kind !== 'learning' ||
+                  preview.source !== 'text' ||
+                  preview.signature !== learningPayload
+                }
                 onClick={() => importMutation.mutate({ type: 'learning', commit: true })}
               >
                 <Upload /> 승인 반영
@@ -485,8 +572,58 @@ export function AdminPage() {
           </article>
         </div>
         {importMutation.isError && <div className="form-error">{importMutation.error.message}</div>}
-        {preview !== undefined && (
-          <pre className="preview-json">{JSON.stringify(preview, null, 2)}</pre>
+        {preview && (
+          <section className="import-preview" aria-label="import 미리보기 결과">
+            <header>
+              <strong>{preview.kind === 'jobs' ? '채용공고' : '학습자료'} 검토 결과</strong>
+              <span>checksum {preview.data.checksum.slice(0, 12)}…</span>
+              <time dateTime={preview.data.expiresAt}>
+                {new Date(preview.data.expiresAt).toLocaleTimeString('ko-KR')} 만료
+              </time>
+            </header>
+            {preview.data.counts && (
+              <dl className="preview-counts">
+                {Object.entries(preview.data.counts).map(([label, count]) => (
+                  <div key={label}>
+                    <dt>{label}</dt>
+                    <dd>{count}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+            {preview.data.rows && (
+              <div className="table-scroll" tabIndex={0}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>행</th>
+                      <th>판정</th>
+                      <th>회사</th>
+                      <th>공고</th>
+                      <th>사유</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {preview.data.rows.slice(0, 100).map((row) => (
+                      <tr key={`${row.index}-${row.title}`}>
+                        <td>{row.index + 1}</td>
+                        <td>{row.outcome}</td>
+                        <td>{row.companyName}</td>
+                        <td>{row.title}</td>
+                        <td>{row.reason}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {preview.data.source && (
+              <p>
+                {preview.data.source.title} · {preview.data.unitCount ?? 0}개 단원 · flashcard{' '}
+                {preview.data.flashcardCount ?? 0}개 · 문항 {preview.data.questionCount ?? 0}개
+              </p>
+            )}
+          </section>
         )}
       </section>
       <section className="audit-section">

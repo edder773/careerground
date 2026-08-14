@@ -1,5 +1,6 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router';
 import {
   DndContext,
   KeyboardSensor,
@@ -44,6 +45,7 @@ export type Collection = {
   parentId?: string | null;
   position: number;
   items: CollectionItem[];
+  deletedAt?: string;
 };
 type Challenge = {
   id: string;
@@ -74,7 +76,6 @@ function SortableFolder({
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={`folder-card folder-${folder.color} ${viewMode} ${selected ? 'selected' : ''} ${isDragging ? 'dragging' : ''}`}
-      onClick={onSelect}
     >
       <button
         className="drag-handle"
@@ -84,22 +85,29 @@ function SortableFolder({
       >
         <GripVertical />
       </button>
-      <div className="folder-shape">
-        <Folder aria-hidden="true" />
-      </div>
-      <div className="folder-copy">
-        <strong>{folder.name}</strong>
-        <span>{folder.items.length}개 항목</span>
-      </div>
+      <button className="folder-open" type="button" onClick={onSelect} aria-current={selected}>
+        <span className="folder-shape">
+          <Folder aria-hidden="true" />
+        </span>
+        <span className="folder-copy">
+          <strong>{folder.name}</strong>
+          <span>{folder.items.length}개 항목</span>
+        </span>
+      </button>
     </article>
   );
 }
 
 export function HomePage({ viewMode }: { viewMode: ViewMode }) {
   const client = useQueryClient();
+  const [searchParams] = useSearchParams();
   const collections = useQuery({
     queryKey: ['collections'],
     queryFn: () => api<Collection[]>('/collections'),
+  });
+  const trash = useQuery({
+    queryKey: ['collection-trash'],
+    queryFn: () => api<Collection[]>('/collections/trash'),
   });
   const dashboard = useQuery({
     queryKey: ['dashboard'],
@@ -111,6 +119,7 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
     queryFn: () => api<Challenge[]>('/coding/daily-challenges'),
   });
   const [selected, setSelected] = useState<string>();
+  const requestedFolder = searchParams.get('folder');
   const [creating, setCreating] = useState(false);
   const [createParentId, setCreateParentId] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -129,6 +138,15 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
     [collections.data],
   );
   const activeFolder = (collections.data || []).find((folder) => folder.id === selected);
+  useEffect(() => {
+    if (
+      requestedFolder &&
+      collections.data?.some((folder) => folder.id === requestedFolder) &&
+      selected !== requestedFolder
+    ) {
+      setSelected(requestedFolder);
+    }
+  }, [collections.data, requestedFolder, selected]);
   const createFolder = useMutation({
     mutationFn: () =>
       api<Collection>('/collections', {
@@ -152,10 +170,19 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
     mutationFn: (ids: string[]) =>
       api('/collections/reorder', { method: 'PATCH', body: json({ ids }) }),
     onMutate: async (ids) => {
+      await client.cancelQueries({ queryKey: ['collections'] });
+      const previous = client.getQueryData<Collection[]>(['collections']);
       client.setQueryData<Collection[]>(['collections'], (current) =>
-        current ? ids.map((id) => current.find((x) => x.id === id)!).filter(Boolean) : current,
+        current
+          ? [
+              ...ids.map((id) => current.find((item) => item.id === id)!).filter(Boolean),
+              ...current.filter((item) => item.parentId),
+            ]
+          : current,
       );
+      return { previous };
     },
+    onError: (_error, _ids, context) => client.setQueryData(['collections'], context?.previous),
     onSettled: () => client.invalidateQueries({ queryKey: ['collections'] }),
   });
   const renameFolder = useMutation({
@@ -186,7 +213,19 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
     mutationFn: (id: string) => api(`/collections/${id}`, { method: 'DELETE' }),
     onSuccess: async () => {
       setSelected(undefined);
-      await client.invalidateQueries({ queryKey: ['collections'] });
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ['collections'] }),
+        client.invalidateQueries({ queryKey: ['collection-trash'] }),
+      ]);
+    },
+  });
+  const restoreFolder = useMutation({
+    mutationFn: (id: string) => api(`/collections/${id}/restore`, { method: 'POST' }),
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ['collections'] }),
+        client.invalidateQueries({ queryKey: ['collection-trash'] }),
+      ]);
     },
   });
   const dragEnd = (event: DragEndEvent) => {
@@ -492,6 +531,31 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
           <span>간격 반복 일정</span>
         </article>
       </section>
+      {Boolean(trash.data?.length) && (
+        <details className="trash-recovery">
+          <summary>
+            <Trash2 /> 최근 삭제한 폴더 {trash.data?.length}개
+          </summary>
+          <div>
+            {trash.data?.map((folder) => (
+              <article key={folder.id}>
+                <span>
+                  <Folder />
+                  <strong>{folder.name}</strong>
+                </span>
+                <button
+                  type="button"
+                  className="ghost-button compact"
+                  disabled={restoreFolder.isPending && restoreFolder.variables === folder.id}
+                  onClick={() => restoreFolder.mutate(folder.id)}
+                >
+                  <RotateCcw /> 복원
+                </button>
+              </article>
+            ))}
+          </div>
+        </details>
+      )}
     </div>
   );
 }

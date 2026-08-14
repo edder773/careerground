@@ -1,5 +1,10 @@
 import { useState, type FormEvent } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
@@ -10,7 +15,8 @@ import { api, json } from '../lib/api';
 
 type Comment = {
   id: string;
-  markdown: string;
+  markdown: string | null;
+  redacted?: 'DELETED' | 'HIDDEN' | null;
   deletedAt?: string;
   hiddenAt?: string;
   author: { displayName: string };
@@ -39,8 +45,11 @@ type Solution = {
   author: { id: string; displayName: string };
   problem: { displayTitle: string; level: number };
   reactions: Array<{ id: string }>;
+  reactionCount?: number;
+  reactedByMe?: boolean;
   comments: Comment[];
 };
+type CursorPage<T> = { items: T[]; nextCursor: string | null; total: number };
 
 function SolutionRevisionPanel({ solution }: { solution: Solution }) {
   const client = useQueryClient();
@@ -62,6 +71,7 @@ function SolutionRevisionPanel({ solution }: { solution: Solution }) {
           spaceComplexity: solution.spaceComplexity,
           lessons: solution.lessons,
           solved: solution.solved,
+          baseRevision: solution.currentRev,
         }),
       }),
     onSuccess: async () => {
@@ -112,15 +122,9 @@ function SolutionRevisionPanel({ solution }: { solution: Solution }) {
         </form>
       ) : (
         <>
-          <div className="code-view">
-            <CodeMirror
-              value={solution.code}
-              height="220px"
-              editable={false}
-              extensions={solution.language === 'javascript' ? [javascript()] : []}
-              basicSetup={{ lineNumbers: true }}
-            />
-          </div>
+          <pre className="code-view static-code" tabIndex={0} aria-label={`${solution.title} 코드`}>
+            <code>{solution.code.split('\n').slice(0, 80).join('\n')}</code>
+          </pre>
           <div className="markdown-body">
             <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{solution.description}</ReactMarkdown>
           </div>
@@ -171,14 +175,59 @@ export function SolutionsPage() {
   const [commenting, setCommenting] = useState<string>();
   const [replyingTo, setReplyingTo] = useState<string>();
   const [comment, setComment] = useState('');
-  const solutions = useQuery({
+  const solutions = useInfiniteQuery({
     queryKey: ['solutions', problemId],
-    queryFn: () =>
-      api<Solution[]>(`/coding/solutions${problemId ? `?problemId=${problemId}` : ''}`),
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam }) => {
+      const query = new URLSearchParams({ page: 'cursor', limit: '10' });
+      if (problemId) query.set('problemId', problemId);
+      if (pageParam) query.set('cursor', pageParam);
+      return api<CursorPage<Solution>>(`/coding/solutions?${query.toString()}`);
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor || undefined,
   });
+  const solutionRows = solutions.data?.pages.flatMap((page) => page.items) || [];
   const react = useMutation({
-    mutationFn: (id: string) => api(`/coding/solutions/${id}/reaction`, { method: 'POST' }),
-    onSuccess: () => client.invalidateQueries({ queryKey: ['solutions'] }),
+    mutationFn: ({ id, active }: { id: string; active: boolean }) =>
+      api(`/coding/solutions/${id}/reaction`, {
+        method: 'PUT',
+        body: json({ active }),
+      }),
+    onMutate: async ({ id, active }) => {
+      await client.cancelQueries({ queryKey: ['solutions'] });
+      const snapshots = client.getQueriesData<InfiniteData<CursorPage<Solution>>>({
+        queryKey: ['solutions'],
+      });
+      client.setQueriesData<InfiniteData<CursorPage<Solution>>>(
+        { queryKey: ['solutions'] },
+        (current) =>
+          current
+            ? {
+                ...current,
+                pages: current.pages.map((page) => ({
+                  ...page,
+                  items: page.items.map((solution) =>
+                    solution.id === id
+                      ? {
+                          ...solution,
+                          reactedByMe: active,
+                          reactionCount: Math.max(
+                            0,
+                            (solution.reactionCount ?? solution.reactions.length) +
+                              (active ? 1 : -1),
+                          ),
+                        }
+                      : solution,
+                  ),
+                })),
+              }
+            : current,
+      );
+      return { snapshots };
+    },
+    onError: (_error, _variables, context) =>
+      context?.snapshots.forEach(([key, value]) => client.setQueryData(key, value)),
+    onSettled: () => client.invalidateQueries({ queryKey: ['solutions'] }),
   });
   const createComment = useMutation({
     mutationFn: () =>
@@ -215,15 +264,15 @@ export function SolutionsPage() {
       </section>
       {solutions.isLoading && <div className="loading-panel">풀이를 불러오는 중…</div>}
       {solutions.isError && <div className="error-panel">풀이 기록을 불러오지 못했습니다.</div>}
-      {!solutions.isLoading && !solutions.data?.length && (
+      {!solutions.isLoading && !solutionRows.length && (
         <div className="empty-panel">
           <Users />
-          <h3>아직 풀이 기록이 없습니다</h3>
+          <h2>아직 풀이 기록이 없습니다</h2>
           <p>코딩테스트에서 이 문제의 첫 풀이를 기록해보세요.</p>
         </div>
       )}
       <div className="solutions-feed">
-        {solutions.data?.map((solution) => (
+        {solutionRows.map((solution) => (
           <article key={solution.id} className="solution-card">
             <header>
               <div>
@@ -235,8 +284,12 @@ export function SolutionsPage() {
                   {solution.author.displayName} · {solution.language}
                 </p>
               </div>
-              <button className="reaction-button" onClick={() => react.mutate(solution.id)}>
-                <ThumbsUp /> 유용해요 {solution.reactions.length}
+              <button
+                className="reaction-button"
+                aria-pressed={Boolean(solution.reactedByMe)}
+                onClick={() => react.mutate({ id: solution.id, active: !solution.reactedByMe })}
+              >
+                <ThumbsUp /> 유용해요 {solution.reactionCount ?? solution.reactions.length}
               </button>
             </header>
             <SolutionRevisionPanel solution={solution} />
@@ -255,9 +308,9 @@ export function SolutionsPage() {
                 <div key={item.id} className="comment">
                   <strong>{item.author.displayName}</strong>
                   <p>
-                    {item.deletedAt
+                    {item.redacted === 'DELETED' || item.deletedAt
                       ? '삭제된 댓글입니다.'
-                      : item.hiddenAt
+                      : item.redacted === 'HIDDEN' || item.hiddenAt
                         ? '관리자가 숨긴 댓글입니다.'
                         : item.markdown}
                   </p>
@@ -275,7 +328,13 @@ export function SolutionsPage() {
                   {item.replies.map((reply) => (
                     <div className="reply" key={reply.id}>
                       <strong>{reply.author.displayName}</strong>
-                      <p>{reply.markdown}</p>
+                      <p>
+                        {reply.redacted === 'DELETED' || reply.deletedAt
+                          ? '삭제된 답글입니다.'
+                          : reply.redacted === 'HIDDEN' || reply.hiddenAt
+                            ? '관리자가 숨긴 답글입니다.'
+                            : reply.markdown}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -296,9 +355,26 @@ export function SolutionsPage() {
                   <button className="primary-button compact" disabled={!comment.trim()}>
                     <Send /> 등록
                   </button>
+                  <button
+                    type="button"
+                    className="ghost-button compact"
+                    onClick={() => {
+                      setComment('');
+                      setCommenting(undefined);
+                      setReplyingTo(undefined);
+                    }}
+                  >
+                    취소
+                  </button>
                 </form>
               ) : (
-                <button className="ghost-button" onClick={() => setCommenting(solution.id)}>
+                <button
+                  className="ghost-button"
+                  onClick={() => {
+                    setCommenting(solution.id);
+                    setReplyingTo(undefined);
+                  }}
+                >
                   댓글 남기기
                 </button>
               )}
@@ -306,6 +382,16 @@ export function SolutionsPage() {
           </article>
         ))}
       </div>
+      {solutions.hasNextPage && (
+        <button
+          type="button"
+          className="load-more-button"
+          disabled={solutions.isFetchingNextPage}
+          onClick={() => solutions.fetchNextPage()}
+        >
+          {solutions.isFetchingNextPage ? '풀이를 불러오는 중…' : '풀이 더 보기'}
+        </button>
+      )}
     </div>
   );
 }

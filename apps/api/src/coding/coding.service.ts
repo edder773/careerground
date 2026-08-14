@@ -8,7 +8,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import sanitizeHtml from 'sanitize-html';
+import { preserveSourceText } from '@careerground/contracts';
 import { PrismaService } from '../common/prisma.service.js';
 import { AuditService } from '../common/audit.service.js';
 import type { AuthUser } from '../auth/auth.decorators.js';
@@ -21,8 +21,21 @@ import {
   solvedCounts,
 } from './coding-domain.js';
 
-export const cleanMarkdown = (value: string) =>
-  sanitizeHtml(value, { allowedTags: [], allowedAttributes: {} }).trim();
+export const cleanMarkdown = (value: string) => preserveSourceText(value);
+
+const redactComment = <
+  T extends { markdown: string; deletedAt: Date | null; hiddenAt: Date | null },
+>(
+  comment: T,
+) => ({
+  ...comment,
+  markdown: comment.deletedAt || comment.hiddenAt ? null : comment.markdown,
+  redacted: comment.deletedAt
+    ? ('DELETED' as const)
+    : comment.hiddenAt
+      ? ('HIDDEN' as const)
+      : null,
+});
 
 @Injectable()
 export class CodingService implements OnApplicationBootstrap {
@@ -125,6 +138,10 @@ export class CodingService implements OnApplicationBootstrap {
     });
     return solutions.map((solution) => ({
       ...solution,
+      comments: solution.comments.map((comment) => ({
+        ...redactComment(comment),
+        replies: comment.replies.map(redactComment),
+      })),
       canEdit: solution.authorId === user.id,
     }));
   }

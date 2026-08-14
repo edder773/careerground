@@ -1,29 +1,59 @@
-# 배포
+# 운영 배포
 
-1. managed PostgreSQL을 만들고 최소 권한 app role과 migration role을 분리한다.
-2. `pnpm db:deploy`를 release job에서 실행한다.
-3. `apps/api/Dockerfile`, `apps/web/Dockerfile` image를 immutable tag로 배포한다.
-4. API와 Sites Worker 양쪽에 동일한 `SITES_AUTH_SHARED_SECRET`을 주입한다.
-5. HTTPS origin 하나를 `WEB_ORIGIN`으로 설정한다.
-6. `/api/v1/health/ready`가 통과한 뒤 traffic을 전환한다.
-7. 외부 scheduler가 매일 KST 07:05에 internal ensure endpoint를 한 번 더 호출한다.
+## 기준 경로
 
-Rollback은 애플리케이션 image를 이전 tag로 돌리는 방식이 기본이다. destructive migration은 초기 MVP에서 금지한다. migration rollback이 필요하면 전용 forward-fix migration을 만들고 backup restore 여부를 검토한다.
+현재 CareerGround의 유일한 운영 경로는 **OpenAI Sites Worker + D1**이다. Docker, PostgreSQL, `API_ORIGIN`, 공유 인증 secret은 Sites 배포에 사용하지 않는다. Nest/Prisma 앱은 향후 전환 검토를 위한 reference-only 코드이며 운영 트래픽을 받지 않는다.
 
-GitHub secrets:
+```mermaid
+flowchart LR
+  User["OpenAI 로그인 사용자"] --> Sites["Sites 인증 경계"]
+  Sites --> Worker["정적 자산 + Worker"]
+  Worker --> D1["DB binding: D1"]
+```
 
-- 선택형 트러블슈팅 문서 보강을 사용할 때만 `OPENAI_API_KEY`, `OPENAI_TROUBLESHOOTING_MODEL`
-- `SITES_AUTH_SHARED_SECRET`
-- 필요하면 `OPENAI_ADMIN_EMAILS`
-- Pages를 쓰는 경우 기본 `GITHUB_TOKEN` 외 추가 secret 불필요
-- 실제 배포를 붙일 경우 registry/cloud workload identity 값
+## 배포 전 검증
 
-## OpenAI Sites 운영 앱
+저장소 루트에서 고정된 Node/pnpm 버전으로 아래 검증을 모두 통과해야 한다.
 
-`pnpm sites:build`는 검증된 `apps/web` production 산출물을 Cloudflare Worker-compatible ESM과 함께 패키징한다. `.openai/hosting.json`의 `d1: "DB"`는 Sites가 소유하는 전용 D1을 연결하며, 배포 archive의 `drizzle/` SQL을 버전 순서대로 적용한다. Worker는 브라우저가 전달할 수 없는 OpenAI 사용자 헤더를 서버에서 읽고, 사용자별 데이터 소유권을 모든 D1 쿼리에 적용한다.
+```bash
+pnpm install --frozen-lockfile
+pnpm db:d1:generate
+git diff --exit-code -- drizzle
+pnpm format:check
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm test:e2e
+pnpm build
+pnpm sites:build
+```
 
-Sites 버전은 소스만 저장하지 않고, 같은 커밋에서 만든 `dist/`, `.openai/hosting.json`, `drizzle/`을 공식 Sites 패키징 도구로 하나의 archive에 묶어 저장한다. 이 archive를 생략하면 Sites가 모노레포의 일반 `build` 스크립트를 다시 실행해 Workers 전용 산출물과 D1 migration이 배포 대상에서 빠질 수 있다. 저장 전에는 archive 안에 `dist/server/index.js`, `dist/.openai/hosting.json`, `dist/.openai/drizzle/`이 포함됐는지 확인한다.
+E2E는 `deployment/sites/local-d1-server.ts`가 메모리 D1 fixture를 직접 기동한다. PostgreSQL 서비스나 Docker 컨테이너는 필요하지 않다.
 
-첫 번째 정상 OpenAI 사용자는 bootstrap `ADMIN`으로 생성되고 이후 사용자는 `MEMBER`로 생성된다. 추가 관리자는 `OPENAI_ADMIN_EMAILS` allowlist로 승격할 수 있다. D1 readiness는 `/api/v1/health/ready`에서 확인하며 DB 쿼리가 성공해야 200을 반환한다.
+## Sites 버전 생성과 배포
 
-Nest/PostgreSQL을 별도 운영하는 대안도 유지한다. 그 경우 Sites에 `API_ORIGIN`을 설정하고 API와 Worker에 같은 `SITES_AUTH_SHARED_SECRET`을 주입한다. `API_ORIGIN`과 D1이 모두 없을 때만 데이터 endpoint가 `API_NOT_CONFIGURED` 503을 반환한다.
+1. 배포할 Git commit SHA를 확정한다.
+2. `pnpm sites:build`로 Worker-compatible ESM과 웹 자산을 만든다.
+3. 공식 Sites 패키징 스크립트로 archive를 만든다.
+4. archive 안에 아래 필수 항목이 있는지 확인한다.
+   - `dist/server/index.js`
+   - `dist/.openai/hosting.json`
+   - `dist/.openai/drizzle/*.sql`
+5. **같은 commit SHA와 archive**를 새 Sites version으로 저장한다.
+6. visibility를 `public`으로 지정해 운영 배포한다.
+7. 배포 상태가 완료될 때까지 확인하고 `/api/v1/health/ready`가 `200`, `database: d1`을 반환하는지 검사한다.
+8. 로그인 사용자로 홈·채용·코딩·학습의 공통 데이터와 폴더·노트의 사용자별 격리를 smoke test한다.
+
+소스 commit만 저장하고 archive를 생략하면 플랫폼이 모노레포의 일반 `build`를 다시 선택하여 Worker와 migration을 누락할 수 있다. 따라서 소스와 archive의 SHA 일치는 배포 불변식이다.
+
+## 설정과 비밀
+
+- `.openai/hosting.json`의 `d1: "DB"`가 운영 데이터 바인딩이다.
+- `OPENAI_ADMIN_EMAILS`는 명시적 관리자 allowlist다. 최초 가입자를 자동 관리자로 승격하지 않는다.
+- `RATE_LIMIT_READS_PER_MINUTE`, `RATE_LIMIT_WRITES_PER_MINUTE`는 선택 설정이며 기본값은 각각 240/60이다.
+- `MAX_ACTIVE_USERS`는 활성 사용자 상한이다.
+- `OPENAI_API_KEY`는 앱 런타임과 트러블슈팅 기록에 필수가 아니다. 선택적 AI 문서 재작성 workflow에서만 사용한다.
+
+## migration과 rollback
+
+D1 migration은 기존 파일을 수정하지 않고 새 순방향 SQL만 추가한다. 배포 전 export를 확보하고, migration 이후 무결성 집계를 비교한다. 애플리케이션 rollback은 이전 정상 Sites version을 다시 배포하되, 이미 적용된 스키마는 되돌리지 않고 호환 가능한 forward-fix migration을 만든다. 상세 절차는 `docs/operations/backup-restore.md`를 따른다.

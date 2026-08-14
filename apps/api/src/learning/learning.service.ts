@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { learningImportSchema } from '@careerground/contracts';
-import sanitizeHtml from 'sanitize-html';
+import { learningImportSchema, preserveSourceText } from '@careerground/contracts';
 import { PrismaService } from '../common/prisma.service.js';
 import { AuditService } from '../common/audit.service.js';
 import { dueAtFrom, nextReview } from './learning-domain.js';
@@ -60,7 +59,7 @@ export class LearningService {
             sourceId: created.id,
             anchor: unit.anchor,
             title: unit.title,
-            summary: sanitizeHtml(unit.summaryMarkdown, { allowedTags: [], allowedAttributes: {} }),
+            summary: preserveSourceText(unit.summaryMarkdown),
             concepts: unit.concepts,
             visuals: unit.visuals,
             position,
@@ -68,10 +67,7 @@ export class LearningService {
             revisions: {
               create: {
                 revision: 1,
-                markdown: sanitizeHtml(unit.summaryMarkdown, {
-                  allowedTags: [],
-                  allowedAttributes: {},
-                }),
+                markdown: preserveSourceText(unit.summaryMarkdown),
               },
             },
             flashcards: { create: unit.flashcards },

@@ -16,26 +16,7 @@ jobs:
   playwright:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    services:
-      postgres:
-        image: postgres:18.1-alpine
-        env:
-          POSTGRES_USER: careerground
-          POSTGRES_PASSWORD: careerground
-          POSTGRES_DB: careerground
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U careerground -d careerground"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 12
     env:
-      DATABASE_URL: postgresql://careerground:careerground@127.0.0.1:5432/careerground?schema=public
-      BOOTSTRAP_ADMIN_EMAIL: admin@careerground.local
-      INTERNAL_SERVICE_SECRET: test-test-test-test-test-test-test-test
-      COOKIE_SECURE: 'false'
-      OPENAI_AUTH_MOCK: 'true'
       OPENAI_ADMIN_EMAILS: admin@careerground.local
     steps:
       - uses: actions/checkout@v6
@@ -48,10 +29,7 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm db:generate
-      - run: pnpm db:deploy
-      - run: pnpm db:seed
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec playwright install --with-deps chromium firefox webkit
       - run: pnpm test:e2e
       - name: Upload Playwright report and visual evidence
         if: always()

@@ -10,9 +10,14 @@ test-results/
 .env
 .env.*
 !.env.example
+!.env.sites
 uploads/
 tmp/
 .cache/
 apps/api/src/generated/prisma/
 docs/assets/troubleshooting/*/
 docs/evidence/*/
+!docs/assets/troubleshooting/current/
+!docs/assets/troubleshooting/current/*.webp
+!docs/evidence/archive/
+!docs/evidence/archive/*.json
