@@ -26,7 +26,7 @@ generatedByAI: false
 | 08-13 | [131개 감사와 canonical D1](./2026-08-13-canonical-d1-audit-remediation.md)               | 운영 선행 커밋 | P0 9/9, 합성 endpoint benchmark          |
 | 08-14 | [페이지네이션·멱등성·삭제 복구](./2026-08-14-pagination-reliability-and-recovery.md)      | #20            | payload 77.1–88.1% 감소                  |
 | 08-14 | [잔여 감사 49개 완결](./2026-08-14-complete-audit-remediation.md)                         | #22            | 127/131, 97 tests, 48 E2E                |
-| 08-14 | [최신 232개 전수 감사 재조치](./2026-08-14-latest-full-audit-remediation.md)              | #25–#27        | P0 데이터 안전, schema canary, 101 tests |
+| 08-14 | [최신 232개 전수 감사 재조치](./2026-08-14-latest-full-audit-remediation.md)              | #25–#28        | P0 데이터 안전, schema canary, 102 tests |
 
 Dependabot PR #4는 pnpm 11/Node 24를 지원하는 `pnpm/action-setup@6` 갱신이며 별도 장애가 없어 Sites runtime 문서의 도구 체인 맥락에 포함했다. PR #3 이전의 닫힌 #1/#2는 구현이 병합되지 않았으므로 운영 변경 기록에 포함하지 않았다.
 
