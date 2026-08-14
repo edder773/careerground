@@ -2010,7 +2010,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
 
   if (method === 'GET' && path === '/collections') return collections(db, user.id);
   if (method === 'GET' && path === '/collections/trash') {
-    return all(
+    const trashed = await all<Record<string, unknown>>(
       db,
       `SELECT c.id, c.parent_id AS parentId, c.name, c.icon, c.color,
               c.deleted_at AS deletedAt
@@ -2023,6 +2023,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
         ORDER BY c.deleted_at DESC LIMIT 50`,
       user.id,
     );
+    return trashed.map((folder) => ({ ...folder, items: [] }));
   }
   if (method === 'POST' && path === '/collections') {
     const body = await readJson(request);

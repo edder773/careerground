@@ -44,6 +44,19 @@ PR #22 배포 뒤 실제 브라우저에서 `백엔드`를 검색하자 `GET /ap
 
 동시 cold start에도 재실행 가능하도록 모든 DDL과 backfill을 멱등하게 만들고, DB binding별 Promise를 공유해 같은 isolate 안의 중복 초기화를 제거했다. 회귀 테스트는 최신 DB를 의도적으로 운영의 구형 shape로 되돌린 뒤 6개 table, 3개 column, FTS backfill을 복구하고 두 번째 실행에서 검색 row count가 늘지 않는지 검증한다.
 
+버전 24 배포 후 readiness 첫 호출은 174 ms에 200을 반환했고, 운영 overview는 26개에서 FTS를 포함한 33개 table로 증가했다. 같은 검색은 더 이상 500으로 종료되지 않고 1,069 ms에 200을 반환했으며, `백엔드 개발` 검색에서 기존 Hudson AI 공고 1건이 UI listbox에 표시됐다. 이 시간은 Worker 전체 요청 시간이고 로컬 FTS 자체 p95 1.27 ms와 구분한다.
+
+### 200 응답도 계약이 다르면 실패다
+
+검색 복구 뒤 홈을 반복 새로고침하자 HTTP 로그는 모두 200인데도 전역 live region에 `INVALID_API_RESPONSE`가 표시됐다. 운영 사용자에게 삭제된 폴더 2개가 있었고, `/collections/trash`는 활성 폴더와 달리 `items` 필드를 생략했다. 빈 fixture만 사용한 화면 테스트와 `objectContaining(id, name)`만 검사한 D1 테스트가 이 차이를 놓쳤다.
+
+```diff
+- return trashedFolders
++ return trashedFolders.map(folder => ({ ...folder, items: [] }))
+```
+
+복원 목록은 삭제된 폴더의 내부 항목을 표시하지 않으므로 빈 배열을 명시해 공통 Collection DTO를 유지했다. 회귀 테스트도 삭제된 폴더의 `items: []`까지 검사하도록 강화했다. 이 조치는 “HTTP 200”을 성공 기준으로 삼지 않고 runtime schema까지 통과해야 성공이라는 원칙을 운영 데이터로 확인한 사례다.
+
 ## 핵심 이론 1: 무결성은 DB 제약과 authoritative snapshot에서 끝난다
 
 ### FK와 CHECK는 마지막 방어선이다
