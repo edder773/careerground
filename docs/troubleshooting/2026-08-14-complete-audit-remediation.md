@@ -3,8 +3,8 @@ title: 잔여 감사 49개를 데이터 무결성부터 운영 게이트까지 �
 date: 2026-08-14
 tags: [audit, d1, fts, concurrency, accessibility, performance, recovery]
 generatedByAI: false
-pr: pending
-commit: pending
+pr: 22
+commit: 53ee115a480dfbb129b32bf0e0da0b882fa181d5
 evidence: docs/evidence/performance-budget-2026-08-14.json
 ---
 
