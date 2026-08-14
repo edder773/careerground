@@ -141,7 +141,11 @@ describe('Sites D1 API', () => {
     await call(`/api/v1/collections/${folder.id}`, { method: 'DELETE' });
     const trash = await call('/api/v1/collections/trash');
     expect(trash.body).toEqual([
-      expect.objectContaining({ id: folder.id, name: '<scr<script>ipt>지원 준비</script>' }),
+      expect.objectContaining({
+        id: folder.id,
+        name: '<scr<script>ipt>지원 준비</script>',
+        items: [],
+      }),
     ]);
     await call(`/api/v1/collections/${folder.id}/restore`, { method: 'POST' });
     expect((await call('/api/v1/collections')).body).toEqual([
