@@ -104,6 +104,8 @@ node_modules/.bin/tsx scripts/performance/benchmark-d1.mjs
 
 PR #20의 첫 GitHub E2E에서는 Chromium 16건이 통과했지만 Firefox·WebKit 28건이 실행 전 실패했다. Playwright project는 세 엔진인데 workflow가 `playwright install --with-deps chromium`만 실행한 구성 불일치가 원인이었다. CI 설치 명령도 `chromium firefox webkit`으로 맞추고 새 head SHA에서 재검증하도록 수정했다.
 
+Sites version 21 배포 뒤 홈·채용·코딩·학습 경로와 학습 원본 이미지, 풀이 dialog를 실제 운영 브라우저에서 확인했고 console error는 0건이었다. 최근 15분 worker error 조회에는 애플리케이션 API 오류 대신 브라우저의 암묵적 `GET /favicon.ico` 404만 반복됐다. 명시적 SVG favicon과 `<link rel="icon">`을 추가해 기능 오류와 무관한 운영 log 잡음도 제거했다.
+
 production build에는 minified chunk 하나가 500 kB를 넘는 경고가 남는다. build 실패는 아니지만 초기 JavaScript 비용을 더 줄이려면 Monaco 계열 editor bundle의 추가 lazy loading이 후속 개선 대상이다.
 
 현재 화면 회귀 증거는 아래 경로에 저장했다.
