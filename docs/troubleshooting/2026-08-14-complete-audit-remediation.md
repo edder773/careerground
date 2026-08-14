@@ -23,6 +23,27 @@ evidence: docs/evidence/performance-budget-2026-08-14.json
 
 이 작업은 UI를 먼저 덧붙이지 않고 `migration → D1 API → UI → unit/integration → browser → 운영 HTTP` 순서로 같은 vertical slice를 완결했다.
 
+### 운영 배포에서만 드러난 스키마 불일치
+
+PR #22 배포 뒤 실제 브라우저에서 `백엔드`를 검색하자 `GET /api/v1/search`가 500을 반환했다. Worker 로그의 request id `adf16096-3ce0-4e48-9d88-3e7f7b6f622d`는 905 ms 뒤 `no such table: workspace_search`로 종료됐다. 운영 D1 overview에는 기존 26개 user table만 있었고, migration 0013의 additive table 6개와 migration 0014의 FTS table이 없었다. 즉 로컬 migration과 새 배포 artifact는 정상이었지만 Sites 배포가 저장된 SQL 파일을 운영 D1에 자동 적용한다고 가정한 것이 원인이었다.
+
+해결은 기존 운영 데이터를 버리고 seed를 다시 넣는 방식이 아니라, Sites 권장 경로인 prepared statement 기반 runtime initialization으로 만들었다. 첫 API 요청과 scheduled handler가 `ensureRuntimeSchema()`를 공유하며 다음을 순서대로 수행한다.
+
+1. source snapshot, 정규화 tech stack, 학습 답안·복습 event, scheduler lease table을 `IF NOT EXISTS`로 생성한다.
+2. 구형 `learning_progress`에 `review_version`, `completed_at`, `mastered_at`만 additive ALTER로 보강한다.
+3. FTS5 table과 18개 동기화 trigger를 만든다.
+4. 기존 공통 데이터와 사용자 소유 데이터를 `NOT EXISTS` 조건으로 한 번만 backfill한다.
+
+```diff
+ async function serveApi(request, env) {
+-  return handleD1Api(request, env)
++  await ensureRuntimeSchema(env.DB)
++  return handleD1Api(request, env)
+ }
+```
+
+동시 cold start에도 재실행 가능하도록 모든 DDL과 backfill을 멱등하게 만들고, DB binding별 Promise를 공유해 같은 isolate 안의 중복 초기화를 제거했다. 회귀 테스트는 최신 DB를 의도적으로 운영의 구형 shape로 되돌린 뒤 6개 table, 3개 column, FTS backfill을 복구하고 두 번째 실행에서 검색 row count가 늘지 않는지 검증한다.
+
 ## 핵심 이론 1: 무결성은 DB 제약과 authoritative snapshot에서 끝난다
 
 ### FK와 CHECK는 마지막 방어선이다
@@ -63,7 +84,7 @@ source snapshot
 + GET /solutions/:id  // code, comments, revisions는 선택 시 로드
 
 - WHERE title LIKE '%' || :query || '%'
-+ WHERE search_fts MATCH :prefixAndQuery
++ WHERE workspace_search MATCH :prefixAndQuery
 +   AND rowid > :cursorRowId
 + ORDER BY rowid
 ```
@@ -147,7 +168,7 @@ CAS는 충돌을 없애는 기술이 아니라 충돌을 탐지 가능한 상태
 | `pnpm format:check`       | 최종 commit 전 재검증                     |
 | `pnpm lint`               | 통과                                      |
 | `pnpm typecheck`          | 통과                                      |
-| `pnpm test`               | 96/96 통과                                |
+| `pnpm test`               | 97/97 통과                                |
 | `pnpm test:e2e`           | 48/48 통과, 4 Playwright projects         |
 | `pnpm build`              | API/web/docs production build 통과        |
 | `pnpm sites:build`        | D1 Worker + static artifact build 통과    |
@@ -174,6 +195,8 @@ CAS는 충돌을 없애는 기술이 아니라 충돌을 탐지 가능한 상태
 - `drizzle/0013_pretty_proudstar.sql`
 - `drizzle/0014_audit_search_and_normalization.sql`
 - `deployment/sites/d1-api.test.ts`
+- `deployment/sites/runtime-schema.ts`
+- `deployment/sites/runtime-schema.test.ts`
 - `e2e/mvp.spec.ts`
 - `e2e/visual.spec.ts`
 - `docs/operations/accessibility-release-checklist.md`

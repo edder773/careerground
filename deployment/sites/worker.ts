@@ -1,5 +1,6 @@
 import { handleD1Api, runScheduledMaintenance } from './d1-api.js';
 import type { D1Database } from './d1.js';
+import { ensureRuntimeSchema } from './runtime-schema.js';
 
 type Fetcher = { fetch(request: Request): Promise<Response> };
 
@@ -30,7 +31,21 @@ const json = (body: unknown, status = 200) =>
   });
 
 async function serveApi(request: Request, env: SitesEnv) {
-  if (env.DB) return handleD1Api(request, { ...env, DB: env.DB });
+  if (env.DB) {
+    try {
+      await ensureRuntimeSchema(env.DB);
+    } catch (error) {
+      console.error('D1 runtime schema initialization failed', error);
+      return json(
+        {
+          code: 'DB_SCHEMA_INITIALIZATION_FAILED',
+          message: '데이터베이스 스키마를 준비하지 못했습니다. 잠시 후 다시 시도해주세요.',
+        },
+        503,
+      );
+    }
+    return handleD1Api(request, { ...env, DB: env.DB });
+  }
   return json(
     {
       code: 'D1_NOT_CONFIGURED',
@@ -56,8 +71,11 @@ const worker = {
     env: SitesEnv,
     context: SitesExecutionContext,
   ) {
-    if (!env.DB) return;
-    context.waitUntil(runScheduledMaintenance({ ...env, DB: env.DB }));
+    const db = env.DB;
+    if (!db) return;
+    context.waitUntil(
+      ensureRuntimeSchema(db).then(() => runScheduledMaintenance({ ...env, DB: db })),
+    );
   },
 };
 
