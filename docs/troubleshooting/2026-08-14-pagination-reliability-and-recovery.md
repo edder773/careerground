@@ -102,6 +102,8 @@ node_modules/.bin/tsx scripts/performance/benchmark-d1.mjs
 
 최종 실행 전 새 노트 임시저장 테스트는 Testing Library cleanup 누락으로 동일한 `노트 제목` textbox가 여러 렌더에 남아 1건 실패했다. `apps/web/src/test/setup.ts`에 공통 `afterEach(cleanup)`을 추가한 뒤 단일 web suite 17/17과 전체 suite 85/85를 다시 통과했다. 첫 E2E 재실행은 샌드박스가 `tsx` IPC pipe 생성을 `EPERM`으로 차단해 테스트가 시작되지 않았고, 동일 명령을 허용된 로컬 실행 환경에서 다시 수행해 44/44를 확인했다. 둘 다 제품 실패로 숨기지 않고 원인과 최종 재검증 결과를 함께 남긴다.
 
+PR #20의 첫 GitHub E2E에서는 Chromium 16건이 통과했지만 Firefox·WebKit 28건이 실행 전 실패했다. Playwright project는 세 엔진인데 workflow가 `playwright install --with-deps chromium`만 실행한 구성 불일치가 원인이었다. CI 설치 명령도 `chromium firefox webkit`으로 맞추고 새 head SHA에서 재검증하도록 수정했다.
+
 production build에는 minified chunk 하나가 500 kB를 넘는 경고가 남는다. build 실패는 아니지만 초기 JavaScript 비용을 더 줄이려면 Monaco 계열 editor bundle의 추가 lazy loading이 후속 개선 대상이다.
 
 현재 화면 회귀 증거는 아래 경로에 저장했다.
