@@ -115,7 +115,11 @@ export function SettingsPage() {
           </button>
         </div>
       )}
-      <form onSubmit={submit} aria-busy={profile.isLoading}>
+      <form
+        onSubmit={submit}
+        aria-busy={profile.isLoading}
+        aria-describedby={save.isError ? 'settings-submit-error' : undefined}
+      >
         <div className="settings-grid">
           <section className={`settings-card ${editing ? 'is-editing' : ''}`}>
             <header className="settings-card-header">
@@ -150,6 +154,8 @@ export function SettingsPage() {
                 maxLength={80}
                 required
                 disabled={!editing}
+                aria-invalid={save.isError || undefined}
+                aria-describedby={save.isError ? 'settings-submit-error' : undefined}
               />
             </label>
             <label>
@@ -197,7 +203,11 @@ export function SettingsPage() {
                 </button>
               </div>
             )}
-            {save.isError && <div className="form-error">설정을 저장하지 못했습니다.</div>}
+            {save.isError && (
+              <div className="form-error" id="settings-submit-error" role="alert">
+                설정을 저장하지 못했습니다.
+              </div>
+            )}
           </section>
           <section className={`settings-card ${editing ? 'is-editing' : ''}`}>
             <header className="settings-card-header">

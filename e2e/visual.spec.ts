@@ -22,11 +22,14 @@ async function expectNoSeriousViolations(page: Page) {
 
 test('captures responsive home screenshots and has no serious accessibility violations', async ({
   page,
-}) => {
+}, testInfo) => {
   await mkdir('test-results/visual', { recursive: true });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
   await expect(page.getByRole('link', { name: 'OpenAI 계정으로 계속' })).toBeVisible();
+  if (testInfo.project.name === 'chromium') {
+    await expect(page).toHaveScreenshot('login-openai.png');
+  }
   await page.screenshot({
     path: 'test-results/visual/login-openai-desktop.png',
     fullPage: false,
@@ -42,6 +45,11 @@ test('captures responsive home screenshots and has no serious accessibility viol
       path: `test-results/visual/home-${viewport.name}.png`,
       fullPage: false,
     });
+    if (viewport.name === 'mobile-375' && testInfo.project.name === 'chromium') {
+      await expect(page).toHaveScreenshot('home-mobile-shell.png', {
+        mask: [page.locator('.today-problem-list')],
+      });
+    }
   }
 
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -229,4 +237,41 @@ test('captures core domain screens', async ({ page }) => {
     path: 'test-results/visual/coding-editor-mobile-375.png',
     fullPage: false,
   });
+});
+
+test('reflows at 200% equivalent width and keeps the editor usable above a mobile keyboard', async ({
+  page,
+}) => {
+  await login(page, 'visual-accessibility@careerground.local');
+  await page.setViewportSize({ width: 720, height: 450 });
+  await page.goto('/settings');
+  await expect(page.getByRole('heading', { name: '설정' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '변경', exact: true })).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+    ),
+  ).toBe(true);
+
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('/coding');
+  await page
+    .getByRole('region', { name: '오늘의 문제' })
+    .getByRole('button', { name: '풀이 기록' })
+    .first()
+    .click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.locator('.cm-content').click();
+
+  // A 312px viewport reduction approximates a mobile on-screen keyboard without claiming
+  // device-level IME coverage. The dialog must remain scrollable and its save action reachable.
+  await page.setViewportSize({ width: 375, height: 500 });
+  const save = dialog.getByRole('button', { name: '해결 기록 저장' });
+  await save.scrollIntoViewIfNeeded();
+  await expect(save).toBeVisible();
+  expect(await dialog.evaluate((element) => element.scrollWidth <= element.clientWidth + 1)).toBe(
+    true,
+  );
+  await expectNoSeriousViolations(page);
 });

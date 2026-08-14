@@ -55,7 +55,9 @@ describe('folder workspace', () => {
           return response([
             {
               id: 'challenge-lv1',
+              problemId: 'problem-lv1',
               problem: {
+                id: 'problem-lv1',
                 displayTitle: '오늘의 Lv. 1',
                 level: 1,
                 track: 'ALGORITHM',
@@ -64,7 +66,9 @@ describe('folder workspace', () => {
             },
             {
               id: 'challenge-lv2',
+              problemId: 'problem-lv2',
               problem: {
+                id: 'problem-lv2',
                 displayTitle: '오늘의 Lv. 2',
                 level: 2,
                 track: 'ALGORITHM',
@@ -73,7 +77,9 @@ describe('folder workspace', () => {
             },
             {
               id: 'challenge-sql',
+              problemId: 'problem-sql',
               problem: {
+                id: 'problem-sql',
                 displayTitle: '오늘의 SQL',
                 level: 3,
                 track: 'SQL',

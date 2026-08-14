@@ -30,6 +30,14 @@ export const jobFingerprint = (item: JobImportItem) =>
     )
     .digest('hex');
 
+export function parseCsvBoolean(value: string | undefined, field: string) {
+  const normalized = (value || '').normalize('NFKC').trim().toLowerCase();
+  if (!normalized) return false;
+  if (['true', '1', 'yes', 'y', 't', '예', '네'].includes(normalized)) return true;
+  if (['false', '0', 'no', 'n', 'f', '아니오', '아니요'].includes(normalized)) return false;
+  throw new Error(`${field} 값은 true/false, 1/0, yes/no 형식이어야 합니다.`);
+}
+
 export function analyzeJobImport(input: JobImport, existingUrls = new Set<string>()) {
   const seen = new Set<string>();
   const rows = input.items.map((item, index) => {
@@ -77,8 +85,8 @@ export function parseJobImportBuffer(buffer: Buffer, fileName: string): JobImpor
   if (parsed.errors.length) throw new Error(parsed.errors.map((error) => error.message).join(', '));
   const items = parsed.data.map((row) => ({
     ...row,
-    remote: row.remote === 'true',
-    rolling: row.rolling === 'true',
+    remote: parseCsvBoolean(row.remote, 'remote'),
+    rolling: parseCsvBoolean(row.rolling, 'rolling'),
     techStack: row.techStack
       ? row.techStack
           .split('|')

@@ -1,0 +1,24 @@
+.folder-breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.folder-breadcrumbs span {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.folder-breadcrumbs button {
+  padding: 3px 6px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+}
+
+.folder-move-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

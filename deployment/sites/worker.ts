@@ -1,4 +1,4 @@
-import { handleD1Api } from './d1-api.js';
+import { handleD1Api, runScheduledMaintenance } from './d1-api.js';
 import type { D1Database } from './d1.js';
 
 type Fetcher = { fetch(request: Request): Promise<Response> };
@@ -13,6 +13,11 @@ type SitesEnv = {
 type SitesExecutionContext = {
   waitUntil(promise: Promise<unknown>): void;
   passThroughOnException(): void;
+};
+
+type SitesScheduledController = {
+  cron: string;
+  scheduledTime: number;
 };
 
 const json = (body: unknown, status = 200) =>
@@ -45,6 +50,14 @@ const worker = {
     const acceptsHtml = request.headers.get('accept')?.includes('text/html');
     if (!acceptsHtml) return asset;
     return env.ASSETS.fetch(new Request(new URL('/index.html', request.url), request));
+  },
+  async scheduled(
+    _controller: SitesScheduledController,
+    env: SitesEnv,
+    context: SitesExecutionContext,
+  ) {
+    if (!env.DB) return;
+    context.waitUntil(runScheduledMaintenance({ ...env, DB: env.DB }));
   },
 };
 

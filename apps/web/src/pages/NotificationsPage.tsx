@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bell, BellRing, CheckCheck, MessageCircle, RefreshCcw } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { api } from '../lib/api';
+import '../styles/notifications.css';
 
 type Notification = {
   id: string;
@@ -22,9 +24,11 @@ const iconFor = (type: string) =>
 export function NotificationsPage() {
   const client = useQueryClient();
   const navigate = useNavigate();
+  const [type, setType] = useState('');
   const notifications = useQuery({
-    queryKey: ['notifications'],
-    queryFn: () => api<Notification[]>('/notifications'),
+    queryKey: ['notifications', type],
+    queryFn: () =>
+      api<Notification[]>(`/notifications${type ? `?type=${encodeURIComponent(type)}` : ''}`),
   });
   const readAll = useMutation({
     mutationFn: () => api('/notifications/read-all', { method: 'PATCH' }),
@@ -37,15 +41,16 @@ export function NotificationsPage() {
     mutationFn: (id: string) => api(`/notifications/${id}/read`, { method: 'PATCH' }),
     onMutate: async (id) => {
       await client.cancelQueries({ queryKey: ['notifications'] });
-      const previous = client.getQueryData<Notification[]>(['notifications']);
-      client.setQueryData<Notification[]>(['notifications'], (current) =>
+      const previous = client.getQueriesData<Notification[]>({ queryKey: ['notifications'] });
+      client.setQueriesData<Notification[]>({ queryKey: ['notifications'] }, (current) =>
         current?.map((item) =>
           item.id === id ? { ...item, readAt: item.readAt || new Date().toISOString() } : item,
         ),
       );
       return { previous };
     },
-    onError: (_error, _id, context) => client.setQueryData(['notifications'], context?.previous),
+    onError: (_error, _id, context) =>
+      context?.previous.forEach(([key, value]) => client.setQueryData(key, value)),
     onSettled: () => {
       void client.invalidateQueries({ queryKey: ['notifications'] });
       void client.invalidateQueries({ queryKey: ['notification-unread-count'] });
@@ -65,6 +70,19 @@ export function NotificationsPage() {
           <CheckCheck /> 모두 읽음
         </button>
       </section>
+      <div className="notification-filter">
+        <label>
+          알림 유형
+          <select value={type} onChange={(event) => setType(event.target.value)}>
+            <option value="">전체</option>
+            <option value="COMMENT">댓글</option>
+            <option value="REPLY">답글</option>
+            <option value="JOB_DEADLINE">채용 마감</option>
+            <option value="LEARNING_REVIEW">학습 복습</option>
+            <option value="SYSTEM">시스템</option>
+          </select>
+        </label>
+      </div>
       {notifications.isLoading && <div className="loading-panel">알림을 불러오는 중…</div>}
       {!notifications.isLoading && !notifications.data?.length && (
         <div className="empty-panel">

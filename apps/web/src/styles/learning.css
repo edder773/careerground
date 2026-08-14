@@ -1,0 +1,26 @@
+.learning-question-form {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.learning-question-form > label {
+  font-weight: 700;
+}
+
+.learning-question-form > div {
+  display: flex;
+  gap: 8px;
+}
+
+.learning-question-form input {
+  min-width: 0;
+  flex: 1;
+}
+
+.learning-question-form button {
+  white-space: nowrap;
+}

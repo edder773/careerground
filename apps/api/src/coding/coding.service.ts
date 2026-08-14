@@ -308,10 +308,16 @@ export class CodingService implements OnApplicationBootstrap {
     return comment;
   }
 
-  reportComment(userId: string, id: string, reason: string) {
-    return this.prisma.commentReport.create({
-      data: { commentId: id, reporterId: userId, reason: cleanMarkdown(reason) },
+  async reportComment(userId: string, id: string, reason: string) {
+    const where = { commentId_reporterId: { commentId: id, reporterId: userId } };
+    const existing = await this.prisma.commentReport.findUnique({ where });
+    const report = await this.prisma.commentReport.upsert({
+      where,
+      create: { commentId: id, reporterId: userId, reason: cleanMarkdown(reason) },
+      update: {},
+      select: { id: true, status: true, createdAt: true },
     });
+    return { ...report, duplicate: Boolean(existing) };
   }
 
   @Cron('0 0 7 * * *', { timeZone: 'Asia/Seoul' })

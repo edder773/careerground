@@ -63,11 +63,12 @@ test.describe('CareerGround MVP vertical slices', () => {
     ]);
     await expect(page.getByRole('heading', { name: '신입 IT 채용공고' })).toBeVisible();
     await page.getByRole('button', { name: '폴더에 저장' }).first().click();
-    await page
-      .getByRole('dialog', { name: /저장할 폴더 선택/ })
-      .getByRole('button', { name: renamed })
-      .click();
-    await expect(page.getByRole('button', { name: `${renamed}에 저장됨` }).first()).toBeVisible();
+    const jobFolderDialog = page.getByRole('dialog', { name: /저장할 폴더/ });
+    const jobFolderOption = jobFolderDialog.getByRole('checkbox', { name: renamed });
+    await jobFolderOption.click();
+    await expect(jobFolderOption).toBeChecked();
+    await jobFolderDialog.getByRole('button', { name: '폴더 선택 닫기' }).click();
+    await expect(page.getByRole('button', { name: /\d+개 폴더에 저장됨/ }).first()).toBeVisible();
 
     await Promise.all([
       page.waitForURL(/\/coding$/),
@@ -75,11 +76,12 @@ test.describe('CareerGround MVP vertical slices', () => {
     ]);
     await expect(page.getByRole('heading', { name: '코딩테스트' })).toBeVisible();
     await page.getByRole('button', { name: '폴더에 저장' }).first().click();
-    await page
-      .getByRole('dialog', { name: /저장할 폴더 선택/ })
-      .getByRole('button', { name: renamed })
-      .click();
-    await expect(page.getByRole('button', { name: `${renamed}에 저장됨` }).first()).toBeVisible();
+    const codingFolderDialog = page.getByRole('dialog', { name: /저장할 폴더/ });
+    const codingFolderOption = codingFolderDialog.getByRole('checkbox', { name: renamed });
+    await codingFolderOption.click();
+    await expect(codingFolderOption).toBeChecked();
+    await codingFolderDialog.getByRole('button', { name: '폴더 선택 닫기' }).click();
+    await expect(page.getByRole('button', { name: /\d+개 폴더에 저장됨/ }).first()).toBeVisible();
   });
 
   test('filters problems and records a member-visible solution', async ({ page }) => {
@@ -115,16 +117,29 @@ test.describe('CareerGround MVP vertical slices', () => {
   });
 
   test('reacts to a solution record and adds a comment', async ({ page }) => {
+    await page.getByRole('link', { name: '코딩테스트' }).first().click();
+    const dailySection = page.getByRole('region', { name: '오늘의 문제' });
+    await dailySection.getByRole('button', { name: '풀이 기록' }).first().click();
+    await page.getByLabel('언어').selectOption('javascript');
+    await page.locator('.cm-content').fill('function solution(value) { return value; }');
+    await page.getByLabel('풀이 설명').fill(`댓글 흐름 검증 ${Date.now()}`);
+    await page.getByRole('button', { name: '해결 기록 저장' }).click();
+    await expect(page.locator('.editor-panel')).toBeHidden();
+
     await page.getByRole('link', { name: '풀이 기록' }).first().click();
-    await expect(page.getByRole('heading', { name: '풀이 기록' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '풀이 기록', exact: true })).toBeVisible();
     await page
       .getByRole('button', { name: /유용해요/ })
       .first()
       .click();
-    await page.getByRole('button', { name: '댓글 남기기' }).first().click();
-    await page.getByLabel('댓글').fill(`E2E 댓글 ${Date.now()}`);
+    await page
+      .getByRole('button', { name: /코드·revision·댓글 보기/ })
+      .first()
+      .click();
+    const comment = `E2E 댓글 ${Date.now()}`;
+    await page.getByLabel('댓글').fill(comment);
     await page.getByRole('button', { name: '등록' }).click();
-    await expect(page.getByRole('button', { name: '댓글 남기기' }).first()).toBeVisible();
+    await expect(page.getByText(comment, { exact: true })).toBeVisible();
   });
 
   test('filters and saves an entry-level IT job', async ({ page }) => {
@@ -285,7 +300,7 @@ test.describe('CareerGround MVP vertical slices', () => {
     );
     await page.getByRole('button', { name: '승인 반영', exact: true }).first().click();
     expect((await jobCommit).ok()).toBe(true);
-    await expect(page.getByRole('status')).toContainText('반영이 완료');
+    await expect(page.getByRole('status').filter({ hasText: '반영이 완료' })).toBeVisible();
 
     await page.getByRole('link', { name: '채용공고' }).first().click();
     await page.getByRole('button', { name: /^채용공고 필터/ }).click();

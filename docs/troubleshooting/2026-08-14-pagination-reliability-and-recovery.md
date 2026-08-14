@@ -129,7 +129,7 @@ production build에는 minified chunk 하나가 500 kB를 넘는 경고가 남�
 
 ## 남은 위험
 
-검색은 여전히 `LIKE` 기반 10개 상한이며 FTS/cursor가 없다. 학습 목록과 solution list/detail DTO의 완전 분리, D1 기존 전체 스키마의 FK 재구성, 실제 운영 export/restore 훈련, 플랫폼 SLO/alert 연결도 남아 있다. 이 항목들은 코드 일부가 개선되었다는 이유로 완료 처리하지 않았다.
+이 문서 작성 당시 남아 있던 FTS/cursor, 학습·풀이 list/detail, 전면 FK/CHECK, 실행형 restore drill, SLO/smoke gate는 [잔여 감사 49개 완결](./2026-08-14-complete-audit-remediation.md)에서 후속 처리했다. 운영 D1 export/restore, Sites cron 등록, 실제 NVDA/VoiceOver 장비처럼 설치된 도구가 제공하지 않는 외부 검증 경계만 별도로 남겼다.
 
 ## 근거
 
