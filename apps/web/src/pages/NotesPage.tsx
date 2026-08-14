@@ -11,12 +11,14 @@ import {
   ListChecks,
   PenLine,
   Plus,
+  RotateCcw,
   Save,
   Search,
   Trash2,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
+import { useAuth } from '../auth';
 import { FolderSaveButton } from '../components/FolderSaveButton';
 import { api, json } from '../lib/api';
 
@@ -30,6 +32,32 @@ type Note = {
   updatedAt: string;
   revisions: Revision[];
 };
+type DeletedNote = Pick<Note, 'id' | 'title'> & { deletedAt: string };
+type NoteDraft = { title: string; markdown: string; baseRevision?: number; savedAt: string };
+
+const noteDraftKey = (userId: string, noteId: string) => `cg-note-draft:${userId}:${noteId}`;
+
+function readDraft(key: string): NoteDraft | undefined {
+  try {
+    const value = window.localStorage.getItem(key);
+    if (!value) return undefined;
+    const draft = JSON.parse(value) as Partial<NoteDraft>;
+    if (typeof draft.title !== 'string' || typeof draft.markdown !== 'string') return undefined;
+    return {
+      title: draft.title,
+      markdown: draft.markdown,
+      baseRevision: draft.baseRevision,
+      savedAt: typeof draft.savedAt === 'string' ? draft.savedAt : new Date().toISOString(),
+    };
+  } catch {
+    try {
+      window.localStorage?.removeItem(key);
+    } catch {
+      // Ignore unavailable or policy-blocked browser storage.
+    }
+    return undefined;
+  }
+}
 
 const dateLabel = (value: string) =>
   new Intl.DateTimeFormat('ko-KR', { month: 'short', day: 'numeric' }).format(new Date(value));
@@ -59,9 +87,15 @@ function RevisionDiff({ revisions }: { revisions: Revision[] }) {
 
 export function NotesPage() {
   const client = useQueryClient();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const editor = useRef<HTMLTextAreaElement>(null);
+  const hydratedDraft = useRef<string | undefined>(undefined);
   const notes = useQuery({ queryKey: ['notes'], queryFn: () => api<Note[]>('/notes') });
+  const trash = useQuery({
+    queryKey: ['note-trash'],
+    queryFn: () => api<DeletedNote[]>('/notes/trash'),
+  });
   const [selectedId, setSelectedId] = useState<string>();
   const [creating, setCreating] = useState(false);
   const [query, setQuery] = useState('');
@@ -75,6 +109,9 @@ export function NotesPage() {
   const dirty = creating
     ? Boolean(title || markdown)
     : Boolean(selected && (title !== selected.title || markdown !== selected.markdown));
+  const activeDraftKey = user
+    ? noteDraftKey(user.id, creating ? 'new' : selectedId || 'none')
+    : undefined;
   const filtered = useMemo(() => {
     const keyword = query.trim().toLowerCase();
     if (!keyword) return notes.data || [];
@@ -92,9 +129,35 @@ export function NotesPage() {
   }, [notes.data, selectedId, creating, searchParams]);
   useEffect(() => {
     if (!selected || creating) return;
-    setTitle(selected.title);
-    setMarkdown(selected.markdown);
-  }, [selected, creating]);
+    const key = user ? noteDraftKey(user.id, selected.id) : undefined;
+    const draft = key ? readDraft(key) : undefined;
+    setTitle(draft?.title ?? selected.title);
+    setMarkdown(draft?.markdown ?? selected.markdown);
+    hydratedDraft.current = key;
+  }, [selected, creating, user]);
+  useEffect(() => {
+    if (!activeDraftKey || hydratedDraft.current !== activeDraftKey) return;
+    const timer = window.setTimeout(() => {
+      try {
+        if (!dirty) {
+          window.localStorage.removeItem(activeDraftKey);
+          return;
+        }
+        window.localStorage.setItem(
+          activeDraftKey,
+          JSON.stringify({
+            title,
+            markdown,
+            baseRevision: creating ? undefined : selected?.currentRev,
+            savedAt: new Date().toISOString(),
+          } satisfies NoteDraft),
+        );
+      } catch {
+        // The explicit save and unload guard remain available when storage is unavailable.
+      }
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [activeDraftKey, creating, dirty, markdown, selected?.currentRev, title]);
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
       if (!dirty) return;
@@ -115,7 +178,9 @@ export function NotesPage() {
           markdown,
         }),
       }),
-    onSuccess: async (note) => {
+    onMutate: () => ({ draftKey: activeDraftKey }),
+    onSuccess: async (note, _variables, context) => {
+      if (context?.draftKey) window.localStorage.removeItem(context.draftKey);
       setCreating(false);
       setSelectedId(note.id);
       await Promise.all([
@@ -126,19 +191,35 @@ export function NotesPage() {
   });
   const remove = useMutation({
     mutationFn: (id: string) => api(`/notes/${id}`, { method: 'DELETE' }),
-    onSuccess: async () => {
+    onSuccess: async (_value, id) => {
+      if (user) window.localStorage.removeItem(noteDraftKey(user.id, id));
       setSelectedId(undefined);
       setTitle('');
       setMarkdown('');
-      await client.invalidateQueries({ queryKey: ['notes'] });
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ['notes'] }),
+        client.invalidateQueries({ queryKey: ['note-trash'] }),
+      ]);
+    },
+  });
+  const restore = useMutation({
+    mutationFn: (id: string) => api(`/notes/${id}/restore`, { method: 'POST' }),
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ['notes'] }),
+        client.invalidateQueries({ queryKey: ['note-trash'] }),
+      ]);
     },
   });
 
   const startNew = () => {
+    const key = user ? noteDraftKey(user.id, 'new') : undefined;
+    const draft = key ? readDraft(key) : undefined;
     setCreating(true);
     setSelectedId(undefined);
-    setTitle('');
-    setMarkdown('');
+    setTitle(draft?.title ?? '');
+    setMarkdown(draft?.markdown ?? '');
+    hydratedDraft.current = key;
     setMobileView('write');
   };
   const selectNote = (id: string) => {
@@ -220,6 +301,26 @@ export function NotesPage() {
               </div>
             )}
           </div>
+          {Boolean(trash.data?.length) && (
+            <details className="notes-trash">
+              <summary>
+                <Trash2 /> 최근 삭제 {trash.data?.length}개
+              </summary>
+              {trash.data?.map((note) => (
+                <div key={note.id}>
+                  <span>{note.title}</span>
+                  <button
+                    type="button"
+                    aria-label={`${note.title} 복원`}
+                    disabled={restore.isPending && restore.variables === note.id}
+                    onClick={() => restore.mutate(note.id)}
+                  >
+                    <RotateCcw />
+                  </button>
+                </div>
+              ))}
+            </details>
+          )}
         </aside>
 
         {hasEditor ? (

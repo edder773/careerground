@@ -98,6 +98,73 @@
   }
 }
 
+.trash-recovery,
+.notes-trash {
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+}
+
+.trash-recovery > summary,
+.notes-trash > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.trash-recovery > summary svg,
+.notes-trash > summary svg {
+  width: 17px;
+  height: 17px;
+}
+
+.trash-recovery > div,
+.notes-trash[open] {
+  border-top: 1px solid var(--line);
+}
+
+.trash-recovery article,
+.notes-trash > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+}
+
+.trash-recovery article > span,
+.notes-trash > div > span {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.notes-trash {
+  margin: 12px;
+  font-size: 0.84rem;
+}
+
+.notes-trash > div button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+}
+
+.notes-trash > div button svg {
+  width: 15px;
+  height: 15px;
+}
+
 @media (max-width: 375px) {
   .page-content,
   .job-card,
@@ -1086,6 +1153,11 @@ p {
   width: 12px;
 }
 .editor-panel {
+  position: fixed;
+  z-index: 111;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: min(900px, calc(100vw - 44px));
   max-height: calc(100vh - 64px);
   overflow-y: auto;
@@ -1289,6 +1361,27 @@ p {
 .job-list {
   display: grid;
   gap: 10px;
+}
+.load-more-button {
+  display: block;
+  width: min(100%, 420px);
+  min-height: 44px;
+  margin: 20px auto 4px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.load-more-button:hover:not(:disabled) {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.load-more-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 .job-card {
   min-width: 0;
@@ -1602,6 +1695,11 @@ p {
   backdrop-filter: blur(7px);
 }
 .learning-unit-modal {
+  position: fixed;
+  z-index: 86;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: min(760px, 100%);
   max-height: min(820px, calc(100vh - 48px));
   overflow: hidden;
@@ -6045,6 +6143,10 @@ body {
   background: #fafafb;
 }
 
+.calendar-week {
+  display: contents;
+}
+
 .calendar-day {
   min-width: 0;
   min-height: 110px;
@@ -6052,6 +6154,13 @@ body {
   background: white;
   border-right: 1px solid #e7e9ed;
   border-bottom: 1px solid #e7e9ed;
+}
+
+.calendar-day:focus-visible {
+  position: relative;
+  z-index: 2;
+  outline: 3px solid rgba(83, 101, 191, 0.34);
+  outline-offset: -3px;
 }
 
 .calendar-day:nth-child(7n + 1) {
@@ -6260,6 +6369,11 @@ body {
 }
 
 .job-detail-modal {
+  position: fixed;
+  z-index: 81;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: min(590px, 100%);
   max-height: min(760px, calc(100vh - 48px));
   overflow-y: auto;

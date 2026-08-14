@@ -29,13 +29,20 @@ describe('Sites D1 API', () => {
     path: string,
     init: RequestInit = {},
     headers: Record<string, string> = adminHeaders,
+    env: Record<string, string> = {},
   ) {
     const requestHeaders = new Headers(headers);
     if (init.body && !(init.body instanceof FormData))
       requestHeaders.set('content-type', 'application/json');
     const response = await handleD1Api(
       new Request(`https://careerground.example${path}`, { ...init, headers: requestHeaders }),
-      { DB: db, OPENAI_ADMIN_EMAILS: 'admin@example.test', MAX_ACTIVE_USERS: '100' },
+      {
+        DB: db,
+        OPENAI_ADMIN_EMAILS: 'admin@example.test',
+        MAX_ACTIVE_USERS: '100',
+        REQUEST_LOGGING: 'false',
+        ...env,
+      },
     );
     return { response, body: (await response.json()) as Record<string, unknown> };
   }
@@ -44,6 +51,9 @@ describe('Sites D1 API', () => {
     const health = await call('/api/v1/health', {}, {});
     expect(health.response.status).toBe(200);
     expect(health.body).toMatchObject({ status: 'ok', database: 'd1' });
+    expect(health.response.headers.get('x-request-id')).toBeTruthy();
+    expect(health.response.headers.get('server-timing')).toMatch(/^app;dur=\d+\.\d$/);
+    expect(Number(health.response.headers.get('x-response-time-ms'))).toBeGreaterThanOrEqual(0);
 
     const member = await call('/api/v1/auth/me', {}, memberHeaders);
     expect(member.body).toMatchObject({ user: { role: 'MEMBER', onboardingCompleted: false } });
@@ -79,6 +89,21 @@ describe('Sites D1 API', () => {
     });
   });
 
+  it('rate limits each user and normalized route with Retry-After', async () => {
+    const env = { RATE_LIMIT_READS_PER_MINUTE: '2' };
+    expect((await call('/api/v1/auth/me', {}, adminHeaders, env)).response.status).toBe(200);
+    expect((await call('/api/v1/auth/me', {}, adminHeaders, env)).response.status).toBe(200);
+    const limited = await call('/api/v1/auth/me', {}, adminHeaders, env);
+    expect(limited.response.status).toBe(429);
+    expect(limited.response.headers.get('retry-after')).toMatch(/^\d+$/);
+    expect(limited.body).toMatchObject({
+      code: 'RATE_LIMITED',
+      details: { limit: 2, windowSeconds: 60 },
+    });
+
+    expect((await call('/api/v1/auth/me', {}, memberHeaders, env)).response.status).toBe(200);
+  });
+
   it('persists a personal folder and external link', async () => {
     const created = await call('/api/v1/collections', {
       method: 'POST',
@@ -106,6 +131,18 @@ describe('Sites D1 API', () => {
       expect.objectContaining({
         id: folder.id,
         name: '<scr<script>ipt>지원 준비</script>',
+        items: [expect.objectContaining({ label: '포트폴리오' })],
+      }),
+    ]);
+    await call(`/api/v1/collections/${folder.id}`, { method: 'DELETE' });
+    const trash = await call('/api/v1/collections/trash');
+    expect(trash.body).toEqual([
+      expect.objectContaining({ id: folder.id, name: '<scr<script>ipt>지원 준비</script>' }),
+    ]);
+    await call(`/api/v1/collections/${folder.id}/restore`, { method: 'POST' });
+    expect((await call('/api/v1/collections')).body).toEqual([
+      expect.objectContaining({
+        id: folder.id,
         items: [expect.objectContaining({ label: '포트폴리오' })],
       }),
     ]);
@@ -162,6 +199,15 @@ describe('Sites D1 API', () => {
     const removed = await call(`/api/v1/notes/${note.id}`, { method: 'DELETE' });
     expect(removed.response.status).toBe(200);
     expect((await call('/api/v1/notes')).body).toEqual([]);
+    expect((await call('/api/v1/notes/trash')).body).toEqual([
+      expect.objectContaining({ id: note.id, title: 'D1 메모' }),
+    ]);
+    expect(
+      (await call(`/api/v1/notes/${note.id}/restore`, { method: 'POST' })).response.status,
+    ).toBe(200);
+    expect((await call('/api/v1/notes')).body).toEqual([
+      expect.objectContaining({ id: note.id, currentRev: 2 }),
+    ]);
   });
 
   it('replaces dummy records with the imported job and problem catalogs', async () => {
@@ -235,6 +281,43 @@ describe('Sites D1 API', () => {
     expect(categories.body).toEqual(
       expect.arrayContaining(['AI 풀스택 개발', '백엔드', '프론트엔드']),
     );
+  });
+
+  it('returns stable cursor pages and totals for large shared catalogs', async () => {
+    const firstProblems = await call(
+      '/api/v1/coding/problems?track=ALGORITHM&page=cursor&limit=25',
+    );
+    const problemPage = firstProblems.body as unknown as {
+      items: Array<{ id: string }>;
+      nextCursor: string;
+      total: number;
+    };
+    expect(problemPage.items).toHaveLength(25);
+    expect(problemPage.total).toBe(365);
+    expect(problemPage.nextCursor).toBeTruthy();
+    const nextProblems = await call(
+      `/api/v1/coding/problems?track=ALGORITHM&page=cursor&limit=25&cursor=${encodeURIComponent(problemPage.nextCursor)}`,
+    );
+    const nextProblemPage = nextProblems.body as unknown as { items: Array<{ id: string }> };
+    expect(nextProblemPage.items).toHaveLength(25);
+    expect(nextProblemPage.items.map((item) => item.id)).not.toContain(
+      problemPage.items.at(-1)?.id,
+    );
+
+    const firstJobs = await call('/api/v1/jobs?sort=new&page=cursor&limit=20');
+    const jobPage = firstJobs.body as unknown as {
+      items: Array<{ id: string }>;
+      nextCursor: string;
+      total: number;
+    };
+    expect(jobPage.items).toHaveLength(20);
+    expect(jobPage.total).toBe(119);
+    const nextJobs = await call(
+      `/api/v1/jobs?sort=new&page=cursor&limit=20&cursor=${encodeURIComponent(jobPage.nextCursor)}`,
+    );
+    expect(
+      (nextJobs.body as unknown as { items: Array<{ id: string }> }).items.map((item) => item.id),
+    ).not.toContain(jobPage.items.at(-1)?.id);
   });
 
   it('accepts repeated company-size and category filters', async () => {
@@ -388,7 +471,14 @@ describe('Sites D1 API', () => {
       }),
     });
     const saved = solution.body as { id: string };
-    await call(`/api/v1/coding/solutions/${saved.id}/reaction`, { method: 'POST' });
+    await call(`/api/v1/coding/solutions/${saved.id}/reaction`, {
+      method: 'PUT',
+      body: JSON.stringify({ active: true }),
+    });
+    await call(`/api/v1/coding/solutions/${saved.id}/reaction`, {
+      method: 'PUT',
+      body: JSON.stringify({ active: true }),
+    });
     await call(`/api/v1/coding/solutions/${saved.id}/comments`, {
       method: 'POST',
       body: JSON.stringify({ markdown: '좋은 풀이입니다.' }),
@@ -406,9 +496,21 @@ describe('Sites D1 API', () => {
         language: 'javascript',
         visibility: 'MEMBERS',
         reactions: [expect.any(Object)],
+        reactionCount: 1,
+        reactedByMe: false,
         comments: [expect.objectContaining({ markdown: '좋은 풀이입니다.' })],
       }),
     ]);
+    const pagedSolutions = await call(
+      `/api/v1/coding/solutions?problemId=${daily.problem.id}&page=cursor&limit=1`,
+      {},
+      memberHeaders,
+    );
+    expect(pagedSolutions.body).toMatchObject({
+      items: [expect.objectContaining({ id: saved.id })],
+      nextCursor: null,
+      total: 1,
+    });
   });
 
   it('persists learning review state and returns searchable data', async () => {
@@ -481,6 +583,32 @@ describe('Sites D1 API', () => {
     const search = await call('/api/v1/search?q=HTTP');
     expect(search.response.status).toBe(200);
     expect(search.body).toMatchObject({ query: 'HTTP' });
+  });
+
+  it('creates one deduplicated deadline notification across repeated reads', async () => {
+    await call('/api/v1/auth/me');
+    const job = await db.prepare("SELECT id FROM jobs WHERE status = 'ACTIVE' LIMIT 1").first<{
+      id: string;
+    }>();
+    const deadline = new Date(Date.now() + 3 * 86_400_000).toISOString();
+    await db
+      .prepare('UPDATE jobs SET deadline_at = ?, rolling = 0 WHERE id = ?')
+      .bind(deadline, job!.id)
+      .run();
+    await call('/api/v1/jobs/saved', {
+      method: 'POST',
+      body: JSON.stringify({ jobId: job!.id, bookmarked: true }),
+    });
+
+    await call('/api/v1/notifications/unread-count');
+    await call('/api/v1/notifications/unread-count');
+
+    const count = await db
+      .prepare(
+        "SELECT COUNT(*) AS count FROM notifications WHERE type = 'JOB_DEADLINE' AND user_id = (SELECT id FROM users WHERE site_user_id = 'site-admin')",
+      )
+      .first<{ count: number }>();
+    expect(count?.count).toBe(1);
   });
 
   it('loads the complete learning library with four bulk queries', async () => {

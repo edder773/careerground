@@ -6,6 +6,7 @@ import { renderPage, response } from '../test/render';
 
 describe('folder workspace', () => {
   let folders: Collection[];
+  let deletedFolders: Collection[];
   const calls: Array<{ url: string; method: string; body?: unknown }> = [];
 
   beforeEach(() => {
@@ -19,6 +20,7 @@ describe('folder workspace', () => {
         items: [],
       },
     ];
+    deletedFolders = [];
     calls.length = 0;
     vi.stubGlobal(
       'fetch',
@@ -27,6 +29,7 @@ describe('folder workspace', () => {
         const method = init?.method || 'GET';
         const body = init?.body ? JSON.parse(String(init.body)) : undefined;
         calls.push({ url, method, body });
+        if (url.endsWith('/collections/trash') && method === 'GET') return response(deletedFolders);
         if (url.endsWith('/collections') && method === 'GET') return response(folders);
         if (url.endsWith('/collections') && method === 'POST') {
           const folder = {
@@ -109,6 +112,33 @@ describe('folder workspace', () => {
       expect(calls.some((call) => call.method === 'POST' && call.url.includes('/items'))).toBe(
         true,
       ),
+    );
+  });
+
+  it('restores a recently deleted folder from the workspace', async () => {
+    deletedFolders = [
+      {
+        id: '33333333-3333-4333-8333-333333333333',
+        name: '삭제된 지원 자료',
+        icon: 'folder',
+        color: 'violet',
+        position: 0,
+        items: [],
+      },
+    ];
+    const user = userEvent.setup();
+    renderPage(<HomePage viewMode="grid" />);
+
+    await user.click(await screen.findByText('최근 삭제한 폴더 1개'));
+    expect(screen.getByText('삭제된 지원 자료')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '복원' }));
+
+    await waitFor(() =>
+      expect(calls).toContainEqual({
+        url: 'http://localhost:4000/api/v1/collections/33333333-3333-4333-8333-333333333333/restore',
+        method: 'POST',
+        body: undefined,
+      }),
     );
   });
 });

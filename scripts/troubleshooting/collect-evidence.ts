@@ -3,6 +3,7 @@ import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import type { EvidenceManifest } from './types.js';
 import { scanSensitive } from './redact.js';
+import { validationStatus } from './validation-status.js';
 
 const valueOf = (name: string, fallback?: string) => {
   const index = process.argv.indexOf(name);
@@ -84,11 +85,7 @@ for (const name of ['lint', 'typecheck', 'test', 'e2e', 'build']) {
     const text = await readFile(join(validationRoot, `${name}.txt`), 'utf8');
     checks.push({
       name,
-      status: /exit code: 0|passed/i.test(text)
-        ? 'passed'
-        : /exit code: [1-9]|failed/i.test(text)
-          ? 'failed'
-          : 'not-run',
+      status: validationStatus(text),
       command: `pnpm ${name === 'e2e' ? 'test:e2e' : name}`,
       summary: text.trim().split('\n').slice(-3).join(' '),
     });

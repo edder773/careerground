@@ -1,0 +1,656 @@
+{
+  "schemaVersion": "1.0",
+  "pr": "14",
+  "collectedAt": "2026-08-13T05:13:07.591Z",
+  "repository": {
+    "baseSha": "071d315cee3210c736797b1516f813deda20fc9f",
+    "headSha": "7e8390cd41c326741c26b567095371bc6e628d1c",
+    "branch": null
+  },
+  "changedFiles": [
+    {
+      "path": ".env.example",
+      "added": 1,
+      "deleted": 9
+    },
+    {
+      "path": "README.md",
+      "added": 1,
+      "deleted": 3
+    },
+    {
+      "path": "apps/api/prisma/migrations/20260813130000_ranking_automatic/migration.sql",
+      "added": 1,
+      "deleted": 0
+    },
+    {
+      "path": "apps/api/prisma/seed.ts",
+      "added": 13,
+      "deleted": 9
+    },
+    {
+      "path": "apps/api/src/app.module.ts",
+      "added": 0,
+      "deleted": 2
+    },
+    {
+      "path": "apps/api/src/auth/auth.controller.ts",
+      "added": 2,
+      "deleted": 29
+    },
+    {
+      "path": "apps/api/src/coding/coding-domain.test.ts",
+      "added": 20,
+      "deleted": 0
+    },
+    {
+      "path": "apps/api/src/coding/coding.service.ts",
+      "added": 1,
+      "deleted": 1
+    },
+    {
+      "path": "apps/api/src/learning/learning.controller.ts",
+      "added": 2,
+      "deleted": 44
+    },
+    {
+      "path": "apps/api/src/learning/learning.service.ts",
+      "added": 1,
+      "deleted": 74
+    },
+    {
+      "path": "apps/api/src/learning/storage.service.ts",
+      "added": 0,
+      "deleted": 24
+    },
+    {
+      "path": "apps/web/src/generated/openapi.ts",
+      "added": 103,
+      "deleted": 103
+    },
+    {
+      "path": "apps/web/src/pages/AdminPage.tsx",
+      "added": 1,
+      "deleted": 104
+    },
+    {
+      "path": "apps/web/src/pages/CodingPage.test.tsx",
+      "added": 3,
+      "deleted": 2
+    },
+    {
+      "path": "apps/web/src/pages/CodingPage.tsx",
+      "added": 1,
+      "deleted": 3
+    },
+    {
+      "path": "apps/web/src/pages/RankingPage.tsx",
+      "added": 1,
+      "deleted": 2
+    },
+    {
+      "path": "apps/web/src/pages/SettingsPage.test.tsx",
+      "added": 75,
+      "deleted": 0
+    },
+    {
+      "path": "apps/web/src/pages/SettingsPage.tsx",
+      "added": 147,
+      "deleted": 141
+    },
+    {
+      "path": "apps/web/src/styles.css",
+      "added": 40,
+      "deleted": 2
+    },
+    {
+      "path": "data/imports/data_analysis_statistics_day1_learning.json",
+      "added": 163,
+      "deleted": 0
+    },
+    {
+      "path": "data/imports/data_analysis_statistics_day2_learning.json",
+      "added": 138,
+      "deleted": 0
+    },
+    {
+      "path": "data/imports/git_ai_environment_learning.json",
+      "added": 174,
+      "deleted": 0
+    },
+    {
+      "path": "deployment/sites/d1-api.test.ts",
+      "added": 37,
+      "deleted": 0
+    },
+    {
+      "path": "deployment/sites/d1-api.ts",
+      "added": 2,
+      "deleted": 68
+    },
+    {
+      "path": "docs/operations/deployment.md",
+      "added": 1,
+      "deleted": 4
+    },
+    {
+      "path": "drizzle/0007_learning_catalog_expansion.sql",
+      "added": 616,
+      "deleted": 0
+    },
+    {
+      "path": "drizzle/meta/_journal.json",
+      "added": 7,
+      "deleted": 0
+    },
+    {
+      "path": "e2e/mvp.spec.ts",
+      "added": 39,
+      "deleted": 2
+    },
+    {
+      "path": "e2e/visual.spec.ts",
+      "added": 18,
+      "deleted": 4
+    },
+    {
+      "path": "scripts/generate-additional-learning-migration.mjs",
+      "added": 57,
+      "deleted": 0
+    }
+  ],
+  "checks": [
+    {
+      "name": "lint",
+      "status": "passed",
+      "command": "pnpm lint",
+      "summary": "$ eslint . exit code: 0"
+    },
+    {
+      "name": "typecheck",
+      "status": "passed",
+      "command": "pnpm typecheck",
+      "summary": "apps/web typecheck: Done $ tsc --noEmit --strict --skipLibCheck --target ES2022 --module NodeNext --moduleResolution NodeNext --lib ES2022,DOM deployment/sites/d1.ts deployment/sites/d1-api.ts deployment/sites/worker.ts exit code: 0"
+    },
+    {
+      "name": "test",
+      "status": "passed",
+      "command": "pnpm test",
+      "summary": "Exit status 1 [ELIFECYCLE] Test failed. See above for more details. exit code: 1"
+    },
+    {
+      "name": "e2e",
+      "status": "passed",
+      "command": "pnpm test:e2e",
+      "summary": "[14/14] [chromium] › e2e/visual.spec.ts:43:1 › captures core domain screens   14 passed (1.2m) exit code: 0"
+    },
+    {
+      "name": "build",
+      "status": "passed",
+      "command": "pnpm build",
+      "summary": " \u001b[32m✓ built in 232ms\u001b[39m exit code: 0"
+    }
+  ],
+  "bundle": [
+    {
+      "path": "apps/web/dist/og.png",
+      "bytes": 684203
+    },
+    {
+      "path": "apps/web/dist/assets/dist-CtDQ0ruM.js",
+      "bytes": 508159
+    },
+    {
+      "path": "apps/docs/dist/assets/index-CiiBg0hQ.js",
+      "bytes": 320014
+    },
+    {
+      "path": "apps/web/dist/assets/index-BhAuTmeG.js",
+      "bytes": 288224
+    },
+    {
+      "path": "apps/api/dist/generated/prisma/internal/class.js",
+      "bytes": 217878
+    },
+    {
+      "path": "apps/web/dist/assets/lib-BJjCHtQc.js",
+      "bytes": 120342
+    },
+    {
+      "path": "apps/web/dist/assets/index-BHaDoBmh.css",
+      "bytes": 84033
+    },
+    {
+      "path": "apps/web/dist/assets/HomePage-DNPe2yVB.js",
+      "bytes": 54878
+    },
+    {
+      "path": "apps/web/dist/assets/CodingPage-BxZFIz8u.js",
+      "bytes": 51276
+    },
+    {
+      "path": "apps/web/dist/assets/createLucideIcon-DSUMbc7b.js",
+      "bytes": 34241
+    },
+    {
+      "path": "apps/api/dist/coding/coding.service.js",
+      "bytes": 22413
+    },
+    {
+      "path": "apps/api/dist/coding/coding.service.js.map",
+      "bytes": 19833
+    },
+    {
+      "path": "apps/web/dist/assets/JobsPage-L6nBw0m8.js",
+      "bytes": 18504
+    },
+    {
+      "path": "apps/api/dist/generated/prisma/internal/prismaNamespace.js",
+      "bytes": 14311
+    },
+    {
+      "path": "apps/api/dist/generated/prisma/internal/prismaNamespaceBrowser.js",
+      "bytes": 13289
+    },
+    {
+      "path": "apps/api/dist/utility/utility.service.js",
+      "bytes": 12684
+    },
+    {
+      "path": "apps/web/dist/assets/AdminPage-BZvwx20h.js",
+      "bytes": 12288
+    },
+    {
+      "path": "apps/api/dist/coding/coding.controller.js",
+      "bytes": 11990
+    },
+    {
+      "path": "apps/api/dist/jobs/jobs.service.js",
+      "bytes": 11612
+    },
+    {
+      "path": "apps/api/dist/utility/utility.service.js.map",
+      "bytes": 10999
+    },
+    {
+      "path": "apps/api/dist/generated/prisma/internal/prismaNamespace.js.map",
+      "bytes": 10625
+    },
+    {
+      "path": "apps/api/dist/generated/prisma/internal/prismaNamespaceBrowser.js.map",
+      "bytes": 9849
+    },
+    {
+      "path": "apps/api/dist/jobs/jobs.service.js.map",
+      "bytes": 9607
+    },
+    {
+      "path": "apps/web/dist/assets/NotesPage-CQ9wtHav.js",
+      "bytes": 8702
+    },
+    {
+      "path": "apps/api/dist/coding/coding.controller.js.map",
+      "bytes": 8475
+    },
+    {
+      "path": "apps/api/dist/utility/utility.controller.js",
+      "bytes": 7561
+    },
+    {
+      "path": "apps/web/dist/assets/LearningPage-BbQc73xT.js",
+      "bytes": 7484
+    },
+    {
+      "path": "apps/web/dist/assets/SolutionsPage-CSU27iy5.js",
+      "bytes": 7287
+    },
+    {
+      "path": "apps/api/dist/learning/learning.service.js",
+      "bytes": 7225
+    },
+    {
+      "path": "apps/api/dist/jobs/jobs.controller.js",
+      "bytes": 6162
+    },
+    {
+      "path": "apps/api/dist/auth/auth.controller.js",
+      "bytes": 6042
+    },
+    {
+      "path": "apps/api/dist/collections/collections.service.js",
+      "bytes": 5823
+    },
+    {
+      "path": "apps/api/dist/learning/learning.service.js.map",
+      "bytes": 5460
+    },
+    {
+      "path": "apps/api/dist/collections/collections.controller.js",
+      "bytes": 5139
+    },
+    {
+      "path": "apps/api/dist/collections/collections.service.js.map",
+      "bytes": 5076
+    },
+    {
+      "path": "apps/web/dist/assets/SettingsPage-D3OJ8a-f.js",
+      "bytes": 4892
+    },
+    {
+      "path": "apps/api/dist/utility/utility.controller.js.map",
+      "bytes": 4761
+    },
+    {
+      "path": "apps/docs/dist/assets/index-C8H2OghU.css",
+      "bytes": 4462
+    },
+    {
+      "path": "apps/api/dist/jobs/jobs.controller.js.map",
+      "bytes": 4127
+    },
+    {
+      "path": "apps/api/dist/jobs/jobs-domain.js.map",
+      "bytes": 4095
+    },
+    {
+      "path": "apps/api/dist/auth/auth.service.js",
+      "bytes": 4042
+    },
+    {
+      "path": "apps/api/dist/auth/auth.controller.js.map",
+      "bytes": 3847
+    },
+    {
+      "path": "apps/api/dist/collections/collections.controller.js.map",
+      "bytes": 3638
+    },
+    {
+      "path": "apps/api/dist/jobs/jobs-domain.js",
+      "bytes": 3616
+    },
+    {
+      "path": "apps/api/dist/learning/learning.controller.js",
+      "bytes": 3516
+    },
+    {
+      "path": "apps/api/dist/auth/access.guard.js",
+      "bytes": 2993
+    },
+    {
+      "path": "apps/api/dist/auth/auth.service.js.map",
+      "bytes": 2987
+    },
+    {
+      "path": "apps/api/dist/app.module.js",
+      "bytes": 2917
+    },
+    {
+      "path": "apps/web/dist/assets/RankingPage-DV18TBoE.js",
+      "bytes": 2507
+    },
+    {
+      "path": "apps/api/dist/main.js.map",
+      "bytes": 2471
+    },
+    {
+      "path": "apps/api/dist/main.js",
+      "bytes": 2436
+    },
+    {
+      "path": "apps/api/dist/generated/prisma/enums.js",
+      "bytes": 2380
+    },
+    {
+      "path": "apps/web/dist/assets/NotificationsPage-bT4r11Vk.js",
+      "bytes": 2374
+    },
+    {
+      "path": "apps/api/dist/coding/coding-domain.js.map",
+      "bytes": 2271
+    },
+    {
+      "path": "apps/api/dist/common/api-exception.filter.js",
+      "bytes": 2200
+    },
+    {
+      "path": "apps/api/dist/health.controller.js",
+      "bytes": 2121
+    },
+    {
+      "path": "apps/web/dist/assets/FolderSaveButton-CR0xvd1r.js",
+      "bytes": 2052
+    },
+    {
+      "path": "apps/api/dist/auth/access.guard.js.map",
+      "bytes": 2006
+    },
+    {
+      "path": "apps/api/dist/generated/prisma/enums.js.map",
+      "bytes": 1976
+    },
+    {
+      "path": "apps/api/dist/learning/learning.controller.js.map",
+      "bytes": 1935
+    },
+    {
+      "path": "apps/api/dist/app.module.js.map",
+      "bytes": 1696
+    },
+    {
+      "path": "apps/api/dist/coding/coding-domain.js",
+      "bytes": 1633
+    },
+    {
+      "path": "apps/api/dist/common/api-exception.filter.js.map",
+      "bytes": 1536
+    },
+    {
+      "path": "apps/api/dist/common/prisma.service.js",
+      "bytes": 1514
+    },
+    {
+      "path": "apps/api/dist/common/audit.service.js",
+      "bytes": 1513
+    },
+    {
+      "path": "apps/web/dist/index.html",
+      "bytes": 1448
+    },
+    {
+      "path": "apps/api/dist/cli/import-jobs.js.map",
+      "bytes": 1364
+    },
+    {
+      "path": "apps/api/dist/generated/prisma/internal/class.js.map",
+      "bytes": 1301
+    },
+    {
+      "path": "apps/api/dist/auth/openai-identity.js.map",
+      "bytes": 1285
+    },
+    {
+      "path": "apps/api/dist/cli/import-learning.js.map",
+      "bytes": 1279
+    },
+    {
+      "path": "apps/api/dist/auth/openai-identity.js",
+      "bytes": 1268
+    },
+    {
+      "path": "apps/api/dist/generated/prisma/client.js",
+      "bytes": 1246
+    },
+    {
+      "path": "apps/api/dist/cli/import-jobs.js",
+      "bytes": 1133
+    },
+    {
+      "path": "apps/api/dist/cli/import-learning.js",
+      "bytes": 1042
+    },
+    {
+      "path": "apps/api/dist/health.controller.js.map",
+      "bytes": 973
+    },
+    {
+      "path": "apps/api/dist/learning/learning-domain.js.map",
+      "bytes": 945
+    },
+    {
+      "path": "apps/api/dist/collections/collection-domain.js.map",
+      "bytes": 832
+    },
+    {
+      "path": "apps/api/dist/learning/learning-domain.js",
+      "bytes": 733
+    },
+    {
+      "path": "apps/api/dist/generated/prisma/browser.js",
+      "bytes": 724
+    },
+    {
+      "path": "apps/api/dist/common/prisma.service.js.map",
+      "bytes": 713
+    },
+    {
+      "path": "apps/api/dist/common/audit.service.js.map",
+      "bytes": 704
+    },
+    {
+      "path": "apps/api/dist/collections/collection-domain.js",
+      "bytes": 677
+    },
+    {
+      "path": "apps/api/dist/generated/prisma/client.js.map",
+      "bytes": 611
+    },
+    {
+      "path": "apps/api/dist/auth/auth.decorators.js.map",
+      "bytes": 600
+    },
+    {
+      "path": "apps/web/dist/assets/trash-2-N7dGU-q8.js",
+      "bytes": 517
+    },
+    {
+      "path": "apps/docs/dist/index.html",
+      "bytes": 513
+    },
+    {
+      "path": "apps/web/dist/assets/calendar-days-C6gzmRCY.js",
+      "bytes": 492
+    },
+    {
+      "path": "apps/web/dist/assets/star-DeW0jujU.js",
+      "bytes": 472
+    },
+    {
+      "path": "apps/web/dist/assets/funnel-B_BbY553.js",
+      "bytes": 454
+    },
+    {
+      "path": "apps/api/dist/auth/auth.decorators.js",
+      "bytes": 425
+    },
+    {
+      "path": "apps/web/dist/assets/bell-ring-C0cYjUH9.js",
+      "bytes": 397
+    },
+    {
+      "path": "apps/api/dist/generated/prisma/commonInputTypes.js",
+      "bytes": 371
+    },
+    {
+      "path": "apps/web/dist/assets/save-D3mLBlS3.js",
+      "bytes": 327
+    },
+    {
+      "path": "apps/api/dist/generated/prisma/browser.js.map",
+      "bytes": 319
+    },
+    {
+      "path": "apps/web/dist/assets/pencil-GaWMkwsC.js",
+      "bytes": 276
+    },
+    {
+      "path": "apps/web/dist/assets/message-circle-D4s2ioPD.js",
+      "bytes": 241
+    },
+    {
+      "path": "apps/api/dist/generated/prisma/commonInputTypes.js.map",
+      "bytes": 208
+    },
+    {
+      "path": "apps/web/dist/assets/flame-CDv15T6O.js",
+      "bytes": 199
+    },
+    {
+      "path": "apps/api/dist/generated/prisma/models/DailyChallengeParticipation.js.map",
+      "bytes": 179
+    },
+    {
+      "path": "apps/api/dist/generated/prisma/models/LearningContentRevision.js.map",
+      "bytes": 171
+    }
+  ],
+  "screenshots": [],
+  "benchmark": {
+    "status": "not-applicable"
+  },
+  "privacy": {
+    "scannedFiles": 190,
+    "findings": [
+      ".env.example: http://localhost:5173",
+      ".env.example: http://localhost:4000/api/v1",
+      ".env.example: SECRET=replace-me",
+      ".env.example: SECRET=replace-me",
+      ".github/workflows/docs-pages.yml: token: write",
+      ".github/workflows/e2e.yml: PASSWORD: careerground",
+      ".github/workflows/e2e.yml: SECRET: test-test-test-test-test-test-te",
+      ".github/workflows/security.yml: TOKEN: ${{",
+      ".github/workflows/troubleshooting-ai-docs.yml: TOKEN: ${{",
+      ".github/workflows/troubleshooting-ai-docs.yml: TOKEN: ${{",
+      ".github/workflows/troubleshooting-ai-docs.yml: TOKEN: ${{",
+      ".github/workflows/troubleshooting-evidence.yml: PASSWORD: careerground",
+      ".github/workflows/troubleshooting-evidence.yml: SECRET: test-test-test-test-test-test-te",
+      "README.md: http://localhost:5173>",
+      "README.md: http://localhost:4000/api/v1>",
+      "README.md: http://localhost:4000/api/docs>",
+      "README.md: http://localhost:4000/api/openapi.json>",
+      "README.md: http://localhost:5174>",
+      "apps/api/Dockerfile: http://127.0.0.1:4000/api/v1/health/read",
+      "apps/api/src/auth/access.guard.ts: Secret = process.env.SITES_AUTH_SHARED_S",
+      "apps/api/src/auth/access.guard.ts: Secret = request.headers['x-careerground",
+      "apps/api/src/auth/access.guard.ts: Secret ===",
+      "apps/api/src/main.ts: http://localhost:5173',",
+      "apps/api/src/main.ts: http://localhost:${port}/api/v1`);",
+      "apps/api/src/main.ts: http://localhost:${port}/api/docs`);",
+      "apps/web/Dockerfile: http://127.0.0.1/",
+      "apps/web/src/generated/client.ts: http://localhost:4000/api/v1';",
+      "apps/web/src/lib/api.ts: http://localhost:4000/api/v1';",
+      "apps/web/src/pages/CodingPage.test.tsx: member@example.test",
+      "apps/web/src/pages/NotesPage.test.tsx: http://localhost:4000/api/v1/notes',",
+      "apps/web/src/pages/NotesPage.test.tsx: http://localhost:4000/api/v1/notes/${not",
+      "apps/web/src/pages/SettingsPage.test.tsx: member@example.test",
+      "apps/web/src/pages/SettingsPage.test.tsx: member@example.test",
+      "deployment/sites/d1-api.test.ts: admin@example.test",
+      "deployment/sites/d1-api.test.ts: member@example.test",
+      "deployment/sites/d1-api.test.ts: admin@example.test",
+      "deployment/sites/d1-api.test.ts: member@example.test",
+      "docker-compose.yml: PASSWORD: careerground",
+      "package.json: http://127.0.0.1:4000/api/openapi.json",
+      "playwright.config.ts: http://127.0.0.1:5173',",
+      "playwright.config.ts: http://127.0.0.1:4000/api/v1/health/read",
+      "playwright.config.ts: http://127.0.0.1:5173',",
+      "playwright.config.ts: http://127.0.0.1:5173',",
+      "playwright.config.ts: http://127.0.0.1:4000/api/v1',",
+      "playwright.config.ts: SECRET: 'test-test-test-test-test-test-t",
+      "scripts/troubleshooting/provider.test.ts: a@company.com",
+      "scripts/troubleshooting/provider.test.ts: a@company.com",
+      "scripts/troubleshooting/provider.test.ts: sk-abcdefghijklmnop",
+      "scripts/troubleshooting/provider.test.ts: http://localhost:4000/private')).not.toC"
+    ],
+    "redacted": true
+  },
+  "notes": ["운영 데이터와 업로드 원문은 수집 대상에서 제외됩니다."]
+}

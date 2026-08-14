@@ -36,7 +36,8 @@ describe('domain pages', () => {
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
         calls.push({ url, method: init?.method || 'GET' });
-        return response(url.endsWith('/jobs/categories') ? ['AI 풀스택 개발'] : catalog);
+        if (url.endsWith('/jobs/categories')) return response(['AI 풀스택 개발']);
+        return response({ items: catalog, nextCursor: null, total: catalog.length });
       }),
     );
     const user = userEvent.setup();
@@ -95,7 +96,9 @@ describe('domain pages', () => {
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
         calls.push({ url, method: init?.method || 'GET' });
-        return response(url.endsWith('/jobs/categories') ? ['백엔드'] : [job]);
+        if (url.endsWith('/jobs/categories')) return response(['백엔드']);
+        if (url.includes('calendar=true')) return response([job]);
+        return response({ items: [job], nextCursor: null, total: 1 });
       }),
     );
     const user = userEvent.setup();
@@ -172,9 +175,12 @@ describe('domain pages', () => {
     ];
     vi.stubGlobal(
       'fetch',
-      vi.fn((input: RequestInfo | URL) =>
-        response(String(input).endsWith('/jobs/categories') ? ['백엔드'] : catalog),
-      ),
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.endsWith('/jobs/categories')) return response(['백엔드']);
+        if (url.includes('calendar=true')) return response(catalog);
+        return response({ items: catalog, nextCursor: null, total: catalog.length });
+      }),
     );
     const user = userEvent.setup();
     renderPage(<JobsPage />);
@@ -216,7 +222,11 @@ describe('domain pages', () => {
         const url = String(input);
         const body = init?.body ? JSON.parse(String(init.body)) : undefined;
         calls.push({ url, method: init?.method || 'GET', body });
-        return response(url.endsWith('/coding/solutions') ? [solution] : { id: 'comment' });
+        return response(
+          url.includes('/coding/solutions?')
+            ? { items: [solution], nextCursor: null, total: 1 }
+            : { id: 'comment' },
+        );
       }),
     );
     const user = userEvent.setup();

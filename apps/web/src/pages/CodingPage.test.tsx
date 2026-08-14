@@ -50,8 +50,10 @@ describe('solution editor', () => {
               onboardingCompleted: true,
             },
           });
-        if (url.includes('/coding/problems?'))
-          return response(url.includes('track=SQL') ? [sqlProblem] : [problem, levelTwoProblem]);
+        if (url.includes('/coding/problems?')) {
+          const items = url.includes('track=SQL') ? [sqlProblem] : [problem, levelTwoProblem];
+          return response({ items, nextCursor: null, total: items.length });
+        }
         if (url.endsWith('/coding/daily-challenges'))
           return response([
             { id: 'daily-lv1', problemId: problem.id, problem },

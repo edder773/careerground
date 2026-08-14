@@ -167,6 +167,17 @@ test.describe('CareerGround MVP vertical slices', () => {
     await expect(page.locator('.jobs-page')).toHaveAttribute('data-font-size', 'large');
     await page.getByRole('button', { name: '달력' }).click();
     await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
+    const calendar = page.getByRole('grid', { name: /채용 일정/ });
+    const focusedDate = calendar.locator('[role="gridcell"][tabindex="0"]');
+    await expect(focusedDate).toHaveCount(1);
+    const dateBefore = await focusedDate.getAttribute('aria-label');
+    await focusedDate.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(calendar.locator('[role="gridcell"]:focus')).toHaveCount(1);
+    await expect(calendar.locator('[role="gridcell"]:focus')).not.toHaveAttribute(
+      'aria-label',
+      dateBefore || '',
+    );
     await expect(page.locator('.calendar-job strong').first()).toBeVisible();
   });
 

@@ -1,4 +1,11 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import {
   Bookmark,
@@ -45,6 +52,7 @@ type SortMode = 'new' | 'deadline' | 'company';
 type JobFontSize = 'comfortable' | 'large' | 'largest';
 type CalendarEventType = 'start' | 'deadline' | 'rolling';
 type CalendarEvent = { job: Job; type: CalendarEventType };
+type CursorPage<T> = { items: T[]; nextCursor: string | null; total: number };
 
 const KOREA_OFFSET_MS = 9 * 60 * 60 * 1000;
 const sizeLabels: Record<string, string> = {
@@ -179,90 +187,75 @@ function SourceDetails({ job, compact = false }: { job: Job; compact?: boolean }
 }
 
 function JobDetailModal({ job, onClose }: { job: Job; onClose: () => void }) {
-  useEffect(() => {
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', closeOnEscape);
-    return () => window.removeEventListener('keydown', closeOnEscape);
-  }, [onClose]);
-
   return (
-    <div
-      className="job-modal-backdrop"
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.currentTarget === event.target) onClose();
+    <DialogPrimitive.Root
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
       }}
     >
-      <section
-        className="job-detail-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="job-detail-title"
-      >
-        <header>
-          <div className="company-tile">
-            <Building2 aria-hidden="true" />
-          </div>
-          <div>
-            <span>{sizeLabels[job.company.size] || job.company.size}</span>
-            <h2 id="job-detail-title">{job.company.name}</h2>
-          </div>
-          <button
-            type="button"
-            className="job-modal-close"
-            onClick={onClose}
-            aria-label="닫기"
-            autoFocus
-          >
-            <X />
-          </button>
-        </header>
-        <div className="job-modal-body">
-          <div className="job-modal-title">
-            <span>{job.category}</span>
-            <h3>{job.title}</h3>
-            <p>{job.summary}</p>
-          </div>
-          <div className="job-modal-schedule" aria-label="채용 일정">
-            <div className="schedule-start">
-              <span>시작·확인일</span>
-              <strong>{startDate(job) ? deadlineLabel(startDate(job)) : '확인 필요'}</strong>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="job-modal-backdrop" />
+        <DialogPrimitive.Content className="job-detail-modal" aria-describedby={undefined}>
+          <header>
+            <div className="company-tile">
+              <Building2 aria-hidden="true" />
             </div>
-            {job.rolling ? (
-              <div className="schedule-rolling">
-                <span>상시</span>
-                <strong>채용 완료 시까지</strong>
+            <div>
+              <span>{sizeLabels[job.company.size] || job.company.size}</span>
+              <DialogPrimitive.Title asChild>
+                <h2>{job.company.name}</h2>
+              </DialogPrimitive.Title>
+            </div>
+            <DialogPrimitive.Close className="job-modal-close" aria-label="닫기">
+              <X />
+            </DialogPrimitive.Close>
+          </header>
+          <div className="job-modal-body">
+            <div className="job-modal-title">
+              <span>{job.category}</span>
+              <h3>{job.title}</h3>
+              <p>{job.summary}</p>
+            </div>
+            <div className="job-modal-schedule" aria-label="채용 일정">
+              <div className="schedule-start">
+                <span>시작·확인일</span>
+                <strong>{startDate(job) ? deadlineLabel(startDate(job)) : '확인 필요'}</strong>
               </div>
-            ) : (
-              <div className="schedule-deadline">
-                <span>마감일</span>
-                <strong>{deadlineLabel(job.deadlineAt)}</strong>
-              </div>
-            )}
+              {job.rolling ? (
+                <div className="schedule-rolling">
+                  <span>상시</span>
+                  <strong>채용 완료 시까지</strong>
+                </div>
+              ) : (
+                <div className="schedule-deadline">
+                  <span>마감일</span>
+                  <strong>{deadlineLabel(job.deadlineAt)}</strong>
+                </div>
+              )}
+            </div>
+            <div className="job-modal-meta">
+              <span>
+                <MapPin aria-hidden="true" /> {job.region}
+              </span>
+              {job.remote && <span>재택 가능</span>}
+            </div>
+            <div className="tag-row">
+              {job.techStack.map((tech) => (
+                <span key={tech}>{tech}</span>
+              ))}
+            </div>
+            <SourceDetails job={job} />
           </div>
-          <div className="job-modal-meta">
-            <span>
-              <MapPin aria-hidden="true" /> {job.region}
-            </span>
-            {job.remote && <span>재택 가능</span>}
-          </div>
-          <div className="tag-row">
-            {job.techStack.map((tech) => (
-              <span key={tech}>{tech}</span>
-            ))}
-          </div>
-          <SourceDetails job={job} />
-        </div>
-        <footer>
-          <FolderSaveButton itemType="JOB_POSTING" targetId={job.id} label={job.title} />
-          <a href={job.sourceUrl} target="_blank" rel="noreferrer">
-            {job.source.name}에서 보기 <ExternalLink />
-          </a>
-        </footer>
-      </section>
-    </div>
+          <footer>
+            <FolderSaveButton itemType="JOB_POSTING" targetId={job.id} label={job.title} />
+            <a href={job.sourceUrl} target="_blank" rel="noreferrer">
+              {job.source.name}에서 보기 <ExternalLink />
+            </a>
+          </footer>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
 
@@ -351,7 +344,6 @@ function JobFilterPanel({
   onCategoriesChange: (value: string[]) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const root = useRef<HTMLDivElement>(null);
   const selectedSizes = new Set(companySizes);
   const selectedJobs = new Set(selectedCategories);
   const selectedCount = companySizes.length + selectedCategories.length;
@@ -361,112 +353,113 @@ function JobFilterPanel({
     current: string[],
     onChange: (value: string[]) => void,
   ) => onChange(checked ? [...current, value] : current.filter((item) => item !== value));
-  useEffect(() => {
-    if (!open) return undefined;
-    const close = (event: PointerEvent | KeyboardEvent) => {
-      if (event instanceof KeyboardEvent && event.key === 'Escape') {
-        setOpen(false);
-        return;
-      }
-      if (event instanceof PointerEvent && !root.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-    window.addEventListener('pointerdown', close);
-    window.addEventListener('keydown', close);
-    return () => {
-      window.removeEventListener('pointerdown', close);
-      window.removeEventListener('keydown', close);
-    };
-  }, [open]);
-
   return (
-    <div className="multi-filter-root" ref={root}>
-      <button
-        type="button"
-        className="job-filter-trigger"
-        aria-label={`채용공고 필터${selectedCount ? `, ${selectedCount}개 선택` : ''}`}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        onClick={() => setOpen((current) => !current)}
-        data-state={open ? 'open' : 'closed'}
-      >
-        <Filter aria-hidden="true" />
-        <span>필터</span>
-        {selectedCount > 0 && <strong>{selectedCount}</strong>}
-      </button>
-      {open && (
-        <div className="job-filter-panel" role="dialog" aria-label="채용공고 전체 필터">
-          <header>
-            <div>
-              <strong>모든 필터</strong>
-              <span>여러 조건을 체크해 함께 적용할 수 있습니다.</span>
+    <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+      <div className="multi-filter-root">
+        <DialogPrimitive.Trigger asChild>
+          <button
+            type="button"
+            className="job-filter-trigger"
+            aria-label={`채용공고 필터${selectedCount ? `, ${selectedCount}개 선택` : ''}`}
+            aria-expanded={open}
+            data-state={open ? 'open' : 'closed'}
+          >
+            <Filter aria-hidden="true" />
+            <span>필터</span>
+            {selectedCount > 0 && <strong>{selectedCount}</strong>}
+          </button>
+        </DialogPrimitive.Trigger>
+        {open && (
+          <DialogPrimitive.Content
+            className="job-filter-panel"
+            aria-label="채용공고 전체 필터"
+            aria-describedby={undefined}
+          >
+            <header>
+              <div>
+                <DialogPrimitive.Title asChild>
+                  <strong>
+                    <span aria-hidden="true">모든 필터</span>
+                    <span className="sr-only">채용공고 전체 필터</span>
+                  </strong>
+                </DialogPrimitive.Title>
+                <span>여러 조건을 체크해 함께 적용할 수 있습니다.</span>
+              </div>
+              <DialogPrimitive.Close asChild>
+                <button type="button" aria-label="필터 닫기">
+                  <X />
+                </button>
+              </DialogPrimitive.Close>
+            </header>
+            <div className="job-filter-scroll">
+              <fieldset>
+                <legend>기업 규모</legend>
+                <div className="job-filter-options company-size-options">
+                  {Object.entries(sizeLabels).map(([value, label]) => (
+                    <label key={value}>
+                      <input
+                        type="checkbox"
+                        checked={selectedSizes.has(value)}
+                        onChange={(event) =>
+                          toggle(value, event.target.checked, companySizes, onCompanySizesChange)
+                        }
+                      />
+                      <span className="multi-filter-check">
+                        {selectedSizes.has(value) && <Check aria-hidden="true" />}
+                      </span>
+                      <span>{label}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              <fieldset>
+                <legend>직무</legend>
+                <div className="job-filter-options category-options">
+                  {categories.map((value) => (
+                    <label key={value}>
+                      <input
+                        type="checkbox"
+                        checked={selectedJobs.has(value)}
+                        onChange={(event) =>
+                          toggle(
+                            value,
+                            event.target.checked,
+                            selectedCategories,
+                            onCategoriesChange,
+                          )
+                        }
+                      />
+                      <span className="multi-filter-check">
+                        {selectedJobs.has(value) && <Check aria-hidden="true" />}
+                      </span>
+                      <span>{value}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
             </div>
-            <button type="button" onClick={() => setOpen(false)} aria-label="필터 닫기">
-              <X />
-            </button>
-          </header>
-          <div className="job-filter-scroll">
-            <fieldset>
-              <legend>기업 규모</legend>
-              <div className="job-filter-options company-size-options">
-                {Object.entries(sizeLabels).map(([value, label]) => (
-                  <label key={value}>
-                    <input
-                      type="checkbox"
-                      checked={selectedSizes.has(value)}
-                      onChange={(event) =>
-                        toggle(value, event.target.checked, companySizes, onCompanySizesChange)
-                      }
-                    />
-                    <span className="multi-filter-check">
-                      {selectedSizes.has(value) && <Check aria-hidden="true" />}
-                    </span>
-                    <span>{label}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-            <fieldset>
-              <legend>직무</legend>
-              <div className="job-filter-options category-options">
-                {categories.map((value) => (
-                  <label key={value}>
-                    <input
-                      type="checkbox"
-                      checked={selectedJobs.has(value)}
-                      onChange={(event) =>
-                        toggle(value, event.target.checked, selectedCategories, onCategoriesChange)
-                      }
-                    />
-                    <span className="multi-filter-check">
-                      {selectedJobs.has(value) && <Check aria-hidden="true" />}
-                    </span>
-                    <span>{value}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-          </div>
-          <footer>
-            <button
-              type="button"
-              className="job-filter-clear"
-              disabled={selectedCount === 0}
-              onClick={() => {
-                onCompanySizesChange([]);
-                onCategoriesChange([]);
-              }}
-            >
-              전체 해제
-            </button>
-            <button type="button" className="job-filter-done" onClick={() => setOpen(false)}>
-              {selectedCount ? `${selectedCount}개 조건 적용` : '전체 공고 보기'}
-            </button>
-          </footer>
-        </div>
-      )}
-    </div>
+            <footer>
+              <button
+                type="button"
+                className="job-filter-clear"
+                disabled={selectedCount === 0}
+                onClick={() => {
+                  onCompanySizesChange([]);
+                  onCategoriesChange([]);
+                }}
+              >
+                전체 해제
+              </button>
+              <DialogPrimitive.Close asChild>
+                <button type="button" className="job-filter-done">
+                  {selectedCount ? `${selectedCount}개 조건 적용` : '전체 공고 보기'}
+                </button>
+              </DialogPrimitive.Close>
+            </footer>
+          </DialogPrimitive.Content>
+        )}
+      </div>
+    </DialogPrimitive.Root>
   );
 }
 
@@ -493,6 +486,8 @@ export function JobsPage() {
   const [selectedJobId, setSelectedJobId] = useState<string>();
   const [rollingOpen, setRollingOpen] = useState(false);
   const [expandedDateKey, setExpandedDateKey] = useState<string>();
+  const [focusedCalendarDate, setFocusedCalendarDate] = useState(koreaDateKey(new Date()));
+  const calendarCells = useRef(new Map<string, HTMLDivElement>());
 
   const setUrlParam = (key: string, value: string) => {
     const next = new URLSearchParams(searchParams);
@@ -531,31 +526,66 @@ export function JobsPage() {
   if (viewMode === 'list' && search) queryParams.set('q', search);
   if (viewMode === 'list' && savedOnly) queryParams.set('saved', '1');
   const query = queryParams.toString();
-  const jobs = useQuery({
+  const calendarJobs = useQuery({
     queryKey: [
       'jobs',
-      viewMode,
+      'calendar',
       companySizes.join('|'),
       selectedCategories.join('|'),
       search,
       savedOnly,
-      viewMode === 'calendar'
-        ? `${visibleMonth.getUTCFullYear()}-${visibleMonth.getUTCMonth()}`
-        : sort,
+      `${visibleMonth.getUTCFullYear()}-${visibleMonth.getUTCMonth()}`,
     ],
     queryFn: () => api<Job[]>(`/jobs?${query}`),
+    enabled: viewMode === 'calendar',
     placeholderData: keepPreviousData,
     staleTime: 60_000,
     gcTime: 10 * 60_000,
     refetchOnWindowFocus: false,
   });
+  const listJobs = useInfiniteQuery({
+    queryKey: [
+      'jobs',
+      'list',
+      companySizes.join('|'),
+      selectedCategories.join('|'),
+      search,
+      savedOnly,
+      sort,
+    ],
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam }) => {
+      const params = new URLSearchParams({ sort, page: 'cursor', limit: '40' });
+      companySizes.forEach((value) => params.append('companySize', value));
+      selectedCategories.forEach((value) => params.append('category', value));
+      if (search) params.set('q', search);
+      if (savedOnly) params.set('saved', '1');
+      if (pageParam) params.set('cursor', pageParam);
+      return api<CursorPage<Job>>(`/jobs?${params.toString()}`);
+    },
+    getNextPageParam: (lastPage) => lastPage.nextCursor || undefined,
+    enabled: viewMode === 'list',
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    refetchOnWindowFocus: false,
+  });
+  const jobRows =
+    viewMode === 'calendar'
+      ? calendarJobs.data || []
+      : listJobs.data?.pages.flatMap((page) => page.items) || [];
+  const jobTotal =
+    viewMode === 'calendar' ? jobRows.length : listJobs.data?.pages[0]?.total || jobRows.length;
+  const jobs = viewMode === 'calendar' ? calendarJobs : listJobs;
   const bookmark = useMutation({
     mutationFn: ({ jobId, bookmarked }: { jobId: string; bookmarked: boolean }) =>
       api(`/jobs/${jobId}/bookmark`, { method: 'PATCH', body: json({ bookmarked }) }),
     onMutate: async ({ jobId, bookmarked }) => {
       await client.cancelQueries({ queryKey: ['jobs'] });
-      const snapshots = client.getQueriesData<Job[]>({ queryKey: ['jobs'] });
-      client.setQueriesData<Job[]>({ queryKey: ['jobs'] }, (current) =>
+      const calendarSnapshots = client.getQueriesData<Job[]>({ queryKey: ['jobs', 'calendar'] });
+      const listSnapshots = client.getQueriesData<InfiniteData<CursorPage<Job>>>({
+        queryKey: ['jobs', 'list'],
+      });
+      const update = (current: Job[] | undefined) =>
         current?.map((job) =>
           job.id === jobId
             ? {
@@ -570,12 +600,24 @@ export function JobsPage() {
                 ],
               }
             : job,
-        ),
+        );
+      client.setQueriesData<Job[]>({ queryKey: ['jobs', 'calendar'] }, update);
+      client.setQueriesData<InfiniteData<CursorPage<Job>>>(
+        { queryKey: ['jobs', 'list'] },
+        (current) =>
+          current
+            ? {
+                ...current,
+                pages: current.pages.map((page) => ({ ...page, items: update(page.items) || [] })),
+              }
+            : current,
       );
-      return { snapshots };
+      return { calendarSnapshots, listSnapshots };
     },
     onError: (_error, _variables, context) =>
-      context?.snapshots.forEach(([key, data]) => client.setQueryData(key, data)),
+      [...(context?.calendarSnapshots || []), ...(context?.listSnapshots || [])].forEach(
+        ([key, data]) => client.setQueryData(key, data),
+      ),
     onSettled: () => client.invalidateQueries({ queryKey: ['jobs'] }),
   });
   const application = useMutation({
@@ -583,8 +625,11 @@ export function JobsPage() {
       api(`/jobs/${jobId}/application`, { method: 'PATCH', body: json(patch) }),
     onMutate: async ({ jobId, patch }) => {
       await client.cancelQueries({ queryKey: ['jobs'] });
-      const snapshots = client.getQueriesData<Job[]>({ queryKey: ['jobs'] });
-      client.setQueriesData<Job[]>({ queryKey: ['jobs'] }, (current) =>
+      const calendarSnapshots = client.getQueriesData<Job[]>({ queryKey: ['jobs', 'calendar'] });
+      const listSnapshots = client.getQueriesData<InfiniteData<CursorPage<Job>>>({
+        queryKey: ['jobs', 'list'],
+      });
+      const update = (current: Job[] | undefined) =>
         current?.map((job) =>
           job.id === jobId
             ? {
@@ -598,24 +643,36 @@ export function JobsPage() {
                 ],
               }
             : job,
-        ),
+        );
+      client.setQueriesData<Job[]>({ queryKey: ['jobs', 'calendar'] }, update);
+      client.setQueriesData<InfiniteData<CursorPage<Job>>>(
+        { queryKey: ['jobs', 'list'] },
+        (current) =>
+          current
+            ? {
+                ...current,
+                pages: current.pages.map((page) => ({ ...page, items: update(page.items) || [] })),
+              }
+            : current,
       );
-      return { snapshots };
+      return { calendarSnapshots, listSnapshots };
     },
     onError: (_error, _variables, context) =>
-      context?.snapshots.forEach(([key, data]) => client.setQueryData(key, data)),
+      [...(context?.calendarSnapshots || []), ...(context?.listSnapshots || [])].forEach(
+        ([key, data]) => client.setQueryData(key, data),
+      ),
     onSettled: () => client.invalidateQueries({ queryKey: ['jobs'] }),
   });
 
   useEffect(() => {
-    if (!requestedJob || !jobs.data) return;
+    if (!requestedJob || !jobRows.length) return;
     document.getElementById(`job-${requestedJob}`)?.scrollIntoView({ block: 'center' });
-  }, [jobs.data, requestedJob]);
+  }, [jobRows, requestedJob]);
 
   const calendarData = useMemo(() => {
     const grouped = new Map<string, CalendarEvent[]>();
     const rollingJobs: Job[] = [];
-    for (const job of jobs.data || []) {
+    for (const job of jobRows) {
       if (job.rolling) {
         rollingJobs.push(job);
         continue;
@@ -636,14 +693,27 @@ export function JobsPage() {
       eventCount:
         rollingJobs.length + [...grouped.values()].reduce((sum, events) => sum + events.length, 0),
     };
-  }, [jobs.data]);
-  const selectedJob = jobs.data?.find((job) => job.id === selectedJobId);
+  }, [jobRows]);
+  const selectedJob = jobRows.find((job) => job.id === selectedJobId);
   const expandedDateEvents = expandedDateKey
     ? calendarData.eventsByDate.get(expandedDateKey) || []
     : [];
   const dates = calendarDates(visibleMonth);
   const today = koreaDateKey(new Date());
   const monthLabel = `${visibleMonth.getUTCFullYear()}년 ${visibleMonth.getUTCMonth() + 1}월`;
+  const activeCalendarDate = dates.some((item) => item.key === focusedCalendarDate)
+    ? focusedCalendarDate
+    : dates.find((item) => item.currentMonth)?.key || dates[0]?.key;
+  const calendarWeeks = Array.from({ length: Math.ceil(dates.length / 7) }, (_, index) =>
+    dates.slice(index * 7, index * 7 + 7),
+  );
+  const moveCalendarFocus = (currentKey: string, offset: number) => {
+    const index = dates.findIndex((item) => item.key === currentKey);
+    const target = dates[Math.max(0, Math.min(dates.length - 1, index + offset))];
+    if (!target) return;
+    setFocusedCalendarDate(target.key);
+    requestAnimationFrame(() => calendarCells.current.get(target.key)?.focus());
+  };
 
   useEffect(() => {
     try {
@@ -749,7 +819,7 @@ export function JobsPage() {
       </div>
 
       <div className="jobs-list-tools">
-        <strong>{jobs.data?.length ?? 0}개 공고</strong>
+        <strong>{jobTotal}개 공고</strong>
         {viewMode === 'list' && (
           <div className="jobs-sort-buttons" role="group" aria-label="채용공고 정렬">
             <SlidersHorizontal aria-hidden="true" />
@@ -831,50 +901,77 @@ export function JobsPage() {
           )}
           <p className="calendar-scroll-hint">좌우로 밀어 전체 달력을 볼 수 있어요.</p>
           <div className="job-calendar-scroll">
-            <div className="job-calendar">
-              <div className="calendar-weekdays" aria-hidden="true">
+            <div className="job-calendar" role="grid" aria-label={`${monthLabel} 채용 일정`}>
+              <div className="calendar-weekdays" role="row">
                 {weekDays.map((day) => (
-                  <span key={day}>{day}</span>
+                  <span key={day} role="columnheader">
+                    {day}
+                  </span>
                 ))}
               </div>
-              <div className="calendar-grid">
-                {dates.map((item) => {
-                  const dayEvents = calendarData.eventsByDate.get(item.key) || [];
-                  return (
-                    <div
-                      key={item.key}
-                      className={`calendar-day ${item.currentMonth ? '' : 'outside'} ${item.key === today ? 'today' : ''}`}
-                      aria-label={`${item.date.getUTCFullYear()}년 ${item.date.getUTCMonth() + 1}월 ${item.date.getUTCDate()}일`}
-                    >
-                      <time dateTime={item.key}>{item.date.getUTCDate()}</time>
-                      <div className="calendar-events">
-                        {dayEvents.slice(0, 4).map(({ job, type }) => (
-                          <button
-                            type="button"
-                            key={`${job.id}-${type}`}
-                            className={`calendar-job schedule-${type} ${selectedJobId === job.id ? 'selected' : ''}`}
-                            title={`${calendarEventLabels[type]} · ${job.company.name} · ${job.title}`}
-                            aria-label={`${job.company.name} ${job.title} ${calendarEventLabels[type]} 상세 보기`}
-                            onClick={() => setSelectedJobId(job.id)}
-                          >
-                            <span>{calendarEventLabels[type]}</span>
-                            <strong>{job.company.name}</strong>
-                          </button>
-                        ))}
-                        {dayEvents.length > 4 && (
-                          <button
-                            type="button"
-                            className="calendar-more"
-                            onClick={() => setExpandedDateKey(item.key)}
-                            aria-label={`${dateLabel(item.key)} 추가 공고 ${dayEvents.length - 4}개 보기`}
-                          >
-                            +{dayEvents.length - 4}개 더 보기
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="calendar-grid" role="rowgroup">
+                {calendarWeeks.map((week, weekIndex) => (
+                  <div className="calendar-week" role="row" key={weekIndex}>
+                    {week.map((item) => {
+                      const dayEvents = calendarData.eventsByDate.get(item.key) || [];
+                      return (
+                        <div
+                          key={item.key}
+                          ref={(node) => {
+                            if (node) calendarCells.current.set(item.key, node);
+                            else calendarCells.current.delete(item.key);
+                          }}
+                          role="gridcell"
+                          tabIndex={item.key === activeCalendarDate ? 0 : -1}
+                          className={`calendar-day ${item.currentMonth ? '' : 'outside'} ${item.key === today ? 'today' : ''}`}
+                          aria-label={`${item.date.getUTCFullYear()}년 ${item.date.getUTCMonth() + 1}월 ${item.date.getUTCDate()}일, 일정 ${dayEvents.length}개`}
+                          onFocus={() => setFocusedCalendarDate(item.key)}
+                          onKeyDown={(event) => {
+                            const offsets: Record<string, number> = {
+                              ArrowLeft: -1,
+                              ArrowRight: 1,
+                              ArrowUp: -7,
+                              ArrowDown: 7,
+                              Home: -(item.date.getUTCDay() || 0),
+                              End: 6 - item.date.getUTCDay(),
+                            };
+                            const offset = offsets[event.key];
+                            if (offset === undefined) return;
+                            event.preventDefault();
+                            moveCalendarFocus(item.key, offset);
+                          }}
+                        >
+                          <time dateTime={item.key}>{item.date.getUTCDate()}</time>
+                          <div className="calendar-events">
+                            {dayEvents.slice(0, 4).map(({ job, type }) => (
+                              <button
+                                type="button"
+                                key={`${job.id}-${type}`}
+                                className={`calendar-job schedule-${type} ${selectedJobId === job.id ? 'selected' : ''}`}
+                                title={`${calendarEventLabels[type]} · ${job.company.name} · ${job.title}`}
+                                aria-label={`${job.company.name} ${job.title} ${calendarEventLabels[type]} 상세 보기`}
+                                onClick={() => setSelectedJobId(job.id)}
+                              >
+                                <span>{calendarEventLabels[type]}</span>
+                                <strong>{job.company.name}</strong>
+                              </button>
+                            ))}
+                            {dayEvents.length > 4 && (
+                              <button
+                                type="button"
+                                className="calendar-more"
+                                onClick={() => setExpandedDateKey(item.key)}
+                                aria-label={`${dateLabel(item.key)} 추가 공고 ${dayEvents.length - 4}개 보기`}
+                              >
+                                +{dayEvents.length - 4}개 더 보기
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -914,131 +1011,149 @@ export function JobsPage() {
       )}
 
       {viewMode === 'list' && (
-        <div className="job-list">
-          {jobs.data?.map((job) => {
-            const days = job.deadlineAt
-              ? Math.ceil((new Date(job.deadlineAt).getTime() - Date.now()) / 86_400_000)
-              : undefined;
-            return (
-              <article
-                key={job.id}
-                id={`job-${job.id}`}
-                className={`job-card ${job.id === requestedJob ? 'search-target' : ''}`}
-              >
-                <div className="company-tile">
-                  <Building2 aria-hidden="true" />
-                </div>
-                <div className="job-main">
-                  <div className="job-meta">
-                    <span>{sizeLabels[job.company.size] || job.company.size}</span>
-                    <span>{job.category}</span>
-                    {job.remote && <span>재택 가능</span>}
+        <>
+          <div className="job-list">
+            {jobRows.map((job) => {
+              const days = job.deadlineAt
+                ? Math.ceil((new Date(job.deadlineAt).getTime() - Date.now()) / 86_400_000)
+                : undefined;
+              return (
+                <article
+                  key={job.id}
+                  id={`job-${job.id}`}
+                  className={`job-card ${job.id === requestedJob ? 'search-target' : ''}`}
+                >
+                  <div className="company-tile">
+                    <Building2 aria-hidden="true" />
                   </div>
-                  <h2>{job.title}</h2>
-                  <strong>{job.company.name}</strong>
-                  <p>{job.summary}</p>
-                  <div className="job-details">
-                    <span>
-                      <MapPin aria-hidden="true" />
-                      {job.region}
-                    </span>
-                    <span>
-                      <CalendarClock aria-hidden="true" />
-                      {job.rolling
-                        ? '상시채용'
-                        : days !== undefined
-                          ? days < 0
-                            ? '마감'
-                            : `D-${days}`
-                          : '마감일 미정'}
-                    </span>
-                  </div>
-                  <div className="job-card-schedule" aria-label={`${job.title} 주요 일정`}>
-                    <div className="schedule-start">
-                      <span>시작·확인일</span>
-                      <strong>{latestLabel(startDate(job))}</strong>
+                  <div className="job-main">
+                    <div className="job-meta">
+                      <span>{sizeLabels[job.company.size] || job.company.size}</span>
+                      <span>{job.category}</span>
+                      {job.remote && <span>재택 가능</span>}
                     </div>
-                    <div
-                      className={`${job.rolling ? 'schedule-rolling' : 'schedule-deadline'} ${days !== undefined && days >= 0 && days <= 7 ? 'urgent' : ''}`}
-                    >
-                      <span>{job.rolling ? '상시채용' : '마감일'}</span>
-                      <strong>
-                        {job.rolling ? '채용 완료 시까지' : deadlineLabel(job.deadlineAt)}
-                      </strong>
-                      {!job.rolling && days !== undefined && days >= 0 && <b>D-{days}</b>}
+                    <h2>{job.title}</h2>
+                    <strong>{job.company.name}</strong>
+                    <p>{job.summary}</p>
+                    <div className="job-details">
+                      <span>
+                        <MapPin aria-hidden="true" />
+                        {job.region}
+                      </span>
+                      <span>
+                        <CalendarClock aria-hidden="true" />
+                        {job.rolling
+                          ? '상시채용'
+                          : days !== undefined
+                            ? days < 0
+                              ? '마감'
+                              : `D-${days}`
+                            : '마감일 미정'}
+                      </span>
                     </div>
-                  </div>
-                  <div className="tag-row">
-                    {job.techStack.map((tech) => (
-                      <span key={tech}>{tech}</span>
-                    ))}
-                  </div>
-                  <SourceDetails job={job} />
-                </div>
-                <div className="job-actions">
-                  <FolderSaveButton itemType="JOB_POSTING" targetId={job.id} label={job.title} />
-                  <button
-                    disabled={bookmark.isPending && bookmark.variables?.jobId === job.id}
-                    onClick={() => bookmark.mutate({ jobId: job.id, bookmarked: !job.bookmarked })}
-                    className={job.bookmarked ? 'saved' : ''}
-                    aria-pressed={job.bookmarked}
-                  >
-                    <Bookmark fill={job.bookmarked ? 'currentColor' : 'none'} />
-                    {job.bookmarked ? '관심 공고' : '관심 저장'}
-                  </button>
-                  {job.savedBy.length > 0 && (
-                    <label className="application-status">
-                      <span className="sr-only">{job.title} 지원 상태</span>
-                      <select
-                        aria-label={`${job.title} 지원 상태`}
-                        disabled={application.isPending && application.variables?.jobId === job.id}
-                        value={job.savedBy[0]?.status || 'INTERESTED'}
-                        onChange={(event) =>
-                          application.mutate({
-                            jobId: job.id,
-                            patch: { status: event.target.value },
-                          })
-                        }
+                    <div className="job-card-schedule" aria-label={`${job.title} 주요 일정`}>
+                      <div className="schedule-start">
+                        <span>시작·확인일</span>
+                        <strong>{latestLabel(startDate(job))}</strong>
+                      </div>
+                      <div
+                        className={`${job.rolling ? 'schedule-rolling' : 'schedule-deadline'} ${days !== undefined && days >= 0 && days <= 7 ? 'urgent' : ''}`}
                       >
-                        {Object.entries(applicationLabels).map(([value, label]) => (
-                          <option key={value} value={value}>
-                            {label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  )}
-                  {job.savedBy.length > 0 && (
-                    <label className="application-memo">
-                      <span className="sr-only">{job.title} 지원 메모</span>
-                      <textarea
-                        aria-label={`${job.title} 지원 메모`}
-                        rows={2}
-                        value={memoDrafts[job.id] ?? job.savedBy[0]?.memo ?? ''}
-                        onChange={(event) =>
-                          setMemoDrafts((current) => ({
-                            ...current,
-                            [job.id]: event.target.value,
-                          }))
-                        }
-                        onBlur={() => {
-                          const memo = memoDrafts[job.id];
-                          if (memo !== undefined && memo !== job.savedBy[0]?.memo) {
-                            application.mutate({ jobId: job.id, patch: { memo } });
+                        <span>{job.rolling ? '상시채용' : '마감일'}</span>
+                        <strong>
+                          {job.rolling ? '채용 완료 시까지' : deadlineLabel(job.deadlineAt)}
+                        </strong>
+                        {!job.rolling && days !== undefined && days >= 0 && <b>D-{days}</b>}
+                      </div>
+                    </div>
+                    <div className="tag-row">
+                      {job.techStack.map((tech) => (
+                        <span key={tech}>{tech}</span>
+                      ))}
+                    </div>
+                    <SourceDetails job={job} />
+                  </div>
+                  <div className="job-actions">
+                    <FolderSaveButton itemType="JOB_POSTING" targetId={job.id} label={job.title} />
+                    <button
+                      disabled={bookmark.isPending && bookmark.variables?.jobId === job.id}
+                      onClick={() =>
+                        bookmark.mutate({ jobId: job.id, bookmarked: !job.bookmarked })
+                      }
+                      className={job.bookmarked ? 'saved' : ''}
+                      aria-pressed={job.bookmarked}
+                    >
+                      <Bookmark fill={job.bookmarked ? 'currentColor' : 'none'} />
+                      {job.bookmarked ? '관심 공고' : '관심 저장'}
+                    </button>
+                    {job.savedBy.length > 0 && (
+                      <label className="application-status">
+                        <span className="sr-only">{job.title} 지원 상태</span>
+                        <select
+                          aria-label={`${job.title} 지원 상태`}
+                          disabled={
+                            application.isPending && application.variables?.jobId === job.id
                           }
-                        }}
-                        placeholder="지원 메모"
-                      />
-                    </label>
-                  )}
-                  <a href={job.sourceUrl} target="_blank" rel="noreferrer">
-                    {job.source.name}에서 보기 <ExternalLink />
-                  </a>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                          value={job.savedBy[0]?.status || 'INTERESTED'}
+                          onChange={(event) =>
+                            application.mutate({
+                              jobId: job.id,
+                              patch: { status: event.target.value },
+                            })
+                          }
+                        >
+                          {Object.entries(applicationLabels).map(([value, label]) => (
+                            <option key={value} value={value}>
+                              {label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    )}
+                    {job.savedBy.length > 0 && (
+                      <label className="application-memo">
+                        <span className="sr-only">{job.title} 지원 메모</span>
+                        <textarea
+                          aria-label={`${job.title} 지원 메모`}
+                          rows={2}
+                          value={memoDrafts[job.id] ?? job.savedBy[0]?.memo ?? ''}
+                          onChange={(event) =>
+                            setMemoDrafts((current) => ({
+                              ...current,
+                              [job.id]: event.target.value,
+                            }))
+                          }
+                          onBlur={() => {
+                            const memo = memoDrafts[job.id];
+                            if (memo !== undefined && memo !== job.savedBy[0]?.memo) {
+                              application.mutate({ jobId: job.id, patch: { memo } });
+                            }
+                          }}
+                          placeholder="지원 메모"
+                        />
+                      </label>
+                    )}
+                    <a href={job.sourceUrl} target="_blank" rel="noreferrer">
+                      {job.source.name}에서 보기 <ExternalLink />
+                    </a>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+          {listJobs.hasNextPage && (
+            <button
+              type="button"
+              className="load-more-button"
+              disabled={listJobs.isFetchingNextPage}
+              onClick={() => listJobs.fetchNextPage()}
+            >
+              {listJobs.isFetchingNextPage
+                ? '공고를 불러오는 중…'
+                : `공고 더 보기 (${jobRows.length}/${jobTotal})`}
+            </button>
+          )}
+        </>
       )}
     </div>
   );

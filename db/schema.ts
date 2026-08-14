@@ -434,12 +434,33 @@ export const notifications = sqliteTable(
     title: text('title').notNull(),
     message: text('message').notNull(),
     href: text('href'),
+    dedupeKey: text('dedupe_key'),
     readAt: text('read_at'),
     expiresAt: text('expires_at'),
     createdAt: text('created_at').notNull(),
   },
   (table) => [
     index('idx_notifications_user_read_created').on(table.userId, table.readAt, table.createdAt),
+    uniqueIndex('idx_notifications_user_dedupe').on(table.userId, table.dedupeKey),
+  ],
+);
+
+export const requestRateLimits = sqliteTable(
+  'request_rate_limits',
+  {
+    userId: text('user_id').notNull(),
+    routeKey: text('route_key').notNull(),
+    windowStart: integer('window_start').notNull(),
+    count: integer('count').notNull().default(1),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (table) => [
+    uniqueIndex('idx_request_rate_limits_window').on(
+      table.userId,
+      table.routeKey,
+      table.windowStart,
+    ),
+    index('idx_request_rate_limits_updated').on(table.updatedAt),
   ],
 );
 

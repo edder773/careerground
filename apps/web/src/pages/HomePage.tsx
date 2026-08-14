@@ -45,6 +45,7 @@ export type Collection = {
   parentId?: string | null;
   position: number;
   items: CollectionItem[];
+  deletedAt?: string;
 };
 type Challenge = {
   id: string;
@@ -103,6 +104,10 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
   const collections = useQuery({
     queryKey: ['collections'],
     queryFn: () => api<Collection[]>('/collections'),
+  });
+  const trash = useQuery({
+    queryKey: ['collection-trash'],
+    queryFn: () => api<Collection[]>('/collections/trash'),
   });
   const dashboard = useQuery({
     queryKey: ['dashboard'],
@@ -208,7 +213,19 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
     mutationFn: (id: string) => api(`/collections/${id}`, { method: 'DELETE' }),
     onSuccess: async () => {
       setSelected(undefined);
-      await client.invalidateQueries({ queryKey: ['collections'] });
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ['collections'] }),
+        client.invalidateQueries({ queryKey: ['collection-trash'] }),
+      ]);
+    },
+  });
+  const restoreFolder = useMutation({
+    mutationFn: (id: string) => api(`/collections/${id}/restore`, { method: 'POST' }),
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ['collections'] }),
+        client.invalidateQueries({ queryKey: ['collection-trash'] }),
+      ]);
     },
   });
   const dragEnd = (event: DragEndEvent) => {
@@ -514,6 +531,31 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
           <span>간격 반복 일정</span>
         </article>
       </section>
+      {Boolean(trash.data?.length) && (
+        <details className="trash-recovery">
+          <summary>
+            <Trash2 /> 최근 삭제한 폴더 {trash.data?.length}개
+          </summary>
+          <div>
+            {trash.data?.map((folder) => (
+              <article key={folder.id}>
+                <span>
+                  <Folder />
+                  <strong>{folder.name}</strong>
+                </span>
+                <button
+                  type="button"
+                  className="ghost-button compact"
+                  disabled={restoreFolder.isPending && restoreFolder.variables === folder.id}
+                  onClick={() => restoreFolder.mutate(folder.id)}
+                >
+                  <RotateCcw /> 복원
+                </button>
+              </article>
+            ))}
+          </div>
+        </details>
+      )}
     </div>
   );
 }

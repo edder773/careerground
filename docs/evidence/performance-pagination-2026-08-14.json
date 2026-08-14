@@ -1,0 +1,108 @@
+{
+  "generatedAt": "2026-08-14T01:10:00.576Z",
+  "environment": {
+    "runtime": "v26.7.0",
+    "database": "node:sqlite in-memory D1 compatibility adapter",
+    "scope": "synthetic local API benchmark; not production D1/network latency"
+  },
+  "dataset": {
+    "jobs": 50000,
+    "codingProblems": 10000,
+    "solutions": 20000,
+    "comments": 100000,
+    "notesPerUser": 1000,
+    "notificationsPerUser": 10000
+  },
+  "seedDurationMs": 1919.64,
+  "samplesPerEndpoint": 7,
+  "metrics": {
+    "jobs": {
+      "p50Ms": 6.78,
+      "p95Ms": 7.09,
+      "dbQueryCount": 5,
+      "responseBytes": 114108,
+      "peakRssBytes": 562511872
+    },
+    "jobsCursor": {
+      "p50Ms": 9.36,
+      "p95Ms": 17.98,
+      "dbQueryCount": 6,
+      "responseBytes": 26092,
+      "peakRssBytes": 564330496
+    },
+    "jobsFilter": {
+      "p50Ms": 7.57,
+      "p95Ms": 7.89,
+      "dbQueryCount": 5,
+      "responseBytes": 93511,
+      "peakRssBytes": 564445184
+    },
+    "codingProblems": {
+      "p50Ms": 1.63,
+      "p95Ms": 1.79,
+      "dbQueryCount": 5,
+      "responseBytes": 110292,
+      "peakRssBytes": 567476224
+    },
+    "codingProblemsCursor": {
+      "p50Ms": 0.97,
+      "p95Ms": 1.17,
+      "dbQueryCount": 6,
+      "responseBytes": 13166,
+      "peakRssBytes": 567803904
+    },
+    "solutions": {
+      "p50Ms": 6.23,
+      "p95Ms": 6.43,
+      "dbQueryCount": 8,
+      "responseBytes": 102211,
+      "peakRssBytes": 570769408
+    },
+    "solutionsCursor": {
+      "p50Ms": 6.02,
+      "p95Ms": 6.58,
+      "dbQueryCount": 9,
+      "responseBytes": 20579,
+      "peakRssBytes": 571457536
+    },
+    "notes": {
+      "p50Ms": 0.47,
+      "p95Ms": 0.56,
+      "dbQueryCount": 6,
+      "responseBytes": 63301,
+      "peakRssBytes": 571801600
+    },
+    "notifications": {
+      "p50Ms": 0.67,
+      "p95Ms": 0.71,
+      "dbQueryCount": 5,
+      "responseBytes": 17955,
+      "peakRssBytes": 572145664
+    },
+    "search": {
+      "p50Ms": 0.22,
+      "p95Ms": 0.35,
+      "dbQueryCount": 10,
+      "responseBytes": 4614,
+      "peakRssBytes": 572243968
+    }
+  },
+  "paginationComparison": {
+    "jobs": { "legacyBytes": 114108, "cursorBytes": 26092, "reductionPercent": 77.1 },
+    "codingProblems": {
+      "legacyBytes": 110292,
+      "cursorBytes": 13166,
+      "reductionPercent": 88.1
+    },
+    "solutions": {
+      "legacyBytes": 102211,
+      "cursorBytes": 20579,
+      "reductionPercent": 79.9
+    }
+  },
+  "browserMetrics": {
+    "initialRenderTime": "정량 측정 불가",
+    "filterChangeTime": "정량 측정 불가",
+    "reason": "브라우저 성능 추적과 운영 D1 자격증명이 이번 로컬 측정 범위에 없음"
+  }
+}

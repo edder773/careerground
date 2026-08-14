@@ -28,6 +28,9 @@ type D1Env = {
   DB: D1Database;
   OPENAI_ADMIN_EMAILS?: string;
   MAX_ACTIVE_USERS?: string;
+  RATE_LIMIT_READS_PER_MINUTE?: string;
+  RATE_LIMIT_WRITES_PER_MINUTE?: string;
+  REQUEST_LOGGING?: string;
 };
 
 type Identity = { userId: string; email: string; displayName: string };
@@ -69,6 +72,7 @@ class RouteError extends Error {
     message: string,
     readonly code = 'REQUEST_FAILED',
     readonly details?: unknown,
+    readonly headers?: Record<string, string>,
   ) {
     super(message);
   }
@@ -86,13 +90,19 @@ const userSelect = `
          created_at AS createdAt, updated_at AS updatedAt
   FROM users`;
 
-const responseJson = (body: unknown, status = 200, requestId?: string) =>
+const responseJson = (
+  body: unknown,
+  status = 200,
+  requestId?: string,
+  extraHeaders: Record<string, string> = {},
+) =>
   new Response(JSON.stringify(body), {
     status,
     headers: {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'no-store',
       ...(requestId ? { 'x-request-id': requestId } : {}),
+      ...extraHeaders,
     },
   });
 
@@ -103,6 +113,31 @@ const bool = (value: unknown, fallback = false) => (typeof value === 'boolean' ?
 const int = (value: unknown, fallback = 0) => {
   const parsed = Number(value);
   return Number.isInteger(parsed) ? parsed : fallback;
+};
+
+type CursorPage<T> = { items: T[]; nextCursor: string | null; total: number };
+
+const cursorPageRequested = (search: URLSearchParams) => search.get('page') === 'cursor';
+const cursorLimit = (search: URLSearchParams, fallback: number, maximum: number) =>
+  Math.min(maximum, Math.max(1, int(search.get('limit'), fallback)));
+const encodeCursor = (value: Record<string, unknown>) => {
+  const bytes = new TextEncoder().encode(JSON.stringify(value));
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
+};
+const decodeCursor = <T extends Record<string, unknown>>(value: string | null): T | null => {
+  if (!value) return null;
+  try {
+    const base64 = value.replaceAll('-', '+').replaceAll('_', '/');
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
+    const binary = atob(padded);
+    const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+    const parsed = JSON.parse(new TextDecoder().decode(bytes));
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as T) : null;
+  } catch {
+    throw new RouteError(400, '올바른 cursor가 필요합니다.', 'INVALID_CURSOR');
+  }
 };
 
 async function readJson(request: Request) {
@@ -212,14 +247,15 @@ async function resolveUser(identity: Identity, env: D1Env): Promise<UserRow> {
       db
         .prepare(
           `INSERT INTO notifications
-             (id, user_id, type, title, message, href, created_at)
-           VALUES (?, ?, 'SYSTEM', ?, ?, '/', ?)`,
+             (id, user_id, type, title, message, href, dedupe_key, created_at)
+           VALUES (?, ?, 'SYSTEM', ?, ?, '/', ?, ?)`,
         )
         .bind(
           newId(),
           id,
           'CareerGround에 오신 것을 환영합니다',
           'OpenAI 계정과 개인 워크스페이스가 연결되었습니다.',
+          `welcome:${id}`,
           timestamp,
         ),
       db
@@ -269,6 +305,52 @@ function requireAdmin(user: UserRow) {
   if (user.role !== 'ADMIN') throw new RouteError(403, '관리자 권한이 필요합니다.', 'FORBIDDEN');
 }
 
+const routeRateKey = (method: string, pathname: string) =>
+  `${method}:${pathname.replace(
+    /\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}(?=\/|$)/gi,
+    '/:id',
+  )}`;
+
+async function enforceRateLimit(request: Request, env: D1Env, userId: string, path: string) {
+  const method = request.method.toUpperCase();
+  const configured =
+    method === 'GET'
+      ? int(env.RATE_LIMIT_READS_PER_MINUTE, 240)
+      : int(env.RATE_LIMIT_WRITES_PER_MINUTE, 60);
+  const limit = Math.max(
+    1,
+    Math.min(10_000, path.includes('/import/') ? Math.min(10, configured) : configured),
+  );
+  const now = Date.now();
+  const windowStart = Math.floor(now / 60_000);
+  const row = await first<{ count: number }>(
+    env.DB,
+    `INSERT INTO request_rate_limits (user_id, route_key, window_start, count, updated_at)
+     VALUES (?, ?, ?, 1, ?)
+     ON CONFLICT(user_id, route_key, window_start)
+     DO UPDATE SET count = request_rate_limits.count + 1, updated_at = excluded.updated_at
+     RETURNING count`,
+    userId,
+    routeRateKey(method, path),
+    windowStart,
+    new Date(now).toISOString(),
+  );
+  const count = Number(row?.count || 1);
+  if (count === 1) {
+    await run(env.DB, 'DELETE FROM request_rate_limits WHERE window_start < ?', windowStart - 2);
+  }
+  if (count > limit) {
+    const retryAfter = Math.max(1, 60 - Math.floor((now % 60_000) / 1000));
+    throw new RouteError(
+      429,
+      '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
+      'RATE_LIMITED',
+      { limit, windowSeconds: 60, retryAfter },
+      { 'retry-after': String(retryAfter) },
+    );
+  }
+}
+
 async function collections(db: D1Database, userId: string) {
   const folders = await all<Record<string, unknown>>(
     db,
@@ -302,6 +384,63 @@ async function collections(db: D1Database, userId: string) {
   }));
 }
 
+async function ensureDeadlineNotifications(db: D1Database, user: UserRow) {
+  if (!asBoolean(user.deadlineNotifications)) return;
+  const now = new Date();
+  const todayKst = new Date(
+    new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(now) + 'T00:00:00+09:00',
+  );
+  const end = new Date(todayKst.getTime() + 8 * 86_400_000);
+  const rows = await all<{ jobId: string; title: string; deadlineAt: string }>(
+    db,
+    `SELECT j.id AS jobId, j.title, j.deadline_at AS deadlineAt
+       FROM saved_jobs sj JOIN jobs j ON j.id = sj.job_id
+      WHERE sj.user_id = ? AND sj.bookmarked = 1 AND j.status = 'ACTIVE'
+        AND j.deadline_at >= ? AND j.deadline_at < ?`,
+    user.id,
+    todayKst.toISOString(),
+    end.toISOString(),
+  );
+  const statements = rows.flatMap((job) => {
+    const deadlineKst = new Date(
+      new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Seoul',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).format(new Date(job.deadlineAt)) + 'T00:00:00+09:00',
+    );
+    const days = Math.round((deadlineKst.getTime() - todayKst.getTime()) / 86_400_000);
+    if (![1, 3, 7].includes(days)) return [];
+    const dedupeKey = `job-deadline:${job.jobId}:${job.deadlineAt}:d-${days}`;
+    return [
+      db
+        .prepare(
+          `INSERT INTO notifications
+             (id, user_id, type, title, message, href, dedupe_key, expires_at, created_at)
+           VALUES (?, ?, 'JOB_DEADLINE', ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(user_id, dedupe_key) DO NOTHING`,
+        )
+        .bind(
+          newId(),
+          user.id,
+          `관심 공고 마감 D-${days}`,
+          job.title,
+          `/jobs?job=${job.jobId}`,
+          dedupeKey,
+          new Date(new Date(job.deadlineAt).getTime() + 7 * 86_400_000).toISOString(),
+          now.toISOString(),
+        ),
+    ];
+  });
+  if (statements.length) await db.batch(statements);
+}
+
 async function profile(db: D1Database, userId: string) {
   const row = await first<UserRow>(db, `${userSelect} WHERE id = ?`, userId);
   if (!row) throw new RouteError(404, '사용자를 찾을 수 없습니다.');
@@ -331,37 +470,53 @@ type ProblemRow = {
   status: string | null;
   favorite: number | boolean | null;
   solutionCount: number;
+  position: number;
 };
 
-async function problems(
-  db: D1Database,
-  userId: string,
-  level?: string | null,
-  track?: string | null,
-) {
-  const values: unknown[] = [userId];
-  let filter = '';
+async function problems(db: D1Database, userId: string, search: URLSearchParams) {
+  const clauses = ['p.active = 1'];
+  const filterValues: unknown[] = [];
+  const level = search.get('level');
+  const track = search.get('track');
   if (level) {
-    filter = ' AND p.level = ?';
-    values.push(Number(level));
+    clauses.push('p.level = ?');
+    filterValues.push(Number(level));
   }
   if (track === 'ALGORITHM' || track === 'SQL') {
-    filter += ' AND p.track = ?';
-    values.push(track);
+    clauses.push('p.track = ?');
+    filterValues.push(track);
+  }
+  const paged = cursorPageRequested(search);
+  const limit = paged ? cursorLimit(search, 60, 100) : 500;
+  const cursor = paged
+    ? decodeCursor<{ position?: unknown; id?: unknown }>(search.get('cursor'))
+    : null;
+  const values: unknown[] = [userId, ...filterValues];
+  if (cursor) {
+    const position = int(cursor.position, -1);
+    const id = cleanText(cursor.id);
+    if (position < 0 || !id)
+      throw new RouteError(400, '올바른 cursor가 필요합니다.', 'INVALID_CURSOR');
+    clauses.push('(p.position > ? OR (p.position = ? AND p.id > ?))');
+    values.push(position, position, id);
   }
   const rows = await all<ProblemRow>(
     db,
     `SELECT p.id, p.source_url AS sourceUrl, p.display_title AS displayTitle, p.level, p.track, p.tags,
+            p.position,
             pp.status, pp.favorite,
             (SELECT COUNT(*) FROM solutions s WHERE s.problem_id = p.id AND s.deleted_at IS NULL) AS solutionCount
        FROM coding_problems p
        LEFT JOIN problem_progress pp ON pp.problem_id = p.id AND pp.user_id = ?
-      WHERE p.active = 1${filter}
-      ORDER BY p.position, p.level, p.display_title
-      LIMIT 500`,
+      WHERE ${clauses.join(' AND ')}
+      ORDER BY p.position, p.id
+      LIMIT ?`,
     ...values,
+    limit + (paged ? 1 : 0),
   );
-  return rows.map((row) => ({
+  const hasMore = paged && rows.length > limit;
+  const pageRows = hasMore ? rows.slice(0, limit) : rows;
+  const items = pageRows.map((row) => ({
     id: row.id,
     sourceUrl: row.sourceUrl,
     displayTitle: row.displayTitle,
@@ -371,6 +526,26 @@ async function problems(
     progress: row.status ? [{ status: row.status, favorite: asBoolean(row.favorite) }] : [],
     _count: { solutions: Number(row.solutionCount || 0) },
   }));
+  if (!paged) return items;
+  const total = await first<{ count: number }>(
+    db,
+    `SELECT COUNT(*) AS count FROM coding_problems p WHERE ${clauses
+      .filter((clause) => !clause.startsWith('(p.position >'))
+      .join(' AND ')}`,
+    ...filterValues,
+  );
+  const last = pageRows.at(-1);
+  return {
+    items,
+    nextCursor:
+      hasMore && last
+        ? encodeCursor({
+            position: last.position,
+            id: last.id,
+          })
+        : null,
+    total: Number(total?.count || 0),
+  } satisfies CursorPage<(typeof items)[number]>;
 }
 
 const kstDate = () =>
@@ -516,6 +691,21 @@ async function solutionList(db: D1Database, userId: string, search: URLSearchPar
     clauses.push('s.author_id = ?');
     values.push(authorId);
   }
+  const baseClauses = [...clauses];
+  const baseValues = [...values];
+  const paged = cursorPageRequested(search);
+  const limit = paged ? cursorLimit(search, 10, 30) : 50;
+  const cursor = paged
+    ? decodeCursor<{ updatedAt?: unknown; id?: unknown }>(search.get('cursor'))
+    : null;
+  if (cursor) {
+    const updatedAt = cleanText(cursor.updatedAt);
+    const id = cleanText(cursor.id);
+    if (!updatedAt || !id)
+      throw new RouteError(400, '올바른 cursor가 필요합니다.', 'INVALID_CURSOR');
+    clauses.push('(s.updated_at < ? OR (s.updated_at = ? AND s.id < ?))');
+    values.push(updatedAt, updatedAt, id);
+  }
   const rows = await all<SolutionRow>(
     db,
     `SELECT s.id, s.problem_id AS problemId, s.author_id AS authorId, s.title, s.language,
@@ -528,13 +718,28 @@ async function solutionList(db: D1Database, userId: string, search: URLSearchPar
        JOIN users u ON u.id = s.author_id
        JOIN coding_problems p ON p.id = s.problem_id
       WHERE ${clauses.join(' AND ')}
-      ORDER BY s.updated_at DESC
-      LIMIT 50`,
+      ORDER BY s.updated_at DESC, s.id DESC
+      LIMIT ?`,
     ...values,
+    limit + (paged ? 1 : 0),
   );
-  if (!rows.length) return [];
-  const placeholders = rows.map(() => '?').join(',');
-  const ids = rows.map((row) => row.id);
+  const hasMore = paged && rows.length > limit;
+  const pageRows = hasMore ? rows.slice(0, limit) : rows;
+  const total = paged
+    ? Number(
+        (
+          await first<{ count: number }>(
+            db,
+            `SELECT COUNT(*) AS count FROM solutions s WHERE ${baseClauses.join(' AND ')}`,
+            ...baseValues,
+          )
+        )?.count || 0,
+      )
+    : pageRows.length;
+  if (!pageRows.length)
+    return paged ? ({ items: [], nextCursor: null, total } satisfies CursorPage<never>) : [];
+  const placeholders = pageRows.map(() => '?').join(',');
+  const ids = pageRows.map((row) => row.id);
   const [revisions, reactions, commentRows] = await Promise.all([
     all<Record<string, unknown>>(
       db,
@@ -570,7 +775,7 @@ async function solutionList(db: D1Database, userId: string, search: URLSearchPar
   const revisionsBySolution = group(revisions);
   const reactionsBySolution = group(reactions);
   const commentsBySolution = group(commentRows);
-  return rows.map((row) => {
+  const items = pageRows.map((row) => {
     const comments = commentsBySolution.get(row.id) || [];
     const mapComment = (comment: Record<string, unknown>) => {
       const deleted = Boolean(comment.deletedAt);
@@ -586,6 +791,7 @@ async function solutionList(db: D1Database, userId: string, search: URLSearchPar
         replies: [] as unknown[],
       };
     };
+    const solutionReactions = reactionsBySolution.get(row.id) || [];
     return {
       id: row.id,
       problemId: row.problemId,
@@ -601,7 +807,9 @@ async function solutionList(db: D1Database, userId: string, search: URLSearchPar
       currentRev: row.currentRev,
       canEdit: row.authorId === userId,
       revisions: (revisionsBySolution.get(row.id) || []).slice(0, 10),
-      reactions: reactionsBySolution.get(row.id) || [],
+      reactions: solutionReactions,
+      reactionCount: solutionReactions.length,
+      reactedByMe: solutionReactions.some((reaction) => reaction.userId === userId),
       comments: comments
         .filter((comment) => !comment.parentId)
         .map((comment) => ({
@@ -612,6 +820,13 @@ async function solutionList(db: D1Database, userId: string, search: URLSearchPar
       problem: { displayTitle: row.problemTitle, level: row.problemLevel },
     };
   });
+  if (!paged) return items;
+  const last = pageRows.at(-1);
+  return {
+    items,
+    nextCursor: hasMore && last ? encodeCursor({ updatedAt: last.updatedAt, id: last.id }) : null,
+    total,
+  } satisfies CursorPage<(typeof items)[number]>;
 }
 
 function serializeJobRows(rows: Record<string, unknown>[]) {
@@ -755,22 +970,47 @@ async function jobList(db: D1Database, userId: string, url: URL) {
       values.push(new Date(deadlineTo).toISOString());
     }
   }
+  const sortMode = url.searchParams.get('sort');
   const order =
-    url.searchParams.get('sort') === 'deadline'
-      ? 'j.deadline_at ASC'
-      : url.searchParams.get('sort') === 'company'
-        ? 'j.company_name ASC'
-        : 'j.collected_at DESC';
+    sortMode === 'deadline'
+      ? "COALESCE(j.deadline_at, '9999') ASC, j.id ASC"
+      : sortMode === 'company'
+        ? 'j.company_name ASC, j.id ASC'
+        : "COALESCE(j.collected_at, '') DESC, j.id DESC";
   const indexName =
-    url.searchParams.get('sort') === 'deadline'
+    sortMode === 'deadline'
       ? 'idx_jobs_deadline_status'
-      : url.searchParams.get('sort') === 'company'
+      : sortMode === 'company'
         ? 'idx_jobs_company_status'
         : categories.length
           ? 'idx_jobs_category_created_status'
           : companySizes.length
             ? 'idx_jobs_size_created_status'
             : 'idx_jobs_calendar_collected';
+  const paged = cursorPageRequested(url.searchParams);
+  const limit = paged ? cursorLimit(url.searchParams, 40, 100) : 200;
+  const baseClauses = [...clauses];
+  const baseValues = [...values];
+  const cursor = paged
+    ? decodeCursor<{ value?: unknown; id?: unknown }>(url.searchParams.get('cursor'))
+    : null;
+  if (cursor) {
+    const cursorValue = cleanText(cursor.value);
+    const cursorId = cleanText(cursor.id);
+    if (!cursorId) throw new RouteError(400, '올바른 cursor가 필요합니다.', 'INVALID_CURSOR');
+    if (sortMode === 'deadline') {
+      clauses.push(
+        "(COALESCE(j.deadline_at, '9999') > ? OR (COALESCE(j.deadline_at, '9999') = ? AND j.id > ?))",
+      );
+    } else if (sortMode === 'company') {
+      clauses.push('(j.company_name > ? OR (j.company_name = ? AND j.id > ?))');
+    } else {
+      clauses.push(
+        "(COALESCE(j.collected_at, '') < ? OR (COALESCE(j.collected_at, '') = ? AND j.id < ?))",
+      );
+    }
+    values.push(cursorValue, cursorValue, cursorId);
+  }
   const rows = await all<Record<string, unknown>>(
     db,
     `SELECT j.id, j.title, j.category, j.region, j.remote, j.tech_stack,
@@ -780,10 +1020,35 @@ async function jobList(db: D1Database, userId: string, url: URL) {
        FROM jobs j ${calendar ? '' : `INDEXED BY ${indexName}`}
        LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ?
       WHERE ${clauses.join(' AND ')}
-      ORDER BY ${order} LIMIT 200`,
+      ORDER BY ${order} LIMIT ?`,
     ...values,
+    limit + (paged ? 1 : 0),
   );
-  return serializeJobRows(rows);
+  const hasMore = paged && rows.length > limit;
+  const pageRows = hasMore ? rows.slice(0, limit) : rows;
+  const items = serializeJobRows(pageRows);
+  if (!paged) return items;
+  const total = await first<{ count: number }>(
+    db,
+    `SELECT COUNT(*) AS count
+       FROM jobs j
+       LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ?
+      WHERE ${baseClauses.join(' AND ')}`,
+    ...baseValues,
+  );
+  const last = pageRows.at(-1);
+  const cursorValue = last
+    ? sortMode === 'deadline'
+      ? String(last.deadline_at || '9999')
+      : sortMode === 'company'
+        ? String(last.company_name || '')
+        : String(last.collected_at || '')
+    : '';
+  return {
+    items,
+    nextCursor: hasMore && last ? encodeCursor({ value: cursorValue, id: last.id }) : null,
+    total: Number(total?.count || 0),
+  } satisfies CursorPage<(typeof items)[number]>;
 }
 
 async function jobCategories(db: D1Database) {
@@ -1434,6 +1699,21 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
   }
 
   if (method === 'GET' && path === '/collections') return collections(db, user.id);
+  if (method === 'GET' && path === '/collections/trash') {
+    return all(
+      db,
+      `SELECT c.id, c.parent_id AS parentId, c.name, c.icon, c.color,
+              c.deleted_at AS deletedAt
+         FROM collections c
+        WHERE c.user_id = ? AND c.deleted_at IS NOT NULL
+          AND (c.parent_id IS NULL OR NOT EXISTS (
+            SELECT 1 FROM collections parent
+             WHERE parent.id = c.parent_id AND parent.deleted_at IS NOT NULL
+          ))
+        ORDER BY c.deleted_at DESC LIMIT 50`,
+      user.id,
+    );
+  }
   if (method === 'POST' && path === '/collections') {
     const body = await readJson(request);
     const name = cleanText(body.name);
@@ -1519,6 +1799,42 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       ),
     );
     return { ok: true };
+  }
+  const collectionRestoreMatch = path.match(/^\/collections\/([^/]+)\/restore$/);
+  if (collectionRestoreMatch && method === 'POST') {
+    const current = await first<{ id: string; parentId: string | null; deletedAt: string }>(
+      db,
+      `SELECT id, parent_id AS parentId, deleted_at AS deletedAt
+         FROM collections WHERE id = ? AND user_id = ? AND deleted_at IS NOT NULL`,
+      collectionRestoreMatch[1],
+      user.id,
+    );
+    if (!current) throw new RouteError(404, '삭제된 폴더를 찾을 수 없습니다.');
+    if (current.parentId) {
+      const parent = await first<{ deletedAt: string | null }>(
+        db,
+        'SELECT deleted_at AS deletedAt FROM collections WHERE id = ? AND user_id = ?',
+        current.parentId,
+        user.id,
+      );
+      if (!parent || parent.deletedAt)
+        throw new RouteError(409, '상위 폴더를 먼저 복원해주세요.', 'PARENT_DELETED');
+    }
+    const timestamp = nowIso();
+    await db.batch([
+      db
+        .prepare(
+          'UPDATE collections SET deleted_at = NULL, updated_at = ? WHERE id = ? AND user_id = ?',
+        )
+        .bind(timestamp, current.id, user.id),
+      db
+        .prepare(
+          `UPDATE collections SET deleted_at = NULL, updated_at = ?
+            WHERE parent_id = ? AND user_id = ? AND deleted_at = ?`,
+        )
+        .bind(timestamp, current.id, user.id, current.deletedAt),
+    ]);
+    return { id: current.id, restored: true };
   }
   const collectionMatch = path.match(/^\/collections\/([^/]+)$/);
   if (collectionMatch && method === 'PATCH') {
@@ -1732,6 +2048,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
   }
 
   if (method === 'GET' && path === '/notifications/unread-count') {
+    await ensureDeadlineNotifications(db, user);
     const row = await first<{ count: number }>(
       db,
       `SELECT COUNT(*) AS count FROM notifications
@@ -1771,6 +2088,15 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
   }
 
   if (method === 'GET' && path === '/notes') return noteList(db, user.id);
+  if (method === 'GET' && path === '/notes/trash') {
+    return all(
+      db,
+      `SELECT id, title, deleted_at AS deletedAt
+         FROM notes WHERE user_id = ? AND deleted_at IS NOT NULL
+        ORDER BY deleted_at DESC LIMIT 50`,
+      user.id,
+    );
+  }
   if (method === 'POST' && path === '/notes') {
     const body = await readJson(request);
     const title = cleanText(body.title);
@@ -1870,9 +2196,23 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     if (!Number(result.meta?.changes || 0)) throw new RouteError(404, '노트를 찾을 수 없습니다.');
     return { id: deleteNoteMatch[1], deleted: true };
   }
+  const restoreNoteMatch = path.match(/^\/notes\/([^/]+)\/restore$/);
+  if (restoreNoteMatch && method === 'POST') {
+    const result = await run(
+      db,
+      `UPDATE notes SET deleted_at = NULL, updated_at = ?
+        WHERE id = ? AND user_id = ? AND deleted_at IS NOT NULL`,
+      nowIso(),
+      restoreNoteMatch[1],
+      user.id,
+    );
+    if (!Number(result.meta?.changes || 0))
+      throw new RouteError(404, '삭제된 노트를 찾을 수 없습니다.');
+    return { id: restoreNoteMatch[1], restored: true };
+  }
 
   if (method === 'GET' && path === '/coding/problems')
-    return problems(db, user.id, url.searchParams.get('level'), url.searchParams.get('track'));
+    return problems(db, user.id, url.searchParams);
   if (method === 'POST' && path === '/coding/problems') {
     requireAdmin(user);
     const body = await readJson(request);
@@ -2142,26 +2482,38 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     return { id, problemId, authorId: user.id, currentRev: 1, createdAt: timestamp };
   }
   const reactionMatch = path.match(/^\/coding\/solutions\/([^/]+)\/reaction$/);
-  if (reactionMatch && method === 'POST') {
+  if (reactionMatch && (method === 'POST' || method === 'PUT')) {
+    const desired = method === 'PUT' ? bool((await readJson(request)).active) : undefined;
     const existing = await first<{ id: string }>(
       db,
       'SELECT id FROM solution_reactions WHERE solution_id = ? AND user_id = ?',
       reactionMatch[1],
       user.id,
     );
-    if (existing) {
+    const active = desired ?? !existing;
+    if (!active && existing) {
       await run(db, 'DELETE FROM solution_reactions WHERE id = ?', existing.id);
       return { active: false };
     }
-    await run(
-      db,
-      'INSERT INTO solution_reactions (id, solution_id, user_id, created_at) VALUES (?, ?, ?, ?)',
-      newId(),
-      reactionMatch[1],
-      user.id,
-      nowIso(),
-    );
-    return { active: true };
+    if (active && !existing) {
+      const solution = await first<{ id: string }>(
+        db,
+        "SELECT id FROM solutions WHERE id = ? AND deleted_at IS NULL AND visibility = 'MEMBERS'",
+        reactionMatch[1],
+      );
+      if (!solution) throw new RouteError(404, '풀이를 찾을 수 없습니다.');
+      await run(
+        db,
+        `INSERT INTO solution_reactions (id, solution_id, user_id, created_at)
+         VALUES (?, ?, ?, ?)
+         ON CONFLICT(solution_id, user_id) DO NOTHING`,
+        newId(),
+        reactionMatch[1],
+        user.id,
+        nowIso(),
+      );
+    }
+    return { active };
   }
   const commentMatch = path.match(/^\/coding\/solutions\/([^/]+)\/comments$/);
   if (commentMatch && method === 'POST') {
@@ -2205,7 +2557,10 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
         statements.push(
           db
             .prepare(
-              `INSERT INTO notifications (id, user_id, type, title, message, href, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+              `INSERT INTO notifications
+                 (id, user_id, type, title, message, href, dedupe_key, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+               ON CONFLICT(user_id, dedupe_key) DO NOTHING`,
             )
             .bind(
               newId(),
@@ -2214,6 +2569,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
               parentId ? '새 답글' : '새 댓글',
               `${user.displayName}님이 의견을 남겼습니다.`,
               `/solutions?solution=${commentMatch[1]}`,
+              `solution-comment:${id}:${notifyUserId}`,
               timestamp,
             ),
         );
@@ -2513,37 +2869,67 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
 export async function handleD1Api(request: Request, env: D1Env) {
   const requestId = request.headers.get('x-request-id') || newId();
   const url = new URL(request.url);
+  const startedAt = performance.now();
+  const finish = (response: Response) => {
+    const durationMs = Math.max(0, performance.now() - startedAt);
+    const headers = new Headers(response.headers);
+    headers.set('x-request-id', requestId);
+    headers.set('server-timing', `app;dur=${durationMs.toFixed(1)}`);
+    headers.set('x-response-time-ms', durationMs.toFixed(1));
+    if (env.REQUEST_LOGGING !== 'false') {
+      console.info('D1 API request completed', {
+        requestId,
+        method: request.method,
+        route: routeRateKey(request.method, url.pathname),
+        status: response.status,
+        durationMs: Number(durationMs.toFixed(1)),
+      });
+    }
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+  };
   try {
     if (url.pathname === '/api/v1/health' || url.pathname === '/api/v1/health/ready') {
       const ready = await first<{ ok: number }>(env.DB, 'SELECT 1 AS ok');
-      return responseJson(
-        { status: ready?.ok === 1 ? 'ok' : 'not-ready', database: 'd1' },
-        ready?.ok === 1 ? 200 : 503,
-        requestId,
+      return finish(
+        responseJson(
+          { status: ready?.ok === 1 ? 'ok' : 'not-ready', database: 'd1' },
+          ready?.ok === 1 ? 200 : 503,
+          requestId,
+        ),
       );
     }
     const identity = identityFrom(request);
     const user = await resolveUser(identity, env);
+    await enforceRateLimit(request, env, user.id, url.pathname);
     const result = await handleRoute(request, env, user, url);
-    return result instanceof Response ? result : responseJson(result, 200, requestId);
+    return finish(result instanceof Response ? result : responseJson(result, 200, requestId));
   } catch (error) {
     if (error instanceof RouteError) {
-      return responseJson(
-        { code: error.code, message: error.message, details: error.details, requestId },
-        error.status,
-        requestId,
+      return finish(
+        responseJson(
+          { code: error.code, message: error.message, details: error.details, requestId },
+          error.status,
+          requestId,
+          error.headers,
+        ),
       );
     }
     if (error instanceof DomainValidationError) {
-      return responseJson(
-        {
-          code: 'VALIDATION_FAILED',
-          message: error.message,
-          details: error.details,
+      return finish(
+        responseJson(
+          {
+            code: 'VALIDATION_FAILED',
+            message: error.message,
+            details: error.details,
+            requestId,
+          },
+          422,
           requestId,
-        },
-        422,
-        requestId,
+        ),
       );
     }
     const message = error instanceof Error ? error.message : '알 수 없는 데이터베이스 오류';
@@ -2553,10 +2939,12 @@ export async function handleD1Api(request: Request, env: D1Env) {
       path: url.pathname,
       message,
     });
-    return responseJson(
-      { code: 'DATABASE_ERROR', message: '데이터 요청을 처리하지 못했습니다.', requestId },
-      500,
-      requestId,
+    return finish(
+      responseJson(
+        { code: 'DATABASE_ERROR', message: '데이터 요청을 처리하지 못했습니다.', requestId },
+        500,
+        requestId,
+      ),
     );
   }
 }

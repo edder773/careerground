@@ -25,6 +25,7 @@ async function api(path) {
     DB: db,
     OPENAI_ADMIN_EMAILS: '',
     MAX_ACTIVE_USERS: '100',
+    REQUEST_LOGGING: 'false',
   });
 }
 
@@ -210,12 +211,34 @@ async function measure(path) {
 
 const metrics = {
   jobs: await measure('/jobs'),
+  jobsCursor: await measure('/jobs?page=cursor&limit=40'),
   jobsFilter: await measure('/jobs?category=BACKEND'),
   codingProblems: await measure('/coding/problems'),
+  codingProblemsCursor: await measure('/coding/problems?page=cursor&limit=60'),
   solutions: await measure('/coding/solutions'),
+  solutionsCursor: await measure('/coding/solutions?page=cursor&limit=10'),
   notes: await measure('/notes'),
   notifications: await measure('/notifications'),
   search: await measure('/search?q=Synthetic'),
+};
+const payloadReductionPercent = (legacy, cursor) =>
+  Number((100 - (cursor.responseBytes / legacy.responseBytes) * 100).toFixed(1));
+const paginationComparison = {
+  jobs: {
+    legacyBytes: metrics.jobs.responseBytes,
+    cursorBytes: metrics.jobsCursor.responseBytes,
+    reductionPercent: payloadReductionPercent(metrics.jobs, metrics.jobsCursor),
+  },
+  codingProblems: {
+    legacyBytes: metrics.codingProblems.responseBytes,
+    cursorBytes: metrics.codingProblemsCursor.responseBytes,
+    reductionPercent: payloadReductionPercent(metrics.codingProblems, metrics.codingProblemsCursor),
+  },
+  solutions: {
+    legacyBytes: metrics.solutions.responseBytes,
+    cursorBytes: metrics.solutionsCursor.responseBytes,
+    reductionPercent: payloadReductionPercent(metrics.solutions, metrics.solutionsCursor),
+  },
 };
 
 console.log(
@@ -231,6 +254,7 @@ console.log(
       seedDurationMs: Number(seedDurationMs.toFixed(2)),
       samplesPerEndpoint: 7,
       metrics,
+      paginationComparison,
       browserMetrics: {
         initialRenderTime: '정량 측정 불가',
         filterChangeTime: '정량 측정 불가',
