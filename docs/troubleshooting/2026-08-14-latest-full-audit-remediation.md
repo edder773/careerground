@@ -3,7 +3,7 @@ title: 최신 232개 전수 감사에서 데이터 안전성과 핵심 흐름을
 date: 2026-08-14
 tags: [audit, d1, migration, import, drafts, notifications, performance]
 generatedByAI: false
-pr: 25, 26
+pr: 25, 26, 27
 commit: 90f84e748eec4b4bf1cdce8c3c5df5f20fa57bb1
 evidence: docs/audits/careerground-latest-full-audit-resolution-2026-08-14.md
 ---
@@ -71,6 +71,13 @@ runtime baseline 이후의 `0016_full_audit_hardening.sql`을 포함한다. 0016
 학습 문항 데이터 보존 rebuild, schema ledger/checksum이 있고 clean generation은 새 migration을 만들지
 않는다. 새 Sites 프로젝트를 만드는 경우에는 0000부터 전체 이력을 적용하는 별도 bootstrap 절차가
 필요하며, 현재 production baseline 규칙을 그대로 재사용하면 안 된다.
+
+version 27에서 `dist/.openai/drizzle`만 검사한 뒤 저장소 루트를 공식 패키저에 넘긴 두 번째 시도도
+같은 오류로 안전하게 중단됐다. 공식 패키저가 마지막 단계에서 저장소 루트의 전체 `drizzle/`을
+archive에 overlay하는 동작이 원인이었다. `sites:stage`는 비어 있는 임시 프로젝트에 검증된 `dist`와
+hosting 설정만 복사하고 루트 migration 디렉터리는 의도적으로 복사하지 않는다. 패키저는 이 staging
+프로젝트를 입력으로 받으므로 최종 tar에도 0016만 남는다. 회귀 테스트는 전체 이력을 가진 가짜
+저장소에서도 staging 결과가 0016만 포함하고 0015 이하가 들어오면 실패하는지 확인한다.
 
 ## 핵심 이론 2: 로컬 초안은 사용자와 서버 revision을 함께 식별해야 한다
 
@@ -168,7 +175,7 @@ dedupe key와 lease는 재시도에서도 중복 알림을 막는다.
 | ------------------------- | --------------------------------------------------------------------------------------- |
 | `pnpm lint`               | 통과                                                                                    |
 | `pnpm typecheck`          | 통과                                                                                    |
-| `pnpm test`               | 99/99 통과                                                                              |
+| `pnpm test`               | 101/101 통과                                                                            |
 | `pnpm test:e2e`           | 48/48 통과, Chromium/Firefox/WebKit/375 px 모바일                                       |
 | `pnpm build`              | API/web/docs production build 통과                                                      |
 | `pnpm sites:build`        | Worker + static artifact build 통과                                                     |

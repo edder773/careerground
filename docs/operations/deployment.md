@@ -34,17 +34,21 @@ E2E는 `deployment/sites/local-d1-server.ts`가 메모리 D1 fixture를 직접 �
 
 1. 배포할 Git commit SHA를 확정한다.
 2. `pnpm sites:build`로 Worker-compatible ESM과 웹 자산을 만든다.
-3. 공식 Sites 패키징 스크립트로 archive를 만든다.
-4. archive 안에 아래 필수 항목이 있는지 확인한다.
+3. 빈 임시 디렉터리를 만들고 `pnpm sites:stage <임시 디렉터리>`로 검증된 `dist`만 복사한다.
+4. 공식 Sites 패키징 스크립트의 project 인자로 저장소 루트가 아니라 이 임시 디렉터리를 전달해
+   archive를 만든다. 저장소 루트를 직접 전달하면 패키저가 전체 `drizzle/` 이력을 overlay하므로
+   runtime으로 0015까지 구성된 기존 운영 D1에 과거 migration을 재실행하게 된다.
+5. archive 안에 아래 필수 항목이 있는지 확인한다.
    - `dist/server/index.js`
    - `dist/.openai/hosting.json`
    - `dist/.openai/drizzle/*.sql`
-5. **같은 commit SHA와 archive**를 새 Sites version으로 저장한다.
-6. visibility를 `public`으로 지정해 운영 배포한다.
-7. 배포 상태가 완료될 때까지 확인하고 `/api/v1/health/ready`가 `200`, `database: d1`을 반환하는지 검사한다.
-8. 로그인 사용자로 홈·채용·코딩·학습의 공통 데이터와 폴더·노트의 사용자별 격리를 smoke test한다.
+   - 이 기존 프로젝트에서는 `dist/.openai/drizzle/0016_full_audit_hardening.sql`만 존재
+6. **같은 commit SHA와 archive**를 새 Sites version으로 저장한다.
+7. visibility를 `public`으로 지정해 운영 배포한다.
+8. 배포 상태가 완료될 때까지 확인하고 `/api/v1/health/ready`가 `200`, `database: d1`을 반환하는지 검사한다.
+9. 로그인 사용자로 홈·채용·코딩·학습의 공통 데이터와 폴더·노트의 사용자별 격리를 smoke test한다.
 
-소스 commit만 저장하고 archive를 생략하면 플랫폼이 모노레포의 일반 `build`를 다시 선택하여 Worker와 migration을 누락할 수 있다. 따라서 소스와 archive의 SHA 일치는 배포 불변식이다.
+소스 commit만 저장하고 archive를 생략하면 플랫폼이 모노레포의 일반 `build`를 다시 선택하여 Worker와 migration을 누락할 수 있다. 따라서 소스와 archive의 SHA 일치와 archive migration 목록 검사는 배포 불변식이다. 새 Sites 프로젝트는 기존 runtime baseline이 없으므로 이 0016-only staging 규칙 대신 0000부터 전체 migration을 적용하는 별도 bootstrap이 필요하다.
 
 ## 설정과 비밀
 
