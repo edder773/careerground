@@ -3,8 +3,8 @@ title: 최신 232개 전수 감사에서 데이터 안전성과 핵심 흐름을
 date: 2026-08-14
 tags: [audit, d1, migration, import, drafts, notifications, performance]
 generatedByAI: false
-pr: pending
-commit: pending
+pr: 25
+commit: 90f84e748eec4b4bf1cdce8c3c5df5f20fa57bb1
 evidence: docs/audits/careerground-latest-full-audit-resolution-2026-08-14.md
 ---
 
