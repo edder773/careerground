@@ -168,7 +168,7 @@ dedupe key와 lease는 재시도에서도 중복 알림을 막는다.
 | ------------------------- | --------------------------------------------------------------------------------------- |
 | `pnpm lint`               | 통과                                                                                    |
 | `pnpm typecheck`          | 통과                                                                                    |
-| `pnpm test`               | 98/98 통과                                                                              |
+| `pnpm test`               | 99/99 통과                                                                              |
 | `pnpm test:e2e`           | 48/48 통과, Chromium/Firefox/WebKit/375 px 모바일                                       |
 | `pnpm build`              | API/web/docs production build 통과                                                      |
 | `pnpm sites:build`        | Worker + static artifact build 통과                                                     |
