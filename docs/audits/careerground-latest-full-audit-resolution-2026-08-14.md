@@ -12,16 +12,16 @@
 
 ## P0 처리
 
-| ID        | 상태      | 조치와 남은 경계                                                                                                                                |
-| --------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| OPS-001   | 외부 검증 | 로컬 격리 snapshot/restore, checksum/FK/integrity drill과 runbook은 구현. Sites가 운영 D1 export/restore를 제공하지 않아 운영 RTO/RPO는 미검증. |
-| OPS-002   | 구현      | schema version/column/index/trigger/FTS readiness와 배포 후 canary를 추가.                                                                      |
-| OPS-003   | 부분 완화 | `app_schema_migrations` ledger와 0016 checksum을 권위로 추가. Sites가 migration apply를 제공하지 않아 additive runtime fallback은 유지.         |
-| CODE-001  | 구현      | `userId + v2 + problemId` 초안 namespace, 계정 전환 격리 테스트.                                                                                |
-| LEARN-001 | 구현      | question type/choices migration, import, API와 객관식 UI/채점 연결.                                                                             |
-| NOTE-001  | 구현      | user/note/baseRevision 초안과 409 conflict diff/retry.                                                                                          |
-| ADMIN-001 | 구현      | 전체 preview pagination, JSON diff download, reviewed row count와 전체 검토 확인.                                                               |
-| ADMIN-002 | 부분 완화 | 제거 전체 목록, 별도 확인, 건수 대조, 서버 임계치 차단. 조직의 독립된 2인 승인 주체는 Sites 권한 모델에 없어 동일 관리자 이중 확인으로 구현.    |
+| ID        | 상태      | 조치와 남은 경계                                                                                                                                                                                           |
+| --------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OPS-001   | 외부 검증 | 로컬 격리 snapshot/restore, checksum/FK/integrity drill과 runbook은 구현. Sites가 운영 D1 export/restore를 제공하지 않아 운영 RTO/RPO는 미검증.                                                            |
+| OPS-002   | 구현      | schema version/column/index/trigger/FTS readiness와 배포 후 canary를 추가.                                                                                                                                 |
+| OPS-003   | 부분 완화 | `app_schema_migrations` ledger와 0016 checksum을 권위로 추가. 기존 운영 D1은 runtime으로 0015 상당 상태까지 생성됐으므로 배포 archive는 0016 이후 forward migration만 싣고 전체 source history는 보존한다. |
+| CODE-001  | 구현      | `userId + v2 + problemId` 초안 namespace, 계정 전환 격리 테스트.                                                                                                                                           |
+| LEARN-001 | 구현      | question type/choices migration, import, API와 객관식 UI/채점 연결.                                                                                                                                        |
+| NOTE-001  | 구현      | user/note/baseRevision 초안과 409 conflict diff/retry.                                                                                                                                                     |
+| ADMIN-001 | 구현      | 전체 preview pagination, JSON diff download, reviewed row count와 전체 검토 확인.                                                                                                                          |
+| ADMIN-002 | 부분 완화 | 제거 전체 목록, 별도 확인, 건수 대조, 서버 임계치 차단. 조직의 독립된 2인 승인 주체는 Sites 권한 모델에 없어 동일 관리자 이중 확인으로 구현.                                                               |
 
 ## P1 코드 조치
 
