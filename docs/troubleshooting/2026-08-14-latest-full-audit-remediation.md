@@ -3,7 +3,7 @@ title: 최신 232개 전수 감사에서 데이터 안전성과 핵심 흐름을
 date: 2026-08-14
 tags: [audit, d1, migration, import, drafts, notifications, performance]
 generatedByAI: false
-pr: 25, 26, 27
+pr: 25, 26, 27, 28
 commit: 90f84e748eec4b4bf1cdce8c3c5df5f20fa57bb1
 evidence: docs/audits/careerground-latest-full-audit-resolution-2026-08-14.md
 ---
@@ -175,7 +175,7 @@ dedupe key와 lease는 재시도에서도 중복 알림을 막는다.
 | ------------------------- | --------------------------------------------------------------------------------------- |
 | `pnpm lint`               | 통과                                                                                    |
 | `pnpm typecheck`          | 통과                                                                                    |
-| `pnpm test`               | 101/101 통과                                                                            |
+| `pnpm test`               | 102/102 통과                                                                            |
 | `pnpm test:e2e`           | 48/48 통과, Chromium/Firefox/WebKit/375 px 모바일                                       |
 | `pnpm build`              | API/web/docs production build 통과                                                      |
 | `pnpm sites:build`        | Worker + static artifact build 통과                                                     |
@@ -198,6 +198,10 @@ dedupe key와 lease는 재시도에서도 중복 알림을 막는다.
    증거가 아니다.
 4. **대형 라우터/중복 reference backend:** 즉시 기능 오류가 아닌 구조적 부채다. 이번 대규모 기능
    수정과 동시에 파일을 분해하면 회귀 범위가 더 커지므로 별도 refactor gate로 남긴다.
+5. **Sites 정적 응답의 header-only 정책:** API에는 CSP, referrer, permissions, frame, nosniff 헤더가
+   적용된다. 운영 canary에서 Sites asset cache가 Worker를 우회하는 HTML을 확인해 CSP와 referrer는
+   meta fallback도 추가했다. 정적 HTML의 `X-Frame-Options`와 `Permissions-Policy`는 Sites가 정적
+   응답 헤더 설정 기능을 제공해야 완결할 수 있다.
 
 전체 232개 판정과 제품 결정은
 `docs/audits/careerground-latest-full-audit-resolution-2026-08-14.md`를 기준으로 한다. 이전

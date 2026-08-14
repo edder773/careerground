@@ -54,8 +54,7 @@ mutation을 개별 Zod schema로 바꾼 것은 아니므로 장기적으로 gene
   `NOTE-010`, `NOTE-011`, `NOTE-014`
 - 풀이/알림: `SOL-006`, `SOL-010`, `SOL-011`, `SOL-017`, `SOL-018`, `NOTIF-005`,
   `NOTIF-008`, `NOTIF-009`
-- 랭킹/관리자/DB/QA: `SET-006`, `SET-007`, `ADMIN-012`, `DB-007`, `QA-003`,
-  `QA-012`
+- 랭킹/관리자/DB/QA: `SET-006`, `SET-007`, `ADMIN-012`, `DB-007`, `QA-003`
 
 ## 명시적 제품 결정
 
@@ -94,6 +93,10 @@ mutation을 개별 Zod schema로 바꾼 것은 아니므로 장기적으로 gene
 - `HOME-013`, `HOME-015`, `HOME-016`, `HOME-017`, `HOME-019`, `JOB-013`, `NOTE-008`,
   `NOTE-009`, `NOTE-013`, `SOL-015`, `SOL-016`: 현재 MVP 데이터 규모에서는 bounded하지만
   virtualization, 영구 삭제 정책, list payload 축소와 server-side filter가 필요한 확장성 항목이다.
+- `QA-012`: API/Worker 응답의 CSP, referrer, permissions, frame, nosniff 정책과 자동 검사는 구현했다.
+  다만 Sites 정적 asset cache가 Worker를 우회하는 HTML 응답에는 header가 붙지 않아 CSP/referrer를
+  HTML meta fallback으로도 적용했다. `X-Frame-Options`와 `Permissions-Policy` 같은 header-only 정책을
+  정적 응답에 강제하는 기능은 현재 Sites 설정 surface에 없다.
 
 ## 현재 환경에서 실행할 수 없는 검증
 
