@@ -17,6 +17,7 @@ import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import { useSearchParams } from 'react-router';
 import { api, json } from '../lib/api';
+import { FolderSaveButton } from '../components/FolderSaveButton';
 import '../styles/learning.css';
 
 type UnitSummary = {
@@ -37,6 +38,8 @@ type Unit = {
   questions: Array<{
     id: string;
     prompt: string;
+    type: 'MULTIPLE_CHOICE' | 'SHORT_ANSWER';
+    choices: string[];
     attempts: Array<{ id: string; response: string; correct: boolean; attemptedAt: string }>;
   }>;
   progress: Array<{ completed: boolean; nextReviewAt: string | null }>;
@@ -72,10 +75,26 @@ function LearningUnitModal({
   index: number;
   onClose: () => void;
 }) {
+  const client = useQueryClient();
   const unit = useQuery({
     queryKey: ['learning-unit', unitId],
     queryFn: () => api<Unit>(`/learning/units/${unitId}`),
     staleTime: 5 * 60_000,
+  });
+  const complete = useMutation({
+    mutationFn: () =>
+      api('/learning/review', {
+        method: 'POST',
+        body: json({ unitId, rating: 3 }),
+      }),
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ['learning'] }),
+        client.invalidateQueries({ queryKey: ['learning-unit', unitId] }),
+        client.invalidateQueries({ queryKey: ['learning-due'] }),
+        client.invalidateQueries({ queryKey: ['dashboard'] }),
+      ]);
+    },
   });
   return (
     <Dialog.Root
@@ -142,6 +161,31 @@ function LearningUnitModal({
                     {unit.data.summary}
                   </ReactMarkdown>
                 </article>
+                <div className="learning-unit-actions">
+                  <FolderSaveButton
+                    itemType="LEARNING_UNIT"
+                    targetId={unit.data.id}
+                    label={unit.data.title}
+                  />
+                  <button
+                    type="button"
+                    className="primary-button compact"
+                    disabled={complete.isPending}
+                    onClick={() => complete.mutate()}
+                  >
+                    <CheckCircle2 />
+                    {complete.isPending
+                      ? '복습 일정 저장 중…'
+                      : unit.data.progress[0]?.completed
+                        ? '복습 일정 갱신'
+                        : '학습 완료'}
+                  </button>
+                </div>
+                {complete.isError && (
+                  <div className="form-error" role="alert">
+                    학습 완료 상태를 저장하지 못했습니다.
+                  </div>
+                )}
                 <section className="learning-recall-section">
                   <div className="learning-section-title">
                     <Sparkles />
@@ -207,15 +251,39 @@ function LearningQuestion({
         if (response.trim()) answer.mutate();
       }}
     >
-      <label htmlFor={`question-${question.id}`}>{question.prompt}</label>
-      <div>
-        <input
-          id={`question-${question.id}`}
-          value={response}
-          onChange={(event) => setResponse(event.target.value)}
-          aria-invalid={answer.data ? !answer.data.correct : undefined}
-          aria-describedby={answer.data ? `question-result-${question.id}` : undefined}
-        />
+      {question.type === 'MULTIPLE_CHOICE' ? (
+        <p className="learning-question-prompt">{question.prompt}</p>
+      ) : (
+        <label htmlFor={`question-${question.id}`}>{question.prompt}</label>
+      )}
+      {question.type === 'MULTIPLE_CHOICE' ? (
+        <fieldset className="learning-choice-list">
+          <legend className="sr-only">답 선택</legend>
+          {question.choices.map((choice) => (
+            <label key={choice}>
+              <input
+                type="radio"
+                name={`question-${question.id}`}
+                value={choice}
+                checked={response === choice}
+                onChange={(event) => setResponse(event.target.value)}
+              />
+              <span>{choice}</span>
+            </label>
+          ))}
+        </fieldset>
+      ) : (
+        <div>
+          <input
+            id={`question-${question.id}`}
+            value={response}
+            onChange={(event) => setResponse(event.target.value)}
+            aria-invalid={answer.data ? !answer.data.correct : undefined}
+            aria-describedby={answer.data ? `question-result-${question.id}` : undefined}
+          />
+        </div>
+      )}
+      <div className="learning-question-actions">
         <button type="submit" disabled={!response.trim() || answer.isPending}>
           {answer.isPending ? '채점 중…' : '채점하기'}
         </button>
@@ -253,7 +321,10 @@ export function LearningPage() {
   });
   const due = useQuery({
     queryKey: ['learning-due'],
-    queryFn: () => api<unknown[]>('/learning/due'),
+    queryFn: () =>
+      api<Array<{ unitId: string; title: string; sourceTitle: string; nextReviewAt: string }>>(
+        '/learning/due',
+      ),
     staleTime: 60_000,
     refetchOnWindowFocus: false,
   });
@@ -302,6 +373,47 @@ export function LearningPage() {
       </section>
       {learning.isLoading && <div className="loading-panel">학습자료를 불러오는 중…</div>}
       {learning.isError && <div className="error-panel">학습자료를 불러오지 못했습니다.</div>}
+      {due.isError && (
+        <div className="error-panel" role="alert">
+          복습 예정 목록을 불러오지 못했습니다.
+          <button type="button" onClick={() => void due.refetch()}>
+            다시 시도
+          </button>
+        </div>
+      )}
+      {Boolean(due.data?.length) && (
+        <section className="learning-due-list" aria-label="복습 예정 단원">
+          <header>
+            <Clock3 />
+            <div>
+              <span>오늘 다시 볼 내용</span>
+              <h2>복습 예정 {due.data?.length}개</h2>
+            </div>
+          </header>
+          <div>
+            {due.data?.map((item) => (
+              <button
+                type="button"
+                key={item.unitId}
+                onClick={() => {
+                  const source = learning.data?.find((candidate) =>
+                    candidate.units.some((unit) => unit.id === item.unitId),
+                  );
+                  const index = source?.units.findIndex((unit) => unit.id === item.unitId) ?? 0;
+                  setSelected({ unitId: item.unitId, index });
+                  const next = new URLSearchParams(searchParams);
+                  next.set('unit', item.unitId);
+                  next.set('mode', 'due');
+                  setSearchParams(next, { replace: true });
+                }}
+              >
+                <strong>{item.title}</strong>
+                <span>{item.sourceTitle}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
       <div className="learning-list">
         {learning.data?.map((source) => (
           <section

@@ -45,6 +45,15 @@ export function parseLearningPackage(input: unknown): LearningImport {
     }
     anchors.add(unit.anchor);
   }
+  const childCount = parsed.data.units.reduce(
+    (sum, unit) => sum + 1 + unit.flashcards.length + unit.questions.length,
+    0,
+  );
+  if (childCount > 500) {
+    throw new DomainValidationError(
+      '학습 package는 단원·플래시카드·문항 합계 500개 이하로 나눠주세요.',
+    );
+  }
   return parsed.data;
 }
 

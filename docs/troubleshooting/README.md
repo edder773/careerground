@@ -11,23 +11,28 @@ generatedByAI: false
 
 ## 문서 목록
 
-| 시점  | 주제                                                                                      | 관련 PR        | 핵심 근거                            |
-| ----- | ----------------------------------------------------------------------------------------- | -------------- | ------------------------------------ |
-| 08-12 | [초기 MVP와 정적 Sites 배포 경계](./2026-08-12-initial-mvp-and-deployment-boundary.md)    | #3             | 39 tests, 12 E2E, 초기 화면          |
-| 08-12 | [Slack 제거와 OpenAI 계정 연결](./2026-08-12-openai-auth-and-seeded-user-linking.md)      | #5–#6          | 인증 migration, seed ID 0            |
-| 08-12 | [운영 4xx/5xx와 D1 영속성](./2026-08-12-production-api-errors-and-d1-persistence.md)      | #7             | 503 기준선, 24 tables/34 indexes     |
-| 08-12 | [회원·풀이 공개·노트 재구성](./2026-08-12-member-workspace-visibility-and-notes.md)       | #8             | migration, 51 tests, 13 E2E          |
-| 08-12 | [트러블슈팅 자동화 게시 실패](./2026-08-12-troubleshooting-automation-failures.md)        | #9–#10         | validator scope, 권한 fallback       |
-| 08-13 | [채용 달력과 쿼리 성능](./2026-08-13-job-calendar-and-query-performance.md)               | #11, #13       | median 20.153→0.137 ms               |
-| 08-13 | [달력·PDF 학습·오늘의 문제](./2026-08-13-calendar-learning-and-daily-challenges.md)       | #12            | 2 daily slots, clean-runner seed fix |
-| 08-13 | [학습·설정·SQL/PDF 시각자료](./2026-08-13-learning-settings-sql-and-pdf-visuals.md)       | #14–#15        | 427 problems 분류, slide 23개        |
-| 08-13 | [Sites runtime과 artifact 배포](./2026-08-13-sites-runtime-and-artifact-deployment.md)    | #16–#18        | Node/jsdom 호환, exact-SHA archive   |
-| 08-13 | [120개 채용 catalog와 복수 필터](./2026-08-13-job-catalog-import-and-filter-usability.md) | #19            | 120 upsert, 119 공개                 |
-| 08-13 | [131개 감사와 canonical D1](./2026-08-13-canonical-d1-audit-remediation.md)               | 운영 선행 커밋 | P0 9/9, 합성 endpoint benchmark      |
-| 08-14 | [페이지네이션·멱등성·삭제 복구](./2026-08-14-pagination-reliability-and-recovery.md)      | #20            | payload 77.1–88.1% 감소              |
-| 08-14 | [잔여 감사 49개 완결](./2026-08-14-complete-audit-remediation.md)                         | #22            | 127/131, 97 tests, 48 E2E            |
+| 시점  | 주제                                                                                      | 관련 PR        | 핵심 근거                               |
+| ----- | ----------------------------------------------------------------------------------------- | -------------- | --------------------------------------- |
+| 08-12 | [초기 MVP와 정적 Sites 배포 경계](./2026-08-12-initial-mvp-and-deployment-boundary.md)    | #3             | 39 tests, 12 E2E, 초기 화면             |
+| 08-12 | [Slack 제거와 OpenAI 계정 연결](./2026-08-12-openai-auth-and-seeded-user-linking.md)      | #5–#6          | 인증 migration, seed ID 0               |
+| 08-12 | [운영 4xx/5xx와 D1 영속성](./2026-08-12-production-api-errors-and-d1-persistence.md)      | #7             | 503 기준선, 24 tables/34 indexes        |
+| 08-12 | [회원·풀이 공개·노트 재구성](./2026-08-12-member-workspace-visibility-and-notes.md)       | #8             | migration, 51 tests, 13 E2E             |
+| 08-12 | [트러블슈팅 자동화 게시 실패](./2026-08-12-troubleshooting-automation-failures.md)        | #9–#10         | validator scope, 권한 fallback          |
+| 08-13 | [채용 달력과 쿼리 성능](./2026-08-13-job-calendar-and-query-performance.md)               | #11, #13       | median 20.153→0.137 ms                  |
+| 08-13 | [달력·PDF 학습·오늘의 문제](./2026-08-13-calendar-learning-and-daily-challenges.md)       | #12            | 2 daily slots, clean-runner seed fix    |
+| 08-13 | [학습·설정·SQL/PDF 시각자료](./2026-08-13-learning-settings-sql-and-pdf-visuals.md)       | #14–#15        | 427 problems 분류, slide 23개           |
+| 08-13 | [Sites runtime과 artifact 배포](./2026-08-13-sites-runtime-and-artifact-deployment.md)    | #16–#18        | Node/jsdom 호환, exact-SHA archive      |
+| 08-13 | [120개 채용 catalog와 복수 필터](./2026-08-13-job-catalog-import-and-filter-usability.md) | #19            | 120 upsert, 119 공개                    |
+| 08-13 | [131개 감사와 canonical D1](./2026-08-13-canonical-d1-audit-remediation.md)               | 운영 선행 커밋 | P0 9/9, 합성 endpoint benchmark         |
+| 08-14 | [페이지네이션·멱등성·삭제 복구](./2026-08-14-pagination-reliability-and-recovery.md)      | #20            | payload 77.1–88.1% 감소                 |
+| 08-14 | [잔여 감사 49개 완결](./2026-08-14-complete-audit-remediation.md)                         | #22            | 127/131, 97 tests, 48 E2E               |
+| 08-14 | [최신 232개 전수 감사 재조치](./2026-08-14-latest-full-audit-remediation.md)              | 작업 중        | P0 데이터 안전, schema canary, 98 tests |
 
 Dependabot PR #4는 pnpm 11/Node 24를 지원하는 `pnpm/action-setup@6` 갱신이며 별도 장애가 없어 Sites runtime 문서의 도구 체인 맥락에 포함했다. PR #3 이전의 닫힌 #1/#2는 구현이 병합되지 않았으므로 운영 변경 기록에 포함하지 않았다.
+
+`2026-08-14-complete-audit-remediation.md`는 당시 131개 감사 범위의 결론이다. 이후 작성된
+232개 최신 감사의 상태와 미검증 경계는 `2026-08-14-latest-full-audit-remediation.md` 및
+`docs/audits/careerground-latest-full-audit-resolution-2026-08-14.md`가 우선한다.
 
 ## 증거 해석 규칙
 

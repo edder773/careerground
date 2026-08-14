@@ -26,5 +26,18 @@
 }
 
 .recent-searches h3 {
-  flex-basis: 100%;
+  margin: 0;
+}
+
+.recent-searches header {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.recent-searches header button {
+  padding: 4px 8px;
+  color: var(--muted);
+  font-size: 0.78rem;
 }

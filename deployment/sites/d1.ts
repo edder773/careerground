@@ -46,9 +46,10 @@ export function parseArray(value: unknown): string[] {
   if (typeof value !== 'string') return [];
   try {
     const parsed = JSON.parse(value) as unknown;
-    return Array.isArray(parsed) ? parsed.map(String) : [];
-  } catch {
-    return [];
+    if (!Array.isArray(parsed)) throw new Error('Stored JSON value is not an array.');
+    return parsed.map(String);
+  } catch (error) {
+    throw new Error('Stored JSON array is invalid.', { cause: error });
   }
 }
 
@@ -57,9 +58,10 @@ export function parseJsonArray<T = unknown>(value: unknown): T[] {
   if (typeof value !== 'string') return [];
   try {
     const parsed = JSON.parse(value) as unknown;
-    return Array.isArray(parsed) ? (parsed as T[]) : [];
-  } catch {
-    return [];
+    if (!Array.isArray(parsed)) throw new Error('Stored JSON value is not an array.');
+    return parsed as T[];
+  } catch (error) {
+    throw new Error('Stored JSON array is invalid.', { cause: error });
   }
 }
 
@@ -70,11 +72,12 @@ export function parseObject(value: unknown): Record<string, unknown> {
   if (typeof value !== 'string') return {};
   try {
     const parsed = JSON.parse(value) as unknown;
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-      ? (parsed as Record<string, unknown>)
-      : {};
-  } catch {
-    return {};
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error('Stored JSON value is not an object.');
+    }
+    return parsed as Record<string, unknown>;
+  } catch (error) {
+    throw new Error('Stored JSON object is invalid.', { cause: error });
   }
 }
 

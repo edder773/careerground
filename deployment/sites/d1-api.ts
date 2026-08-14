@@ -23,6 +23,7 @@ import {
   sha256,
   sourceText,
 } from './domain.js';
+import { inspectRuntimeSchema } from './runtime-schema.js';
 
 type D1Env = {
   DB: D1Database;
@@ -120,6 +121,14 @@ type CursorPage<T> = { items: T[]; nextCursor: string | null; total: number };
 const cursorPageRequested = (search: URLSearchParams) => search.get('page') === 'cursor';
 const cursorLimit = (search: URLSearchParams, fallback: number, maximum: number) =>
   Math.min(maximum, Math.max(1, int(search.get('limit'), fallback)));
+const ftsMatchQuery = (query: string) =>
+  query
+    .replace(/["*:^{}()[\]]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 8)
+    .map((token) => `"${token}"*`)
+    .join(' AND ');
 const encodeCursor = (value: Record<string, unknown>) => {
   const bytes = new TextEncoder().encode(JSON.stringify(value));
   let binary = '';
@@ -218,58 +227,62 @@ async function resolveUser(identity: Identity, env: D1Env): Promise<UserRow> {
   );
   const timestamp = nowIso();
   if (!row) {
-    const count = await first<{ count: number }>(
-      db,
-      'SELECT COUNT(*) AS count FROM users WHERE is_active = 1',
-    );
     const maxActiveUsers = Math.max(1, int(env.MAX_ACTIVE_USERS, 100_000));
-    if (Number(count?.count || 0) >= maxActiveUsers && !allowedAdmins.has(identity.email)) {
-      throw new RouteError(403, '현재 활성 사용자 한도에 도달했습니다.', 'USER_LIMIT_REACHED');
-    }
     const role = allowedAdmins.has(identity.email) ? 'ADMIN' : 'MEMBER';
     const id = newId();
-    await env.DB.batch([
-      db
-        .prepare(
-          `INSERT INTO users
+    const inserted = await run(
+      db,
+      role === 'ADMIN'
+        ? `INSERT INTO users
              (id, site_user_id, email, display_name, role, preferred_language, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, 'javascript', ?, ?)`,
-        )
-        .bind(
-          id,
-          identity.userId,
-          identity.email,
-          identity.displayName,
-          role,
-          timestamp,
-          timestamp,
-        ),
-      db
-        .prepare(
-          `INSERT INTO notifications
+           VALUES (?, ?, ?, ?, ?, 'javascript', ?, ?)`
+        : `INSERT INTO users
+             (id, site_user_id, email, display_name, role, preferred_language, created_at, updated_at)
+           SELECT ?, ?, ?, ?, ?, 'javascript', ?, ?
+            WHERE (SELECT COUNT(*) FROM users WHERE is_active = 1) < ?`,
+      id,
+      identity.userId,
+      identity.email,
+      identity.displayName,
+      role,
+      timestamp,
+      timestamp,
+      ...(role === 'ADMIN' ? [] : [maxActiveUsers]),
+    );
+    if (Number(inserted.meta?.changes || 0) !== 1) {
+      row = await first<UserRow>(db, `${userSelect} WHERE site_user_id = ?`, identity.userId);
+      if (!row) {
+        throw new RouteError(403, '현재 활성 사용자 한도에 도달했습니다.', 'USER_LIMIT_REACHED');
+      }
+    } else {
+      await env.DB.batch([
+        db
+          .prepare(
+            `INSERT INTO notifications
              (id, user_id, type, title, message, href, dedupe_key, created_at)
            VALUES (?, ?, 'SYSTEM', ?, ?, '/', ?, ?)`,
-        )
-        .bind(
-          newId(),
-          id,
-          'CareerGround에 오신 것을 환영합니다',
-          'OpenAI 계정과 개인 워크스페이스가 연결되었습니다.',
-          `welcome:${id}`,
-          timestamp,
-        ),
-      db
-        .prepare(
-          `INSERT INTO audit_logs
+          )
+          .bind(
+            newId(),
+            id,
+            'CareerGround에 오신 것을 환영합니다',
+            'OpenAI 계정과 개인 워크스페이스가 연결되었습니다.',
+            `welcome:${id}`,
+            timestamp,
+          ),
+        db
+          .prepare(
+            `INSERT INTO audit_logs
              (id, actor_id, action, target_type, target_id, metadata, created_at)
            VALUES (?, ?, 'OPENAI_ACCOUNT_CREATED', 'User', ?, ?, ?)`,
-        )
-        .bind(newId(), id, id, JSON.stringify({ provider: 'openai-sites', role }), timestamp),
-    ]);
-    row = await first<UserRow>(db, `${userSelect} WHERE id = ?`, id);
+          )
+          .bind(newId(), id, id, JSON.stringify({ provider: 'openai-sites', role }), timestamp),
+      ]);
+      row = await first<UserRow>(db, `${userSelect} WHERE id = ?`, id);
+    }
   } else {
     if (!asBoolean(row.isActive)) throw new RouteError(403, '비활성화된 계정입니다.');
-    const role = allowedAdmins.has(identity.email) ? 'ADMIN' : 'MEMBER';
+    const role = row.role === 'ADMIN' || allowedAdmins.has(identity.email) ? 'ADMIN' : 'MEMBER';
     const statements = [
       db
         .prepare(
@@ -384,8 +397,7 @@ async function collections(db: D1Database, userId: string) {
   }));
 }
 
-async function ensureDeadlineNotifications(db: D1Database, user: UserRow) {
-  if (!asBoolean(user.deadlineNotifications)) return;
+async function ensureDeadlineNotifications(db: D1Database) {
   const now = new Date();
   const todayKst = new Date(
     new Intl.DateTimeFormat('en-CA', {
@@ -395,50 +407,30 @@ async function ensureDeadlineNotifications(db: D1Database, user: UserRow) {
       day: '2-digit',
     }).format(now) + 'T00:00:00+09:00',
   );
-  const end = new Date(todayKst.getTime() + 8 * 86_400_000);
-  const rows = await all<{ jobId: string; title: string; deadlineAt: string }>(
-    db,
-    `SELECT j.id AS jobId, j.title, j.deadline_at AS deadlineAt
-       FROM saved_jobs sj JOIN jobs j ON j.id = sj.job_id
-      WHERE sj.user_id = ? AND sj.bookmarked = 1 AND j.status = 'ACTIVE'
-        AND j.deadline_at >= ? AND j.deadline_at < ?`,
-    user.id,
-    todayKst.toISOString(),
-    end.toISOString(),
-  );
-  const statements = rows.flatMap((job) => {
-    const deadlineKst = new Date(
-      new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'Asia/Seoul',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      }).format(new Date(job.deadlineAt)) + 'T00:00:00+09:00',
-    );
-    const days = Math.round((deadlineKst.getTime() - todayKst.getTime()) / 86_400_000);
-    if (![1, 3, 7].includes(days)) return [];
-    const dedupeKey = `job-deadline:${job.jobId}:${job.deadlineAt}:d-${days}`;
-    return [
-      db
+  const results = await db.batch(
+    [1, 3, 7].map((days) => {
+      const from = new Date(todayKst.getTime() + days * 86_400_000).toISOString();
+      const to = new Date(todayKst.getTime() + (days + 1) * 86_400_000).toISOString();
+      return db
         .prepare(
           `INSERT INTO notifications
              (id, user_id, type, title, message, href, dedupe_key, expires_at, created_at)
-           VALUES (?, ?, 'JOB_DEADLINE', ?, ?, ?, ?, ?, ?)
+           SELECT lower(hex(randomblob(16))), sj.user_id, 'JOB_DEADLINE', ?, j.title,
+                  '/jobs?job=' || j.id,
+                  'job-deadline:' || j.id || ':' || j.deadline_at || ':d-${days}',
+                  datetime(j.deadline_at, '+7 days'), ?
+             FROM saved_jobs sj
+             JOIN jobs j ON j.id = sj.job_id
+             JOIN users u ON u.id = sj.user_id
+            WHERE sj.bookmarked = 1 AND j.status = 'ACTIVE' AND u.is_active = 1
+              AND u.deadline_notifications = 1
+              AND j.deadline_at >= ? AND j.deadline_at < ?
            ON CONFLICT(user_id, dedupe_key) DO NOTHING`,
         )
-        .bind(
-          newId(),
-          user.id,
-          `관심 공고 마감 D-${days}`,
-          job.title,
-          `/jobs?job=${job.jobId}`,
-          dedupeKey,
-          new Date(new Date(job.deadlineAt).getTime() + 7 * 86_400_000).toISOString(),
-          now.toISOString(),
-        ),
-    ];
-  });
-  if (statements.length) await db.batch(statements);
+        .bind(`관심 공고 마감 D-${days}`, now.toISOString(), from, to);
+    }),
+  );
+  return results.reduce((sum, result) => sum + Number(result.meta?.changes || 0), 0);
 }
 
 export async function runScheduledMaintenance(env: D1Env) {
@@ -470,42 +462,25 @@ export async function runScheduledMaintenance(env: D1Env) {
       startedAt,
       startedAt,
     );
-    const users = await all<UserRow>(db, `${userSelect} WHERE is_active = 1`);
-    for (const user of users) {
-      await ensureDeadlineNotifications(db, user);
-      if (!asBoolean(user.reviewNotifications)) continue;
-      const dueUnits = await all<{ unitId: string; title: string; nextReviewAt: string }>(
-        db,
-        `SELECT lp.unit_id AS unitId, u.title, lp.next_review_at AS nextReviewAt
-           FROM learning_progress lp JOIN learning_units u ON u.id = lp.unit_id
-          WHERE lp.user_id = ? AND lp.completed = 1 AND lp.mastered_at IS NULL
-            AND lp.next_review_at IS NOT NULL AND lp.next_review_at <= ?
-          ORDER BY lp.next_review_at LIMIT 50`,
-        user.id,
-        startedAt,
-      );
-      if (!dueUnits.length) continue;
-      const results = await db.batch(
-        dueUnits.map((unit) =>
-          db
-            .prepare(
-              `INSERT INTO notifications
-                 (id, user_id, type, title, message, href, dedupe_key, created_at)
-               VALUES (?, ?, 'LEARNING_REVIEW', '복습할 단원이 있습니다', ?, ?, ?, ?)
-               ON CONFLICT(user_id, dedupe_key) DO NOTHING`,
-            )
-            .bind(
-              newId(),
-              user.id,
-              unit.title,
-              `/learning?unit=${unit.unitId}`,
-              `learning-review:${unit.unitId}:${unit.nextReviewAt.slice(0, 10)}`,
-              startedAt,
-            ),
-        ),
-      );
-      notifications += results.reduce((sum, result) => sum + Number(result.meta?.changes || 0), 0);
-    }
+    notifications += await ensureDeadlineNotifications(db);
+    const reviewNotifications = await run(
+      db,
+      `INSERT INTO notifications
+         (id, user_id, type, title, message, href, dedupe_key, created_at)
+       SELECT lower(hex(randomblob(16))), lp.user_id, 'LEARNING_REVIEW',
+              '복습할 단원이 있습니다', u.title, '/learning?unit=' || lp.unit_id,
+              'learning-review:' || lp.unit_id || ':' || substr(lp.next_review_at, 1, 10), ?
+         FROM learning_progress lp
+         JOIN learning_units u ON u.id = lp.unit_id
+         JOIN users member ON member.id = lp.user_id
+        WHERE lp.completed = 1 AND lp.mastered_at IS NULL
+          AND lp.next_review_at IS NOT NULL AND lp.next_review_at <= ?
+          AND member.is_active = 1 AND member.review_notifications = 1
+       ON CONFLICT(user_id, dedupe_key) DO NOTHING`,
+      startedAt,
+      startedAt,
+    );
+    notifications += Number(reviewNotifications.meta?.changes || 0);
     return {
       acquired: true,
       expiredJobs: Number(expired.meta?.changes || 0),
@@ -629,6 +604,32 @@ async function problems(db: D1Database, userId: string, search: URLSearchParams)
   } satisfies CursorPage<(typeof items)[number]>;
 }
 
+async function problemDetail(db: D1Database, userId: string, problemId: string) {
+  const row = await first<ProblemRow>(
+    db,
+    `SELECT p.id, p.source_url AS sourceUrl, p.display_title AS displayTitle,
+            p.level, p.track, p.tags, p.position, pp.status, pp.favorite,
+            (SELECT COUNT(*) FROM solutions s
+              WHERE s.problem_id = p.id AND s.deleted_at IS NULL) AS solutionCount
+       FROM coding_problems p
+       LEFT JOIN problem_progress pp ON pp.problem_id = p.id AND pp.user_id = ?
+      WHERE p.id = ? AND p.active = 1`,
+    userId,
+    problemId,
+  );
+  if (!row) throw new RouteError(404, '코딩 문제를 찾을 수 없습니다.');
+  return {
+    id: row.id,
+    sourceUrl: row.sourceUrl,
+    displayTitle: row.displayTitle,
+    level: row.level,
+    track: row.track,
+    tags: parseArray(row.tags),
+    progress: row.status ? [{ status: row.status, favorite: asBoolean(row.favorite) }] : [],
+    _count: { solutions: Number(row.solutionCount || 0) },
+  };
+}
+
 const kstDate = () =>
   new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Seoul',
@@ -643,6 +644,8 @@ async function dailyChallenge(
   levelSlot = 1,
   track: 'ALGORITHM' | 'SQL' = 'ALGORITHM',
   levels: number[] = [levelSlot],
+  repeatExclusionDays = 60,
+  allowRepeatRelaxation = false,
 ) {
   const today = kstDate();
   let challenge = await first<{
@@ -659,21 +662,33 @@ async function dailyChallenge(
   );
   if (!challenge) {
     const levelPlaceholders = levels.map(() => '?').join(', ');
-    const candidates = await all<{ id: string }>(
-      db,
-      `SELECT id FROM coding_problems WHERE active = 1 AND track = ? AND level IN (${levelPlaceholders}) ORDER BY position, id`,
-      track,
-      ...levels,
-    );
+    const cutoff = new Date(`${today}T00:00:00.000Z`);
+    cutoff.setUTCDate(cutoff.getUTCDate() - Math.max(0, repeatExclusionDays));
+    const candidateRows = (relaxed: boolean) =>
+      all<{ id: string }>(
+        db,
+        `SELECT id FROM coding_problems
+          WHERE active = 1 AND track = ? AND level IN (${levelPlaceholders})
+            AND id NOT IN (
+              SELECT problem_id FROM daily_challenges WHERE kst_date >= ?
+            )
+          ORDER BY position, id`,
+        track,
+        ...levels,
+        relaxed ? today : cutoff.toISOString().slice(0, 10),
+      );
+    let candidates = await candidateRows(false);
+    if (!candidates.length && allowRepeatRelaxation) candidates = await candidateRows(true);
     if (!candidates.length)
       throw new RouteError(
         404,
         `오늘의 ${track === 'SQL' ? 'SQL Lv. 3~4' : `Lv. ${levelSlot}`} 문제 후보가 없습니다.`,
       );
-    const seed = [...`${today}:${track}:${levels.join('-')}`].reduce(
-      (sum, character) => sum + character.charCodeAt(0),
-      0,
-    );
+    let seed = 0x811c9dc5;
+    for (const character of `${today}:${track}:${levelSlot}:${levels.join('-')}`) {
+      seed ^= character.charCodeAt(0);
+      seed = Math.imul(seed, 0x01000193) >>> 0;
+    }
     const selected = candidates[seed % candidates.length];
     const timestamp = nowIso();
     const id = newId();
@@ -726,11 +741,50 @@ async function dailyChallenge(
 }
 
 async function dailyChallenges(db: D1Database, userId: string) {
-  return Promise.all([
-    dailyChallenge(db, userId, 1, 'ALGORITHM', [1]),
-    dailyChallenge(db, userId, 2, 'ALGORITHM', [2]),
-    dailyChallenge(db, userId, 34, 'SQL', [3, 4]),
-  ]);
+  const setting = await first<{
+    allowedLevels: string;
+    repeatExclusionDays: number;
+    allowRepeatRelaxation: number | boolean;
+  }>(
+    db,
+    `SELECT allowed_levels AS allowedLevels,
+            repeat_exclusion_days AS repeatExclusionDays,
+            allow_repeat_relaxation AS allowRepeatRelaxation
+       FROM daily_challenge_settings WHERE id = 1`,
+  );
+  const configuredLevels = parseArray(setting?.allowedLevels || '[1,2]')
+    .map(Number)
+    .filter((level) => Number.isInteger(level) && level >= 0 && level <= 5);
+  const algorithmLevels = configuredLevels.length ? configuredLevels : [1, 2];
+  const repeatExclusionDays = Math.max(0, Number(setting?.repeatExclusionDays ?? 60));
+  const allowRepeatRelaxation = asBoolean(setting?.allowRepeatRelaxation);
+  const result = [];
+  result.push(
+    await dailyChallenge(
+      db,
+      userId,
+      1,
+      'ALGORITHM',
+      [algorithmLevels[0] ?? 1],
+      repeatExclusionDays,
+      allowRepeatRelaxation,
+    ),
+  );
+  result.push(
+    await dailyChallenge(
+      db,
+      userId,
+      2,
+      'ALGORITHM',
+      [algorithmLevels[1] ?? algorithmLevels[0] ?? 2],
+      repeatExclusionDays,
+      allowRepeatRelaxation,
+    ),
+  );
+  result.push(
+    await dailyChallenge(db, userId, 34, 'SQL', [3, 4], repeatExclusionDays, allowRepeatRelaxation),
+  );
+  return result;
 }
 
 type SolutionRow = {
@@ -901,9 +955,24 @@ async function solutionDetail(db: D1Database, userId: string, solutionId: string
       hiddenAt: comment.hiddenAt,
       createdAt: comment.createdAt,
       author: { id: comment.authorId, displayName: comment.authorDisplayName },
+      canEdit: comment.authorId === userId,
       replies: [] as unknown[],
     };
   };
+  const mappedComments = new Map(
+    comments.map((comment) => [String(comment.id), mapComment(comment)]),
+  );
+  const rootComments: ReturnType<typeof mapComment>[] = [];
+  for (const comment of comments) {
+    const mapped = mappedComments.get(String(comment.id));
+    if (!mapped) continue;
+    if (!comment.parentId) {
+      rootComments.push(mapped);
+      continue;
+    }
+    const parent = mappedComments.get(String(comment.parentId));
+    if (parent) parent.replies.push(mapped);
+  }
   return {
     ...row,
     solved: asBoolean(row.solved),
@@ -912,12 +981,7 @@ async function solutionDetail(db: D1Database, userId: string, solutionId: string
     reactions,
     reactionCount: reactions.length,
     reactedByMe: reactions.some((reaction) => reaction.userId === userId),
-    comments: comments
-      .filter((comment) => !comment.parentId)
-      .map((comment) => ({
-        ...mapComment(comment),
-        replies: comments.filter((reply) => reply.parentId === comment.id).map(mapComment),
-      })),
+    comments: rootComments,
     author: { id: row.authorId, displayName: row.authorDisplayName },
     problem: { displayTitle: row.problemTitle, level: row.problemLevel },
   };
@@ -931,7 +995,7 @@ function serializeJobRows(rows: Record<string, unknown>[]) {
     region: row.region,
     remote: asBoolean(row.remote),
     techStack: parseArray(row.tech_stack),
-    publishedAt: null,
+    publishedAt: row.published_at || null,
     collectedAt: row.collected_at,
     deadlineAt: row.deadline_at,
     rolling: asBoolean(row.rolling),
@@ -959,6 +1023,8 @@ async function calendarJobList(
   to: string,
   companySizes: string[],
   categories: string[],
+  query: string,
+  savedOnly: boolean,
 ) {
   const filters: string[] = [];
   const filterValues: unknown[] = [];
@@ -970,9 +1036,19 @@ async function calendarJobList(
     filters.push(`j.category IN (${categories.map(() => '?').join(', ')})`);
     filterValues.push(...categories);
   }
+  if (query) {
+    const match = ftsMatchQuery(query);
+    if (match) {
+      filters.push(
+        "j.id IN (SELECT entity_id FROM workspace_search WHERE kind = 'jobs' AND workspace_search MATCH ?)",
+      );
+      filterValues.push(match);
+    }
+  }
+  if (savedOnly) filters.push('sj.bookmarked = 1');
   const select = (indexName: string, scheduleClause: string) => `
     SELECT j.id, j.title, j.category, j.region, j.remote, j.tech_stack,
-           j.collected_at, j.deadline_at, j.rolling, substr(j.summary, 1, 320) AS summary,
+           j.published_at, j.collected_at, j.deadline_at, j.rolling, substr(j.summary, 1, 320) AS summary,
            j.source_url, j.company_name,
            j.company_size, j.source_name, j.last_verified_at,
            sj.status AS savedStatus, sj.memo AS savedMemo, sj.bookmarked AS savedBookmarked
@@ -982,7 +1058,7 @@ async function calendarJobList(
        AND j.career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
        AND ${scheduleClause}
        ${filters.length ? `AND ${filters.join(' AND ')}` : ''}
-     LIMIT 200`;
+     LIMIT 1001`;
   const statement = (indexName: string, scheduleClause: string, ...scheduleValues: unknown[]) =>
     db.prepare(select(indexName, scheduleClause)).bind(userId, ...scheduleValues, ...filterValues);
   const resultSets = await db.batch<Record<string, unknown>>([
@@ -1003,6 +1079,13 @@ async function calendarJobList(
   ]);
   const unique = new Map<string, Record<string, unknown>>();
   for (const result of resultSets) {
+    if ((result.results || []).length > 1000) {
+      throw new RouteError(
+        422,
+        '달력 일정이 너무 많습니다. 검색어나 필터로 범위를 좁혀주세요.',
+        'CALENDAR_RESULT_LIMIT',
+      );
+    }
     for (const row of result.results || []) unique.set(String(row.id), row);
   }
   return serializeJobRows([...unique.values()]);
@@ -1032,9 +1115,13 @@ async function jobList(db: D1Database, userId: string, url: URL) {
   }
   const query = cleanText(url.searchParams.get('q'));
   if (query) {
-    clauses.push('(j.title LIKE ? OR j.company_name LIKE ? OR j.tech_stack LIKE ?)');
-    const like = `%${query}%`;
-    values.push(like, like, like);
+    const match = ftsMatchQuery(query);
+    if (match) {
+      clauses.push(
+        "j.id IN (SELECT entity_id FROM workspace_search WHERE kind = 'jobs' AND workspace_search MATCH ?)",
+      );
+      values.push(match);
+    }
   }
   if (url.searchParams.get('saved') === '1') clauses.push('sj.bookmarked = 1');
   const deadlineFrom = url.searchParams.get('deadlineFrom');
@@ -1054,7 +1141,16 @@ async function jobList(db: D1Database, userId: string, url: URL) {
   if (calendar && deadlineFrom && deadlineTo) {
     const from = new Date(deadlineFrom).toISOString();
     const to = new Date(deadlineTo).toISOString();
-    return calendarJobList(db, userId, from, to, companySizes, categories);
+    return calendarJobList(
+      db,
+      userId,
+      from,
+      to,
+      companySizes,
+      categories,
+      query,
+      url.searchParams.get('saved') === '1',
+    );
   } else {
     if (deadlineFrom) {
       clauses.push('j.deadline_at >= ?');
@@ -1109,7 +1205,7 @@ async function jobList(db: D1Database, userId: string, url: URL) {
   const rows = await all<Record<string, unknown>>(
     db,
     `SELECT j.id, j.title, j.category, j.region, j.remote, j.tech_stack,
-            j.collected_at, j.deadline_at, j.rolling, substr(j.summary, 1, 320) AS summary,
+            j.published_at, j.collected_at, j.deadline_at, j.rolling, substr(j.summary, 1, 320) AS summary,
             j.source_url, j.company_name,
             j.company_size, j.source_name, j.last_verified_at,
             sj.status AS savedStatus, sj.memo AS savedMemo, sj.bookmarked AS savedBookmarked
@@ -1152,7 +1248,7 @@ async function jobDetail(db: D1Database, userId: string, jobId: string) {
     db,
     `SELECT j.id, j.title, j.category, j.region, j.remote,
             COALESCE((SELECT json_group_array(jts.name) FROM job_tech_stacks jts WHERE jts.job_id = j.id), j.tech_stack) AS tech_stack,
-            j.collected_at, j.deadline_at, j.rolling, j.summary, j.source_url,
+            j.published_at, j.collected_at, j.deadline_at, j.rolling, j.summary, j.source_url,
             j.company_name, j.company_size, j.source_name, j.last_verified_at,
             sj.status AS savedStatus, sj.memo AS savedMemo, sj.bookmarked AS savedBookmarked
        FROM jobs j
@@ -1255,7 +1351,7 @@ async function learningUnitDetail(db: D1Database, userId: string, unitId: string
     ),
     all<Record<string, unknown>>(
       db,
-      `SELECT id, prompt FROM learning_questions
+      `SELECT id, prompt, type, choices FROM learning_questions
         WHERE unit_id = ? ORDER BY created_at`,
       unitId,
     ),
@@ -1271,6 +1367,14 @@ async function learningUnitDetail(db: D1Database, userId: string, unitId: string
       unitId,
     ),
   ]);
+  const attemptsByQuestion = new Map<string, Record<string, unknown>[]>();
+  for (const attempt of attempts) {
+    const questionId = String(attempt.questionId);
+    attemptsByQuestion.set(questionId, [
+      ...(attemptsByQuestion.get(questionId) || []),
+      { ...attempt, correct: asBoolean(attempt.correct) },
+    ]);
+  }
   return {
     ...unit,
     concepts: parseArray(unit.concepts),
@@ -1278,9 +1382,8 @@ async function learningUnitDetail(db: D1Database, userId: string, unitId: string
     flashcards,
     questions: questions.map((question) => ({
       ...question,
-      attempts: attempts
-        .filter((attempt) => attempt.questionId === question.id)
-        .map((attempt) => ({ ...attempt, correct: asBoolean(attempt.correct) })),
+      choices: parseArray(question.choices),
+      attempts: attemptsByQuestion.get(String(question.id)) || [],
     })),
     progress:
       unit.completed === null || unit.completed === undefined
@@ -1482,6 +1585,7 @@ async function consumeImportPreview(
   input: unknown,
 ) {
   const commit = parseImportCommit(input);
+  const acknowledgment = parseObject(input);
   const preview = await first<ImportPreviewRow>(
     db,
     `SELECT token, checksum, payload, expires_at AS expiresAt, consumed_at AS consumedAt
@@ -1503,11 +1607,11 @@ async function consumeImportPreview(
     kind,
     preview.checksum,
   );
-  if (batch) return { preview, existing: parseObject(batch.result) };
+  if (batch) return { preview, existing: parseObject(batch.result), acknowledgment };
   if (preview.consumedAt) {
     throw new RouteError(409, '이미 사용된 import 미리보기입니다.', 'PREVIEW_CONSUMED');
   }
-  return { preview, existing: null };
+  return { preview, existing: null, acknowledgment };
 }
 
 async function analyzeJobImport(db: D1Database, input: unknown) {
@@ -1580,8 +1684,39 @@ async function analyzeJobImport(db: D1Database, input: unknown) {
     duplicate: rows.filter((row) => row.outcome === 'DUPLICATE').length,
     rejected: rows.filter((row) => row.outcome === 'REJECT').length,
     review: rows.filter((row) => row.outcome === 'REVIEW').length,
+    removal: 0,
   };
-  return { body, rows, counts };
+  const removalCandidates: Array<{
+    id: string;
+    sourceName: string;
+    companyName: string;
+    title: string;
+    sourceUrl: string;
+  }> = [];
+  for (const sourceName of body.snapshot?.sources || []) {
+    const observedUrls = new Set(
+      normalized.filter((row) => row.item.sourceName === sourceName).map((row) => row.canonicalUrl),
+    );
+    const existing = await all<{
+      id: string;
+      sourceName: string;
+      companyName: string;
+      title: string;
+      sourceUrl: string;
+    }>(
+      db,
+      `SELECT id, source_name AS sourceName, company_name AS companyName, title, source_url AS sourceUrl
+         FROM jobs
+        WHERE source_name = ? AND status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
+          AND last_verified_at < ?
+        ORDER BY company_name, title`,
+      sourceName,
+      body.collectedAt,
+    );
+    removalCandidates.push(...existing.filter((job) => !observedUrls.has(job.sourceUrl)));
+  }
+  counts.removal = removalCandidates.length;
+  return { body, rows, counts, removalCandidates };
 }
 
 async function previewJobImport(db: D1Database, user: UserRow, input: unknown) {
@@ -1600,6 +1735,8 @@ async function previewJobImport(db: D1Database, user: UserRow, input: unknown) {
       title: row.item.title,
       sourceUrl: row.canonicalUrl,
     })),
+    snapshot: analyzed.body.snapshot || null,
+    removalCandidates: analyzed.removalCandidates,
   };
 }
 
@@ -1608,6 +1745,36 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
   const loaded = await consumeImportPreview(db, user, 'jobs', input);
   if (loaded.existing) return { ...loaded.existing, idempotent: true };
   const analyzed = await analyzeJobImport(db, JSON.parse(loaded.preview.payload));
+  if (
+    loaded.acknowledgment.acknowledgeAllRows !== true ||
+    int(loaded.acknowledgment.reviewedRowCount, -1) !== analyzed.rows.length
+  ) {
+    throw new RouteError(
+      409,
+      '전체 미리보기 행을 검토했다는 확인이 필요합니다.',
+      'IMPORT_REVIEW_ACK_REQUIRED',
+    );
+  }
+  if (
+    analyzed.removalCandidates.length > 0 &&
+    (loaded.acknowledgment.acknowledgeRemovals !== true ||
+      int(loaded.acknowledgment.removalCount, -1) !== analyzed.removalCandidates.length)
+  ) {
+    throw new RouteError(
+      409,
+      'FULL snapshot 제거 대상을 별도로 확인해주세요.',
+      'IMPORT_REMOVAL_ACK_REQUIRED',
+      { removalCount: analyzed.removalCandidates.length },
+    );
+  }
+  if (analyzed.removalCandidates.length > Math.max(100, analyzed.rows.length)) {
+    throw new RouteError(
+      409,
+      '제거 대상이 안전 임계치를 초과했습니다. source snapshot을 분할해 다시 검토해주세요.',
+      'IMPORT_REMOVAL_THRESHOLD_EXCEEDED',
+      { removalCount: analyzed.removalCandidates.length, importedCount: analyzed.rows.length },
+    );
+  }
   const timestamp = nowIso();
   const batchId = newId();
   const batch = {
@@ -1633,9 +1800,9 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
         `INSERT INTO jobs
              (id, company_name, company_size, company_size_evidence, source_name,
               source_posting_id, source_url, title, category, career_scope, career_evidence,
-              employment_type, region, remote, tech_stack, deadline_at, rolling, summary,
+              employment_type, region, remote, tech_stack, published_at, deadline_at, rolling, summary,
               status, fingerprint, collected_at, last_verified_at, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT(source_url) DO UPDATE SET
              company_name = excluded.company_name, company_size = excluded.company_size,
              company_size_evidence = excluded.company_size_evidence,
@@ -1644,6 +1811,7 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
              career_scope = excluded.career_scope, career_evidence = excluded.career_evidence,
              employment_type = excluded.employment_type, region = excluded.region,
              remote = excluded.remote, tech_stack = excluded.tech_stack,
+             published_at = excluded.published_at,
              deadline_at = excluded.deadline_at, rolling = excluded.rolling,
              summary = excluded.summary, status = excluded.status,
              fingerprint = excluded.fingerprint, collected_at = excluded.collected_at,
@@ -1665,6 +1833,7 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
         item.region,
         item.remote ? 1 : 0,
         JSON.stringify(item.techStack),
+        item.publishedAt || null,
         item.deadlineAt || null,
         item.rolling ? 1 : 0,
         item.summary,
@@ -1695,30 +1864,23 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
   );
   for (const sourceName of snapshotSources) {
     const observed = acceptedRows.filter((row) => row.item.sourceName === sourceName);
-    const observedUrls = [...new Set(observed.map((row) => row.canonicalUrl))];
     const snapshotId = newId();
-    const missingClause = observedUrls.length
-      ? `AND source_url NOT IN (${observedUrls.map(() => '?').join(',')})`
-      : '';
+    const removalCount = analyzed.removalCandidates.filter(
+      (row) => row.sourceName === sourceName,
+    ).length;
     statements.push(
       db
         .prepare(
           `INSERT INTO job_source_snapshots
              (id, source_name, collected_at, observed_count, expired_count, import_batch_id, created_at)
-           VALUES (?, ?, ?, ?,
-             (SELECT COUNT(*) FROM jobs
-               WHERE source_name = ? AND status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
-                 AND last_verified_at < ? ${missingClause}),
-             ?, ?)`,
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
           snapshotId,
           sourceName,
           analyzed.body.collectedAt,
           observed.length,
-          sourceName,
-          analyzed.body.collectedAt,
-          ...observedUrls,
+          removalCount,
           batchId,
           timestamp,
         ),
@@ -1731,9 +1893,13 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
         .prepare(
           `UPDATE jobs SET status = 'REMOVED', updated_at = ?
             WHERE source_name = ? AND status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
-              AND last_verified_at < ? ${missingClause}`,
+              AND last_verified_at < ?
+              AND NOT EXISTS (
+                SELECT 1 FROM job_source_snapshot_items snapshot_item
+                 WHERE snapshot_item.snapshot_id = ? AND snapshot_item.job_id = jobs.id
+              )`,
         )
-        .bind(timestamp, sourceName, analyzed.body.collectedAt, ...observedUrls),
+        .bind(timestamp, sourceName, analyzed.body.collectedAt, snapshotId),
     );
   }
   statements.push(
@@ -1778,6 +1944,16 @@ async function commitLearningImport(db: D1Database, user: UserRow, input: unknow
   const loaded = await consumeImportPreview(db, user, 'learning', input);
   if (loaded.existing) return { ...loaded.existing, idempotent: true };
   const body = parseLearningPackage(JSON.parse(loaded.preview.payload));
+  if (
+    loaded.acknowledgment.acknowledgeAllRows !== true ||
+    int(loaded.acknowledgment.reviewedRowCount, -1) !== body.units.length
+  ) {
+    throw new RouteError(
+      409,
+      '전체 학습 단원을 검토했다는 확인이 필요합니다.',
+      'IMPORT_REVIEW_ACK_REQUIRED',
+    );
+  }
   const existingSource = await first<{ id: string; title: string }>(
     db,
     'SELECT id, title FROM learning_sources WHERE source_checksum = ? AND source_version = ?',
@@ -1848,13 +2024,17 @@ async function commitLearningImport(db: D1Database, user: UserRow, input: unknow
       statements.push(
         db
           .prepare(
-            'INSERT INTO learning_questions (id, unit_id, prompt, answer, created_at) VALUES (?, ?, ?, ?, ?)',
+            `INSERT INTO learning_questions
+               (id, unit_id, prompt, answer, type, choices, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
           )
           .bind(
             newId(),
             unitId,
             sourceText(question.prompt),
             sourceText(question.answer),
+            question.type,
+            JSON.stringify(question.choices || []),
             timestamp,
           ),
       );
@@ -2007,6 +2187,32 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
               created_at AS createdAt FROM users ORDER BY display_name`,
     ).then((rows) => rows.map((row) => ({ ...row, isActive: asBoolean(row.isActive) })));
   }
+  const adminUserMatch = path.match(/^\/auth\/users\/([^/]+)$/);
+  if (adminUserMatch && method === 'PATCH') {
+    requireAdmin(user);
+    if (adminUserMatch[1] === user.id)
+      throw new RouteError(409, '현재 로그인한 관리자 계정은 여기서 변경할 수 없습니다.');
+    const body = await readJson(request);
+    const role = cleanText(body.role);
+    if (!['ADMIN', 'MEMBER'].includes(role))
+      throw new RouteError(422, '역할은 ADMIN 또는 MEMBER여야 합니다.');
+    if (typeof body.isActive !== 'boolean') throw new RouteError(422, '활성 상태가 필요합니다.');
+    const result = await run(
+      db,
+      'UPDATE users SET role = ?, is_active = ?, updated_at = ? WHERE id = ?',
+      role,
+      body.isActive ? 1 : 0,
+      nowIso(),
+      adminUserMatch[1],
+    );
+    if (Number(result.meta?.changes || 0) !== 1)
+      throw new RouteError(404, '변경할 사용자를 찾을 수 없습니다.');
+    await audit(db, user.id, 'USER_ACCESS_UPDATED', 'User', adminUserMatch[1], {
+      role,
+      isActive: body.isActive,
+    });
+    return { id: adminUserMatch[1], role, isActive: body.isActive };
+  }
 
   if (method === 'GET' && path === '/collections') return collections(db, user.id);
   if (method === 'GET' && path === '/collections/trash') {
@@ -2135,15 +2341,16 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     await db.batch([
       db
         .prepare(
-          'UPDATE collections SET deleted_at = NULL, updated_at = ? WHERE id = ? AND user_id = ?',
+          `WITH RECURSIVE subtree(id) AS (
+             SELECT id FROM collections WHERE id = ? AND user_id = ?
+             UNION ALL
+             SELECT c.id FROM collections c JOIN subtree s ON c.parent_id = s.id
+              WHERE c.user_id = ? AND c.deleted_at = ?
+           )
+           UPDATE collections SET deleted_at = NULL, updated_at = ?
+            WHERE id IN (SELECT id FROM subtree)`,
         )
-        .bind(timestamp, current.id, user.id),
-      db
-        .prepare(
-          `UPDATE collections SET deleted_at = NULL, updated_at = ?
-            WHERE parent_id = ? AND user_id = ? AND deleted_at = ?`,
-        )
-        .bind(timestamp, current.id, user.id, current.deletedAt),
+        .bind(current.id, user.id, user.id, current.deletedAt, timestamp),
     ]);
     return { id: current.id, restored: true };
   }
@@ -2158,7 +2365,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     if (!current) throw new RouteError(404, '폴더를 찾을 수 없습니다.');
     const body = await readJson(request);
     const name = body.name === undefined ? String(current.name) : cleanText(body.name);
-    if (!name) throw new RouteError(400, '폴더 이름이 필요합니다.');
+    if (!name || name.length > 80) throw new RouteError(400, '폴더 이름은 1~80자여야 합니다.');
     let parentId = current.parent_id as string | null;
     if (Object.hasOwn(body, 'parentId')) {
       parentId = typeof body.parentId === 'string' && body.parentId ? body.parentId : null;
@@ -2166,14 +2373,25 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
         throw new RouteError(409, '폴더를 자기 자신 안으로 이동할 수 없습니다.');
       }
       if (parentId) {
-        const parent = await first<{ id: string }>(
+        const parent = await first<{ id: string; parentId: string | null }>(
           db,
-          `SELECT id FROM collections
+          `SELECT id, parent_id AS parentId FROM collections
             WHERE id = ? AND user_id = ? AND deleted_at IS NULL`,
           parentId,
           user.id,
         );
         if (!parent) throw new RouteError(404, '이동할 상위 폴더를 찾을 수 없습니다.');
+        if (parent.parentId) throw new RouteError(422, '최대 2단계 폴더만 지원합니다.');
+        const child = await first<{ id: string }>(
+          db,
+          `SELECT id FROM collections
+            WHERE parent_id = ? AND user_id = ? AND deleted_at IS NULL LIMIT 1`,
+          collectionMatch[1],
+          user.id,
+        );
+        if (child) {
+          throw new RouteError(422, '하위 폴더가 있는 폴더는 다른 폴더 안으로 이동할 수 없습니다.');
+        }
         const descendant = await first<{ id: string }>(
           db,
           `WITH RECURSIVE descendants(id) AS (
@@ -2213,13 +2431,17 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     const timestamp = nowIso();
     await db.batch([
       db
-        .prepare('UPDATE collections SET deleted_at = ?, updated_at = ? WHERE id = ?')
-        .bind(timestamp, timestamp, collectionMatch[1]),
-      db
         .prepare(
-          'UPDATE collections SET deleted_at = ?, updated_at = ? WHERE parent_id = ? AND user_id = ?',
+          `WITH RECURSIVE subtree(id) AS (
+             SELECT id FROM collections WHERE id = ? AND user_id = ? AND deleted_at IS NULL
+             UNION ALL
+             SELECT c.id FROM collections c JOIN subtree s ON c.parent_id = s.id
+              WHERE c.user_id = ? AND c.deleted_at IS NULL
+           )
+           UPDATE collections SET deleted_at = ?, updated_at = ?
+            WHERE id IN (SELECT id FROM subtree)`,
         )
-        .bind(timestamp, timestamp, collectionMatch[1], user.id),
+        .bind(collectionMatch[1], user.id, user.id, timestamp, timestamp),
     ]);
     return { ok: true };
   }
@@ -2297,6 +2519,69 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     return { id, collectionId: owned.id, itemType, targetId, label: cleanText(body.label) || null };
   }
   const collectionItemDeleteMatch = path.match(/^\/collections\/([^/]+)\/items\/([^/]+)$/);
+  const collectionItemReorderMatch = path.match(/^\/collections\/([^/]+)\/items\/reorder$/);
+  if (collectionItemReorderMatch && method === 'PATCH') {
+    const body = await readJson(request);
+    const ids = Array.isArray(body.ids) ? body.ids.map(String) : [];
+    if (!ids.length || new Set(ids).size !== ids.length)
+      throw new RouteError(422, '중복 없는 전체 항목 순서가 필요합니다.');
+    const owned = await all<{ id: string }>(
+      db,
+      `SELECT ci.id FROM collection_items ci JOIN collections c ON c.id = ci.collection_id
+        WHERE ci.collection_id = ? AND c.user_id = ? AND c.deleted_at IS NULL
+        ORDER BY ci.position`,
+      collectionItemReorderMatch[1],
+      user.id,
+    );
+    if (owned.length !== ids.length || owned.some((item) => !ids.includes(item.id)))
+      throw new RouteError(409, '현재 폴더의 전체 항목 순서와 일치하지 않습니다.');
+    await db.batch(
+      ids.map((id, position) =>
+        db
+          .prepare('UPDATE collection_items SET position = ? WHERE id = ? AND collection_id = ?')
+          .bind(position, id, collectionItemReorderMatch[1]),
+      ),
+    );
+    return { ids };
+  }
+  if (collectionItemDeleteMatch && method === 'PATCH') {
+    const body = await readJson(request);
+    const targetCollectionId = cleanText(body.targetCollectionId);
+    const target = await first<{ id: string }>(
+      db,
+      'SELECT id FROM collections WHERE id = ? AND user_id = ? AND deleted_at IS NULL',
+      targetCollectionId,
+      user.id,
+    );
+    const item = await first<{ id: string }>(
+      db,
+      `SELECT ci.id FROM collection_items ci JOIN collections c ON c.id = ci.collection_id
+        WHERE ci.id = ? AND ci.collection_id = ? AND c.user_id = ? AND c.deleted_at IS NULL`,
+      collectionItemDeleteMatch[2],
+      collectionItemDeleteMatch[1],
+      user.id,
+    );
+    if (!target || !item) throw new RouteError(404, '이동할 폴더 항목을 찾을 수 없습니다.');
+    const count = await first<{ count: number }>(
+      db,
+      'SELECT COUNT(*) AS count FROM collection_items WHERE collection_id = ?',
+      targetCollectionId,
+    );
+    try {
+      await run(
+        db,
+        'UPDATE collection_items SET collection_id = ?, position = ? WHERE id = ?',
+        targetCollectionId,
+        Number(count?.count || 0),
+        item.id,
+      );
+    } catch (error) {
+      if (String(error).includes('UNIQUE'))
+        throw new RouteError(409, '대상 폴더에 이미 같은 항목이 있습니다.');
+      throw error;
+    }
+    return { id: item.id, collectionId: targetCollectionId };
+  }
   if (collectionItemDeleteMatch && method === 'DELETE') {
     const result = await run(
       db,
@@ -2352,33 +2637,36 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     const query = cleanText(url.searchParams.get('q'));
     if (query.length < 2) throw new RouteError(400, '검색어는 2자 이상이어야 합니다.');
     const limit = cursorLimit(url.searchParams, 30, 60);
-    const cursor = decodeCursor<{ offset?: unknown }>(url.searchParams.get('cursor'));
-    const offset = Math.max(0, int(cursor?.offset, 0));
-    const match = query
-      .replace(/["*:^{}()[\]]/g, ' ')
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 8)
-      .map((token) => `"${token}"*`)
-      .join(' AND ');
+    const cursor = decodeCursor<{ rank?: unknown; rowid?: unknown }>(
+      url.searchParams.get('cursor'),
+    );
+    const cursorRank = Number(cursor?.rank);
+    const cursorRowid = int(cursor?.rowid, 0);
+    if (cursor && (!Number.isFinite(cursorRank) || cursorRowid < 1)) {
+      throw new RouteError(400, '올바른 검색 cursor가 필요합니다.', 'INVALID_CURSOR');
+    }
+    const match = ftsMatchQuery(query);
     if (!match) throw new RouteError(400, '검색 가능한 문자를 입력해주세요.');
     const rows = await all<{
       kind: string;
       id: string;
       title: string;
       snippet: string;
+      rank: number;
+      searchRowid: number;
     }>(
       db,
-      `SELECT kind, entity_id AS id, title,
-              snippet(workspace_search, 4, '', '', ' … ', 18) AS snippet
+      `SELECT rowid AS searchRowid, kind, entity_id AS id, title,
+              snippet(workspace_search, 4, '', '', ' … ', 18) AS snippet,
+              rank
          FROM workspace_search
         WHERE workspace_search MATCH ? AND (owner_id = '' OR owner_id = ?)
-        ORDER BY rowid
-        LIMIT ? OFFSET ?`,
+          ${cursor ? 'AND (rank > ? OR (rank = ? AND rowid > ?))' : ''}
+        ORDER BY rank ASC LIMIT ?`,
       match,
       user.id,
+      ...(cursor ? [cursorRank, cursorRank, cursorRowid] : []),
       limit + 1,
-      offset,
     );
     const hasMore = rows.length > limit;
     const pageRows = hasMore ? rows.slice(0, limit) : rows;
@@ -2415,12 +2703,14 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     return {
       query,
       ...grouped,
-      nextCursor: hasMore ? encodeCursor({ offset: offset + limit }) : null,
+      nextCursor:
+        hasMore && pageRows.length
+          ? encodeCursor({ rank: pageRows.at(-1)?.rank, rowid: pageRows.at(-1)?.searchRowid })
+          : null,
     };
   }
 
   if (method === 'GET' && path === '/notifications/unread-count') {
-    await ensureDeadlineNotifications(db, user);
     const row = await first<{ count: number }>(
       db,
       `SELECT COUNT(*) AS count FROM notifications
@@ -2447,6 +2737,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       clauses.push('type = ?');
       values.push(type);
     }
+    if (url.searchParams.get('unread') === '1') clauses.push('read_at IS NULL');
     if (cursor) {
       const createdAt = cleanText(cursor.createdAt);
       const id = cleanText(cursor.id);
@@ -2620,6 +2911,10 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
 
   if (method === 'GET' && path === '/coding/problems')
     return problems(db, user.id, url.searchParams);
+  const codingProblemDetailMatch = path.match(/^\/coding\/problems\/([^/]+)$/);
+  if (codingProblemDetailMatch && method === 'GET') {
+    return problemDetail(db, user.id, codingProblemDetailMatch[1]);
+  }
   if (method === 'POST' && path === '/coding/problems') {
     requireAdmin(user);
     const body = await readJson(request);
@@ -2768,9 +3063,63 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
   }
   if (method === 'GET' && path === '/coding/solutions')
     return solutionList(db, user.id, url.searchParams);
+  if (method === 'GET' && path === '/coding/solutions/trash') {
+    return all(
+      db,
+      `SELECT s.id, s.title, s.deleted_at AS deletedAt, p.display_title AS problemTitle
+         FROM solutions s JOIN coding_problems p ON p.id = s.problem_id
+        WHERE s.author_id = ? AND s.deleted_at IS NOT NULL
+        ORDER BY s.deleted_at DESC LIMIT 100`,
+      user.id,
+    );
+  }
+  const restoreSolutionMatch = path.match(/^\/coding\/solutions\/([^/]+)\/restore$/);
+  if (restoreSolutionMatch && method === 'POST') {
+    const timestamp = nowIso();
+    const result = await run(
+      db,
+      `UPDATE solutions SET deleted_at = NULL, updated_at = ?
+        WHERE id = ? AND author_id = ? AND deleted_at IS NOT NULL`,
+      timestamp,
+      restoreSolutionMatch[1],
+      user.id,
+    );
+    if (Number(result.meta?.changes || 0) !== 1)
+      throw new RouteError(404, '복원할 내 풀이를 찾을 수 없습니다.');
+    await audit(db, user.id, 'SOLUTION_RESTORED', 'Solution', restoreSolutionMatch[1]);
+    return { id: restoreSolutionMatch[1], restored: true };
+  }
   const solutionDetailMatch = path.match(/^\/coding\/solutions\/([^/]+)$/);
   if (solutionDetailMatch && method === 'GET') {
     return solutionDetail(db, user.id, solutionDetailMatch[1]);
+  }
+  if (solutionDetailMatch && method === 'DELETE') {
+    const timestamp = nowIso();
+    const result = await run(
+      db,
+      `UPDATE solutions SET deleted_at = ?, updated_at = ?
+        WHERE id = ? AND author_id = ? AND deleted_at IS NULL`,
+      timestamp,
+      timestamp,
+      solutionDetailMatch[1],
+      user.id,
+    );
+    if (Number(result.meta?.changes || 0) !== 1) {
+      throw new RouteError(404, '삭제할 내 풀이를 찾을 수 없습니다.');
+    }
+    await db.batch([
+      db
+        .prepare("DELETE FROM collection_items WHERE item_type = 'SOLUTION' AND target_id = ?")
+        .bind(solutionDetailMatch[1]),
+      db
+        .prepare(
+          `INSERT INTO audit_logs
+             (id, actor_id, action, target_type, target_id, metadata, created_at)
+           VALUES (?, ?, 'SOLUTION_DELETED', 'Solution', ?, '{}', ?)`,
+        )
+        .bind(newId(), user.id, solutionDetailMatch[1], timestamp),
+    ]);
+    return { id: solutionDetailMatch[1], deleted: true };
   }
   if (
     method === 'POST' &&
@@ -3038,6 +3387,59 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       createdAt: timestamp,
     };
   }
+  const commentActionMatch = path.match(/^\/coding\/comments\/([^/]+)(?:\/(report))?$/);
+  if (commentActionMatch && method === 'PATCH' && !commentActionMatch[2]) {
+    const body = await readJson(request);
+    const markdown = sourceText(body.markdown);
+    if (!markdown.trim() || markdown.length > 4_000) {
+      throw new RouteError(422, '댓글은 1~4,000자로 입력해주세요.');
+    }
+    const result = await run(
+      db,
+      `UPDATE solution_comments SET markdown = ?, edited_at = ?, updated_at = ?
+        WHERE id = ? AND author_id = ? AND deleted_at IS NULL AND hidden_at IS NULL`,
+      markdown,
+      nowIso(),
+      nowIso(),
+      commentActionMatch[1],
+      user.id,
+    );
+    if (Number(result.meta?.changes || 0) !== 1)
+      throw new RouteError(404, '수정할 댓글을 찾을 수 없습니다.');
+    return { id: commentActionMatch[1], markdown, edited: true };
+  }
+  if (commentActionMatch && method === 'DELETE' && !commentActionMatch[2]) {
+    const timestamp = nowIso();
+    const result = await run(
+      db,
+      `UPDATE solution_comments SET deleted_at = ?, updated_at = ?
+        WHERE id = ? AND author_id = ? AND deleted_at IS NULL`,
+      timestamp,
+      timestamp,
+      commentActionMatch[1],
+      user.id,
+    );
+    if (Number(result.meta?.changes || 0) !== 1)
+      throw new RouteError(404, '삭제할 댓글을 찾을 수 없습니다.');
+    return { id: commentActionMatch[1], deleted: true };
+  }
+  if (commentActionMatch?.[2] === 'report' && method === 'POST') {
+    const body = await readJson(request);
+    const reason = cleanText(body.reason);
+    if (reason.length < 2 || reason.length > 500)
+      throw new RouteError(422, '신고 사유를 2~500자로 입력해주세요.');
+    const comment = await first<{ id: string; solutionId: string }>(
+      db,
+      'SELECT id, solution_id AS solutionId FROM solution_comments WHERE id = ? AND deleted_at IS NULL',
+      commentActionMatch[1],
+    );
+    if (!comment) throw new RouteError(404, '신고할 댓글을 찾을 수 없습니다.');
+    await audit(db, user.id, 'COMMENT_REPORTED', 'SolutionComment', comment.id, {
+      solutionId: comment.solutionId,
+      reason,
+    });
+    return { id: comment.id, reported: true };
+  }
   if (method === 'GET' && path === '/coding/rankings') {
     const now = new Date();
     const kstParts = new Intl.DateTimeFormat('en-CA', {
@@ -3105,14 +3507,14 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     return {
       calculatedAt: nowIso(),
       currentUserId: user.id,
-      selfReported: false,
+      selfReported: true,
       periods: {
         timezone: 'Asia/Seoul',
         weeklyStart: weekStart.toISOString(),
         monthlyStart: monthStart.toISOString(),
       },
       methodology:
-        '모든 멤버의 저장된 SOLVED 풀이를 사용자·문제별 한 번만 자동 계산하며 관리자와 삭제된 풀이는 제외합니다.',
+        '모든 멤버가 직접 저장한 SOLVED 풀이를 사용자·문제별 한 번만 자동 계산합니다. 관리자와 삭제된 풀이는 제외되며 점수는 실행 검증 결과가 아닌 자가 기록 활동입니다.',
       rows: rows.map((row, index) => {
         const score = Number(row.score || 0);
         if (previousScore !== score) rank = index + 1;
@@ -3228,9 +3630,9 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     if (!response || response.length > 4_000) {
       throw new RouteError(400, '답안을 1~4,000자로 입력해주세요.');
     }
-    const question = await first<{ id: string; answer: string }>(
+    const question = await first<{ id: string; answer: string; type: string; choices: string }>(
       db,
-      `SELECT q.id, q.answer FROM learning_questions q
+      `SELECT q.id, q.answer, q.type, q.choices FROM learning_questions q
         JOIN learning_units u ON u.id = q.unit_id
        WHERE q.id = ? AND u.published = 1`,
       learningAnswerMatch[1],
@@ -3238,6 +3640,10 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     if (!question) throw new RouteError(404, '복습 문제를 찾을 수 없습니다.');
     const normalizeAnswer = (value: string) =>
       value.normalize('NFKC').trim().toLocaleLowerCase('ko-KR').replace(/\s+/g, ' ');
+    const choices = parseArray(question.choices);
+    if (question.type === 'MULTIPLE_CHOICE' && !choices.includes(response)) {
+      throw new RouteError(422, '제공된 선택지 중 하나를 골라주세요.');
+    }
     const correct = normalizeAnswer(response) === normalizeAnswer(question.answer);
     const attemptedAt = nowIso();
     const id = newId();
@@ -3272,7 +3678,10 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
   if (method === 'POST' && path === '/learning/review') {
     const body = await readJson(request);
     const unitId = cleanText(body.unitId);
-    const rating = Math.min(5, Math.max(1, int(body.rating, 1)));
+    const rating = int(body.rating, 0);
+    if (!unitId || rating < 1 || rating > 5) {
+      throw new RouteError(422, '복습 평가는 1~5 사이의 정수여야 합니다.');
+    }
     return recordLearningReview(db, user.id, unitId, rating);
   }
   if (method === 'POST' && path === '/learning/import/preview') {
@@ -3296,7 +3705,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       importBatches: batches,
       capabilities: {
         processingQueue: false,
-        commentReports: false,
+        commentReports: true,
       },
     };
   }
@@ -3382,12 +3791,33 @@ export async function handleD1Api(request: Request, env: D1Env) {
     });
   };
   try {
-    if (url.pathname === '/api/v1/health' || url.pathname === '/api/v1/health/ready') {
+    if (url.pathname === '/api/v1/health/live') {
       const ready = await first<{ ok: number }>(env.DB, 'SELECT 1 AS ok');
       return finish(
         responseJson(
-          { status: ready?.ok === 1 ? 'ok' : 'not-ready', database: 'd1' },
+          { status: ready?.ok === 1 ? 'ok' : 'unavailable', database: 'd1' },
           ready?.ok === 1 ? 200 : 503,
+          requestId,
+        ),
+      );
+    }
+    if (url.pathname === '/api/v1/health' || url.pathname === '/api/v1/health/ready') {
+      const schema = await inspectRuntimeSchema(env.DB);
+      const canary = schema.ready
+        ? await first<{ jobs: number; problems: number; learning: number; searchRows: number }>(
+            env.DB,
+            `SELECT
+               (SELECT COUNT(*) FROM jobs WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN')) AS jobs,
+               (SELECT COUNT(*) FROM coding_problems WHERE active = 1) AS problems,
+               (SELECT COUNT(*) FROM learning_units WHERE published = 1) AS learning,
+               (SELECT COUNT(*) FROM workspace_search) AS searchRows`,
+          )
+        : null;
+      const ready = schema.ready && Boolean(canary);
+      return finish(
+        responseJson(
+          { status: ready ? 'ok' : 'not-ready', database: 'd1', schema, canary },
+          ready ? 200 : 503,
           requestId,
         ),
       );

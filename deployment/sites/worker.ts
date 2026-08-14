@@ -30,8 +30,29 @@ const json = (body: unknown, status = 200) =>
     },
   });
 
+const withSecurityHeaders = (response: Response) => {
+  const headers = new Headers(response.headers);
+  headers.set('x-content-type-options', 'nosniff');
+  headers.set('x-frame-options', 'DENY');
+  headers.set('referrer-policy', 'strict-origin-when-cross-origin');
+  headers.set('permissions-policy', 'camera=(), microphone=(), geolocation=()');
+  headers.set(
+    'content-security-policy',
+    "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self' data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'",
+  );
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+};
+
 async function serveApi(request: Request, env: SitesEnv) {
   if (env.DB) {
+    const pathname = new URL(request.url).pathname;
+    if (pathname === '/api/v1/health/live') {
+      return handleD1Api(request, { ...env, DB: env.DB });
+    }
     try {
       await ensureRuntimeSchema(env.DB);
     } catch (error) {
@@ -58,13 +79,16 @@ async function serveApi(request: Request, env: SitesEnv) {
 const worker = {
   async fetch(request: Request, env: SitesEnv, _context: SitesExecutionContext) {
     const url = new URL(request.url);
-    if (url.pathname.startsWith('/api/v1/')) return serveApi(request, env);
+    if (url.pathname.startsWith('/api/v1/'))
+      return withSecurityHeaders(await serveApi(request, env));
 
     const asset = await env.ASSETS.fetch(request);
-    if (asset.status !== 404 || request.method !== 'GET') return asset;
+    if (asset.status !== 404 || request.method !== 'GET') return withSecurityHeaders(asset);
     const acceptsHtml = request.headers.get('accept')?.includes('text/html');
-    if (!acceptsHtml) return asset;
-    return env.ASSETS.fetch(new Request(new URL('/index.html', request.url), request));
+    if (!acceptsHtml) return withSecurityHeaders(asset);
+    return withSecurityHeaders(
+      await env.ASSETS.fetch(new Request(new URL('/index.html', request.url), request)),
+    );
   },
   async scheduled(
     _controller: SitesScheduledController,

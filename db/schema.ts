@@ -348,6 +348,7 @@ export const jobs = sqliteTable(
     region: text('region').notNull(),
     remote: integer('remote', { mode: 'boolean' }).notNull().default(false),
     techStack: text('tech_stack').notNull().default('[]'),
+    publishedAt: text('published_at'),
     deadlineAt: text('deadline_at'),
     rolling: integer('rolling', { mode: 'boolean' }).notNull().default(false),
     summary: text('summary').notNull(),
@@ -501,9 +502,14 @@ export const learningQuestions = sqliteTable(
       .references(() => learningUnits.id, { onDelete: 'cascade' }),
     prompt: text('prompt').notNull(),
     answer: text('answer').notNull(),
+    type: text('type').notNull().default('SHORT_ANSWER'),
+    choices: text('choices').notNull().default('[]'),
     createdAt: text('created_at').notNull(),
   },
-  (table) => [index('idx_learning_questions_unit_created').on(table.unitId, table.createdAt)],
+  (table) => [
+    index('idx_learning_questions_unit_created').on(table.unitId, table.createdAt),
+    check('chk_learning_questions_type', sql`${table.type} IN ('MULTIPLE_CHOICE', 'SHORT_ANSWER')`),
+  ],
 );
 
 export const learningProgress = sqliteTable(
@@ -558,6 +564,12 @@ export const notifications = sqliteTable(
   },
   (table) => [
     index('idx_notifications_user_read_created').on(table.userId, table.readAt, table.createdAt),
+    index('idx_notifications_user_read_expiry_created').on(
+      table.userId,
+      table.readAt,
+      table.expiresAt,
+      table.createdAt,
+    ),
     uniqueIndex('idx_notifications_user_dedupe').on(table.userId, table.dedupeKey),
     check(
       'chk_notifications_type',

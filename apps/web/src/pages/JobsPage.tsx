@@ -100,10 +100,11 @@ function moveMonth(month: Date, amount: number) {
 }
 
 function monthBounds(month: Date) {
-  const from = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth(), 1) - KOREA_OFFSET_MS);
-  const to = new Date(
-    Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 1, 1) - KOREA_OFFSET_MS,
-  );
+  const dates = calendarDates(month);
+  const first = dates[0]?.date || month;
+  const last = dates.at(-1)?.date || month;
+  const from = new Date(first.getTime() - KOREA_OFFSET_MS);
+  const to = new Date(last.getTime() + 86_400_000 - KOREA_OFFSET_MS);
   return { from: from.toISOString(), to: to.toISOString() };
 }
 
@@ -196,10 +197,31 @@ function JobDetailModal({
   job: Job;
   onClose: () => void;
   onBookmark: (bookmarked: boolean) => void;
-  onApplication: (patch: { status?: string; memo?: string }) => void;
+  onApplication: (patch: { status?: string; memo?: string }) => Promise<unknown>;
   pending: boolean;
 }) {
-  const [memo, setMemo] = useState(job.savedBy[0]?.memo || '');
+  const serverMemo = job.savedBy[0]?.memo || '';
+  const [memo, setMemo] = useState(serverMemo);
+  const [memoStatus, setMemoStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const onApplicationRef = useRef(onApplication);
+  useEffect(() => {
+    onApplicationRef.current = onApplication;
+  }, [onApplication]);
+  useEffect(() => {
+    setMemo(serverMemo);
+    setMemoStatus('idle');
+  }, [job.id, serverMemo]);
+  useEffect(() => {
+    if (memo === serverMemo) return;
+    setMemoStatus('saving');
+    const timer = window.setTimeout(() => {
+      void onApplicationRef.current({ memo }).then(
+        () => setMemoStatus('saved'),
+        () => setMemoStatus('error'),
+      );
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [memo, serverMemo]);
   return (
     <DialogPrimitive.Root
       open
@@ -278,7 +300,7 @@ function JobDetailModal({
                 <select
                   value={job.savedBy[0]?.status || 'INTERESTED'}
                   disabled={pending}
-                  onChange={(event) => onApplication({ status: event.target.value })}
+                  onChange={(event) => void onApplication({ status: event.target.value })}
                 >
                   {Object.entries(applicationLabels).map(([value, label]) => (
                     <option key={value} value={value}>
@@ -295,11 +317,17 @@ function JobDetailModal({
                   rows={2}
                   value={memo}
                   onChange={(event) => setMemo(event.target.value)}
-                  onBlur={() => {
-                    if (memo !== job.savedBy[0]?.memo) onApplication({ memo });
-                  }}
                   placeholder="지원 메모"
                 />
+                <small role="status">
+                  {memoStatus === 'saving'
+                    ? '저장 중…'
+                    : memoStatus === 'saved'
+                      ? '저장됨'
+                      : memoStatus === 'error'
+                        ? '저장 실패 · 내용을 유지했습니다'
+                        : ''}
+                </small>
               </label>
             )}
             <a href={job.sourceUrl} target="_blank" rel="noreferrer">
@@ -397,9 +425,13 @@ function JobFilterPanel({
   onCategoriesChange: (value: string[]) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const selectedSizes = new Set(companySizes);
-  const selectedJobs = new Set(selectedCategories);
-  const selectedCount = companySizes.length + selectedCategories.length;
+  const [draftSizes, setDraftSizes] = useState(companySizes);
+  const [draftCategories, setDraftCategories] = useState(selectedCategories);
+  const selectedSizes = new Set(open ? draftSizes : companySizes);
+  const selectedJobs = new Set(open ? draftCategories : selectedCategories);
+  const selectedCount =
+    (open ? draftSizes : companySizes).length +
+    (open ? draftCategories : selectedCategories).length;
   const toggle = (
     value: string,
     checked: boolean,
@@ -407,7 +439,16 @@ function JobFilterPanel({
     onChange: (value: string[]) => void,
   ) => onChange(checked ? [...current, value] : current.filter((item) => item !== value));
   return (
-    <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+    <DialogPrimitive.Root
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (nextOpen) {
+          setDraftSizes(companySizes);
+          setDraftCategories(selectedCategories);
+        }
+        setOpen(nextOpen);
+      }}
+    >
       <div className="multi-filter-root">
         <DialogPrimitive.Trigger asChild>
           <button
@@ -454,7 +495,7 @@ function JobFilterPanel({
                         type="checkbox"
                         checked={selectedSizes.has(value)}
                         onChange={(event) =>
-                          toggle(value, event.target.checked, companySizes, onCompanySizesChange)
+                          toggle(value, event.target.checked, draftSizes, setDraftSizes)
                         }
                       />
                       <span className="multi-filter-check">
@@ -474,12 +515,7 @@ function JobFilterPanel({
                         type="checkbox"
                         checked={selectedJobs.has(value)}
                         onChange={(event) =>
-                          toggle(
-                            value,
-                            event.target.checked,
-                            selectedCategories,
-                            onCategoriesChange,
-                          )
+                          toggle(value, event.target.checked, draftCategories, setDraftCategories)
                         }
                       />
                       <span className="multi-filter-check">
@@ -497,17 +533,23 @@ function JobFilterPanel({
                 className="job-filter-clear"
                 disabled={selectedCount === 0}
                 onClick={() => {
-                  onCompanySizesChange([]);
-                  onCategoriesChange([]);
+                  setDraftSizes([]);
+                  setDraftCategories([]);
                 }}
               >
                 전체 해제
               </button>
-              <DialogPrimitive.Close asChild>
-                <button type="button" className="job-filter-done">
-                  {selectedCount ? `${selectedCount}개 조건 적용` : '전체 공고 보기'}
-                </button>
-              </DialogPrimitive.Close>
+              <button
+                type="button"
+                className="job-filter-done"
+                onClick={() => {
+                  onCompanySizesChange(draftSizes);
+                  onCategoriesChange(draftCategories);
+                  setOpen(false);
+                }}
+              >
+                {selectedCount ? `${selectedCount}개 조건 적용` : '전체 공고 보기'}
+              </button>
             </footer>
           </DialogPrimitive.Content>
         )}
@@ -531,6 +573,7 @@ export function JobsPage() {
   );
   const [memoDrafts, setMemoDrafts] = useState<Record<string, string>>({});
   const search = searchParams.get('q') || '';
+  const [searchInput, setSearchInput] = useState(search);
   const savedOnly = searchParams.get('saved') === '1';
   const requestedJob = searchParams.get('job');
   const [fontSize, setFontSize] = useState<JobFontSize>(initialJobFontSize);
@@ -548,6 +591,14 @@ export function JobsPage() {
     else next.delete(key);
     setSearchParams(next, { replace: true });
   };
+
+  useEffect(() => setSearchInput(search), [search]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (searchInput !== search) setUrlParam('q', searchInput.trim());
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [search, searchInput]);
 
   useEffect(() => {
     const next = new URLSearchParams(searchParams);
@@ -576,8 +627,8 @@ export function JobsPage() {
   });
   companySizes.forEach((value) => queryParams.append('companySize', value));
   selectedCategories.forEach((value) => queryParams.append('category', value));
-  if (viewMode === 'list' && search) queryParams.set('q', search);
-  if (viewMode === 'list' && savedOnly) queryParams.set('saved', '1');
+  if (search) queryParams.set('q', search);
+  if (savedOnly) queryParams.set('saved', '1');
   const query = queryParams.toString();
   const calendarJobs = useQuery({
     queryKey: [
@@ -791,6 +842,20 @@ export function JobsPage() {
     setExpandedDateKey(undefined);
   };
 
+  const openJob = (jobId: string) => {
+    setSelectedJobId(jobId);
+    const next = new URLSearchParams(searchParams);
+    next.set('job', jobId);
+    setSearchParams(next, { replace: true });
+  };
+
+  const closeJob = () => {
+    setSelectedJobId(undefined);
+    const next = new URLSearchParams(searchParams);
+    next.delete('job');
+    setSearchParams(next, { replace: true });
+  };
+
   return (
     <div className="jobs-page" data-font-size={fontSize}>
       <section className="page-heading jobs-heading">
@@ -830,8 +895,8 @@ export function JobsPage() {
               공고 검색
               <input
                 type="search"
-                value={search}
-                onChange={(event) => setUrlParam('q', event.target.value)}
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
                 placeholder="회사, 직무, 기술 스택"
               />
             </label>
@@ -1011,7 +1076,7 @@ export function JobsPage() {
                                 className={`calendar-job schedule-${type} ${selectedJobId === job.id ? 'selected' : ''}`}
                                 title={`${calendarEventLabels[type]} · ${job.company.name} · ${job.title}`}
                                 aria-label={`${job.company.name} ${job.title} ${calendarEventLabels[type]} 상세 보기`}
-                                onClick={() => setSelectedJobId(job.id)}
+                                onClick={() => openJob(job.id)}
                               >
                                 <span>{calendarEventLabels[type]}</span>
                                 <strong>{job.company.name}</strong>
@@ -1054,7 +1119,7 @@ export function JobsPage() {
         title="상시채용 공고"
         description={`현재 조건에 맞는 상시채용 ${calendarData.rollingJobs.length}개를 모았습니다.`}
         items={calendarData.rollingJobs.map((job) => ({ job, type: 'rolling' }))}
-        onSelect={setSelectedJobId}
+        onSelect={openJob}
       />
       <ScheduleListDialog
         open={Boolean(expandedDateKey)}
@@ -1064,15 +1129,15 @@ export function JobsPage() {
         title={expandedDateKey ? `${dateLabel(expandedDateKey)} 채용 일정` : '채용 일정'}
         description={`시작·확인일과 마감일을 포함한 ${expandedDateEvents.length}개 일정을 확인하세요.`}
         items={expandedDateEvents}
-        onSelect={setSelectedJobId}
+        onSelect={openJob}
       />
 
       {selectedJob && (
         <JobDetailModal
           job={selectedJob}
-          onClose={() => setSelectedJobId(undefined)}
+          onClose={closeJob}
           onBookmark={(bookmarked) => bookmark.mutate({ jobId: selectedJob.id, bookmarked })}
-          onApplication={(patch) => application.mutate({ jobId: selectedJob.id, patch })}
+          onApplication={(patch) => application.mutateAsync({ jobId: selectedJob.id, patch })}
           pending={bookmark.isPending || application.isPending}
         />
       )}
@@ -1099,8 +1164,15 @@ export function JobsPage() {
                       <span>{job.category}</span>
                       {job.remote && <span>재택 가능</span>}
                     </div>
-                    <h2>{job.title}</h2>
-                    <strong>{job.company.name}</strong>
+                    <button
+                      type="button"
+                      className="job-card-detail"
+                      onClick={() => openJob(job.id)}
+                      aria-label={`${job.company.name} ${job.title} 상세 보기`}
+                    >
+                      <h2>{job.title}</h2>
+                      <strong>{job.company.name}</strong>
+                    </button>
                     <p>{job.summary}</p>
                     <div className="job-details">
                       <span>

@@ -8,7 +8,17 @@ import {
 } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import CodeMirror from '@uiw/react-codemirror';
-import { GitCompare, MessageCircle, Pencil, Save, Send, ThumbsUp, Users } from 'lucide-react';
+import {
+  Copy,
+  GitCompare,
+  MessageCircle,
+  Pencil,
+  Save,
+  Send,
+  ThumbsUp,
+  Trash2,
+  Users,
+} from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import { ApiError, api, json } from '../lib/api';
@@ -18,6 +28,7 @@ import {
   type EditorExtensions,
 } from '../lib/code-editor';
 import { myersDiff } from '../lib/myers-diff';
+import { FolderSaveButton } from '../components/FolderSaveButton';
 import '../styles/solutions.css';
 
 type Comment = {
@@ -27,6 +38,7 @@ type Comment = {
   deletedAt?: string;
   hiddenAt?: string;
   author: { displayName: string };
+  canEdit?: boolean;
   replies: Comment[];
 };
 type Solution = {
@@ -98,6 +110,13 @@ function SolutionRevisionPanel({ solution }: { solution: Solution }) {
       active = false;
     };
   }, [solution.language]);
+  useEffect(() => {
+    if (editing) return;
+    setCode(solution.code);
+    setDescription(solution.description);
+    setBaseRevision(solution.currentRev);
+    setConflict(undefined);
+  }, [editing, solution.code, solution.currentRev, solution.description]);
   const save = useMutation({
     mutationFn: () =>
       api('/coding/solutions', {
@@ -203,19 +222,44 @@ function SolutionRevisionPanel({ solution }: { solution: Solution }) {
             </section>
           )}
           <div className="detail-actions">
-            <button className="primary-button compact" disabled={!code.trim()}>
+            <button className="primary-button compact" disabled={!code.trim() || save.isPending}>
               <Save /> revision 저장
             </button>
-            <button type="button" className="ghost-button" onClick={() => setEditing(false)}>
+            <button
+              type="button"
+              className="ghost-button"
+              onClick={() => {
+                setCode(solution.code);
+                setDescription(solution.description);
+                setBaseRevision(solution.currentRev);
+                setConflict(undefined);
+                setEditing(false);
+              }}
+            >
               취소
             </button>
           </div>
         </form>
       ) : (
         <>
-          <pre className="code-view static-code" tabIndex={0} aria-label={`${solution.title} 코드`}>
-            <code>{solution.code.split('\n').slice(0, 80).join('\n')}</code>
-          </pre>
+          <div className="static-code-wrap">
+            <div className="static-code-toolbar">
+              <span>{solution.code.split('\n').length.toLocaleString()}줄 전체</span>
+              <button
+                type="button"
+                onClick={() => void navigator.clipboard.writeText(solution.code)}
+              >
+                <Copy /> 코드 복사
+              </button>
+            </div>
+            <pre
+              className="code-view static-code"
+              tabIndex={0}
+              aria-label={`${solution.title} 코드`}
+            >
+              <code>{solution.code}</code>
+            </pre>
+          </div>
           <div className="markdown-body">
             <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{solution.description}</ReactMarkdown>
           </div>
@@ -260,10 +304,12 @@ function SolutionFeedItem({
   summary,
   initiallyExpanded,
   onReact,
+  reactionPending,
 }: {
   summary: SolutionSummary;
   initiallyExpanded: boolean;
   onReact: (active: boolean) => void;
+  reactionPending: boolean;
 }) {
   const client = useQueryClient();
   const [expanded, setExpanded] = useState(initiallyExpanded);
@@ -290,6 +336,24 @@ function SolutionFeedItem({
       ]);
     },
   });
+  const commentAction = useMutation({
+    mutationFn: ({
+      id,
+      method,
+      body,
+    }: {
+      id: string;
+      method: 'PATCH' | 'DELETE' | 'POST';
+      body?: Record<string, unknown>;
+    }) =>
+      api(`/coding/comments/${id}${method === 'POST' ? '/report' : ''}`, {
+        method,
+        body: body ? json(body) : undefined,
+      }),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: ['solution-detail', summary.id] });
+    },
+  });
   const solution = detail.data;
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -310,6 +374,7 @@ function SolutionFeedItem({
         <button
           className="reaction-button"
           aria-pressed={Boolean(summary.reactedByMe)}
+          disabled={reactionPending}
           onClick={() => onReact(!summary.reactedByMe)}
         >
           <ThumbsUp /> 유용해요 {summary.reactionCount || 0}
@@ -337,6 +402,9 @@ function SolutionFeedItem({
       {solution && (
         <>
           <SolutionRevisionPanel solution={solution} />
+          <div className="solution-owner-actions">
+            <FolderSaveButton itemType="SOLUTION" targetId={solution.id} label={solution.title} />
+          </div>
           {(solution.timeComplexity || solution.spaceComplexity) && (
             <div className="complexity-row">
               <span>시간 {solution.timeComplexity || '—'}</span>
@@ -351,28 +419,77 @@ function SolutionFeedItem({
             {solution.comments.map((item) => (
               <div key={item.id} className="comment">
                 <strong>{item.author.displayName}</strong>
-                <p>
-                  {item.redacted === 'DELETED' || item.deletedAt
-                    ? '삭제된 댓글입니다.'
-                    : item.redacted === 'HIDDEN' || item.hiddenAt
-                      ? '관리자가 숨긴 댓글입니다.'
-                      : item.markdown}
-                </p>
+                <div className="comment-markdown">
+                  {item.redacted === 'DELETED' || item.deletedAt ? (
+                    '삭제된 댓글입니다.'
+                  ) : item.redacted === 'HIDDEN' || item.hiddenAt ? (
+                    '관리자가 숨긴 댓글입니다.'
+                  ) : (
+                    <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{item.markdown}</ReactMarkdown>
+                  )}
+                </div>
                 {!item.deletedAt && !item.hiddenAt && (
-                  <button className="text-button" onClick={() => setReplyingTo(item.id)}>
-                    답글
-                  </button>
+                  <div className="comment-actions">
+                    <button className="text-button" onClick={() => setReplyingTo(item.id)}>
+                      답글
+                    </button>
+                    {item.canEdit ? (
+                      <>
+                        <button
+                          type="button"
+                          className="text-button"
+                          onClick={() => {
+                            const markdown = window.prompt('댓글 수정', item.markdown || '');
+                            if (markdown?.trim())
+                              commentAction.mutate({
+                                id: item.id,
+                                method: 'PATCH',
+                                body: { markdown },
+                              });
+                          }}
+                        >
+                          수정
+                        </button>
+                        <button
+                          type="button"
+                          className="text-button danger"
+                          onClick={() => {
+                            if (window.confirm('댓글을 삭제할까요?'))
+                              commentAction.mutate({ id: item.id, method: 'DELETE' });
+                          }}
+                        >
+                          삭제
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        className="text-button"
+                        onClick={() => {
+                          const reason = window.prompt('신고 사유를 입력해주세요.');
+                          if (reason?.trim())
+                            commentAction.mutate({ id: item.id, method: 'POST', body: { reason } });
+                        }}
+                      >
+                        신고
+                      </button>
+                    )}
+                  </div>
                 )}
                 {item.replies.map((reply) => (
                   <div className="reply" key={reply.id}>
                     <strong>{reply.author.displayName}</strong>
-                    <p>
-                      {reply.redacted === 'DELETED' || reply.deletedAt
-                        ? '삭제된 답글입니다.'
-                        : reply.redacted === 'HIDDEN' || reply.hiddenAt
-                          ? '관리자가 숨긴 답글입니다.'
-                          : reply.markdown}
-                    </p>
+                    <div className="comment-markdown">
+                      {reply.redacted === 'DELETED' || reply.deletedAt ? (
+                        '삭제된 답글입니다.'
+                      ) : reply.redacted === 'HIDDEN' || reply.hiddenAt ? (
+                        '관리자가 숨긴 답글입니다.'
+                      ) : (
+                        <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
+                          {reply.markdown}
+                        </ReactMarkdown>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -388,7 +505,10 @@ function SolutionFeedItem({
                   placeholder={replyingTo ? '답글을 입력하세요' : '댓글을 입력하세요'}
                 />
               </label>
-              <button className="primary-button compact" disabled={!comment.trim()}>
+              <button
+                className="primary-button compact"
+                disabled={!comment.trim() || createComment.isPending}
+              >
                 <Send /> 등록
               </button>
               {replyingTo && (
@@ -401,7 +521,34 @@ function SolutionFeedItem({
                 </button>
               )}
             </form>
+            {createComment.isError && (
+              <div className="form-error" role="alert">
+                댓글을 등록하지 못했습니다. 입력한 내용은 유지됩니다.
+              </div>
+            )}
           </section>
+          {solution.canEdit && (
+            <button
+              type="button"
+              className="ghost-button danger"
+              onClick={() => {
+                if (window.confirm('이 풀이 기록을 삭제할까요?')) {
+                  void api(`/coding/solutions/${solution.id}`, { method: 'DELETE' }).then(
+                    async () => {
+                      await Promise.all([
+                        client.invalidateQueries({ queryKey: ['solutions'] }),
+                        client.invalidateQueries({ queryKey: ['solution-trash'] }),
+                        client.invalidateQueries({ queryKey: ['collections'] }),
+                        client.invalidateQueries({ queryKey: ['rankings'] }),
+                      ]);
+                    },
+                  );
+                }
+              }}
+            >
+              <Trash2 /> 내 풀이 삭제
+            </button>
+          )}
           <button type="button" className="text-button" onClick={() => setExpanded(false)}>
             상세 접기
           </button>
@@ -417,6 +564,13 @@ export function SolutionsPage() {
   const problemId = searchParams.get('problemId') || '';
   const problemTitle = searchParams.get('title') || '';
   const requestedSolution = searchParams.get('solution') || '';
+  const trash = useQuery({
+    queryKey: ['solution-trash'],
+    queryFn: () =>
+      api<Array<{ id: string; title: string; problemTitle: string; deletedAt: string }>>(
+        '/coding/solutions/trash',
+      ),
+  });
   const solutions = useInfiniteQuery({
     queryKey: ['solutions', problemId],
     initialPageParam: null as string | null,
@@ -429,6 +583,28 @@ export function SolutionsPage() {
     getNextPageParam: (lastPage) => lastPage.nextCursor || undefined,
   });
   const solutionRows = solutions.data?.pages.flatMap((page) => page.items) || [];
+  const requestedDetail = useQuery({
+    queryKey: ['solution-detail', requestedSolution],
+    queryFn: () => api<Solution>(`/coding/solutions/${requestedSolution}`),
+    enabled: Boolean(
+      requestedSolution && !solutionRows.some((row) => row.id === requestedSolution),
+    ),
+  });
+  const displayRows = requestedDetail.data
+    ? [
+        {
+          ...requestedDetail.data,
+          descriptionPreview: requestedDetail.data.description.slice(0, 240),
+          commentCount: requestedDetail.data.comments.reduce(
+            (sum, comment) => sum + 1 + comment.replies.length,
+            0,
+          ),
+          reactionCount: requestedDetail.data.reactionCount || 0,
+          reactedByMe: requestedDetail.data.reactedByMe || false,
+        } satisfies SolutionSummary,
+        ...solutionRows.filter((row) => row.id !== requestedDetail.data?.id),
+      ]
+    : solutionRows;
   const react = useMutation({
     mutationFn: ({ id, active }: { id: string; active: boolean }) =>
       api(`/coding/solutions/${id}/reaction`, {
@@ -470,6 +646,16 @@ export function SolutionsPage() {
       context?.snapshots.forEach(([key, value]) => client.setQueryData(key, value)),
     onSettled: () => client.invalidateQueries({ queryKey: ['solutions'] }),
   });
+  const restore = useMutation({
+    mutationFn: (id: string) => api(`/coding/solutions/${id}/restore`, { method: 'POST' }),
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ['solution-trash'] }),
+        client.invalidateQueries({ queryKey: ['solutions'] }),
+        client.invalidateQueries({ queryKey: ['rankings'] }),
+      ]);
+    },
+  });
   return (
     <div>
       <section className="page-heading">
@@ -488,7 +674,7 @@ export function SolutionsPage() {
       </section>
       {solutions.isLoading && <div className="loading-panel">풀이를 불러오는 중…</div>}
       {solutions.isError && <div className="error-panel">풀이 기록을 불러오지 못했습니다.</div>}
-      {!solutions.isLoading && !solutionRows.length && (
+      {!solutions.isLoading && !displayRows.length && (
         <div className="empty-panel">
           <Users />
           <h2>아직 풀이 기록이 없습니다</h2>
@@ -496,15 +682,38 @@ export function SolutionsPage() {
         </div>
       )}
       <div className="solutions-feed">
-        {solutionRows.map((solution) => (
+        {displayRows.map((solution) => (
           <SolutionFeedItem
             key={solution.id}
             summary={solution}
             initiallyExpanded={requestedSolution === solution.id}
             onReact={(active) => react.mutate({ id: solution.id, active })}
+            reactionPending={react.isPending && react.variables?.id === solution.id}
           />
         ))}
       </div>
+      {(trash.data?.length || 0) > 0 && (
+        <details className="trash-recovery">
+          <summary>삭제한 내 풀이 {trash.data?.length}개</summary>
+          <div>
+            {trash.data?.map((solution) => (
+              <article key={solution.id}>
+                <span>
+                  <strong>{solution.title}</strong>
+                  <small>{solution.problemTitle}</small>
+                </span>
+                <button
+                  type="button"
+                  disabled={restore.isPending && restore.variables === solution.id}
+                  onClick={() => restore.mutate(solution.id)}
+                >
+                  복원
+                </button>
+              </article>
+            ))}
+          </div>
+        </details>
+      )}
       {solutions.hasNextPage && (
         <button
           type="button"

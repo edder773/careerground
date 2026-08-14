@@ -294,6 +294,9 @@ test.describe('CareerGround MVP vertical slices', () => {
     await page.getByPlaceholder('job import schema JSON').fill(JSON.stringify(payload));
     await page.getByRole('button', { name: '미리보기', exact: true }).first().click();
     await expect(page.locator('.import-preview').first()).toContainText('E2E 회사');
+    await page
+      .getByRole('checkbox', { name: '화면의 전체 페이지와 다운로드 diff를 검토했습니다.' })
+      .check();
     const jobCommit = page.waitForResponse(
       (response) =>
         response.url().endsWith('/jobs/import/commit') && response.request().method() === 'POST',
@@ -336,6 +339,9 @@ test.describe('CareerGround MVP vertical slices', () => {
       .fill(JSON.stringify(learningPayload));
     await page.getByRole('button', { name: '미리보기', exact: true }).nth(1).click();
     await expect(page.locator('.import-preview').last()).toContainText(learningTitle);
+    await page
+      .getByRole('checkbox', { name: '화면의 전체 페이지와 다운로드 diff를 검토했습니다.' })
+      .check();
     const learningCommit = page.waitForResponse(
       (response) =>
         response.url().endsWith('/learning/import/commit') &&

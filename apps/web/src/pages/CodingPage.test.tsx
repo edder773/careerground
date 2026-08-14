@@ -34,6 +34,15 @@ describe('solution editor', () => {
       sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/3',
     };
     const calls: Array<{ url: string; body?: unknown }> = [];
+    localStorage.setItem(
+      `cg-solution-draft:v2:other-member:${problem.id}`,
+      JSON.stringify({
+        code: 'const leaked = true;',
+        description: '다른 계정 초안',
+        language: 'javascript',
+        savedAt: new Date().toISOString(),
+      }),
+    );
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -81,6 +90,7 @@ describe('solution editor', () => {
     expect(dailySection.querySelectorAll('a[href^="/solutions?"]')).toHaveLength(3);
     await user.click(within(dailySection).getAllByRole('button', { name: '풀이 기록' })[0]!);
     expect(screen.getByRole('dialog', { name: '데모 문제' })).toBeInTheDocument();
+    expect(screen.queryByText(/자동 저장 초안을 복원/)).not.toBeInTheDocument();
     const language = screen.getByRole('combobox', { name: '언어' });
     await waitFor(() => expect(language).toHaveValue('javascript'));
     expect(

@@ -16,7 +16,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const me = useQuery({
     queryKey: ['me'],
     queryFn: () => api<{ user: User }>('/auth/me'),
-    retry: false,
+    retry: (failureCount, error) =>
+      failureCount < 2 && error instanceof ApiError && (error.status === 0 || error.status >= 500),
+    retryDelay: (attempt) => Math.min(500 * 2 ** attempt, 2_000),
   });
   const value = useMemo<AuthContextValue>(
     () => ({

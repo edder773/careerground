@@ -62,8 +62,8 @@ export function App() {
   if (!user) return <LoginPage />;
   if (!user.onboardingCompleted) return <OnboardingPage />;
   return (
-    <AppShell viewMode={viewMode} onViewMode={setViewMode}>
-      <AppErrorBoundary>
+    <AppErrorBoundary>
+      <AppShell viewMode={viewMode} onViewMode={setViewMode}>
         <Suspense fallback={<div className="loading-panel">화면을 불러오는 중…</div>}>
           <Routes>
             <Route path="/" element={<HomePage viewMode={viewMode} />} />
@@ -91,7 +91,7 @@ export function App() {
             />
           </Routes>
         </Suspense>
-      </AppErrorBoundary>
-    </AppShell>
+      </AppShell>
+    </AppErrorBoundary>
   );
 }

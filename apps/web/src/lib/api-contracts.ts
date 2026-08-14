@@ -105,7 +105,25 @@ const arrayOrCursor = (item: z.ZodType) => z.union([z.array(item), cursorPage(it
 export function responseSchemaFor(path: string, method = 'GET'): z.ZodType {
   const [endpoint = ''] = path.split('?');
   const normalizedMethod = method.toUpperCase();
-  if (normalizedMethod !== 'GET') return jsonValueSchema;
+  if (normalizedMethod !== 'GET') {
+    if (/^\/learning\/questions\/[^/]+\/answer$/.test(endpoint)) {
+      return z
+        .object({ questionId: identifier, response: z.string(), correct: z.boolean() })
+        .passthrough();
+    }
+    if (endpoint === '/learning/review') {
+      return z.object({ unitId: identifier, reviewVersion: z.number() }).passthrough();
+    }
+    if (endpoint.endsWith('/import/preview') || endpoint.endsWith('/file/preview')) {
+      return z
+        .object({ previewToken: identifier, checksum: z.string(), expiresAt: z.string() })
+        .passthrough();
+    }
+    if (endpoint === '/notifications/read-all' || /\/notifications\/[^/]+\/read$/.test(endpoint)) {
+      return z.object({ count: z.number().nonnegative() }).passthrough();
+    }
+    return z.record(z.string(), jsonValueSchema);
+  }
   if (endpoint === '/auth/me') return z.object({ user }).passthrough();
   if (endpoint === '/auth/profile') return profile;
   if (endpoint === '/collections' || endpoint === '/collections/trash') return z.array(collection);
@@ -119,9 +137,15 @@ export function responseSchemaFor(path: string, method = 'GET'): z.ZodType {
   if (endpoint === '/jobs') return arrayOrCursor(job);
   if (/^\/jobs\/[^/]+$/.test(endpoint)) return job;
   if (endpoint === '/coding/problems') return arrayOrCursor(problem);
+  if (/^\/coding\/problems\/[^/]+$/.test(endpoint)) return problem;
   if (endpoint === '/coding/daily-challenges') return z.array(challenge);
   if (endpoint === '/coding/daily-challenge') return challenge;
   if (endpoint === '/coding/solutions') return arrayOrCursor(solutionSummary);
+  if (endpoint === '/coding/solutions/trash') {
+    return z.array(
+      z.object({ id: identifier, title: z.string(), deletedAt: z.string() }).passthrough(),
+    );
+  }
   if (/^\/coding\/solutions\/[^/]+$/.test(endpoint)) return solutionDetail;
   if (endpoint === '/coding/rankings') {
     return z

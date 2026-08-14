@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import {
@@ -21,6 +21,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import { useAuth } from '../auth';
 import { FolderSaveButton } from '../components/FolderSaveButton';
 import { api, json } from '../lib/api';
+import { myersDiff } from '../lib/myers-diff';
 
 type Revision = { id: string; revision: number; markdown: string; createdAt: string };
 type Note = {
@@ -33,7 +34,14 @@ type Note = {
   revisions: Revision[];
 };
 type DeletedNote = Pick<Note, 'id' | 'title'> & { deletedAt: string };
-type NoteDraft = { title: string; markdown: string; baseRevision?: number; savedAt: string };
+type NoteDraft = {
+  title: string;
+  markdown: string;
+  baseRevision?: number;
+  baseTitle?: string;
+  baseMarkdown?: string;
+  savedAt: string;
+};
 
 const noteDraftKey = (userId: string, noteId: string) => `cg-note-draft:${userId}:${noteId}`;
 
@@ -47,6 +55,8 @@ function readDraft(key: string): NoteDraft | undefined {
       title: draft.title,
       markdown: draft.markdown,
       baseRevision: draft.baseRevision,
+      baseTitle: typeof draft.baseTitle === 'string' ? draft.baseTitle : undefined,
+      baseMarkdown: typeof draft.baseMarkdown === 'string' ? draft.baseMarkdown : undefined,
       savedAt: typeof draft.savedAt === 'string' ? draft.savedAt : new Date().toISOString(),
     };
   } catch {
@@ -59,6 +69,14 @@ function readDraft(key: string): NoteDraft | undefined {
   }
 }
 
+function removeStoredDraft(key: string) {
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    // Browser storage is optional; server state remains authoritative.
+  }
+}
+
 const dateLabel = (value: string) =>
   new Intl.DateTimeFormat('ko-KR', { month: 'short', day: 'numeric' }).format(new Date(value));
 
@@ -66,7 +84,7 @@ function RevisionDiff({ revisions }: { revisions: Revision[] }) {
   const [latest, previous] = revisions.slice(0, 2);
   if (!latest || !previous)
     return <p className="muted-copy">수정 이력이 쌓이면 변경점을 볼 수 있어요.</p>;
-  const before = new Set(previous.markdown.split('\n'));
+  const diff = myersDiff(previous.markdown, latest.markdown);
   return (
     <div className="revision-diff" aria-label="최근 수정 비교">
       <header>
@@ -75,9 +93,10 @@ function RevisionDiff({ revisions }: { revisions: Revision[] }) {
         <span>버전 {latest.revision}</span>
       </header>
       <pre>
-        {latest.markdown.split('\n').map((line, index) => (
-          <span key={`${index}-${line}`} className={before.has(line) ? 'same' : 'added'}>
-            {before.has(line) ? '  ' : '+ '} {line || ' '}
+        {diff.map((line, index) => (
+          <span key={`${index}-${line.type}`} className={line.type}>
+            {line.type === 'added' ? '+ ' : line.type === 'removed' ? '- ' : '  '}{' '}
+            {line.value || ' '}
           </span>
         ))}
       </pre>
@@ -88,7 +107,7 @@ function RevisionDiff({ revisions }: { revisions: Revision[] }) {
 export function NotesPage() {
   const client = useQueryClient();
   const { user } = useAuth();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const editor = useRef<HTMLTextAreaElement>(null);
   const hydratedDraft = useRef<string | undefined>(undefined);
   const notes = useQuery({ queryKey: ['notes'], queryFn: () => api<Note[]>('/notes') });
@@ -101,6 +120,9 @@ export function NotesPage() {
   const [query, setQuery] = useState('');
   const [title, setTitle] = useState('');
   const [markdown, setMarkdown] = useState('');
+  const [baseRevision, setBaseRevision] = useState<number>();
+  const [restoredDraft, setRestoredDraft] = useState<NoteDraft>();
+  const [draftConflict, setDraftConflict] = useState(false);
   const [mobileView, setMobileView] = useState<'write' | 'preview'>('write');
   const selected = useMemo(
     () => notes.data?.find((note) => note.id === selectedId),
@@ -112,6 +134,28 @@ export function NotesPage() {
   const activeDraftKey = user
     ? noteDraftKey(user.id, creating ? 'new' : selectedId || 'none')
     : undefined;
+  const persistActiveDraft = useCallback(() => {
+    if (!activeDraftKey || hydratedDraft.current !== activeDraftKey) return;
+    if (!dirty) {
+      removeStoredDraft(activeDraftKey);
+      return;
+    }
+    try {
+      window.localStorage.setItem(
+        activeDraftKey,
+        JSON.stringify({
+          title,
+          markdown,
+          baseRevision: creating ? undefined : baseRevision,
+          baseTitle: creating ? undefined : selected?.title,
+          baseMarkdown: creating ? undefined : selected?.markdown,
+          savedAt: new Date().toISOString(),
+        } satisfies NoteDraft),
+      );
+    } catch {
+      // Explicit save and unload protection remain available.
+    }
+  }, [activeDraftKey, baseRevision, creating, dirty, markdown, selected, title]);
   const filtered = useMemo(() => {
     const keyword = query.trim().toLowerCase();
     if (!keyword) return notes.data || [];
@@ -133,31 +177,18 @@ export function NotesPage() {
     const draft = key ? readDraft(key) : undefined;
     setTitle(draft?.title ?? selected.title);
     setMarkdown(draft?.markdown ?? selected.markdown);
+    setBaseRevision(draft?.baseRevision ?? selected.currentRev);
+    setRestoredDraft(draft);
+    setDraftConflict(
+      Boolean(draft?.baseRevision !== undefined && draft.baseRevision !== selected.currentRev),
+    );
     hydratedDraft.current = key;
   }, [selected, creating, user]);
   useEffect(() => {
     if (!activeDraftKey || hydratedDraft.current !== activeDraftKey) return;
-    const timer = window.setTimeout(() => {
-      try {
-        if (!dirty) {
-          window.localStorage.removeItem(activeDraftKey);
-          return;
-        }
-        window.localStorage.setItem(
-          activeDraftKey,
-          JSON.stringify({
-            title,
-            markdown,
-            baseRevision: creating ? undefined : selected?.currentRev,
-            savedAt: new Date().toISOString(),
-          } satisfies NoteDraft),
-        );
-      } catch {
-        // The explicit save and unload guard remain available when storage is unavailable.
-      }
-    }, 500);
+    const timer = window.setTimeout(persistActiveDraft, 500);
     return () => window.clearTimeout(timer);
-  }, [activeDraftKey, creating, dirty, markdown, selected?.currentRev, title]);
+  }, [activeDraftKey, persistActiveDraft]);
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
       if (!dirty) return;
@@ -173,16 +204,22 @@ export function NotesPage() {
         method: 'POST',
         body: json({
           id: creating ? undefined : selected?.id,
-          baseRevision: creating ? undefined : selected?.currentRev,
+          baseRevision: creating ? undefined : baseRevision,
           title,
           markdown,
         }),
       }),
     onMutate: () => ({ draftKey: activeDraftKey }),
     onSuccess: async (note, _variables, context) => {
-      if (context?.draftKey) window.localStorage.removeItem(context.draftKey);
+      if (context?.draftKey) removeStoredDraft(context.draftKey);
       setCreating(false);
       setSelectedId(note.id);
+      setBaseRevision(note.currentRev);
+      setRestoredDraft(undefined);
+      setDraftConflict(false);
+      const next = new URLSearchParams(searchParams);
+      next.set('note', note.id);
+      setSearchParams(next, { replace: true });
       await Promise.all([
         client.invalidateQueries({ queryKey: ['notes'] }),
         client.invalidateQueries({ queryKey: ['collections'] }),
@@ -192,7 +229,7 @@ export function NotesPage() {
   const remove = useMutation({
     mutationFn: (id: string) => api(`/notes/${id}`, { method: 'DELETE' }),
     onSuccess: async (_value, id) => {
-      if (user) window.localStorage.removeItem(noteDraftKey(user.id, id));
+      if (user) removeStoredDraft(noteDraftKey(user.id, id));
       setSelectedId(undefined);
       setTitle('');
       setMarkdown('');
@@ -213,19 +250,30 @@ export function NotesPage() {
   });
 
   const startNew = () => {
+    persistActiveDraft();
     const key = user ? noteDraftKey(user.id, 'new') : undefined;
     const draft = key ? readDraft(key) : undefined;
     setCreating(true);
     setSelectedId(undefined);
     setTitle(draft?.title ?? '');
     setMarkdown(draft?.markdown ?? '');
+    setBaseRevision(undefined);
+    setRestoredDraft(draft);
+    setDraftConflict(false);
     hydratedDraft.current = key;
     setMobileView('write');
+    const next = new URLSearchParams(searchParams);
+    next.delete('note');
+    setSearchParams(next, { replace: true });
   };
   const selectNote = (id: string) => {
+    persistActiveDraft();
     setCreating(false);
     setSelectedId(id);
     setMobileView('write');
+    const next = new URLSearchParams(searchParams);
+    next.set('note', id);
+    setSearchParams(next, { replace: true });
   };
   const insert = (before: string, after = '') => {
     const field = editor.current;
@@ -328,7 +376,13 @@ export function NotesPage() {
             <header className="note-workspace-header">
               <div>
                 <span>{creating ? '새 노트' : `버전 ${selected?.currentRev || 1}`}</span>
-                <strong role="status">{dirty ? '저장되지 않은 변경' : '모든 변경 저장됨'}</strong>
+                <strong role="status">
+                  {creating && !dirty
+                    ? '아직 저장되지 않음'
+                    : dirty
+                      ? '저장되지 않은 변경'
+                      : '모든 변경 저장됨'}
+                </strong>
                 {!creating && selected && (
                   <time dateTime={selected.updatedAt}>{dateLabel(selected.updatedAt)} 수정</time>
                 )}
@@ -357,12 +411,91 @@ export function NotesPage() {
                 )}
                 <button
                   className="primary-button compact"
-                  disabled={!title.trim() || save.isPending}
+                  disabled={!title.trim() || !dirty || draftConflict || save.isPending}
                 >
                   <Save /> {save.isPending ? '저장 중…' : '저장'}
                 </button>
               </div>
             </header>
+            {draftConflict && selected && restoredDraft && (
+              <section className="note-draft-conflict" role="alert">
+                <div>
+                  <strong>서버에서 더 최신인 노트를 발견했습니다</strong>
+                  <span>
+                    자동 저장 초안은 revision {restoredDraft.baseRevision ?? '알 수 없음'}, 서버는
+                    revision {selected.currentRev}입니다. 선택하기 전에는 덮어쓰지 않습니다.
+                  </span>
+                </div>
+                <div className="note-conflict-preview">
+                  <article>
+                    <strong>자동 저장 초안</strong>
+                    <pre>{restoredDraft.markdown}</pre>
+                  </article>
+                  <article>
+                    <strong>서버 최신본</strong>
+                    <pre>{selected.markdown}</pre>
+                  </article>
+                </div>
+                <div className="detail-actions">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTitle(selected.title);
+                      setMarkdown(selected.markdown);
+                      setBaseRevision(selected.currentRev);
+                      setRestoredDraft(undefined);
+                      setDraftConflict(false);
+                      if (activeDraftKey) removeStoredDraft(activeDraftKey);
+                    }}
+                  >
+                    서버 최신본 사용
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBaseRevision(selected.currentRev);
+                      setDraftConflict(false);
+                    }}
+                  >
+                    직접 병합 후 저장
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (activeDraftKey) removeStoredDraft(activeDraftKey);
+                      setCreating(true);
+                      setSelectedId(undefined);
+                      const next = new URLSearchParams(searchParams);
+                      next.delete('note');
+                      setSearchParams(next, { replace: true });
+                      setBaseRevision(undefined);
+                      setDraftConflict(false);
+                      hydratedDraft.current = user ? noteDraftKey(user.id, 'new') : undefined;
+                    }}
+                  >
+                    초안을 새 노트로 보존
+                  </button>
+                </div>
+              </section>
+            )}
+            {!draftConflict && restoredDraft && (
+              <div className="draft-restored" role="status">
+                {new Date(restoredDraft.savedAt).toLocaleString('ko-KR')} 자동 저장 초안을
+                복원했습니다.
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (activeDraftKey) removeStoredDraft(activeDraftKey);
+                    setTitle(selected?.title || '');
+                    setMarkdown(selected?.markdown || '');
+                    setBaseRevision(selected?.currentRev);
+                    setRestoredDraft(undefined);
+                  }}
+                >
+                  초안 폐기
+                </button>
+              </div>
+            )}
             <input
               className="note-title-input"
               aria-label="노트 제목"

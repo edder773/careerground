@@ -76,7 +76,8 @@ export const jobImportSchema = z.object({
       sources: z.array(z.string().trim().min(1).max(80)).min(1).max(200),
     })
     .optional(),
-  items: z.array(jobImportItemSchema).min(1).max(5_000),
+  // D1 import commits are intentionally bounded to keep one reviewed transaction atomic.
+  items: z.array(jobImportItemSchema).min(1).max(200),
 });
 
 export const learningImportSchema = z.object({
@@ -122,7 +123,7 @@ export const learningImportSchema = z.object({
       }),
     )
     .min(1)
-    .max(500),
+    .max(100),
 });
 
 export const problemImportSchema = z.object({

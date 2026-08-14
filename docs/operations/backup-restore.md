@@ -37,7 +37,7 @@ pnpm recovery:drill
 이 명령은 전체 migration/seed를 적용한 원본에 비식별 사용자·노트 revision을 추가한 뒤,
 Node SQLite backup API로 snapshot을 만들고 다시 별도 DB로 복원한다. 복원 전후 테이블 건수,
 민감 원문 대신 SHA-256, `integrity_check`, `foreign_key_check`를 비교하고 임시 파일은 즉시
-삭제한다. 2026-08-14 실행은 315 pages/1,290,240 bytes를 snapshot하고 1.58ms에 복원했으며,
+삭제한다. 최신 2026-08-14 실행은 316 pages/1,294,336 bytes를 3.32 ms에 snapshot하고 3.25 ms에 복원했으며,
 RPO mutation 0, FK 위반 0, 건수 차이 0으로 통과했다. 원본 결과는
 `docs/evidence/recovery-drill-2026-08-14.json`에 있다. 이 시간은 로컬 합성 측정이며 운영 RTO가
 아니다.

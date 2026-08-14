@@ -113,6 +113,13 @@
       "when": 1786674400000,
       "tag": "0015_learning_visual_webp",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1786688400000,
+      "tag": "0016_full_audit_hardening",
+      "breakpoints": true
     }
   ]
 }
