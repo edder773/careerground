@@ -53,6 +53,25 @@ favicon, 인증 401과 보안 헤더를 확인한다.
 중복 실행을 막았지만, OPS-004의 최종 상태는 여전히 부분 완화다. 관리면 migration이 제공되면
 배포 단계 적용 후 요청 경로를 읽기 전용 version check로 축소해야 한다.
 
+### 운영 baseline보다 오래된 migration을 다시 실행하면 안 된다
+
+Sites version 26의 첫 배포 시도는 운영 버전을 바꾸기 전에 중단됐다. 그전까지 artifact가 SQL을
+포함하지 않아 운영 D1은 runtime schema로 0015 상당 상태까지 보강됐는데, 새 artifact가 0000부터
+전체 이력을 처음 제공하면서 0013이 이미 존재하는 `job_source_snapshot_items`를 다시 만들려 했다.
+
+```text
+version 25 live D1: runtime baseline through 0015
+version 26 archive: 0000 ... 0016 replay -> SQLITE_ERROR(table already exists)
+correct archive:    0016 forward migration only
+repository:         immutable 0000 ... 0016 history retained
+```
+
+소스의 전체 migration 이력은 삭제하거나 고치지 않았다. 이 기존 Sites 프로젝트의 배포 artifact만
+runtime baseline 이후의 `0016_full_audit_hardening.sql`을 포함한다. 0016에는 정식 Drizzle snapshot,
+학습 문항 데이터 보존 rebuild, schema ledger/checksum이 있고 clean generation은 새 migration을 만들지
+않는다. 새 Sites 프로젝트를 만드는 경우에는 0000부터 전체 이력을 적용하는 별도 bootstrap 절차가
+필요하며, 현재 production baseline 규칙을 그대로 재사용하면 안 된다.
+
 ## 핵심 이론 2: 로컬 초안은 사용자와 서버 revision을 함께 식별해야 한다
 
 문제 ID나 노트 ID만 localStorage key에 넣으면 같은 브라우저에서 계정을 바꿨을 때 다른 사용자의
