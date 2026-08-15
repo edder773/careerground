@@ -87,11 +87,11 @@ describe('Sites runtime schema', () => {
       'SELECT COUNT(*) AS count FROM workspace_search',
     );
     expect(Number(searchCountBefore?.count)).toBeGreaterThan(0);
-    const backendResults = await all<{ kind: string }>(
+    const jobResults = await all<{ kind: string }>(
       db,
-      `SELECT kind FROM workspace_search WHERE workspace_search MATCH '"백엔드"*'`,
+      `SELECT kind FROM workspace_search WHERE workspace_search MATCH '"라피치"*'`,
     );
-    expect(backendResults.some((result) => result.kind === 'jobs')).toBe(true);
+    expect(jobResults.some((result) => result.kind === 'jobs')).toBe(true);
 
     await ensureRuntimeSchema(db);
     const searchCountAfter = await first<{ count: number }>(
@@ -118,14 +118,9 @@ describe('Sites production migration baseline', () => {
       for (const migration of migrations.filter((file) => Number(file.slice(0, 4)) < 17)) {
         copyFileSync(join('drizzle', migration), join(baselineDirectory, migration));
       }
-      copyFileSync(
-        join('drizzle', '0017_marvelous_blockbuster.sql'),
-        join(forwardDirectory, '0017_marvelous_blockbuster.sql'),
-      );
-      copyFileSync(
-        join('drizzle', '0018_sloppy_leech.sql'),
-        join(forwardDirectory, '0018_sloppy_leech.sql'),
-      );
+      for (const migration of migrations.filter((file) => Number(file.slice(0, 4)) >= 17)) {
+        copyFileSync(join('drizzle', migration), join(forwardDirectory, migration));
+      }
 
       const baseline = new LocalD1(databasePath, baselineDirectory);
       await run(
@@ -162,7 +157,29 @@ describe('Sites production migration baseline', () => {
         `INSERT INTO collection_items
           (id, collection_id, item_type, target_id, label, position, created_at)
          VALUES ('note-item-to-delete', 'note-folder', 'NOTE', 'note-to-delete', '삭제 대상', 0,
-                 '2026-08-15')`,
+                  '2026-08-15')`,
+      );
+      await run(
+        baseline,
+        `INSERT INTO saved_jobs
+          (id, user_id, job_id, status, bookmarked, memo, created_at, updated_at)
+         SELECT 'legacy-saved-job', 'note-owner', id, 'INTERESTED', 1, '',
+                '2026-08-15', '2026-08-15'
+           FROM jobs LIMIT 1`,
+      );
+      await run(
+        baseline,
+        `INSERT INTO collection_items
+          (id, collection_id, item_type, target_id, label, position, created_at)
+         SELECT 'legacy-job-item', 'note-folder', 'JOB_POSTING', id, title, 1, '2026-08-15'
+           FROM jobs LIMIT 1`,
+      );
+      await run(
+        baseline,
+        `INSERT INTO notifications
+          (id, user_id, type, title, message, href, created_at)
+         VALUES ('legacy-job-notification', 'note-owner', 'JOB_DEADLINE', '마감 알림',
+                 '기존 공고 알림', '/jobs', '2026-08-15')`,
       );
       const countBefore = await first<{ count: number }>(
         baseline,
@@ -180,7 +197,18 @@ describe('Sites production migration baseline', () => {
         categoryIndex: number;
         removedNoteTables: number;
         noteItems: number;
+        jobs: number;
+        visibleJobs: number;
+        reviewJobs: number;
+        savedJobs: number;
+        jobItems: number;
+        jobDeadlineNotifications: number;
+        jobSearchRows: number;
+        jobTechRows: number;
+        orphanTechRows: number;
+        jobImportBatches: number;
         checksum: string;
+        replacementChecksum: string;
       }>(
         upgraded,
         `SELECT (SELECT COUNT(*) FROM learning_questions) AS questions,
@@ -196,9 +224,26 @@ describe('Sites production migration baseline', () => {
                   WHERE name = 'idx_jobs_active_category') AS categoryIndex,
                 (SELECT COUNT(*) FROM sqlite_schema
                   WHERE type = 'table' AND name IN ('notes', 'note_revisions')) AS removedNoteTables,
-                (SELECT COUNT(*) FROM collection_items WHERE item_type = 'NOTE') AS noteItems,
-                (SELECT checksum FROM app_schema_migrations
-                  WHERE version = '0018_sloppy_leech') AS checksum`,
+                 (SELECT COUNT(*) FROM collection_items WHERE item_type = 'NOTE') AS noteItems,
+                 (SELECT COUNT(*) FROM jobs) AS jobs,
+                 (SELECT COUNT(*) FROM jobs
+                   WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN')) AS visibleJobs,
+                 (SELECT COUNT(*) FROM jobs WHERE status = 'NEEDS_REVIEW') AS reviewJobs,
+                 (SELECT COUNT(*) FROM saved_jobs) AS savedJobs,
+                 (SELECT COUNT(*) FROM collection_items
+                   WHERE item_type = 'JOB_POSTING') AS jobItems,
+                 (SELECT COUNT(*) FROM notifications
+                   WHERE type = 'JOB_DEADLINE') AS jobDeadlineNotifications,
+                 (SELECT COUNT(*) FROM workspace_search WHERE kind = 'jobs') AS jobSearchRows,
+                 (SELECT COUNT(*) FROM job_tech_stacks) AS jobTechRows,
+                 (SELECT COUNT(*) FROM job_tech_stacks AS stack
+                   LEFT JOIN jobs ON jobs.id = stack.job_id
+                   WHERE jobs.id IS NULL) AS orphanTechRows,
+                 (SELECT COUNT(*) FROM import_batches WHERE kind = 'jobs') AS jobImportBatches,
+                 (SELECT checksum FROM app_schema_migrations
+                   WHERE version = '0018_sloppy_leech') AS checksum,
+                 (SELECT checksum FROM app_schema_migrations
+                   WHERE version = '0019_replace_job_catalog_20260814') AS replacementChecksum`,
       );
 
       expect(schema).toEqual({
@@ -210,8 +255,20 @@ describe('Sites production migration baseline', () => {
         categoryIndex: 1,
         removedNoteTables: 0,
         noteItems: 0,
+        jobs: 34,
+        visibleJobs: 16,
+        reviewJobs: 18,
+        savedJobs: 0,
+        jobItems: 0,
+        jobDeadlineNotifications: 0,
+        jobSearchRows: 16,
+        jobTechRows: expect.any(Number),
+        orphanTechRows: 0,
+        jobImportBatches: 1,
         checksum: 'sha256:86c1de85559a9b51e959bf7c423ad8a9e9afd3586ad672c2ec32da009057fe4b',
+        replacementChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
       });
+      expect(schema?.jobTechRows).toBeGreaterThan(0);
       await expect(
         run(
           upgraded,

@@ -364,21 +364,21 @@ describe('Sites D1 API', () => {
       )
       .first<{ count: number }>();
 
-    expect(jobCount?.count).toBe(121);
-    expect(currentJobCount?.count).toBe(120);
-    expect(expiredJobCount?.count).toBe(1);
+    expect(jobCount?.count).toBe(34);
+    expect(currentJobCount?.count).toBe(34);
+    expect(expiredJobCount?.count).toBe(0);
     expect(problemCount?.count).toBe(427);
     expect(sqlProblemCount?.count).toBe(62);
     expect(dummyCount?.count).toBe(0);
 
     const jobs = await call('/api/v1/jobs?sort=new');
     expect(jobs.response.status).toBe(200);
-    expect(jobs.body).toHaveLength(119);
+    expect(jobs.body).toHaveLength(16);
     expect(jobs.body).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          title: 'Fullstack Engineer',
-          company: expect.objectContaining({ name: 'Hudson AI' }),
+          title: 'AI Engineer',
+          company: expect.objectContaining({ name: '라피치' }),
         }),
       ]),
     );
@@ -409,7 +409,7 @@ describe('Sites D1 API', () => {
     const categories = await call('/api/v1/jobs/categories');
     expect(categories.response.status).toBe(200);
     expect(categories.body).toEqual(
-      expect.arrayContaining(['AI 풀스택 개발', '백엔드', '프론트엔드']),
+      expect.arrayContaining(['AI_ML', 'SOFTWARE_ENGINEERING', 'WEB_DEVELOPMENT']),
     );
   });
 
@@ -420,7 +420,7 @@ describe('Sites D1 API', () => {
     db.resetBatchCount();
     const catalog = await call('/api/v1/jobs?sort=new&page=cursor&limit=40', {}, memberHeaders);
     expect(catalog.response.status).toBe(200);
-    expect(catalog.body).toMatchObject({ items: expect.any(Array), total: 119 });
+    expect(catalog.body).toMatchObject({ items: expect.any(Array), total: 16 });
     expect(db.getQueryCount()).toBe(4);
     expect(db.getBatchCount()).toBe(1);
     expect(
@@ -442,8 +442,8 @@ describe('Sites D1 API', () => {
     expect(bootstrap.body).toMatchObject({
       user: { email: 'member@example.test' },
       unreadCount: expect.any(Number),
-      categories: expect.arrayContaining(['백엔드']),
-      data: { items: expect.any(Array), total: 119 },
+      categories: expect.arrayContaining(['AI_ML']),
+      data: { items: expect.any(Array), total: 16 },
     });
     expect(db.getQueryCount()).toBe(5);
     expect(db.getBatchCount()).toBe(1);
@@ -453,10 +453,10 @@ describe('Sites D1 API', () => {
     const fullCatalog = await call('/api/v1/jobs/bootstrap?catalog=true', {}, memberHeaders);
     expect(fullCatalog.response.status).toBe(200);
     expect(fullCatalog.body).toMatchObject({
-      categories: expect.arrayContaining(['백엔드', '프론트엔드']),
+      categories: expect.arrayContaining(['AI_ML', 'WEB_DEVELOPMENT']),
       data: expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]),
     });
-    expect(fullCatalog.body.data as unknown[]).toHaveLength(119);
+    expect(fullCatalog.body.data as unknown[]).toHaveLength(16);
     expect(db.getQueryCount()).toBe(3);
     expect(db.getBatchCount()).toBe(1);
   });
@@ -473,7 +473,7 @@ describe('Sites D1 API', () => {
       newcomer,
     );
     expect(bootstrap.response.status).toBe(200);
-    expect(bootstrap.body).toMatchObject({ unreadCount: 1, data: { total: 119 } });
+    expect(bootstrap.body).toMatchObject({ unreadCount: 1, data: { total: 16 } });
   });
 
   it('serves the high-traffic read routes in one D1 dispatch each', async () => {
@@ -517,34 +517,36 @@ describe('Sites D1 API', () => {
       problemPage.items.at(-1)?.id,
     );
 
-    const firstJobs = await call('/api/v1/jobs?sort=new&page=cursor&limit=20');
+    const firstJobs = await call('/api/v1/jobs?sort=new&page=cursor&limit=10');
     const jobPage = firstJobs.body as unknown as {
       items: Array<{ id: string }>;
       nextCursor: string;
       total: number;
     };
-    expect(jobPage.items).toHaveLength(20);
-    expect(jobPage.total).toBe(119);
+    expect(jobPage.items).toHaveLength(10);
+    expect(jobPage.total).toBe(16);
+    expect(jobPage.nextCursor).toBeTruthy();
     const nextJobs = await call(
-      `/api/v1/jobs?sort=new&page=cursor&limit=20&cursor=${encodeURIComponent(jobPage.nextCursor)}`,
+      `/api/v1/jobs?sort=new&page=cursor&limit=10&cursor=${encodeURIComponent(jobPage.nextCursor)}`,
     );
+    expect((nextJobs.body as unknown as { items: unknown[] }).items).toHaveLength(6);
     expect(
       (nextJobs.body as unknown as { items: Array<{ id: string }> }).items.map((item) => item.id),
     ).not.toContain(jobPage.items.at(-1)?.id);
   });
 
   it('accepts repeated company-size and category filters', async () => {
-    const sizes = await call('/api/v1/jobs?companySize=STARTUP&companySize=FOREIGN');
+    const sizes = await call('/api/v1/jobs?companySize=UNCLASSIFIED&companySize=FOREIGN');
     const sizeRows = sizes.body as unknown as Array<{ company: { size: string } }>;
     expect(sizeRows.length).toBeGreaterThan(0);
-    expect(sizeRows.every((row) => ['STARTUP', 'FOREIGN'].includes(row.company.size))).toBe(true);
-
-    const categories = await call(
-      '/api/v1/jobs?category=%EB%B0%B1%EC%97%94%EB%93%9C&category=AI%20%ED%92%80%EC%8A%A4%ED%83%9D%20%EA%B0%9C%EB%B0%9C',
+    expect(sizeRows.every((row) => ['UNCLASSIFIED', 'FOREIGN'].includes(row.company.size))).toBe(
+      true,
     );
+
+    const categories = await call('/api/v1/jobs?category=AI_ML&category=WEB_DEVELOPMENT');
     const categoryRows = categories.body as unknown as Array<{ category: string }>;
     expect(categoryRows.length).toBeGreaterThan(0);
-    expect(categoryRows.every((row) => ['백엔드', 'AI 풀스택 개발'].includes(row.category))).toBe(
+    expect(categoryRows.every((row) => ['AI_ML', 'WEB_DEVELOPMENT'].includes(row.category))).toBe(
       true,
     );
   });
@@ -619,18 +621,12 @@ describe('Sites D1 API', () => {
   });
 
   it('limits calendar queries to the requested deadline month', async () => {
-    const september = await call(
-      '/api/v1/jobs?sort=deadline&deadlineFrom=2026-08-31T15%3A00%3A00.000Z&deadlineTo=2026-09-30T15%3A00%3A00.000Z',
-    );
-    expect(september.response.status).toBe(200);
-    const septemberRows = september.body as unknown as Array<{ deadlineAt: string }>;
-    expect(septemberRows.length).toBeGreaterThan(0);
-
     const august = await call(
       '/api/v1/jobs?sort=deadline&deadlineFrom=2026-07-31T15%3A00%3A00.000Z&deadlineTo=2026-08-31T15%3A00%3A00.000Z',
     );
     const augustRows = august.body as unknown as Array<{ deadlineAt: string }>;
-    expect(augustRows.length).toBeGreaterThan(septemberRows.length);
+    expect(august.response.status).toBe(200);
+    expect(augustRows.length).toBeGreaterThan(0);
     expect(
       augustRows.every((row) => {
         const value = Date.parse(row.deadlineAt);
@@ -640,6 +636,12 @@ describe('Sites D1 API', () => {
         );
       }),
     ).toBe(true);
+
+    const september = await call(
+      '/api/v1/jobs?sort=deadline&deadlineFrom=2026-08-31T15%3A00%3A00.000Z&deadlineTo=2026-09-30T15%3A00%3A00.000Z',
+    );
+    expect(september.response.status).toBe(200);
+    expect(september.body).toHaveLength(0);
 
     const invalid = await call(
       '/api/v1/jobs?deadlineFrom=2026-09-30T15%3A00%3A00.000Z&deadlineTo=2026-08-31T15%3A00%3A00.000Z',
