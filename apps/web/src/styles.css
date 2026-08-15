@@ -166,8 +166,7 @@
   gap: 10px;
 }
 
-.learning-choice-list,
-.learning-due-list {
+.learning-choice-list {
   display: grid;
   gap: 8px;
 }
@@ -7004,10 +7003,10 @@ body {
   }
 }
 
-/* Cohesive UI polish: dashboard summaries, review queue, actions, and settings. */
+/* Cohesive UI polish: dashboard summaries, actions, and settings. */
 .finder-home .today-strip {
   margin: 12px 0 28px;
-  grid-template-columns: minmax(460px, 1.8fr) repeat(3, minmax(132px, 0.55fr));
+  grid-template-columns: minmax(460px, 1.8fr) repeat(2, minmax(160px, 0.55fr));
   align-items: stretch;
   gap: 10px;
 }
@@ -7083,12 +7082,37 @@ body {
 }
 
 .finder-home .today-feature .today-problem-list strong {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  margin-top: 5px;
+  overflow: visible;
   font-size: 12px;
+  line-height: 1.4;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .finder-home .today-feature .today-problem-list small,
 .finder-home .today-feature .today-problem-list b {
   font-size: 8px;
+}
+
+.finder-home .today-feature .today-problem-list a {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-content: start;
+  min-height: 66px;
+}
+
+.finder-home .today-feature .today-problem-list small {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.finder-home .today-feature .today-problem-list b {
+  grid-column: 3;
+  grid-row: 1;
 }
 
 .finder-home > .section-block:not(.collection-detail) {
@@ -7110,7 +7134,7 @@ body {
 }
 
 .virtual-folders {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -7153,108 +7177,6 @@ body {
   color: #737985;
   font-size: 10px;
   line-height: 1.4;
-}
-
-.learning-due-list {
-  margin: 0 0 22px;
-  padding: 18px;
-  gap: 14px;
-  background: #f7f7fa;
-  border: 1px solid #e1e3eb;
-  border-radius: 18px;
-}
-
-.learning-due-list > header {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-}
-
-.learning-due-list > header > svg {
-  width: 38px;
-  height: 38px;
-  padding: 9px;
-  color: #5665bd;
-  background: #e8eaf7;
-  border-radius: 12px;
-}
-
-.learning-due-list > header span,
-.learning-due-list > header h2 {
-  margin: 0;
-}
-
-.learning-due-list > header span {
-  color: #707681;
-  font-size: 10px;
-  font-weight: 750;
-}
-
-.learning-due-list > header h2 {
-  margin-top: 2px;
-  color: #2b313b;
-  font-size: 16px;
-}
-
-.learning-due-list > div {
-  display: grid;
-  gap: 8px;
-}
-
-.learning-due-list > div > button {
-  width: 100%;
-  min-height: 66px;
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  text-align: left;
-  background: white;
-  border: 1px solid #e2e4e9;
-  border-radius: 12px;
-}
-
-.learning-due-list > div > button:hover {
-  border-color: #c9cee5;
-  background: #fdfdff;
-}
-
-.learning-due-copy {
-  min-width: 0;
-  display: grid;
-  gap: 4px;
-}
-
-.learning-due-copy small {
-  overflow: hidden;
-  color: #6f7580;
-  font-size: 10px;
-  line-height: 1.35;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.learning-due-copy strong {
-  overflow-wrap: anywhere;
-  color: #2d333d;
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.learning-due-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  flex: 0 0 auto;
-  color: #5261b7;
-  font-size: 11px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.learning-due-action svg {
-  width: 14px;
 }
 
 .learning-source > header > div:nth-child(2) {
@@ -7305,6 +7227,7 @@ body {
 .jobs-page .job-actions .folder-save-trigger,
 .jobs-page .job-actions > button,
 .jobs-page .job-actions > a {
+  width: 100%;
   min-width: 0;
   min-height: 40px;
   height: auto;
@@ -7521,7 +7444,7 @@ body {
 
 @media (max-width: 1180px) {
   .finder-home .today-strip {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .finder-home .today-strip > .today-feature {
@@ -7556,7 +7479,7 @@ body {
 
 @media (max-width: 640px) {
   .finder-home .today-strip {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
 
@@ -7591,20 +7514,6 @@ body {
 
   .virtual-folders {
     grid-template-columns: 1fr;
-  }
-
-  .learning-due-list {
-    padding: 14px;
-  }
-
-  .learning-due-list > div > button {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .learning-due-action {
-    align-self: flex-end;
   }
 
   .settings-card {

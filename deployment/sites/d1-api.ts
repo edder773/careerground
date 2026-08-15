@@ -561,6 +561,7 @@ type CountRow = { count: number };
 
 const unreadCountSql = `SELECT COUNT(*) AS count FROM notifications
                          WHERE user_id = ? AND read_at IS NULL
+                           AND type <> 'LEARNING_REVIEW'
                            AND (expires_at IS NULL OR expires_at > ?)`;
 
 const dashboardRange = () => {
@@ -572,7 +573,7 @@ const dashboardRange = () => {
   };
 };
 
-type DashboardRow = { recentJobs: number; expiringJobs: number; dueReviews: number };
+type DashboardRow = { recentJobs: number; expiringJobs: number };
 
 const dashboardStatement = (
   db: D1Database,
@@ -587,18 +588,15 @@ const dashboardStatement = (
            WHERE status = 'ACTIVE' AND created_at >= ?) AS recentJobs,
          (SELECT COUNT(*) FROM saved_jobs sj JOIN jobs j ON j.id = sj.job_id
            WHERE sj.user_id = ${ownerSql} AND j.status = 'ACTIVE'
-             AND j.deadline_at BETWEEN ? AND ?) AS expiringJobs,
-         (SELECT COUNT(*) FROM learning_progress
-           WHERE user_id = ${ownerSql} AND next_review_at <= ?) AS dueReviews`,
+             AND j.deadline_at BETWEEN ? AND ?) AS expiringJobs`,
     )
-    .bind(range.weekAgo, ownerValue, range.now, range.weekAhead, ownerValue, range.now);
+    .bind(range.weekAgo, ownerValue, range.now, range.weekAhead);
 
 const dashboardValue = (result: BatchResult | undefined) => {
   const row = batchRows<DashboardRow>(result)[0];
   return {
     recentJobs: Number(row?.recentJobs || 0),
     expiringJobs: Number(row?.expiringJobs || 0),
-    dueReviews: Number(row?.dueReviews || 0),
     recentActivity: [],
   };
 };
@@ -678,24 +676,6 @@ export async function runScheduledMaintenance(env: D1Env) {
         .bind(Math.floor(Date.now() / 60_000) - 2),
     ]);
     notifications += await ensureDeadlineNotifications(db);
-    const reviewNotifications = await run(
-      db,
-      `INSERT INTO notifications
-         (id, user_id, type, title, message, href, dedupe_key, created_at)
-       SELECT lower(hex(randomblob(16))), lp.user_id, 'LEARNING_REVIEW',
-              '복습할 단원이 있습니다', u.title, '/learning?unit=' || lp.unit_id,
-              'learning-review:' || lp.unit_id || ':' || substr(lp.next_review_at, 1, 10), ?
-         FROM learning_progress lp
-         JOIN learning_units u ON u.id = lp.unit_id
-         JOIN users member ON member.id = lp.user_id
-        WHERE lp.completed = 1 AND lp.mastered_at IS NULL
-          AND lp.next_review_at IS NOT NULL AND lp.next_review_at <= ?
-          AND member.is_active = 1 AND member.review_notifications = 1
-       ON CONFLICT(user_id, dedupe_key) DO NOTHING`,
-      startedAt,
-      startedAt,
-    );
-    notifications += Number(reviewNotifications.meta?.changes || 0);
     return {
       acquired: true,
       expiredJobs: Number(expired.meta?.changes || 0),
@@ -3353,7 +3333,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     return { count: Number(row?.count || 0) };
   }
   if (method === 'GET' && path === '/notifications') {
-    const allowedTypes = new Set(['COMMENT', 'REPLY', 'JOB_DEADLINE', 'LEARNING_REVIEW', 'SYSTEM']);
+    const allowedTypes = new Set(['COMMENT', 'REPLY', 'JOB_DEADLINE', 'SYSTEM']);
     const type = cleanText(url.searchParams.get('type'));
     if (type && !allowedTypes.has(type)) {
       throw new RouteError(400, '지원하지 않는 알림 유형입니다.');
@@ -3363,7 +3343,11 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     const cursor = paged
       ? decodeCursor<{ createdAt?: unknown; id?: unknown }>(url.searchParams.get('cursor'))
       : null;
-    const clauses = ['user_id = ?', '(expires_at IS NULL OR expires_at > ?)'];
+    const clauses = [
+      'user_id = ?',
+      "type <> 'LEARNING_REVIEW'",
+      '(expires_at IS NULL OR expires_at > ?)',
+    ];
     const values: unknown[] = [user.id, nowIso()];
     if (type) {
       clauses.push('type = ?');

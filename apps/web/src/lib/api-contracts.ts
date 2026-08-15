@@ -120,9 +120,7 @@ export function responseSchemaFor(path: string, method = 'GET'): z.ZodType {
   if (endpoint === '/auth/profile') return profile;
   if (endpoint === '/collections' || endpoint === '/collections/trash') return z.array(collection);
   if (endpoint === '/dashboard') {
-    return z
-      .object({ recentJobs: z.number(), expiringJobs: z.number(), dueReviews: z.number() })
-      .passthrough();
+    return z.object({ recentJobs: z.number(), expiringJobs: z.number() }).passthrough();
   }
   if (endpoint === '/jobs/categories') return z.array(z.string());
   if (endpoint === '/jobs/bootstrap') {

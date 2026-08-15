@@ -10,7 +10,6 @@ type BootstrapPayload = {
     dashboard: {
       recentJobs: number;
       expiringJobs: number;
-      dueReviews: number;
       recentActivity: unknown[];
     };
     dailyChallenges: unknown[];

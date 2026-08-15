@@ -20,7 +20,6 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import {
   BellRing,
-  BookOpen,
   BriefcaseBusiness,
   ChevronDown,
   ChevronUp,
@@ -131,8 +130,7 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
   });
   const dashboard = useQuery({
     queryKey: ['dashboard'],
-    queryFn: () =>
-      api<{ recentJobs: number; expiringJobs: number; dueReviews: number }>('/dashboard'),
+    queryFn: () => api<{ recentJobs: number; expiringJobs: number }>('/dashboard'),
   });
   const challenge = useQuery({
     queryKey: ['daily-challenges'],
@@ -343,13 +341,6 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
             </div>
           </div>
         </article>
-        <Link to="/learning?mode=due" className="today-summary-link">
-          <BookOpen />
-          <div>
-            <strong>{dashboard.data?.dueReviews ?? '—'}</strong>
-            <span>오늘 복습</span>
-          </div>
-        </Link>
         <Link to="/jobs?sort=new" className="today-summary-link">
           <BriefcaseBusiness />
           <div>
@@ -703,11 +694,6 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
           <BriefcaseBusiness />
           <strong>관심 공고</strong>
           <span>지원 후보 모음</span>
-        </Link>
-        <Link to="/learning?mode=due">
-          <BookOpen />
-          <strong>복습 예정</strong>
-          <span>간격 반복 일정</span>
         </Link>
       </section>
       {Boolean(trash.data?.length) && (

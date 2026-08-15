@@ -249,21 +249,12 @@ export function SettingsPage() {
                     />
                     관심 공고 마감
                   </label>
-                  <label className="check-label">
-                    <input
-                      type="checkbox"
-                      checked={reviewNotifications}
-                      onChange={(event) => setReviewNotifications(event.target.checked)}
-                    />
-                    학습 복습 예정
-                  </label>
                 </div>
               ) : (
                 <ul className="notification-preference-list">
                   {[
                     ['댓글과 답글', commentNotifications],
                     ['관심 공고 마감', deadlineNotifications],
-                    ['학습 복습 예정', reviewNotifications],
                   ].map(([label, enabled]) => (
                     <li key={String(label)}>
                       <span>{label}</span>

@@ -2,12 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Dialog from '@radix-ui/react-dialog';
 import {
-  ArrowRight,
   BookOpen,
   Brain,
   CheckCircle2,
   ChevronDown,
-  Clock3,
   ExternalLink,
   Image as ImageIcon,
   MessageCircleQuestion,
@@ -92,8 +90,6 @@ function LearningUnitModal({
       await Promise.all([
         client.invalidateQueries({ queryKey: ['learning'] }),
         client.invalidateQueries({ queryKey: ['learning-unit', unitId] }),
-        client.invalidateQueries({ queryKey: ['learning-due'] }),
-        client.invalidateQueries({ queryKey: ['dashboard'] }),
       ]);
     },
   });
@@ -176,9 +172,9 @@ function LearningUnitModal({
                   >
                     <CheckCircle2 />
                     {complete.isPending
-                      ? '복습 일정 저장 중…'
+                      ? '완료 상태 저장 중…'
                       : unit.data.progress[0]?.completed
-                        ? '복습 일정 갱신'
+                        ? '완료 상태 갱신'
                         : '학습 완료'}
                   </button>
                 </div>
@@ -320,15 +316,6 @@ export function LearningPage() {
     gcTime: 30 * 60_000,
     refetchOnWindowFocus: false,
   });
-  const due = useQuery({
-    queryKey: ['learning-due'],
-    queryFn: () =>
-      api<Array<{ unitId: string; title: string; sourceTitle: string; nextReviewAt: string }>>(
-        '/learning/due',
-      ),
-    staleTime: 60_000,
-    refetchOnWindowFocus: false,
-  });
   useEffect(() => {
     if (initializedSources.current || !learning.data?.length) return;
     initializedSources.current = true;
@@ -366,60 +353,9 @@ export function LearningPage() {
           <h1>학습 라이브러리</h1>
           <p>개념을 짧게 익히고, 예시·플래시카드·복습 문제로 바로 확인하세요.</p>
         </div>
-        <div className="heading-stat">
-          <Clock3 />
-          <span>복습 예정</span>
-          <strong>{due.data?.length ?? '—'}</strong>
-        </div>
       </section>
       {learning.isLoading && <div className="loading-panel">학습자료를 불러오는 중…</div>}
       {learning.isError && <div className="error-panel">학습자료를 불러오지 못했습니다.</div>}
-      {due.isError && (
-        <div className="error-panel" role="alert">
-          복습 예정 목록을 불러오지 못했습니다.
-          <button type="button" onClick={() => void due.refetch()}>
-            다시 시도
-          </button>
-        </div>
-      )}
-      {Boolean(due.data?.length) && (
-        <section className="learning-due-list" aria-label="복습 예정 단원">
-          <header>
-            <Clock3 />
-            <div>
-              <span>오늘 다시 볼 내용</span>
-              <h2>복습 예정 {due.data?.length}개</h2>
-            </div>
-          </header>
-          <div>
-            {due.data?.map((item) => (
-              <button
-                type="button"
-                key={item.unitId}
-                onClick={() => {
-                  const source = learning.data?.find((candidate) =>
-                    candidate.units.some((unit) => unit.id === item.unitId),
-                  );
-                  const index = source?.units.findIndex((unit) => unit.id === item.unitId) ?? 0;
-                  setSelected({ unitId: item.unitId, index });
-                  const next = new URLSearchParams(searchParams);
-                  next.set('unit', item.unitId);
-                  next.set('mode', 'due');
-                  setSearchParams(next, { replace: true });
-                }}
-              >
-                <span className="learning-due-copy">
-                  <small>{item.sourceTitle}</small>
-                  <strong>{item.title}</strong>
-                </span>
-                <span className="learning-due-action">
-                  복습하기 <ArrowRight aria-hidden="true" />
-                </span>
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
       <div className="learning-list">
         {learning.data?.map((source) => (
           <section

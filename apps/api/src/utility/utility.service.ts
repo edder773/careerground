@@ -15,14 +15,13 @@ export class UtilityService {
   async dashboard(userId: string) {
     const now = new Date();
     const deadline = new Date(now.getTime() + 7 * 86_400_000);
-    const [recentJobs, expiringJobs, dueReviews, recentActivity] = await Promise.all([
+    const [recentJobs, expiringJobs, recentActivity] = await Promise.all([
       this.prisma.jobPosting.count({
         where: { status: 'ACTIVE', createdAt: { gte: new Date(now.getTime() - 7 * 86_400_000) } },
       }),
       this.prisma.savedJob.count({
         where: { userId, job: { status: 'ACTIVE', deadlineAt: { gte: now, lte: deadline } } },
       }),
-      this.prisma.learningProgress.count({ where: { userId, nextReviewAt: { lte: now } } }),
       this.prisma.auditLog.findMany({
         where: {
           OR: [
@@ -34,7 +33,7 @@ export class UtilityService {
         take: 8,
       }),
     ]);
-    return { recentJobs, expiringJobs, dueReviews, recentActivity };
+    return { recentJobs, expiringJobs, recentActivity };
   }
 
   async search(user: AuthUser, query: string) {

@@ -196,7 +196,7 @@ describe('Sites D1 API', () => {
       unreadCount: 1,
       home: {
         collections: [],
-        dashboard: { recentJobs: expect.any(Number), dueReviews: 0 },
+        dashboard: { recentJobs: expect.any(Number), expiringJobs: expect.any(Number) },
         dailyChallenges: [
           expect.objectContaining({ levelSlot: 1 }),
           expect.objectContaining({ levelSlot: 2 }),
@@ -961,7 +961,7 @@ describe('Sites D1 API', () => {
     expect(afterMaintenance?.count).toBe(1);
   });
 
-  it('runs scheduled expiry and review notifications under a single lease', async () => {
+  it('runs scheduled expiry without creating review notifications under a single lease', async () => {
     await call('/api/v1/auth/me');
     const user = await db
       .prepare("SELECT id FROM users WHERE site_user_id = 'site-admin'")
@@ -996,7 +996,11 @@ describe('Sites D1 API', () => {
     const result = await runScheduledMaintenance({ DB: db });
     expect(result).toMatchObject({ acquired: true });
     expect(result.expiredJobs).toBeGreaterThan(0);
-    expect(result.notifications).toBe(1);
+    expect(result.notifications).toBe(0);
+    const reviewNotifications = await db
+      .prepare("SELECT COUNT(*) AS count FROM notifications WHERE type = 'LEARNING_REVIEW'")
+      .first<{ count: number }>();
+    expect(reviewNotifications?.count).toBe(0);
     const staleRateLimits = await db
       .prepare("SELECT COUNT(*) AS count FROM request_rate_limits WHERE route_key = 'stale-read'")
       .first<{ count: number }>();

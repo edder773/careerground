@@ -1,0 +1,110 @@
+{
+  "schema": "careerground-ui-action-review-removal/v1",
+  "generatedAt": "2026-08-15T19:00:39.8000695+09:00",
+  "scope": "job action consistency, daily coding title visibility, and review-schedule removal",
+  "baseline": [
+    {
+      "surface": "job action rail",
+      "finding": "The folder-save wrapper filled the 132px action rail, but its nested trigger did not have a full-width rule, so it rendered narrower than the sibling actions."
+    },
+    {
+      "surface": "daily coding recommendations",
+      "finding": "Problem titles were constrained to one line with hidden overflow and ellipsis."
+    },
+    {
+      "surface": "review scheduling",
+      "finding": "Review counts or content appeared in the workspace summary, virtual folders, learning heading and queue, settings, and notification copy."
+    },
+    {
+      "surface": "D1 dashboard and scheduler",
+      "finding": "The dashboard still counted due learning rows and scheduled maintenance still created learning-review notifications."
+    }
+  ],
+  "structuralComparison": [
+    {
+      "metric": "job rail controls with an explicit 100% width contract",
+      "before": "bookmark and external-link siblings only",
+      "after": "folder-save trigger, bookmark, and external-link controls"
+    },
+    {
+      "metric": "daily recommendation title overflow mode",
+      "before": "single-line ellipsis",
+      "after": "multi-line wrap with unrestricted card growth"
+    },
+    {
+      "metric": "visible review-schedule surfaces",
+      "before": 6,
+      "after": 0
+    },
+    {
+      "metric": "dashboard scalar count subqueries",
+      "before": 3,
+      "after": 2
+    },
+    {
+      "metric": "scheduled learning-review notification inserts",
+      "before": 1,
+      "after": 0
+    }
+  ],
+  "responsiveContracts": {
+    "desktop1440x900": [
+      "The workspace summary uses one coding feature and two job summary columns.",
+      "Each coding recommendation places its badge and open action above a fully wrapped title.",
+      "The 132px job action rail gives all three primary controls the same width and a 40px minimum height."
+    ],
+    "mobile375x812": [
+      "The coding feature spans the first row and two job summaries share the second row.",
+      "Coding recommendation cards become one column and retain multi-line titles.",
+      "Job actions reflow to one full-width column."
+    ],
+    "verification": "scripts/troubleshooting/ui-responsive-contract.test.ts"
+  },
+  "behaviorRegression": [
+    "Home and learning pages do not render review-schedule summaries or due-review content.",
+    "Learning no longer requests /learning/due during page load.",
+    "Settings no longer exposes a learning-review notification preference.",
+    "D1 scheduled maintenance does not create LEARNING_REVIEW notifications, and historical rows are excluded from notification lists and unread counts.",
+    "Existing learning source, flashcard, question, and completion interactions remain available."
+  ],
+  "validation": {
+    "lint": "pass",
+    "formatCheck": "pass",
+    "typecheck": {
+      "web": "pass",
+      "api": "pass",
+      "sites": "pass",
+      "docs": "pass"
+    },
+    "tests": {
+      "web": { "passed": 19, "failed": 0 },
+      "api": { "passed": 33, "failed": 0 },
+      "contracts": { "passed": 10, "failed": 0 },
+      "operationsAndDeployment": { "passed": 53, "failed": 0 },
+      "responsiveContracts": { "passed": 2, "failed": 0 }
+    },
+    "sitesBuild": {
+      "status": "pass",
+      "globalCssRawBytes": 107688,
+      "globalCssGzipBytes": 22620
+    },
+    "performanceBudget": {
+      "status": "pass",
+      "failures": 0,
+      "jobsCursorP95Ms": 16.13,
+      "codingProblemsCursorP95Ms": 10.46,
+      "notificationsP95Ms": 7.04,
+      "searchP95Ms": 140.45
+    }
+  },
+  "dataHandling": {
+    "learningContentDeleted": false,
+    "learningProgressDeleted": false,
+    "schemaMigrationRequired": false,
+    "note": "The change removes review scheduling from product surfaces and future notification generation without deleting learning content or progress records."
+  },
+  "limitations": [
+    "The responsive evidence is a deterministic source and behavior contract rather than a newly captured browser screenshot.",
+    "User-supplied screenshots were used only as the task baseline and were not copied into repository evidence because they contain personal information."
+  ]
+}

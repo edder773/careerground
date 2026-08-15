@@ -57,7 +57,6 @@ describe('learning library', () => {
       'fetch',
       vi.fn((input: RequestInfo | URL) => {
         const url = String(input);
-        if (url.endsWith('/learning/due')) return response([]);
         if (url.endsWith('/learning/units/unit-one')) return response(units[0]);
         if (url.endsWith('/learning/units/unit-two')) return response(units[1]);
         return response(sources);
@@ -90,29 +89,15 @@ describe('learning library', () => {
     expect(modal.queryByRole('button', { name: /이해도/ })).not.toBeInTheDocument();
   });
 
-  it('renders each due review as a separate actionable row', async () => {
+  it('omits review scheduling content and does not request the due-review endpoint', async () => {
     const first = unit('unit-one', '좋은 대화를 넘어 좋은 작업 환경을 설계한다', '/one.webp');
     const second = unit('unit-two', 'Markdown과 메타 프롬프트로 결과물 다듬기', '/two.webp');
+    const requestedUrls: string[] = [];
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL) => {
         const url = String(input);
-        if (url.endsWith('/learning/due')) {
-          return response([
-            {
-              unitId: first.id,
-              title: first.title,
-              sourceTitle: '생성형 AI 실전',
-              nextReviewAt: '2026-08-15T00:00:00.000Z',
-            },
-            {
-              unitId: second.id,
-              title: second.title,
-              sourceTitle: 'Prompt와 Context Engineering',
-              nextReviewAt: '2026-08-15T00:00:00.000Z',
-            },
-          ]);
-        }
+        requestedUrls.push(url);
         if (url.endsWith('/learning/units/unit-one')) return response(first);
         return response([
           {
@@ -125,15 +110,11 @@ describe('learning library', () => {
         ]);
       }),
     );
-    const user = userEvent.setup();
     renderPage(<LearningPage />);
 
-    const dueList = await screen.findByRole('region', { name: '복습 예정 단원' });
-    const reviewButtons = within(dueList).getAllByRole('button');
-    expect(reviewButtons).toHaveLength(2);
-    expect(reviewButtons[0]).toHaveTextContent('생성형 AI 실전');
-    expect(reviewButtons[0]).toHaveTextContent('복습하기');
-    await user.click(reviewButtons[0]!);
-    expect(await screen.findByRole('dialog', { name: first.title })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: '생성형 AI 실전' })).toBeInTheDocument();
+    expect(screen.queryByText('복습 예정')).not.toBeInTheDocument();
+    expect(screen.queryByText('오늘 다시 볼 내용')).not.toBeInTheDocument();
+    expect(requestedUrls.some((url) => url.endsWith('/learning/due'))).toBe(false);
   });
 });
