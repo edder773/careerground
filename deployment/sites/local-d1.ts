@@ -36,6 +36,7 @@ class LocalD1Statement implements D1PreparedStatement {
 
 export class LocalD1 implements D1Database {
   private readonly sqlite: DatabaseSync;
+  private batchQueue: Promise<void> = Promise.resolve();
   private failBatchAt?: number;
   private queryCount = 0;
   preparedSql: string[] = [];
@@ -74,6 +75,15 @@ export class LocalD1 implements D1Database {
   }
 
   async batch<T>(statements: D1PreparedStatement[]): Promise<D1Result<T>[]> {
+    const execution = this.batchQueue.then(() => this.executeBatch<T>(statements));
+    this.batchQueue = execution.then(
+      () => undefined,
+      () => undefined,
+    );
+    return execution;
+  }
+
+  private async executeBatch<T>(statements: D1PreparedStatement[]): Promise<D1Result<T>[]> {
     this.sqlite.exec('BEGIN IMMEDIATE');
     try {
       const results: D1Result<T>[] = [];
