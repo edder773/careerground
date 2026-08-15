@@ -30,9 +30,6 @@ const NotificationsPage = lazy(() =>
 const AdminPage = lazy(() =>
   import('./pages/AdminPage').then((module) => ({ default: module.AdminPage })),
 );
-const NotesPage = lazy(() =>
-  import('./pages/NotesPage').then((module) => ({ default: module.NotesPage })),
-);
 const SettingsPage = lazy(() =>
   import('./pages/SettingsPage').then((module) => ({ default: module.SettingsPage })),
 );
@@ -68,7 +65,6 @@ export function App() {
           <Routes>
             <Route path="/" element={<HomePage viewMode={viewMode} />} />
             <Route path="/learning" element={<LearningPage />} />
-            <Route path="/notes" element={<NotesPage />} />
             <Route path="/jobs" element={<JobsPage />} />
             <Route path="/coding" element={<CodingPage />} />
             <Route path="/solutions" element={<SolutionsPage />} />

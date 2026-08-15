@@ -13,7 +13,7 @@ node scripts/data-integrity/check-d1.mjs C:\secure-temp\careerground-export.sql
 
 종료 코드 `0`은 모든 검사 통과, `2`는 하나 이상의 위반 발견, `64`는 입력 경로 오류다. 결과 JSON은 보안상 허용된 증거 저장소에 보관한다.
 
-검사는 사용자·공고·문제·풀이·댓글·노트 revision의 고아 참조, 교차 풀이 답글, 교차 사용자 폴더, 잘못된 다형 참조, 중복 공고 URL/fingerprint, 중복 학습 checksum/version, JSON 유효성, 상태 enum, 만료된 미사용 preview를 집계한다.
+검사는 사용자·공고·문제·풀이·댓글의 고아 참조, 교차 풀이 답글, 교차 사용자 폴더, 잘못된 다형 참조, 중복 공고 URL/fingerprint, 중복 학습 checksum/version, JSON 유효성, 상태 enum, 만료된 미사용 preview를 집계한다.
 
 ## 판정과 조치
 

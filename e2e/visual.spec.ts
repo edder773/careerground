@@ -69,24 +69,11 @@ test('captures core domain screens', async ({ page }) => {
     { href: '/jobs', heading: '신입 IT 채용공고', name: 'jobs' },
     { href: '/learning', heading: '학습 라이브러리', name: 'learning' },
     { href: '/solutions', heading: '풀이 기록', name: 'solutions' },
-    { href: '/notes', heading: '개인 노트', name: 'notes' },
     { href: '/settings', heading: '설정', name: 'settings' },
   ];
   for (const screen of screens) {
     await page.goto(screen.href);
     await expect(page.getByRole('heading', { name: screen.heading, exact: true })).toBeVisible();
-    if (screen.name === 'notes') {
-      await page.getByRole('button', { name: '새 노트' }).first().click();
-      await page.getByRole('textbox', { name: '노트 제목' }).fill('이번 주 준비 기록');
-      await page
-        .getByRole('textbox', { name: '노트 내용' })
-        .fill('# 이번 주 준비\n\n- 코딩테스트 복습\n- 지원 공고 정리');
-      await page.getByRole('button', { name: /^저장$/ }).click();
-      await expect(page.getByRole('button', { name: /^저장$/ })).toBeDisabled();
-      await expect(page.getByRole('textbox', { name: '노트 제목' })).toHaveValue(
-        '이번 주 준비 기록',
-      );
-    }
     if (screen.name === 'jobs') {
       await expect(page.locator('.job-card').first()).toBeVisible();
       await page.getByRole('button', { name: /^채용공고 필터/ }).click();
@@ -169,11 +156,6 @@ test('captures core domain screens', async ({ page }) => {
     await expectNoSeriousViolations(page);
   }
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto('/notes');
-  await expect(page.getByRole('heading', { name: '개인 노트' })).toBeVisible();
-  await expect(page.getByRole('textbox', { name: '노트 제목' })).toHaveValue('이번 주 준비 기록');
-  await page.screenshot({ path: 'test-results/visual/notes-mobile-375.png', fullPage: false });
-
   await page.goto('/settings');
   await expect(page.getByRole('button', { name: '변경', exact: true })).toBeVisible();
   await expect(page.getByLabel('표시 이름')).toBeDisabled();

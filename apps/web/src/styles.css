@@ -98,16 +98,14 @@
   }
 }
 
-.trash-recovery,
-.notes-trash {
+.trash-recovery {
   margin-top: 16px;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: color-mix(in srgb, var(--surface) 92%, transparent);
 }
 
-.trash-recovery > summary,
-.notes-trash > summary {
+.trash-recovery > summary {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -116,19 +114,16 @@
   font-weight: 700;
 }
 
-.trash-recovery > summary svg,
-.notes-trash > summary svg {
+.trash-recovery > summary svg {
   width: 17px;
   height: 17px;
 }
 
-.trash-recovery > div,
-.notes-trash[open] {
+.trash-recovery > div {
   border-top: 1px solid var(--line);
 }
 
-.trash-recovery article,
-.notes-trash > div {
+.trash-recovery article {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -136,41 +131,18 @@
   padding: 10px 14px;
 }
 
-.trash-recovery article > span,
-.notes-trash > div > span {
+.trash-recovery article > span {
   display: flex;
   min-width: 0;
   align-items: center;
   gap: 8px;
 }
 
-.notes-trash {
-  margin: 12px;
-  font-size: 0.84rem;
-}
-
-.notes-trash > div button {
-  display: grid;
-  width: 30px;
-  height: 30px;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  background: var(--surface);
-}
-
-.notes-trash > div button svg {
-  width: 15px;
-  height: 15px;
-}
-
 @media (max-width: 375px) {
   .page-content,
   .job-card,
   .solution-card,
-  .editor-panel,
-  .note-workspace {
+  .editor-panel {
     min-width: 0;
     max-width: 100%;
   }

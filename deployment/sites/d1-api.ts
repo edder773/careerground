@@ -23,7 +23,13 @@ import {
   sha256,
   sourceText,
 } from './domain.js';
-import { inspectRuntimeSchema } from './runtime-schema.js';
+import {
+  ensureRuntimeSchema,
+  EXPECTED_SCHEMA_CHECKSUM,
+  EXPECTED_SCHEMA_VERSION,
+  inspectRuntimeSchema,
+  markRuntimeSchemaReady,
+} from './runtime-schema.js';
 
 type D1Env = {
   DB: D1Database;
@@ -90,6 +96,13 @@ const userSelect = `
          data_deletion_requested AS dataDeletionRequested,
          created_at AS createdAt, updated_at AS updatedAt
   FROM users`;
+
+const bootstrapUserSelect = `
+  WITH selected_user AS (${userSelect} WHERE site_user_id = ?)
+  SELECT selected_user.*,
+         (SELECT checksum FROM app_schema_migrations WHERE version = ?) AS schemaChecksum
+    FROM (SELECT 1) AS bootstrap_anchor
+    LEFT JOIN selected_user ON 1 = 1`;
 
 const responseJson = (
   body: unknown,
@@ -965,7 +978,7 @@ const bootstrapStatementsForSiteUser = (
 ) => {
   const timestamp = nowIso();
   const statements = [
-    db.prepare(`${userSelect} WHERE site_user_id = ?`).bind(siteUserId),
+    db.prepare(bootstrapUserSelect).bind(siteUserId, EXPECTED_SCHEMA_VERSION),
     db
       .prepare(
         `INSERT INTO request_rate_limits (user_id, route_key, window_start, count, updated_at)
@@ -1082,13 +1095,43 @@ async function bootstrapPayload(
   };
 }
 
-async function bootstrap(identity: Identity, env: D1Env, includeHome: boolean) {
+async function bootstrap(
+  identity: Identity,
+  env: D1Env,
+  includeHome: boolean,
+  schemaRetried = false,
+) {
   const today = kstDate();
   const rateWindow = rateLimitWindow('GET', env, '/api/v1/bootstrap');
-  const fastResults = (await env.DB.batch<Record<string, unknown>>(
-    bootstrapStatementsForSiteUser(env.DB, identity.userId, includeHome, today, rateWindow),
-  )) as BatchResult[];
-  const existing = batchRows<UserRow>(fastResults[0])[0];
+  let fastResults: BatchResult[];
+  try {
+    fastResults = (await env.DB.batch<Record<string, unknown>>(
+      bootstrapStatementsForSiteUser(env.DB, identity.userId, includeHome, today, rateWindow),
+    )) as BatchResult[];
+  } catch (error) {
+    if (
+      !schemaRetried &&
+      String(error).toLowerCase().includes('no such table: app_schema_migrations')
+    ) {
+      await ensureRuntimeSchema(env.DB);
+      return bootstrap(identity, env, includeHome, true);
+    }
+    throw error;
+  }
+  const candidate = batchRows<UserRow & { schemaChecksum: string | null }>(fastResults[0])[0];
+  if (candidate?.schemaChecksum !== EXPECTED_SCHEMA_CHECKSUM) {
+    if (schemaRetried) {
+      throw new RouteError(
+        503,
+        '데이터베이스 스키마를 준비하지 못했습니다.',
+        'DB_SCHEMA_NOT_READY',
+      );
+    }
+    await ensureRuntimeSchema(env.DB);
+    return bootstrap(identity, env, includeHome, true);
+  }
+  markRuntimeSchemaReady(env.DB);
+  const existing = candidate?.id ? candidate : undefined;
   if (existing && !asBoolean(existing.isActive)) {
     throw new RouteError(403, '비활성화된 계정입니다.');
   }
@@ -1833,41 +1876,6 @@ async function recordLearningReview(
     '동시에 복습 기록이 변경되었습니다. 다시 시도해주세요.',
     'REVIEW_CONFLICT',
   );
-}
-
-async function noteList(db: D1Database, userId: string) {
-  const rows = await all<Record<string, unknown>>(
-    db,
-    `SELECT n.id, n.user_id AS userId, n.title, n.markdown, n.visibility,
-            n.linked_type AS linkedType, n.linked_id AS linkedId,
-            n.current_rev AS currentRev, n.created_at AS createdAt, n.updated_at AS updatedAt,
-            u.display_name AS authorDisplayName
-       FROM notes n JOIN users u ON u.id = n.user_id
-      WHERE n.deleted_at IS NULL AND n.user_id = ?
-      ORDER BY n.updated_at DESC LIMIT 100`,
-    userId,
-  );
-  if (!rows.length) return [];
-  const noteIds = rows.map((row) => String(row.id));
-  const revisions = await all<Record<string, unknown>>(
-    db,
-    `SELECT id, note_id AS noteId, revision, markdown, created_at AS createdAt
-       FROM note_revisions
-      WHERE note_id IN (${noteIds.map(() => '?').join(',')})
-      ORDER BY note_id, revision DESC`,
-    ...noteIds,
-  );
-  const revisionsByNote = new Map<string, Record<string, unknown>[]>();
-  for (const revision of revisions) {
-    const noteId = String(revision.noteId);
-    revisionsByNote.set(noteId, [...(revisionsByNote.get(noteId) || []), revision]);
-  }
-  return rows.map((row) => ({
-    ...row,
-    user: { id: row.userId, displayName: row.authorDisplayName },
-    canEdit: row.userId === userId,
-    revisions: (revisionsByNote.get(String(row.id)) || []).slice(0, 10),
-  }));
 }
 
 type ImportPreviewRow = {
@@ -2786,7 +2794,6 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     if (!itemType || !targetId) throw new RouteError(400, '저장할 항목 정보가 필요합니다.');
     const allowedItemTypes = new Set([
       'EXTERNAL_LINK',
-      'NOTE',
       'JOB_POSTING',
       'CODING_PROBLEM',
       'SOLUTION',
@@ -2804,14 +2811,13 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       }
     } else {
       const targetQueries: Record<string, string> = {
-        NOTE: 'SELECT id FROM notes WHERE id = ? AND user_id = ? AND deleted_at IS NULL',
         JOB_POSTING: 'SELECT id FROM jobs WHERE id = ?',
         CODING_PROBLEM: 'SELECT id FROM coding_problems WHERE id = ? AND active = 1',
         SOLUTION:
           "SELECT id FROM solutions WHERE id = ? AND deleted_at IS NULL AND (visibility = 'MEMBERS' OR author_id = ?)",
         LEARNING_UNIT: 'SELECT id FROM learning_units WHERE id = ? AND published = 1',
       };
-      const ownerScoped = ['NOTE', 'SOLUTION'].includes(itemType);
+      const ownerScoped = itemType === 'SOLUTION';
       targetExists = Boolean(
         await first(db, targetQueries[itemType]!, targetId, ...(ownerScoped ? [user.id] : [])),
       );
@@ -2970,7 +2976,6 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     const pageRows = hasMore ? rows.slice(0, limit) : rows;
     const grouped: Record<string, Array<Record<string, unknown>>> = {
       folders: [],
-      notes: [],
       jobs: [],
       problems: [],
       solutions: [],
@@ -2980,15 +2985,13 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     const href = (kind: string, id: string) =>
       kind === 'folders'
         ? `/?folder=${id}`
-        : kind === 'notes'
-          ? `/notes?note=${id}`
-          : kind === 'jobs'
-            ? `/jobs?job=${id}`
-            : kind === 'codingProblems'
-              ? `/coding?problem=${id}`
-              : kind === 'solutions'
-                ? `/solutions?solution=${id}`
-                : `/learning?unit=${id}`;
+        : kind === 'jobs'
+          ? `/jobs?job=${id}`
+          : kind === 'codingProblems'
+            ? `/coding?problem=${id}`
+            : kind === 'solutions'
+              ? `/solutions?solution=${id}`
+              : `/learning?unit=${id}`;
     for (const row of pageRows) {
       const group = groupName(row.kind);
       grouped[group]?.push({
@@ -3075,130 +3078,6 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       user.id,
     );
     return { count: result.meta?.changes || 0 };
-  }
-
-  if (method === 'GET' && path === '/notes') return noteList(db, user.id);
-  if (method === 'GET' && path === '/notes/trash') {
-    return all(
-      db,
-      `SELECT id, title, deleted_at AS deletedAt
-         FROM notes WHERE user_id = ? AND deleted_at IS NOT NULL
-        ORDER BY deleted_at DESC LIMIT 50`,
-      user.id,
-    );
-  }
-  if (method === 'POST' && path === '/notes') {
-    const body = await readJson(request);
-    const title = cleanText(body.title);
-    const markdown = sourceText(body.markdown);
-    const visibility = 'PRIVATE';
-    if (!title) throw new RouteError(400, '노트 제목이 필요합니다.');
-    const timestamp = nowIso();
-    if (typeof body.id === 'string' && body.id) {
-      const current = await first<{ id: string; userId: string; currentRev: number }>(
-        db,
-        'SELECT id, user_id AS userId, current_rev AS currentRev FROM notes WHERE id = ? AND deleted_at IS NULL',
-        body.id,
-      );
-      if (!current) throw new RouteError(404, '노트를 찾을 수 없습니다.');
-      if (current.userId !== user.id)
-        throw new RouteError(403, '다른 사용자의 노트는 수정할 수 없습니다.');
-      const baseRevision = int(body.baseRevision, -1);
-      if (baseRevision !== Number(current.currentRev)) {
-        const latest = await first<{ title: string; markdown: string; currentRev: number }>(
-          db,
-          'SELECT title, markdown, current_rev AS currentRev FROM notes WHERE id = ?',
-          body.id,
-        );
-        throw new RouteError(409, '다른 곳에서 노트가 먼저 수정되었습니다.', 'REVISION_CONFLICT', {
-          current: latest,
-        });
-      }
-      const revision = Number(current.currentRev) + 1;
-      await db.batch([
-        db
-          .prepare(
-            `UPDATE notes SET title = ?, markdown = ?, visibility = ?, linked_type = ?, linked_id = ?, current_rev = ?, updated_at = ? WHERE id = ?`,
-          )
-          .bind(
-            title,
-            markdown,
-            visibility,
-            cleanText(body.linkedType) || null,
-            cleanText(body.linkedId) || null,
-            revision,
-            timestamp,
-            body.id,
-          ),
-        db
-          .prepare(
-            'INSERT INTO note_revisions (id, note_id, revision, markdown, created_at) VALUES (?, ?, ?, ?, ?)',
-          )
-          .bind(newId(), body.id, revision, markdown, timestamp),
-      ]);
-      return first(db, 'SELECT * FROM notes WHERE id = ?', body.id);
-    }
-    const id = newId();
-    await db.batch([
-      db
-        .prepare(
-          `INSERT INTO notes (id, user_id, title, markdown, visibility, linked_type, linked_id, current_rev, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
-        )
-        .bind(
-          id,
-          user.id,
-          title,
-          markdown,
-          visibility,
-          cleanText(body.linkedType) || null,
-          cleanText(body.linkedId) || null,
-          timestamp,
-          timestamp,
-        ),
-      db
-        .prepare(
-          'INSERT INTO note_revisions (id, note_id, revision, markdown, created_at) VALUES (?, ?, 1, ?, ?)',
-        )
-        .bind(newId(), id, markdown, timestamp),
-    ]);
-    return {
-      id,
-      userId: user.id,
-      title,
-      markdown,
-      visibility,
-      currentRev: 1,
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    };
-  }
-
-  const deleteNoteMatch = path.match(/^\/notes\/([^/]+)$/);
-  if (deleteNoteMatch && method === 'DELETE') {
-    const result = await run(
-      db,
-      'UPDATE notes SET deleted_at = ?, updated_at = ? WHERE id = ? AND user_id = ? AND deleted_at IS NULL',
-      nowIso(),
-      nowIso(),
-      deleteNoteMatch[1],
-      user.id,
-    );
-    if (!Number(result.meta?.changes || 0)) throw new RouteError(404, '노트를 찾을 수 없습니다.');
-    return { id: deleteNoteMatch[1], deleted: true };
-  }
-  const restoreNoteMatch = path.match(/^\/notes\/([^/]+)\/restore$/);
-  if (restoreNoteMatch && method === 'POST') {
-    const result = await run(
-      db,
-      `UPDATE notes SET deleted_at = NULL, updated_at = ?
-        WHERE id = ? AND user_id = ? AND deleted_at IS NOT NULL`,
-      nowIso(),
-      restoreNoteMatch[1],
-      user.id,
-    );
-    if (!Number(result.meta?.changes || 0))
-      throw new RouteError(404, '삭제된 노트를 찾을 수 없습니다.');
-    return { id: restoreNoteMatch[1], restored: true };
   }
 
   if (method === 'GET' && path === '/coding/problems')

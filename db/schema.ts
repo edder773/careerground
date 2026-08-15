@@ -97,45 +97,9 @@ export const collectionItems = sqliteTable(
     index('idx_collection_items_position').on(table.collectionId, table.position),
     check(
       'chk_collection_items_type',
-      sql`${table.itemType} IN ('JOB_POSTING', 'CODING_PROBLEM', 'SOLUTION', 'LEARNING_UNIT', 'NOTE', 'EXTERNAL_LINK')`,
+      sql`${table.itemType} IN ('JOB_POSTING', 'CODING_PROBLEM', 'SOLUTION', 'LEARNING_UNIT', 'EXTERNAL_LINK')`,
     ),
   ],
-);
-
-export const notes = sqliteTable(
-  'notes',
-  {
-    id: text('id').primaryKey(),
-    userId: text('user_id')
-      .notNull()
-      .references(() => users.id, { onDelete: 'cascade' }),
-    title: text('title').notNull(),
-    markdown: text('markdown').notNull(),
-    visibility: text('visibility').notNull().default('PRIVATE'),
-    linkedType: text('linked_type'),
-    linkedId: text('linked_id'),
-    currentRev: integer('current_rev').notNull().default(1),
-    deletedAt: text('deleted_at'),
-    ...timestamps,
-  },
-  (table) => [
-    index('idx_notes_user_updated').on(table.userId, table.updatedAt),
-    check('chk_notes_visibility', sql`${table.visibility} IN ('PRIVATE', 'MEMBERS')`),
-  ],
-);
-
-export const noteRevisions = sqliteTable(
-  'note_revisions',
-  {
-    id: text('id').primaryKey(),
-    noteId: text('note_id')
-      .notNull()
-      .references(() => notes.id, { onDelete: 'cascade' }),
-    revision: integer('revision').notNull(),
-    markdown: text('markdown').notNull(),
-    createdAt: text('created_at').notNull(),
-  },
-  (table) => [uniqueIndex('idx_note_revisions_note_revision').on(table.noteId, table.revision)],
 );
 
 export const codingProblems = sqliteTable(

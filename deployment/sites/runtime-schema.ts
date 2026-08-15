@@ -1,7 +1,9 @@
 import { all, first, run, type D1Database } from './d1.js';
 
 const schemaPromises = new WeakMap<D1Database, Promise<void>>();
-export const EXPECTED_SCHEMA_VERSION = '0016_full_audit_hardening';
+export const EXPECTED_SCHEMA_VERSION = '0017_marvelous_blockbuster';
+export const EXPECTED_SCHEMA_CHECKSUM =
+  'sha256:e2d828e1a606fe4991fdbbf71441265333188ecb79107f1ba7ce2fe44896ab32';
 
 const ledgerSchema = `CREATE TABLE IF NOT EXISTS app_schema_migrations (
   version text PRIMARY KEY NOT NULL,
@@ -91,18 +93,6 @@ const searchTriggers = [
   `CREATE TRIGGER IF NOT EXISTS trg_collections_search_delete AFTER DELETE ON collections BEGIN
     DELETE FROM workspace_search WHERE kind = 'folders' AND entity_id = OLD.id;
   END`,
-  `CREATE TRIGGER IF NOT EXISTS trg_notes_search_insert AFTER INSERT ON notes WHEN NEW.deleted_at IS NULL BEGIN
-    INSERT INTO workspace_search(kind, entity_id, owner_id, title, body)
-    VALUES ('notes', NEW.id, NEW.user_id, NEW.title, NEW.markdown);
-  END`,
-  `CREATE TRIGGER IF NOT EXISTS trg_notes_search_update AFTER UPDATE ON notes BEGIN
-    DELETE FROM workspace_search WHERE kind = 'notes' AND entity_id = OLD.id;
-    INSERT INTO workspace_search(kind, entity_id, owner_id, title, body)
-    SELECT 'notes', NEW.id, NEW.user_id, NEW.title, NEW.markdown WHERE NEW.deleted_at IS NULL;
-  END`,
-  `CREATE TRIGGER IF NOT EXISTS trg_notes_search_delete AFTER DELETE ON notes BEGIN
-    DELETE FROM workspace_search WHERE kind = 'notes' AND entity_id = OLD.id;
-  END`,
   `CREATE TRIGGER IF NOT EXISTS trg_jobs_search_insert AFTER INSERT ON jobs BEGIN
     INSERT INTO workspace_search(kind, entity_id, owner_id, title, body)
     SELECT 'jobs', NEW.id, '', NEW.company_name || ' ' || NEW.title,
@@ -172,11 +162,6 @@ const searchBackfill = [
    SELECT 'folders', c.id, c.user_id, c.name, '' FROM collections c
    WHERE c.deleted_at IS NULL AND NOT EXISTS (
      SELECT 1 FROM workspace_search s WHERE s.kind = 'folders' AND s.entity_id = c.id
-   )`,
-  `INSERT INTO workspace_search(kind, entity_id, owner_id, title, body)
-   SELECT 'notes', n.id, n.user_id, n.title, n.markdown FROM notes n
-   WHERE n.deleted_at IS NULL AND NOT EXISTS (
-     SELECT 1 FROM workspace_search s WHERE s.kind = 'notes' AND s.entity_id = n.id
    )`,
   `INSERT INTO workspace_search(kind, entity_id, owner_id, title, body)
    SELECT 'jobs', j.id, '', j.company_name || ' ' || j.title,
@@ -262,6 +247,10 @@ export type RuntimeSchemaState = {
   progressColumnCount: number;
   questionColumnCount: number;
   jobColumnCount: number;
+  removedNoteTableCount: number;
+  removedNoteItemCount: number;
+  removedNoteSearchCount: number;
+  legacyNoteConstraintCount: number;
 };
 
 export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchemaState> {
@@ -271,6 +260,10 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
     progressColumnCount: number;
     questionColumnCount: number;
     jobColumnCount: number;
+    removedNoteTableCount: number;
+    removedNoteItemCount: number;
+    removedNoteSearchCount: number;
+    legacyNoteConstraintCount: number;
   }>(
     db,
     `SELECT
@@ -287,29 +280,46 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
        (SELECT COUNT(*) FROM pragma_table_info('learning_questions')
          WHERE name IN ('type', 'choices')) AS questionColumnCount,
        (SELECT COUNT(*) FROM pragma_table_info('jobs')
-         WHERE name = 'published_at') AS jobColumnCount`,
+         WHERE name = 'published_at') AS jobColumnCount,
+       (SELECT COUNT(*) FROM sqlite_schema
+         WHERE type = 'table' AND name IN ('notes', 'note_revisions')) AS removedNoteTableCount,
+       (SELECT COUNT(*) FROM collection_items WHERE item_type = 'NOTE') AS removedNoteItemCount,
+       (SELECT COUNT(*) FROM workspace_search WHERE kind = 'notes') AS removedNoteSearchCount,
+       (SELECT COUNT(*) FROM sqlite_schema
+         WHERE type = 'table' AND name = 'collection_items' AND sql LIKE '%''NOTE''%')
+         AS legacyNoteConstraintCount`,
   );
   const tableCount = Number(state?.tableCount || 0);
   const triggerCount = Number(state?.triggerCount || 0);
   const progressColumnCount = Number(state?.progressColumnCount || 0);
   const questionColumnCount = Number(state?.questionColumnCount || 0);
   const jobColumnCount = Number(state?.jobColumnCount || 0);
+  const removedNoteTableCount = Number(state?.removedNoteTableCount || 0);
+  const removedNoteItemCount = Number(state?.removedNoteItemCount || 0);
+  const removedNoteSearchCount = Number(state?.removedNoteSearchCount || 0);
+  const legacyNoteConstraintCount = Number(state?.legacyNoteConstraintCount || 0);
   const ledger =
     tableCount === 8
-      ? await first<{ version: string }>(
+      ? await first<{ version: string; checksum: string }>(
           db,
-          'SELECT version FROM app_schema_migrations ORDER BY applied_at DESC LIMIT 1',
+          'SELECT version, checksum FROM app_schema_migrations WHERE version = ?',
+          EXPECTED_SCHEMA_VERSION,
         )
       : null;
   const appliedVersion = ledger?.version || null;
   return {
     ready:
       tableCount === 8 &&
-      triggerCount === 18 &&
+      triggerCount === 15 &&
       progressColumnCount === 3 &&
       questionColumnCount === 2 &&
       jobColumnCount === 1 &&
-      appliedVersion === EXPECTED_SCHEMA_VERSION,
+      removedNoteTableCount === 0 &&
+      removedNoteItemCount === 0 &&
+      removedNoteSearchCount === 0 &&
+      legacyNoteConstraintCount === 0 &&
+      appliedVersion === EXPECTED_SCHEMA_VERSION &&
+      ledger?.checksum === EXPECTED_SCHEMA_CHECKSUM,
     expectedVersion: EXPECTED_SCHEMA_VERSION,
     appliedVersion,
     tableCount,
@@ -317,12 +327,94 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
     progressColumnCount,
     questionColumnCount,
     jobColumnCount,
+    removedNoteTableCount,
+    removedNoteItemCount,
+    removedNoteSearchCount,
+    legacyNoteConstraintCount,
   };
 }
 
+async function expectedMigrationApplied(db: D1Database) {
+  try {
+    const row = await first<{ checksum: string }>(
+      db,
+      'SELECT checksum FROM app_schema_migrations WHERE version = ?',
+      EXPECTED_SCHEMA_VERSION,
+    );
+    return row?.checksum === EXPECTED_SCHEMA_CHECKSUM;
+  } catch (error) {
+    if (String(error).toLowerCase().includes('no such table')) return false;
+    throw error;
+  }
+}
+
+async function removeNotesSchema(db: D1Database) {
+  const tableState = await first<{ current: number; replacement: number }>(
+    db,
+    `SELECT
+       (SELECT COUNT(*) FROM sqlite_schema
+         WHERE type = 'table' AND name = 'collection_items') AS current,
+       (SELECT COUNT(*) FROM sqlite_schema
+         WHERE type = 'table' AND name = '__new_collection_items_phase2') AS replacement`,
+  );
+  if (!Number(tableState?.current) && Number(tableState?.replacement)) {
+    await run(db, 'ALTER TABLE __new_collection_items_phase2 RENAME TO collection_items');
+    await db.batch([
+      db.prepare(
+        'CREATE UNIQUE INDEX IF NOT EXISTS idx_collection_items_target ON collection_items(collection_id, item_type, target_id)',
+      ),
+      db.prepare(
+        'CREATE INDEX IF NOT EXISTS idx_collection_items_position ON collection_items(collection_id, position)',
+      ),
+    ]);
+  }
+
+  await db.batch([
+    db.prepare('DROP TRIGGER IF EXISTS trg_notes_search_insert'),
+    db.prepare('DROP TRIGGER IF EXISTS trg_notes_search_update'),
+    db.prepare('DROP TRIGGER IF EXISTS trg_notes_search_delete'),
+    db.prepare("DELETE FROM workspace_search WHERE kind = 'notes'"),
+    db.prepare("DELETE FROM collection_items WHERE item_type = 'NOTE'"),
+    db.prepare('DROP TABLE IF EXISTS note_revisions'),
+    db.prepare('DROP TABLE IF EXISTS notes'),
+  ]);
+  await run(
+    db,
+    `CREATE TABLE IF NOT EXISTS __new_collection_items_phase2 (
+      id text PRIMARY KEY NOT NULL,
+      collection_id text NOT NULL,
+      item_type text NOT NULL,
+      target_id text NOT NULL,
+      label text,
+      position integer DEFAULT 0 NOT NULL,
+      created_at text NOT NULL,
+      FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+      CONSTRAINT chk_collection_items_type CHECK(
+        item_type IN ('JOB_POSTING', 'CODING_PROBLEM', 'SOLUTION', 'LEARNING_UNIT', 'EXTERNAL_LINK')
+      )
+    )`,
+  );
+  await db.batch([
+    db.prepare('DELETE FROM __new_collection_items_phase2'),
+    db.prepare(`INSERT INTO __new_collection_items_phase2
+      (id, collection_id, item_type, target_id, label, position, created_at)
+      SELECT id, collection_id, item_type, target_id, label, position, created_at
+        FROM collection_items`),
+  ]);
+  await run(db, 'DROP TABLE collection_items');
+  await run(db, 'ALTER TABLE __new_collection_items_phase2 RENAME TO collection_items');
+  await db.batch([
+    db.prepare(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_collection_items_target ON collection_items(collection_id, item_type, target_id)',
+    ),
+    db.prepare(
+      'CREATE INDEX IF NOT EXISTS idx_collection_items_position ON collection_items(collection_id, position)',
+    ),
+  ]);
+}
+
 async function applyRuntimeSchema(db: D1Database) {
-  const state = await inspectRuntimeSchema(db);
-  if (state.ready) return;
+  if (await expectedMigrationApplied(db)) return;
 
   await run(db, ledgerSchema);
   // Parent tables must exist before SQLite can prepare child-table statements.
@@ -351,14 +443,19 @@ async function applyRuntimeSchema(db: D1Database) {
     }),
   );
   await db.batch(searchTriggers.map((sql) => db.prepare(sql)));
+  await removeNotesSchema(db);
   await run(
     db,
     `INSERT OR REPLACE INTO app_schema_migrations (version, checksum, applied_at)
      VALUES (?, ?, ?)`,
     EXPECTED_SCHEMA_VERSION,
-    'sha256:69fa089214693f323703a327d853996d67129c136f80b8997cfc79a4a43b797d',
+    EXPECTED_SCHEMA_CHECKSUM,
     new Date().toISOString(),
   );
+}
+
+export function markRuntimeSchemaReady(db: D1Database) {
+  schemaPromises.set(db, Promise.resolve());
 }
 
 export async function ensureRuntimeSchema(db: D1Database) {

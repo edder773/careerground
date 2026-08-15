@@ -70,7 +70,6 @@ type Challenge = {
 function itemHref(item: CollectionItem) {
   const encoded = encodeURIComponent(item.targetId);
   if (item.itemType === 'EXTERNAL_LINK') return item.targetId;
-  if (item.itemType === 'NOTE') return `/notes?note=${encoded}`;
   if (item.itemType === 'JOB_POSTING') return `/jobs?job=${encoded}`;
   if (item.itemType === 'CODING_PROBLEM') return `/coding?problem=${encoded}`;
   if (item.itemType === 'SOLUTION') return `/solutions?solution=${encoded}`;
@@ -695,11 +694,6 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
         </section>
       )}
       <section className="virtual-folders">
-        <Link to="/notes">
-          <RotateCcw />
-          <strong>최근 항목</strong>
-          <span>최근 수정된 자료</span>
-        </Link>
         <Link to="/coding">
           <Star />
           <strong>즐겨찾기</strong>

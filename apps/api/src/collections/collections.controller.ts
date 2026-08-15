@@ -26,7 +26,6 @@ const itemSchema = z.object({
     'JOB_POSTING',
     'CODING_PROBLEM',
     'SOLUTION',
-    'NOTE',
     'EXTERNAL_LINK',
   ]),
   targetId: z.string().trim().min(1).max(500),

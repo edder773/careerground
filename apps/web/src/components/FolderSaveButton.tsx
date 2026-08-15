@@ -16,7 +16,7 @@ export function FolderSaveButton({
   targetId,
   label,
 }: {
-  itemType: 'JOB_POSTING' | 'CODING_PROBLEM' | 'SOLUTION' | 'LEARNING_UNIT' | 'NOTE';
+  itemType: 'JOB_POSTING' | 'CODING_PROBLEM' | 'SOLUTION' | 'LEARNING_UNIT';
   targetId: string;
   label: string;
 }) {

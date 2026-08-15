@@ -11,6 +11,7 @@ describe('Sites runtime schema', () => {
 
   beforeEach(async () => {
     db = new LocalD1();
+    await run(db, "DELETE FROM app_schema_migrations WHERE version = '0017_marvelous_blockbuster'");
     await run(db, 'DROP TABLE workspace_search');
     for (const table of [
       'job_source_snapshot_items',
@@ -70,6 +71,17 @@ describe('Sites runtime schema', () => {
       expect.arrayContaining(['review_version', 'completed_at', 'mastered_at']),
     );
 
+    const removedNotes = await first<{ tables: number; items: number; constraints: number }>(
+      db,
+      `SELECT
+         (SELECT COUNT(*) FROM sqlite_schema
+           WHERE type = 'table' AND name IN ('notes', 'note_revisions')) AS tables,
+         (SELECT COUNT(*) FROM collection_items WHERE item_type = 'NOTE') AS items,
+         (SELECT COUNT(*) FROM sqlite_schema
+           WHERE type = 'table' AND name = 'collection_items' AND sql LIKE '%''NOTE''%') AS constraints`,
+    );
+    expect(removedNotes).toEqual({ tables: 0, items: 0, constraints: 0 });
+
     const searchCountBefore = await first<{ count: number }>(
       db,
       'SELECT COUNT(*) AS count FROM workspace_search',
@@ -91,7 +103,7 @@ describe('Sites runtime schema', () => {
 });
 
 describe('Sites production migration baseline', () => {
-  it('applies the packaged 0016 migration after the existing 0015 schema without replaying history', async () => {
+  it('applies the packaged 0017 migration after the existing 0016 schema without replaying history', async () => {
     const root = mkdtempSync(join(tmpdir(), 'careerground-sites-migration-'));
     const baselineDirectory = join(root, 'baseline');
     const forwardDirectory = join(root, 'forward');
@@ -103,15 +115,51 @@ describe('Sites production migration baseline', () => {
       const migrations = readdirSync('drizzle')
         .filter((file) => /^\d{4}_.+\.sql$/.test(file))
         .sort();
-      for (const migration of migrations.filter((file) => Number(file.slice(0, 4)) < 16)) {
+      for (const migration of migrations.filter((file) => Number(file.slice(0, 4)) < 17)) {
         copyFileSync(join('drizzle', migration), join(baselineDirectory, migration));
       }
       copyFileSync(
-        join('drizzle', '0016_full_audit_hardening.sql'),
-        join(forwardDirectory, '0016_full_audit_hardening.sql'),
+        join('drizzle', '0017_marvelous_blockbuster.sql'),
+        join(forwardDirectory, '0017_marvelous_blockbuster.sql'),
       );
 
       const baseline = new LocalD1(databasePath, baselineDirectory);
+      await run(
+        baseline,
+        `INSERT INTO users
+          (id, site_user_id, email, display_name, role, is_active, preferred_language,
+           ranking_opt_in, comment_notifications, deadline_notifications, review_notifications,
+           created_at, updated_at)
+         VALUES ('note-owner', 'note-owner', 'note-owner@example.test', 'Note Owner',
+                 'MEMBER', 1, 'javascript', 1, 1, 1, 1, '2026-08-15', '2026-08-15')`,
+      );
+      await run(
+        baseline,
+        `INSERT INTO collections
+          (id, user_id, name, icon, color, position, created_at, updated_at)
+         VALUES ('note-folder', 'note-owner', '기존 노트 폴더', 'folder', 'amber', 0,
+                 '2026-08-15', '2026-08-15')`,
+      );
+      await run(
+        baseline,
+        `INSERT INTO notes
+          (id, user_id, title, markdown, visibility, current_rev, created_at, updated_at)
+         VALUES ('note-to-delete', 'note-owner', '삭제 대상', '백업하지 않을 원문',
+                 'PRIVATE', 1, '2026-08-15', '2026-08-15')`,
+      );
+      await run(
+        baseline,
+        `INSERT INTO note_revisions (id, note_id, revision, markdown, created_at)
+         VALUES ('note-revision-to-delete', 'note-to-delete', 1, '백업하지 않을 원문',
+                 '2026-08-15')`,
+      );
+      await run(
+        baseline,
+        `INSERT INTO collection_items
+          (id, collection_id, item_type, target_id, label, position, created_at)
+         VALUES ('note-item-to-delete', 'note-folder', 'NOTE', 'note-to-delete', '삭제 대상', 0,
+                 '2026-08-15')`,
+      );
       const countBefore = await first<{ count: number }>(
         baseline,
         'SELECT COUNT(*) AS count FROM learning_questions',
@@ -124,6 +172,8 @@ describe('Sites production migration baseline', () => {
         learningColumns: number;
         publishedColumn: number;
         notificationIndex: number;
+        removedNoteTables: number;
+        noteItems: number;
         checksum: string;
       }>(
         upgraded,
@@ -134,8 +184,11 @@ describe('Sites production migration baseline', () => {
                   WHERE name = 'published_at') AS publishedColumn,
                 (SELECT COUNT(*) FROM pragma_index_list('notifications')
                   WHERE name = 'idx_notifications_user_read_expiry_created') AS notificationIndex,
+                (SELECT COUNT(*) FROM sqlite_schema
+                  WHERE type = 'table' AND name IN ('notes', 'note_revisions')) AS removedNoteTables,
+                (SELECT COUNT(*) FROM collection_items WHERE item_type = 'NOTE') AS noteItems,
                 (SELECT checksum FROM app_schema_migrations
-                  WHERE version = '0016_full_audit_hardening') AS checksum`,
+                  WHERE version = '0017_marvelous_blockbuster') AS checksum`,
       );
 
       expect(schema).toEqual({
@@ -143,7 +196,9 @@ describe('Sites production migration baseline', () => {
         learningColumns: 2,
         publishedColumn: 1,
         notificationIndex: 1,
-        checksum: 'sha256:69fa089214693f323703a327d853996d67129c136f80b8997cfc79a4a43b797d',
+        removedNoteTables: 0,
+        noteItems: 0,
+        checksum: 'sha256:e2d828e1a606fe4991fdbbf71441265333188ecb79107f1ba7ce2fe44896ab32',
       });
       await expect(
         run(

@@ -1,14 +1,4 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 import { CurrentUser, Roles, type AuthUser } from '../auth/auth.decorators.js';
@@ -42,31 +32,6 @@ export class UtilityController {
   @Patch('notifications/:id/read')
   read(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.utility.readNotification(user.id, id);
-  }
-
-  @Get('notes')
-  notes(@CurrentUser() user: AuthUser) {
-    return this.utility.notes(user);
-  }
-
-  @Post('notes')
-  saveNote(@CurrentUser() user: AuthUser, @Body() body: unknown) {
-    const parsed = z
-      .object({
-        id: z.string().uuid().optional(),
-        title: z.string().trim().min(1).max(200),
-        markdown: z.string().max(50_000),
-        linkedType: z.string().max(40).optional(),
-        linkedId: z.string().max(100).optional(),
-      })
-      .safeParse(body);
-    if (!parsed.success) throw new BadRequestException(parsed.error.flatten());
-    return this.utility.saveNote(user.id, parsed.data);
-  }
-
-  @Delete('notes/:id')
-  deleteNote(@CurrentUser() user: AuthUser, @Param('id') id: string) {
-    return this.utility.deleteNote(user.id, id);
   }
 
   @Roles('ADMIN')

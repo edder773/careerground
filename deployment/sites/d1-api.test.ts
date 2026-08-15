@@ -293,66 +293,25 @@ describe('Sites D1 API', () => {
     ).toEqual([item.body.id, secondItem.body.id]);
   });
 
-  it('persists note revisions for the current user', async () => {
-    const original =
-      'List<String>\nvector<pair<int, int>>\na < b && c > d\n<script>alert(1)</script>';
-    const created = await call('/api/v1/notes', {
-      method: 'POST',
-      body: JSON.stringify({ title: 'D1 메모', markdown: original, visibility: 'MEMBERS' }),
-    });
-    const note = created.body as { id: string };
-    expect(created.body).toMatchObject({ markdown: original });
-    const updated = await call('/api/v1/notes', {
-      method: 'POST',
-      body: JSON.stringify({
-        id: note.id,
-        baseRevision: 1,
-        title: 'D1 메모',
-        markdown: '두 번째 기록',
-        visibility: 'PRIVATE',
-      }),
-    });
-    expect(updated.response.status).toBe(200);
-    const conflict = await call('/api/v1/notes', {
-      method: 'POST',
-      body: JSON.stringify({
-        id: note.id,
-        baseRevision: 1,
-        title: '충돌 저장',
-        markdown: '덮어쓰면 안 됩니다.',
-      }),
-    });
-    expect(conflict.response.status).toBe(409);
-    expect(conflict.body).toMatchObject({ code: 'REVISION_CONFLICT' });
+  it('removes the personal notes feature and rejects note collection items', async () => {
+    const noteTables = await db
+      .prepare(
+        "SELECT COUNT(*) AS count FROM sqlite_schema WHERE type = 'table' AND name IN ('notes', 'note_revisions')",
+      )
+      .first<{ count: number }>();
+    expect(noteTables?.count).toBe(0);
 
-    const listed = await call('/api/v1/notes');
-    expect(listed.body).toEqual([
-      expect.objectContaining({
-        id: note.id,
-        markdown: '두 번째 기록',
-        visibility: 'PRIVATE',
-        currentRev: 2,
-        revisions: [
-          expect.objectContaining({ revision: 2 }),
-          expect.objectContaining({ revision: 1 }),
-        ],
-      }),
-    ]);
-
-    const otherUserNotes = await call('/api/v1/notes', {}, memberHeaders);
-    expect(otherUserNotes.body).toEqual([]);
-    const removed = await call(`/api/v1/notes/${note.id}`, { method: 'DELETE' });
-    expect(removed.response.status).toBe(200);
-    expect((await call('/api/v1/notes')).body).toEqual([]);
-    expect((await call('/api/v1/notes/trash')).body).toEqual([
-      expect.objectContaining({ id: note.id, title: 'D1 메모' }),
-    ]);
-    expect(
-      (await call(`/api/v1/notes/${note.id}/restore`, { method: 'POST' })).response.status,
-    ).toBe(200);
-    expect((await call('/api/v1/notes')).body).toEqual([
-      expect.objectContaining({ id: note.id, currentRev: 2 }),
-    ]);
+    expect((await call('/api/v1/notes')).response.status).toBe(404);
+    const created = await call('/api/v1/collections', {
+      method: 'POST',
+      body: JSON.stringify({ name: '지원 준비', icon: 'folder', color: 'violet' }),
+    });
+    const folder = created.body as { id: string };
+    const noteItem = await call(`/api/v1/collections/${folder.id}/items`, {
+      method: 'POST',
+      body: JSON.stringify({ itemType: 'NOTE', targetId: 'removed-note' }),
+    });
+    expect(noteItem.response.status).toBe(422);
   });
 
   it('replaces dummy records with the imported job and problem catalogs', async () => {

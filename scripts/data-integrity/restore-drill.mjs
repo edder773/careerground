@@ -11,8 +11,6 @@ const tableNames = [
   'users',
   'collections',
   'collection_items',
-  'notes',
-  'note_revisions',
   'jobs',
   'saved_jobs',
   'coding_problems',
@@ -54,8 +52,8 @@ function tableCounts(database) {
 function contentChecksum(database) {
   const rows = database
     .prepare(
-      `SELECT id, title, markdown, current_rev AS currentRev
-         FROM notes WHERE id = 'restore-drill-note'`,
+      `SELECT id, user_id AS userId, name, icon, color, position
+         FROM collections WHERE id = 'restore-drill-collection'`,
     )
     .all();
   return createHash('sha256').update(JSON.stringify(rows)).digest('hex');
@@ -100,20 +98,12 @@ try {
     .run();
   await source
     .prepare(
-      `INSERT INTO notes
-         (id, user_id, title, markdown, visibility, current_rev, created_at, updated_at)
-       VALUES ('restore-drill-note', 'restore-drill-user', '복구 훈련',
-               '민감 원문은 증거에 기록하지 않습니다.', 'PRIVATE', 1, ?, ?)`,
+      `INSERT INTO collections
+         (id, user_id, name, icon, color, position, created_at, updated_at)
+       VALUES ('restore-drill-collection', 'restore-drill-user', '복구 훈련',
+               'folder', 'amber', 0, ?, ?)`,
     )
     .bind(timestamp, timestamp)
-    .run();
-  await source
-    .prepare(
-      `INSERT INTO note_revisions (id, note_id, revision, markdown, created_at)
-       VALUES ('restore-drill-note-r1', 'restore-drill-note', 1,
-               '민감 원문은 증거에 기록하지 않습니다.', ?)`,
-    )
-    .bind(timestamp)
     .run();
   source.close();
 

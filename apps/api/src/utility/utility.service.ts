@@ -1,17 +1,9 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { preserveSourceText } from '@careerground/contracts';
 import type { AuthUser } from '../auth/auth.decorators.js';
 import type { CompanySize } from '../generated/prisma/enums.js';
 import { PrismaService } from '../common/prisma.service.js';
 import { AuditService } from '../common/audit.service.js';
-
-const clean = (value: string) => preserveSourceText(value);
 
 @Injectable()
 export class UtilityService {
@@ -48,26 +40,10 @@ export class UtilityService {
   async search(user: AuthUser, query: string) {
     const q = query.trim();
     if (q.length < 2) throw new BadRequestException('검색어는 2자 이상이어야 합니다.');
-    const [folders, notes, jobs, problems, solutions, learning] = await Promise.all([
+    const [folders, jobs, problems, solutions, learning] = await Promise.all([
       this.prisma.collection.findMany({
         where: { userId: user.id, deletedAt: null, name: { contains: q, mode: 'insensitive' } },
         take: 10,
-      }),
-      this.prisma.note.findMany({
-        where: {
-          deletedAt: null,
-          userId: user.id,
-          AND: [
-            {
-              OR: [
-                { title: { contains: q, mode: 'insensitive' } },
-                { markdown: { contains: q, mode: 'insensitive' } },
-              ],
-            },
-          ],
-        },
-        take: 10,
-        select: { id: true, title: true, updatedAt: true },
       }),
       this.prisma.jobPosting.findMany({
         where: {
@@ -104,7 +80,7 @@ export class UtilityService {
         take: 10,
       }),
     ]);
-    return { query: q, folders, notes, jobs, problems, solutions, learning };
+    return { query: q, folders, jobs, problems, solutions, learning };
   }
 
   notifications(userId: string) {
@@ -127,69 +103,6 @@ export class UtilityService {
       where: { userId, readAt: null },
       data: { readAt: new Date() },
     });
-  }
-
-  notes(user: AuthUser) {
-    return this.prisma.note.findMany({
-      where: { deletedAt: null, userId: user.id },
-      include: {
-        user: { select: { id: true, displayName: true } },
-        revisions: { orderBy: { revision: 'desc' }, take: 10 },
-      },
-      orderBy: { updatedAt: 'desc' },
-      take: 100,
-    });
-  }
-
-  async saveNote(
-    userId: string,
-    data: {
-      id?: string;
-      title: string;
-      markdown: string;
-      linkedType?: string;
-      linkedId?: string;
-    },
-  ) {
-    const markdown = clean(data.markdown);
-    if (!data.id) {
-      return this.prisma.note.create({
-        data: {
-          userId,
-          title: data.title.trim(),
-          markdown,
-          visibility: 'PRIVATE',
-          linkedType: data.linkedType,
-          linkedId: data.linkedId,
-          revisions: { create: { revision: 1, markdown } },
-        },
-      });
-    }
-    const current = await this.prisma.note.findUnique({ where: { id: data.id } });
-    if (!current) throw new NotFoundException();
-    if (current.userId !== userId) throw new ForbiddenException();
-    return this.prisma.$transaction(async (tx) => {
-      await tx.noteRevision.create({
-        data: { noteId: current.id, revision: current.currentRev + 1, markdown },
-      });
-      return tx.note.update({
-        where: { id: current.id },
-        data: {
-          title: data.title.trim(),
-          markdown,
-          visibility: 'PRIVATE',
-          linkedType: data.linkedType,
-          linkedId: data.linkedId,
-          currentRev: current.currentRev + 1,
-        },
-      });
-    });
-  }
-
-  async deleteNote(userId: string, id: string) {
-    const note = await this.prisma.note.findFirst({ where: { id, userId, deletedAt: null } });
-    if (!note) throw new NotFoundException();
-    return this.prisma.note.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
   adminOverview() {
