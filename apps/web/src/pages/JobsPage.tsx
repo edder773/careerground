@@ -74,7 +74,7 @@ const applicationLabels: Record<string, string> = {
 };
 const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
 const calendarEventLabels: Record<CalendarEventType, string> = {
-  start: '시작·확인일',
+  start: '시작일',
   deadline: '마감일',
   rolling: '상시',
 };
@@ -289,7 +289,7 @@ function JobDetailModal({
             </div>
             <div className="job-modal-schedule" aria-label="채용 일정">
               <div className="schedule-start">
-                <span>시작·확인일</span>
+                <span>시작일</span>
                 <strong>{startDate(job) ? deadlineLabel(startDate(job)) : '확인 필요'}</strong>
               </div>
               {job.rolling ? (
@@ -991,7 +991,7 @@ export function JobsPage() {
             </nav>
           </header>
           <div className="job-calendar-legend" aria-label="일정 색상 안내">
-            <span className="schedule-start">시작·확인일</span>
+            <span className="schedule-start">시작일</span>
             <span className="schedule-deadline">마감일</span>
             <span className="schedule-rolling">상시</span>
           </div>
@@ -1109,7 +1109,7 @@ export function JobsPage() {
           if (!open) setExpandedDateKey(undefined);
         }}
         title={expandedDateKey ? `${dateLabel(expandedDateKey)} 채용 일정` : '채용 일정'}
-        description={`시작·확인일과 마감일을 포함한 ${expandedDateEvents.length}개 일정을 확인하세요.`}
+        description={`시작일과 마감일을 포함한 ${expandedDateEvents.length}개 일정을 확인하세요.`}
         items={expandedDateEvents}
         onSelect={openJob}
       />
@@ -1174,7 +1174,7 @@ export function JobsPage() {
                     </div>
                     <div className="job-card-schedule" aria-label={`${job.title} 주요 일정`}>
                       <div className="schedule-start">
-                        <span>시작·확인일</span>
+                        <span>시작일</span>
                         <strong>{latestLabel(startDate(job))}</strong>
                       </div>
                       <div

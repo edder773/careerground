@@ -117,7 +117,8 @@ describe('domain pages', () => {
 
     await user.click(screen.getByRole('button', { name: '달력' }));
     const legend = await screen.findByLabelText('일정 색상 안내');
-    expect(within(legend).getByText('시작·확인일')).toBeInTheDocument();
+    expect(within(legend).getByText('시작일')).toBeInTheDocument();
+    expect(screen.queryByText('시작·확인일')).not.toBeInTheDocument();
     expect(within(legend).getByText('마감일')).toBeInTheDocument();
     expect(within(legend).getByText('상시')).toBeInTheDocument();
     await user.click(

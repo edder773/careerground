@@ -129,6 +129,8 @@ test('captures core domain screens', async ({ page }) => {
       await page.getByRole('button', { name: '달력' }).click();
       await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
       await expect(page.locator('.calendar-job').first()).toBeVisible();
+      await expect(page.locator('.job-calendar-legend')).toContainText('시작일');
+      await expect(page.getByText('시작·확인일', { exact: true })).toHaveCount(0);
       await page.screenshot({
         path: 'test-results/visual/jobs-calendar-desktop-1440.png',
         fullPage: true,
@@ -164,6 +166,8 @@ test('captures core domain screens', async ({ page }) => {
   await page.goto('/jobs');
   await page.getByRole('button', { name: '달력' }).click();
   await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
+  await expect(page.locator('.job-calendar-legend')).toContainText('시작일');
+  await expect(page.getByText('시작·확인일', { exact: true })).toHaveCount(0);
   await page.screenshot({
     path: 'test-results/visual/jobs-calendar-mobile-375.png',
     fullPage: false,
@@ -219,6 +223,28 @@ test('captures core domain screens', async ({ page }) => {
     path: 'test-results/visual/coding-editor-mobile-375.png',
     fullPage: false,
   });
+});
+
+test('keeps the calendar start label compact on desktop and mobile', async ({ page }) => {
+  await mkdir('test-results/visual', { recursive: true });
+  await login(page, 'calendar-label@careerground.local');
+
+  for (const viewport of [
+    { name: 'desktop-1440', width: 1440, height: 900 },
+    { name: 'mobile-375', width: 375, height: 812 },
+  ]) {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto('/jobs');
+    await page.getByRole('button', { name: '달력' }).click();
+    await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
+    await expect(page.locator('.job-calendar-legend')).toContainText('시작일');
+    await expect(page.getByText('시작·확인일', { exact: true })).toHaveCount(0);
+    await expect(page.locator('.calendar-job').first()).toContainText('시작일');
+    await page.screenshot({
+      path: `test-results/visual/jobs-calendar-label-${viewport.name}.png`,
+      fullPage: false,
+    });
+  }
 });
 
 test('reflows at 200% equivalent width and keeps the editor usable above a mobile keyboard', async ({
