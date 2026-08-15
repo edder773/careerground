@@ -50,10 +50,7 @@ describe('domain pages', () => {
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
         calls.push({ url, method: init?.method || 'GET' });
-        if (url.endsWith('/jobs/categories')) return response(['AI 풀스택 개발']);
-        return jobBootstrap({ items: catalog, nextCursor: null, total: catalog.length }, [
-          'AI 풀스택 개발',
-        ]);
+        return jobBootstrap(catalog, ['AI 풀스택 개발']);
       }),
     );
     const user = userEvent.setup();
@@ -70,21 +67,10 @@ describe('domain pages', () => {
       }),
     ).toBe(false);
     await user.click(within(filter).getByRole('button', { name: '3개 조건 적용' }));
-    await waitFor(() =>
-      expect(
-        calls.some((call) => {
-          const params = new URL(call.url, 'https://careerground.example').searchParams;
-          return (
-            params.getAll('companySize').join(',') === 'LARGE,MID' &&
-            params.getAll('category').join(',') === 'AI 풀스택 개발'
-          );
-        }),
-      ).toBe(true),
-    );
+    expect(await screen.findByText('0개 공고')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: '마감 임박순' }));
-    await waitFor(() =>
-      expect(calls.some((call) => call.url.includes('sort=deadline'))).toBe(true),
-    );
+    await waitFor(() => expect(calls).toHaveLength(1));
+    expect(calls[0]?.url).toContain('/jobs/bootstrap?catalog=true');
     await user.click(screen.getByRole('button', { name: '크게' }));
     expect(document.querySelector('.jobs-page')).toHaveAttribute('data-font-size', 'large');
   });
@@ -118,9 +104,7 @@ describe('domain pages', () => {
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
         calls.push({ url, method: init?.method || 'GET' });
-        if (url.endsWith('/jobs/categories')) return response(['백엔드']);
-        if (url.includes('calendar=true')) return jobBootstrap([job], ['백엔드']);
-        return jobBootstrap({ items: [job], nextCursor: null, total: 1 }, ['백엔드']);
+        return jobBootstrap([job], ['백엔드']);
       }),
     );
     const user = userEvent.setup();
@@ -144,14 +128,9 @@ describe('domain pages', () => {
     const dialog = screen.getByRole('dialog', { name: '캘린더테크' });
     expect(dialog).toBeInTheDocument();
     expect(dialog).toHaveTextContent('신입 플랫폼 엔지니어');
-    expect(
-      calls.some(
-        (call) =>
-          call.url.includes('calendar=true') &&
-          call.url.includes('deadlineFrom=') &&
-          call.url.includes('deadlineTo='),
-      ),
-    ).toBe(true);
+    expect(calls).toHaveLength(2);
+    expect(calls[0]?.url).toContain('/jobs/bootstrap?catalog=true');
+    expect(calls.some((call) => call.url.includes('calendar=true'))).toBe(false);
   });
 
   it('opens rolling jobs and hidden daily events in dedicated dialogs', async () => {
@@ -197,13 +176,8 @@ describe('domain pages', () => {
     ];
     vi.stubGlobal(
       'fetch',
-      vi.fn((input: RequestInfo | URL) => {
-        const url = String(input);
-        if (url.endsWith('/jobs/categories')) return response(['백엔드']);
-        if (url.includes('calendar=true')) return jobBootstrap(catalog, ['백엔드']);
-        return jobBootstrap({ items: catalog, nextCursor: null, total: catalog.length }, [
-          '백엔드',
-        ]);
+      vi.fn((_input: RequestInfo | URL) => {
+        return jobBootstrap(catalog, ['백엔드', '프론트엔드']);
       }),
     );
     const user = userEvent.setup();

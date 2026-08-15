@@ -1,11 +1,4 @@
-import {
-  keepPreviousData,
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type InfiniteData,
-} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import {
   Bookmark,
@@ -52,14 +45,14 @@ type SortMode = 'new' | 'deadline' | 'company';
 type JobFontSize = 'comfortable' | 'large' | 'largest';
 type CalendarEventType = 'start' | 'deadline' | 'rolling';
 type CalendarEvent = { job: Job; type: CalendarEventType };
-type CursorPage<T> = { items: T[]; nextCursor: string | null; total: number };
 type JobBootstrapPayload = {
   unreadCount: number;
   categories: string[];
-  data: Job[] | CursorPage<Job>;
+  data: Job[] | { items: Job[]; nextCursor: string | null; total: number };
 };
 
 const KOREA_OFFSET_MS = 9 * 60 * 60 * 1000;
+const JOB_PAGE_SIZE = 40;
 const sizeLabels: Record<string, string> = {
   LARGE: '대기업',
   PUBLIC: '공기업/공공기관',
@@ -168,6 +161,43 @@ function deadlineLabel(value?: string) {
 function startDate(job: Job) {
   return job.publishedAt || job.collectedAt;
 }
+
+const searchableJobText = (job: Job) =>
+  [
+    job.title,
+    job.category,
+    job.region,
+    job.summary,
+    job.company.name,
+    job.company.size,
+    job.source.name,
+    ...job.techStack,
+  ]
+    .join(' ')
+    .normalize('NFKC')
+    .toLocaleLowerCase('ko-KR');
+
+const compareJobs = (mode: SortMode) => (left: Job, right: Job) => {
+  if (mode === 'deadline') {
+    const deadline = (left.deadlineAt || '9999').localeCompare(right.deadlineAt || '9999');
+    return deadline || left.id.localeCompare(right.id);
+  }
+  if (mode === 'company') {
+    const company = left.company.name.localeCompare(right.company.name, 'ko');
+    return company || left.id.localeCompare(right.id);
+  }
+  const collected = (right.collectedAt || '').localeCompare(left.collectedAt || '');
+  return collected || right.id.localeCompare(left.id);
+};
+
+const fallsWithinCalendar = (job: Job, from: number, to: number) => {
+  if (job.rolling) return true;
+  return [startDate(job), job.deadlineAt].some((value) => {
+    if (!value) return false;
+    const timestamp = Date.parse(value);
+    return timestamp >= from && timestamp < to;
+  });
+};
 
 function dateLabel(value: string) {
   return new Intl.DateTimeFormat('ko-KR', {
@@ -583,6 +613,7 @@ export function JobsPage() {
   const requestedJob = searchParams.get('job');
   const [fontSize, setFontSize] = useState<JobFontSize>(initialJobFontSize);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [visibleCount, setVisibleCount] = useState(JOB_PAGE_SIZE);
   const [visibleMonth, setVisibleMonth] = useState(monthStart);
   const [selectedJobId, setSelectedJobId] = useState<string>();
   const [rollingOpen, setRollingOpen] = useState(false);
@@ -617,95 +648,58 @@ export function JobsPage() {
   }, [companySizes, searchParams, selectedCategories, setSearchParams, sort]);
 
   const bounds = monthBounds(visibleMonth);
-  const queryParams = new URLSearchParams({
-    sort: viewMode === 'calendar' ? 'deadline' : sort,
-    ...(viewMode === 'calendar'
-      ? { calendar: 'true', deadlineFrom: bounds.from, deadlineTo: bounds.to }
-      : {}),
-  });
-  companySizes.forEach((value) => queryParams.append('companySize', value));
-  selectedCategories.forEach((value) => queryParams.append('category', value));
-  if (search) queryParams.set('q', search);
-  if (savedOnly) queryParams.set('saved', '1');
-  const query = queryParams.toString();
-  const calendarJobs = useQuery({
-    queryKey: [
-      'jobs',
-      'calendar',
-      companySizes.join('|'),
-      selectedCategories.join('|'),
-      search,
-      savedOnly,
-      `${visibleMonth.getUTCFullYear()}-${visibleMonth.getUTCMonth()}`,
-    ],
+  const catalogQuery = useQuery({
+    queryKey: ['jobs', 'catalog'],
     queryFn: async () => {
-      const payload = await api<JobBootstrapPayload>(`/jobs/bootstrap?${query}`);
+      const payload = await api<JobBootstrapPayload>('/jobs/bootstrap?catalog=true');
       client.setQueryData(['notification-unread-count'], { count: payload.unreadCount });
       client.setQueryData(['jobs', 'categories'], payload.categories);
       return Array.isArray(payload.data) ? payload.data : payload.data.items;
     },
-    enabled: viewMode === 'calendar',
-    placeholderData: keepPreviousData,
-    staleTime: 60_000,
-    gcTime: 10 * 60_000,
-    refetchOnWindowFocus: false,
-  });
-  const listJobs = useInfiniteQuery({
-    queryKey: [
-      'jobs',
-      'list',
-      companySizes.join('|'),
-      selectedCategories.join('|'),
-      search,
-      savedOnly,
-      sort,
-    ],
-    initialPageParam: null as string | null,
-    queryFn: async ({ pageParam }) => {
-      const params = new URLSearchParams({ sort, page: 'cursor', limit: '40' });
-      companySizes.forEach((value) => params.append('companySize', value));
-      selectedCategories.forEach((value) => params.append('category', value));
-      if (search) params.set('q', search);
-      if (savedOnly) params.set('saved', '1');
-      if (pageParam) params.set('cursor', pageParam);
-      const payload = await api<JobBootstrapPayload>(`/jobs/bootstrap?${params.toString()}`);
-      client.setQueryData(['notification-unread-count'], { count: payload.unreadCount });
-      client.setQueryData(['jobs', 'categories'], payload.categories);
-      if (Array.isArray(payload.data)) {
-        return { items: payload.data, nextCursor: null, total: payload.data.length };
-      }
-      return payload.data;
-    },
-    getNextPageParam: (lastPage) => lastPage.nextCursor || undefined,
-    enabled: viewMode === 'list',
-    staleTime: 60_000,
-    gcTime: 10 * 60_000,
-    refetchOnWindowFocus: false,
-  });
-  const categories = useQuery({
-    queryKey: ['jobs', 'categories'],
-    queryFn: () => api<string[]>('/jobs/categories'),
-    enabled: viewMode === 'calendar' ? calendarJobs.isSuccess : listJobs.isSuccess,
-    staleTime: 10 * 60_000,
+    staleTime: 5 * 60_000,
     gcTime: 30 * 60_000,
     refetchOnWindowFocus: false,
   });
-  const jobRows =
-    viewMode === 'calendar'
-      ? calendarJobs.data || []
-      : listJobs.data?.pages.flatMap((page) => page.items) || [];
-  const jobTotal =
-    viewMode === 'calendar' ? jobRows.length : listJobs.data?.pages[0]?.total || jobRows.length;
-  const jobs = viewMode === 'calendar' ? calendarJobs : listJobs;
+  const catalog = catalogQuery.data || [];
+  const categories = useMemo(
+    () =>
+      [...new Set(catalog.map((job) => job.category))].sort((left, right) =>
+        left.localeCompare(right, 'ko'),
+      ),
+    [catalog],
+  );
+  const filteredJobs = useMemo(() => {
+    const sizes = new Set(companySizes);
+    const selected = new Set(selectedCategories);
+    const terms = search.normalize('NFKC').toLocaleLowerCase('ko-KR').split(/\s+/).filter(Boolean);
+    return catalog
+      .filter((job) => !sizes.size || sizes.has(job.company.size))
+      .filter((job) => !selected.size || selected.has(job.category))
+      .filter((job) => !savedOnly || job.bookmarked)
+      .filter(
+        (job) => !terms.length || terms.every((term) => searchableJobText(job).includes(term)),
+      )
+      .sort(compareJobs(sort));
+  }, [catalog, companySizes, savedOnly, search, selectedCategories, sort]);
+  const calendarJobs = useMemo(() => {
+    const from = Date.parse(bounds.from);
+    const to = Date.parse(bounds.to);
+    return filteredJobs.filter((job) => fallsWithinCalendar(job, from, to));
+  }, [bounds.from, bounds.to, filteredJobs]);
+  useEffect(
+    () => setVisibleCount(JOB_PAGE_SIZE),
+    [companySizes, savedOnly, search, selectedCategories, sort],
+  );
+  const jobRows = viewMode === 'calendar' ? calendarJobs : filteredJobs.slice(0, visibleCount);
+  const jobTotal = viewMode === 'calendar' ? calendarJobs.length : filteredJobs.length;
+  const hasMoreJobs = viewMode === 'list' && visibleCount < filteredJobs.length;
+  const jobs = catalogQuery;
   const bookmark = useMutation({
     mutationFn: ({ jobId, bookmarked }: { jobId: string; bookmarked: boolean }) =>
       api(`/jobs/${jobId}/bookmark`, { method: 'PATCH', body: json({ bookmarked }) }),
     onMutate: async ({ jobId, bookmarked }) => {
-      await client.cancelQueries({ queryKey: ['jobs'] });
-      const calendarSnapshots = client.getQueriesData<Job[]>({ queryKey: ['jobs', 'calendar'] });
-      const listSnapshots = client.getQueriesData<InfiniteData<CursorPage<Job>>>({
-        queryKey: ['jobs', 'list'],
-      });
+      await client.cancelQueries({ queryKey: ['jobs', 'catalog'] });
+      const snapshot = client.getQueryData<Job[]>(['jobs', 'catalog']);
       const update = (current: Job[] | undefined) =>
         current?.map((job) =>
           job.id === jobId
@@ -722,34 +716,18 @@ export function JobsPage() {
               }
             : job,
         );
-      client.setQueriesData<Job[]>({ queryKey: ['jobs', 'calendar'] }, update);
-      client.setQueriesData<InfiniteData<CursorPage<Job>>>(
-        { queryKey: ['jobs', 'list'] },
-        (current) =>
-          current
-            ? {
-                ...current,
-                pages: current.pages.map((page) => ({ ...page, items: update(page.items) || [] })),
-              }
-            : current,
-      );
-      return { calendarSnapshots, listSnapshots };
+      client.setQueryData<Job[]>(['jobs', 'catalog'], update);
+      return { snapshot };
     },
     onError: (_error, _variables, context) =>
-      [...(context?.calendarSnapshots || []), ...(context?.listSnapshots || [])].forEach(
-        ([key, data]) => client.setQueryData(key, data),
-      ),
-    onSettled: () => client.invalidateQueries({ queryKey: ['jobs'] }),
+      client.setQueryData(['jobs', 'catalog'], context?.snapshot),
   });
   const application = useMutation({
     mutationFn: ({ jobId, patch }: { jobId: string; patch: { status?: string; memo?: string } }) =>
       api(`/jobs/${jobId}/application`, { method: 'PATCH', body: json(patch) }),
     onMutate: async ({ jobId, patch }) => {
-      await client.cancelQueries({ queryKey: ['jobs'] });
-      const calendarSnapshots = client.getQueriesData<Job[]>({ queryKey: ['jobs', 'calendar'] });
-      const listSnapshots = client.getQueriesData<InfiniteData<CursorPage<Job>>>({
-        queryKey: ['jobs', 'list'],
-      });
+      await client.cancelQueries({ queryKey: ['jobs', 'catalog'] });
+      const snapshot = client.getQueryData<Job[]>(['jobs', 'catalog']);
       const update = (current: Job[] | undefined) =>
         current?.map((job) =>
           job.id === jobId
@@ -765,24 +743,11 @@ export function JobsPage() {
               }
             : job,
         );
-      client.setQueriesData<Job[]>({ queryKey: ['jobs', 'calendar'] }, update);
-      client.setQueriesData<InfiniteData<CursorPage<Job>>>(
-        { queryKey: ['jobs', 'list'] },
-        (current) =>
-          current
-            ? {
-                ...current,
-                pages: current.pages.map((page) => ({ ...page, items: update(page.items) || [] })),
-              }
-            : current,
-      );
-      return { calendarSnapshots, listSnapshots };
+      client.setQueryData<Job[]>(['jobs', 'catalog'], update);
+      return { snapshot };
     },
     onError: (_error, _variables, context) =>
-      [...(context?.calendarSnapshots || []), ...(context?.listSnapshots || [])].forEach(
-        ([key, data]) => client.setQueryData(key, data),
-      ),
-    onSettled: () => client.invalidateQueries({ queryKey: ['jobs'] }),
+      client.setQueryData(['jobs', 'catalog'], context?.snapshot),
   });
 
   useEffect(() => {
@@ -929,7 +894,7 @@ export function JobsPage() {
         )}
         <JobFilterPanel
           companySizes={companySizes}
-          categories={categories.data || []}
+          categories={categories}
           selectedCategories={selectedCategories}
           onCompanySizesChange={setCompanySizes}
           onCategoriesChange={setSelectedCategories}
@@ -1297,16 +1262,13 @@ export function JobsPage() {
               );
             })}
           </div>
-          {listJobs.hasNextPage && (
+          {hasMoreJobs && (
             <button
               type="button"
               className="load-more-button"
-              disabled={listJobs.isFetchingNextPage}
-              onClick={() => listJobs.fetchNextPage()}
+              onClick={() => setVisibleCount((current) => current + JOB_PAGE_SIZE)}
             >
-              {listJobs.isFetchingNextPage
-                ? '공고를 불러오는 중…'
-                : `공고 더 보기 (${jobRows.length}/${jobTotal})`}
+              공고 더 보기 ({jobRows.length}/{jobTotal})
             </button>
           )}
         </>

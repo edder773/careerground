@@ -61,17 +61,13 @@ describe('initial workspace bootstrap', () => {
 
   it('hydrates the first job page and filters from one job bootstrap request', async () => {
     window.history.replaceState({}, '', '/jobs?companySize=STARTUP&q=backend');
-    const page = {
-      items: [
-        {
-          id: 'job-1',
-          title: 'Backend Engineer',
-          company: { name: 'CareerGround' },
-        },
-      ],
-      nextCursor: null,
-      total: 1,
-    };
+    const catalog = [
+      {
+        id: 'job-1',
+        title: 'Backend Engineer',
+        company: { name: 'CareerGround' },
+      },
+    ];
     const fetchMock = vi.fn((_input: RequestInfo | URL) =>
       response({
         user: {
@@ -84,7 +80,7 @@ describe('initial workspace bootstrap', () => {
         },
         unreadCount: 2,
         categories: ['백엔드'],
-        data: page,
+        data: catalog,
       }),
     );
     vi.stubGlobal('fetch', fetchMock);
@@ -101,13 +97,10 @@ describe('initial workspace bootstrap', () => {
     expect(await screen.findByText('채용 멤버')).toBeInTheDocument();
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const url = String(fetchMock.mock.calls[0]?.[0]);
-    expect(url).toContain('/jobs/bootstrap?');
-    expect(url).toContain('companySize=STARTUP');
-    expect(url).toContain('q=backend');
+    expect(url).toContain('/jobs/bootstrap?catalog=true');
+    expect(url).not.toContain('companySize=STARTUP');
+    expect(url).not.toContain('q=backend');
     expect(client.getQueryData(['jobs', 'categories'])).toEqual(['백엔드']);
-    expect(client.getQueryData(['jobs', 'list', 'STARTUP', '', 'backend', false, 'new'])).toEqual({
-      pages: [page],
-      pageParams: [null],
-    });
+    expect(client.getQueryData(['jobs', 'catalog'])).toEqual(catalog);
   });
 });

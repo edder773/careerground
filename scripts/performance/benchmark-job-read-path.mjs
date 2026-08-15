@@ -1,4 +1,4 @@
-/* global Request, console, process, setTimeout */
+/* global Request, TextEncoder, console, process, setTimeout */
 import { performance } from 'node:perf_hooks';
 import { handleD1Api } from '../../deployment/sites/d1-api.ts';
 import { LocalD1 } from '../../deployment/sites/local-d1.ts';
@@ -23,18 +23,21 @@ class MeasuredStatement {
 
   async first() {
     this.metrics.dispatches += 1;
+    this.metrics.statements += 1;
     await delay(artificialDispatchLatencyMs);
     return this.inner.first();
   }
 
   async all() {
     this.metrics.dispatches += 1;
+    this.metrics.statements += 1;
     await delay(artificialDispatchLatencyMs);
     return this.inner.all();
   }
 
   async run() {
     this.metrics.dispatches += 1;
+    this.metrics.statements += 1;
     await delay(artificialDispatchLatencyMs);
     return this.inner.run();
   }
@@ -43,7 +46,7 @@ class MeasuredStatement {
 class MeasuredD1 {
   constructor(inner) {
     this.inner = inner;
-    this.metrics = { dispatches: 0 };
+    this.metrics = { dispatches: 0, statements: 0 };
   }
 
   prepare(sql) {
@@ -52,12 +55,14 @@ class MeasuredD1 {
 
   async batch(statements) {
     this.metrics.dispatches += 1;
+    this.metrics.statements += statements.length;
     await delay(artificialDispatchLatencyMs);
     return this.inner.batch(statements.map((statement) => statement.inner));
   }
 
   reset() {
     this.metrics.dispatches = 0;
+    this.metrics.statements = 0;
   }
 }
 
@@ -102,8 +107,23 @@ for (let attempt = 0; attempt < sampleCount; attempt += 1) {
   samples.push({
     durationMs: performance.now() - started,
     dispatches: measured.metrics.dispatches,
+    statements: measured.metrics.statements,
     itemCount: page.items.length,
     total: page.total,
+  });
+}
+
+const catalogSamples = [];
+for (let attempt = 0; attempt < sampleCount; attempt += 1) {
+  measured.reset();
+  const started = performance.now();
+  const payload = await request('/jobs/bootstrap?catalog=true');
+  catalogSamples.push({
+    durationMs: performance.now() - started,
+    dispatches: measured.metrics.dispatches,
+    statements: measured.metrics.statements,
+    itemCount: payload.data.length,
+    responseBytes: new TextEncoder().encode(JSON.stringify(payload)).byteLength,
   });
 }
 
@@ -132,8 +152,27 @@ console.log(
         ).toFixed(2),
       ),
       maxD1Dispatches: Math.max(...samples.map((sample) => sample.dispatches)),
+      maxD1Statements: Math.max(...samples.map((sample) => sample.statements)),
       itemCount: samples[0].itemCount,
       total: samples[0].total,
+      catalog: {
+        p50Ms: Number(
+          percentile(
+            catalogSamples.map((sample) => sample.durationMs),
+            0.5,
+          ).toFixed(2),
+        ),
+        p95Ms: Number(
+          percentile(
+            catalogSamples.map((sample) => sample.durationMs),
+            0.95,
+          ).toFixed(2),
+        ),
+        maxD1Dispatches: Math.max(...catalogSamples.map((sample) => sample.dispatches)),
+        maxD1Statements: Math.max(...catalogSamples.map((sample) => sample.statements)),
+        itemCount: catalogSamples[0].itemCount,
+        responseBytes: catalogSamples[0].responseBytes,
+      },
     },
     null,
     2,

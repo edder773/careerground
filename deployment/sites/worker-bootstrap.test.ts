@@ -52,7 +52,7 @@ describe('Sites worker bootstrap fast path', () => {
       user: { displayName: 'Phase Two' },
       home: { collections: [], dailyChallenges: expect.any(Array) },
     });
-    expect(db.getQueryCount()).toBe(11);
+    expect(db.getQueryCount()).toBe(5);
     expect(
       db.preparedSql.some((sql) => /sqlite_schema|pragma_table_info|pragma_index_list/i.test(sql)),
     ).toBe(false);

@@ -20,29 +20,9 @@ type BootstrapPayload = {
 };
 
 const initialJobsBootstrap = () => {
-  const current = new URLSearchParams(window.location.search);
-  const companySizes = current.getAll('companySize');
-  const categories = current.getAll('category');
-  const requestedSort = current.get('sort');
-  const sort = requestedSort === 'deadline' || requestedSort === 'company' ? requestedSort : 'new';
-  const search = current.get('q') || '';
-  const savedOnly = current.get('saved') === '1';
-  const request = new URLSearchParams({ sort, page: 'cursor', limit: '40' });
-  companySizes.forEach((value) => request.append('companySize', value));
-  categories.forEach((value) => request.append('category', value));
-  if (search) request.set('q', search);
-  if (savedOnly) request.set('saved', '1');
   return {
-    path: `/jobs/bootstrap?${request.toString()}`,
-    queryKey: [
-      'jobs',
-      'list',
-      companySizes.join('|'),
-      categories.join('|'),
-      search,
-      savedOnly,
-      sort,
-    ],
+    path: '/jobs/bootstrap?catalog=true',
+    queryKey: ['jobs', 'catalog'],
   };
 };
 
@@ -75,10 +55,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
       }
       if (jobsBootstrap && payload.categories && payload.data && !Array.isArray(payload.data)) {
         client.setQueryData(['jobs', 'categories'], payload.categories);
-        client.setQueryData(jobsBootstrap.queryKey, {
-          pages: [payload.data],
-          pageParams: [null],
-        });
+        client.setQueryData(jobsBootstrap.queryKey, payload.data.items);
+      } else if (jobsBootstrap && payload.categories && Array.isArray(payload.data)) {
+        client.setQueryData(['jobs', 'categories'], payload.categories);
+        client.setQueryData(jobsBootstrap.queryKey, payload.data);
       }
       return { user: payload.user };
     },

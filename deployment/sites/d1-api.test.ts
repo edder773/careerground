@@ -204,7 +204,7 @@ describe('Sites D1 API', () => {
         ],
       },
     });
-    expect(db.getQueryCount()).toBe(11);
+    expect(db.getQueryCount()).toBe(5);
     expect(db.preparedSql.some((sql) => /^\s*UPDATE users/i.test(sql))).toBe(false);
     expect(loaded.response.headers.get('server-timing')).toMatch(/^app;dur=\d+\.\d$/);
   });
@@ -445,7 +445,19 @@ describe('Sites D1 API', () => {
       categories: expect.arrayContaining(['백엔드']),
       data: { items: expect.any(Array), total: 119 },
     });
-    expect(db.getQueryCount()).toBe(7);
+    expect(db.getQueryCount()).toBe(5);
+    expect(db.getBatchCount()).toBe(1);
+
+    db.resetQueryCount();
+    db.resetBatchCount();
+    const fullCatalog = await call('/api/v1/jobs/bootstrap?catalog=true', {}, memberHeaders);
+    expect(fullCatalog.response.status).toBe(200);
+    expect(fullCatalog.body).toMatchObject({
+      categories: expect.arrayContaining(['백엔드', '프론트엔드']),
+      data: expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]),
+    });
+    expect(fullCatalog.body.data as unknown[]).toHaveLength(119);
+    expect(db.getQueryCount()).toBe(3);
     expect(db.getBatchCount()).toBe(1);
   });
 
@@ -462,6 +474,26 @@ describe('Sites D1 API', () => {
     );
     expect(bootstrap.response.status).toBe(200);
     expect(bootstrap.body).toMatchObject({ unreadCount: 1, data: { total: 119 } });
+  });
+
+  it('serves the high-traffic read routes in one D1 dispatch each', async () => {
+    await call('/api/v1/auth/me', {}, memberHeaders);
+    const cases = [
+      ['/api/v1/coding/problems?track=ALGORITHM&page=cursor&limit=25', 3],
+      ['/api/v1/learning', 3],
+      ['/api/v1/learning/due', 3],
+      ['/api/v1/collections', 3],
+      ['/api/v1/collections/trash', 3],
+    ] as const;
+
+    for (const [path, queryCount] of cases) {
+      db.resetQueryCount();
+      db.resetBatchCount();
+      const result = await call(path, {}, memberHeaders);
+      expect(result.response.status, path).toBe(200);
+      expect(db.getQueryCount(), path).toBe(queryCount);
+      expect(db.getBatchCount(), path).toBe(1);
+    }
   });
 
   it('returns stable cursor pages and totals for large shared catalogs', async () => {
@@ -579,8 +611,8 @@ describe('Sites D1 API', () => {
         problem: expect.objectContaining({ track: 'SQL' }),
       }),
     ]);
-    expect(db.getQueryCount()).toBe(4);
-    expect(db.getBatchCount()).toBe(2);
+    expect(db.getQueryCount()).toBe(3);
+    expect(db.getBatchCount()).toBe(1);
     expect(db.preparedSql.filter((sql) => sql.includes('FROM daily_challenges dc'))).toHaveLength(
       1,
     );
@@ -953,11 +985,22 @@ describe('Sites D1 API', () => {
       )
       .bind(new Date(Date.now() - 86_400_000).toISOString())
       .run();
+    await db
+      .prepare(
+        `INSERT INTO request_rate_limits (user_id, route_key, window_start, count, updated_at)
+         VALUES (?, 'stale-read', ?, 1, ?)`,
+      )
+      .bind(user!.id, Math.floor(Date.now() / 60_000) - 10, timestamp)
+      .run();
 
     const result = await runScheduledMaintenance({ DB: db });
     expect(result).toMatchObject({ acquired: true });
     expect(result.expiredJobs).toBeGreaterThan(0);
     expect(result.notifications).toBe(1);
+    const staleRateLimits = await db
+      .prepare("SELECT COUNT(*) AS count FROM request_rate_limits WHERE route_key = 'stale-read'")
+      .first<{ count: number }>();
+    expect(staleRateLimits?.count).toBe(0);
 
     await db
       .prepare(
@@ -1010,7 +1053,7 @@ describe('Sites D1 API', () => {
     );
   });
 
-  it('loads the learning summary library with two bounded queries', async () => {
+  it('loads the learning summary library with one bounded query', async () => {
     db.resetPreparedSql();
     const learning = await call('/api/v1/learning');
     const learningQueries = db.preparedSql.filter((sql) =>
@@ -1018,7 +1061,7 @@ describe('Sites D1 API', () => {
     );
 
     expect(learning.response.status).toBe(200);
-    expect(learningQueries).toHaveLength(2);
+    expect(learningQueries).toHaveLength(1);
   });
 
   it('publishes all reconstructed PDF learning sources to every signed-in member', async () => {
