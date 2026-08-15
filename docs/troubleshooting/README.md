@@ -29,6 +29,7 @@ generatedByAI: false
 | 08-14 | [최신 232개 전수 감사 재조치](./2026-08-14-latest-full-audit-remediation.md)                   | #25–#28        | P0 데이터 안전, schema canary, 102 tests |
 | 08-15 | [채용공고 D1 왕복과 초기 워터폴 제거](./2026-08-15-jobs-d1-roundtrip-and-loading-waterfall.md) | 운영 성능 개선 | D1 dispatch 4→1, p50 74.57% 감소         |
 | 08-15 | [전체 조회 fast batch와 채용 catalog 전환](./2026-08-15-read-path-fast-catalog.md)             | 운영 성능 개선 | 주요 조회 1 batch, 채용 조작 read 0회    |
+| 08-15 | [작업대·학습·설정 UI 위계와 컨트롤 정리](./2026-08-15-ui-hierarchy-and-control-polish.md)      | 운영 UI 개선   | 링크 카드·복습 행·설정 상태 분리         |
 
 Dependabot PR #4는 pnpm 11/Node 24를 지원하는 `pnpm/action-setup@6` 갱신이며 별도 장애가 없어 Sites runtime 문서의 도구 체인 맥락에 포함했다. PR #3 이전의 닫힌 #1/#2는 구현이 병합되지 않았으므로 운영 변경 기록에 포함하지 않았다.
 

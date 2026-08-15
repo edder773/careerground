@@ -1,0 +1,70 @@
+{
+  "schema": "careerground-ui-polish/v1",
+  "generatedAt": "2026-08-15T18:35:32.5930722+09:00",
+  "scope": "workspace summary, learning due queue, job save actions, and settings presentation",
+  "baseline": [
+    {
+      "surface": "workspace summary",
+      "finding": "Three summary elements and three virtual-folder elements were links, while their primary card rules targeted article elements."
+    },
+    {
+      "surface": "learning due queue",
+      "finding": "The queue had a generic grid rule but no dedicated button-row, title wrapping, source label, or action layout."
+    },
+    {
+      "surface": "settings",
+      "finding": "Read-only profile values and notification preferences were represented as disabled form controls."
+    },
+    {
+      "surface": "job actions",
+      "finding": "The compact action rail used a 34px control height and an 88px minimum width."
+    }
+  ],
+  "structuralComparison": [
+    { "metric": "styled workspace summary link cards", "before": 0, "after": 3 },
+    { "metric": "styled virtual-folder link cards", "before": 0, "after": 3 },
+    { "metric": "read-only profile form controls", "before": 5, "after": 0 },
+    { "metric": "job action control minimum height px", "before": 34, "after": 40 },
+    { "metric": "job action rail width px", "before": 88, "after": 132 }
+  ],
+  "responsiveContracts": {
+    "desktop1440x900": [
+      "Workspace summary uses one feature column and three bounded summary columns.",
+      "Settings uses a two-column profile and side-stack layout.",
+      "Job actions use a consistent 132px rail with 40px minimum controls.",
+      "Learning due items render as separate full-width action rows."
+    ],
+    "mobile375x812": [
+      "Workspace feature spans the full first row and three summaries remain in a bounded three-column row.",
+      "Settings and profile label/value pairs reflow to one column.",
+      "Virtual folders and job actions reflow to one column.",
+      "Learning due action rows stack title and action without joining adjacent titles."
+    ],
+    "verification": "scripts/troubleshooting/ui-responsive-contract.test.ts"
+  },
+  "behaviorRegression": [
+    "Workspace summary and virtual-folder links remain navigable.",
+    "Each due review is a separate button and opens its learning unit.",
+    "Settings starts as semantic read-only content, enters an explicit edit state, saves changes, and returns to read-only content.",
+    "Folder save behavior and job bookmark behavior are unchanged."
+  ],
+  "validation": {
+    "lint": "pass",
+    "formatCheck": "pass",
+    "webTypecheck": "pass",
+    "webTests": { "passed": 19, "failed": 0 },
+    "responsiveContractTests": { "passed": 2, "failed": 0 },
+    "sitesBuild": {
+      "status": "pass",
+      "globalCssRawBytes": 108740,
+      "globalCssGzipBytes": 22770,
+      "settingsPageRawBytes": 7530,
+      "settingsPageGzipBytes": 2600
+    }
+  },
+  "limitations": [
+    "No subjective visual-improvement percentage is claimed.",
+    "The responsive evidence is a deterministic source and behavior contract, not a newly captured browser screenshot.",
+    "User-supplied screenshots were used only as the task baseline and were not copied into repository evidence because they contained personal information."
+  ]
+}

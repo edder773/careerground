@@ -100,6 +100,8 @@ describe('folder workspace', () => {
     expect(screen.getByText('오늘의 Lv. 2')).toBeInTheDocument();
     expect(screen.getByText('오늘의 SQL')).toBeInTheDocument();
     expect(screen.getByText('SQL · Lv. 3')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /2.*오늘 복습/ })).toHaveClass('today-summary-link');
+    expect(screen.getByRole('link', { name: /관심 공고.*지원 후보 모음/ })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /새 폴더/ }));
     await user.type(screen.getByRole('textbox', { name: '폴더 이름' }), '코테 모음');
     await user.click(screen.getByRole('button', { name: '만들기' }));

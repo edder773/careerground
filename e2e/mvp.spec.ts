@@ -232,16 +232,17 @@ test.describe('CareerGround MVP vertical slices', () => {
   }) => {
     await page.getByRole('link', { name: '설정' }).first().click();
     await expect(page.getByRole('heading', { name: '설정' })).toBeVisible();
-    const displayName = page.getByLabel('표시 이름');
-    await expect(displayName).toBeDisabled();
+    await expect(page.locator('.settings-profile-summary')).toBeVisible();
+    await expect(page.getByLabel('표시 이름')).toHaveCount(0);
     await expect(page.getByRole('button', { name: '변경', exact: true })).toBeVisible();
     await expect(page.getByText(/데이터 JSON 내보내기|데이터 삭제 요청/)).toHaveCount(0);
     await expect(page.getByRole('checkbox', { name: /랭킹/ })).toHaveCount(0);
     await page.getByRole('button', { name: '변경', exact: true }).click();
+    const displayName = page.getByLabel('표시 이름');
     await expect(displayName).toBeEnabled();
     await expect(page.getByRole('button', { name: '변경 저장' })).toBeVisible();
     await page.getByRole('button', { name: '취소' }).click();
-    await expect(displayName).toBeDisabled();
+    await expect(displayName).toHaveCount(0);
   });
 
   test('searches across the workspace and marks notifications read', async ({ page }) => {

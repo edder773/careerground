@@ -88,7 +88,7 @@ test('captures core domain screens', async ({ page }) => {
       await filterDialog.getByRole('button', { name: '필터 닫기' }).click();
     }
     if (screen.name === 'settings') {
-      await expect(page.getByLabel('표시 이름')).toBeDisabled();
+      await expect(page.getByLabel('표시 이름')).toHaveCount(0);
       await expect(page.getByRole('button', { name: '변경', exact: true })).toBeVisible();
     }
     await page.screenshot({
@@ -158,7 +158,7 @@ test('captures core domain screens', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto('/settings');
   await expect(page.getByRole('button', { name: '변경', exact: true })).toBeVisible();
-  await expect(page.getByLabel('표시 이름')).toBeDisabled();
+  await expect(page.getByLabel('표시 이름')).toHaveCount(0);
   await page.screenshot({ path: 'test-results/visual/settings-mobile-375.png', fullPage: false });
 
   await page.goto('/jobs');

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Dialog from '@radix-ui/react-dialog';
 import {
+  ArrowRight,
   BookOpen,
   Brain,
   CheckCircle2,
@@ -407,8 +408,13 @@ export function LearningPage() {
                   setSearchParams(next, { replace: true });
                 }}
               >
-                <strong>{item.title}</strong>
-                <span>{item.sourceTitle}</span>
+                <span className="learning-due-copy">
+                  <small>{item.sourceTitle}</small>
+                  <strong>{item.title}</strong>
+                </span>
+                <span className="learning-due-action">
+                  복습하기 <ArrowRight aria-hidden="true" />
+                </span>
               </button>
             ))}
           </div>
