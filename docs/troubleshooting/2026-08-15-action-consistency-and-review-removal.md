@@ -65,4 +65,15 @@ normal`, `overflow-wrap: anywhere`로 제한 없이 높이가 늘어나게 했�
 5. D1 dashboard SQL에 `learning_progress` count가, scheduler에 `LEARNING_REVIEW` insert가 다시
    추가되지 않았는지 확인한다.
 
+## 배포 중 확인한 마이그레이션 패키지 경계
+
+첫 배포 아카이브는 저장소의 전체 `drizzle` 디렉터리를 포함해, 운영 D1에 이미 존재하는
+`job_source_snapshot_items`를 과거 마이그레이션이 다시 만들려다 앱 게시 전에 중단됐다. 운영
+`app_schema_migrations`를 읽기 전용으로 확인한 결과 0016~0018 적용 기록과 기존 테이블은 그대로
+유지돼 데이터 손상은 없었다.
+
+이 저장소는 `deployment/sites/prepare-package-stage.ts`가 운영 전환 이후 필요한 migration 집합을
+별도 staging으로 준비한다. 따라서 공식 Sites 패키징 도우미에는 저장소 root가 아니라 이 staging을
+입력해야 한다. 재패키징 시 배포 추적 대상인 0017·0018만 포함되는 것을 archive 목록으로 확인했다.
+
 정량 근거와 검증 명령 결과는 `docs/evidence/ui-action-review-removal-2026-08-15.json`에 있다.

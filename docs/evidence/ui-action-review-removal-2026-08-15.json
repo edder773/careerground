@@ -95,6 +95,11 @@
       "codingProblemsCursorP95Ms": 10.46,
       "notificationsP95Ms": 7.04,
       "searchP95Ms": 140.45
+    },
+    "deploymentPackaging": {
+      "initialAttempt": "failed before application publish because an archive containing historical migrations tried to recreate an existing D1 table",
+      "databaseVerification": "app_schema_migrations contains 0016, 0017, and 0018 and the existing application tables remained available",
+      "remediation": "repackage the repository-provided Sites stage, which contains only the deployment-tracked 0017 and 0018 migration files"
     }
   },
   "dataHandling": {
