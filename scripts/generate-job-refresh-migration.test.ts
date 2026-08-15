@@ -7,12 +7,13 @@ import {
 } from './generate-job-refresh-migration.mjs';
 
 async function fixtures() {
-  const [activeSource, uncertainSource, excludedSource] = await Promise.all([
+  const [activeSource, uncertainSource, excludedSource, auditSource] = await Promise.all([
     readFile(catalogPaths.active, 'utf8'),
     readFile(catalogPaths.uncertain, 'utf8'),
     readFile(catalogPaths.excluded, 'utf8'),
+    readFile(catalogPaths.audit, 'utf8'),
   ]);
-  return { activeSource, uncertainSource, excludedSource };
+  return { activeSource, uncertainSource, excludedSource, auditSource };
 }
 
 describe('job catalog replacement migration', () => {
@@ -20,15 +21,15 @@ describe('job catalog replacement migration', () => {
     const result = generateReplacementSql(await fixtures());
 
     expect(result.counts).toEqual({
-      active: 13,
-      deadlineUnknown: 3,
-      needsReview: 18,
-      excluded: 30,
-      stored: 34,
-      visible: 16,
+      active: 51,
+      deadlineUnknown: 0,
+      needsReview: 0,
+      excluded: 19,
+      stored: 51,
+      visible: 51,
     });
-    expect(result.overlapUrls).toHaveLength(1);
-    expect(result.sql.match(/INSERT INTO jobs\n/g)).toHaveLength(34);
+    expect(result.overlapUrls).toHaveLength(0);
+    expect(result.sql.match(/INSERT INTO jobs\n/g)).toHaveLength(51);
     expect(result.sql).toContain("DELETE FROM collection_items WHERE item_type = 'JOB_POSTING'");
     expect(result.sql).toContain("DELETE FROM notifications WHERE type = 'JOB_DEADLINE'");
     expect(result.sql).toContain('DELETE FROM saved_jobs;');
@@ -58,6 +59,7 @@ describe('job catalog replacement migration', () => {
       activeSource: JSON.stringify(JSON.parse(sources.activeSource)),
       uncertainSource: JSON.stringify(JSON.parse(sources.uncertainSource)),
       excludedSource: JSON.stringify(JSON.parse(sources.excludedSource)),
+      auditSource: JSON.stringify(JSON.parse(sources.auditSource)),
     });
 
     expect(compact.checksum).toBe(original.checksum);
@@ -72,5 +74,15 @@ describe('job catalog replacement migration', () => {
     expect(() => validateCatalogs(active, JSON.parse(sources.uncertainSource), excluded)).toThrow(
       /NEEDS_REVIEW/,
     );
+  });
+
+  it('rejects a bundle when the audit counts do not match its records', async () => {
+    const sources = await fixtures();
+    const audit = JSON.parse(sources.auditSource);
+    audit.counts.activeItems -= 1;
+
+    expect(() =>
+      generateReplacementSql({ ...sources, auditSource: JSON.stringify(audit) }),
+    ).toThrow(/audit active/);
   });
 });

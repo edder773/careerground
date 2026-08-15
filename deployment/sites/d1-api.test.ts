@@ -364,8 +364,8 @@ describe('Sites D1 API', () => {
       )
       .first<{ count: number }>();
 
-    expect(jobCount?.count).toBe(34);
-    expect(currentJobCount?.count).toBe(34);
+    expect(jobCount?.count).toBe(51);
+    expect(currentJobCount?.count).toBe(51);
     expect(expiredJobCount?.count).toBe(0);
     expect(problemCount?.count).toBe(427);
     expect(sqlProblemCount?.count).toBe(62);
@@ -373,12 +373,12 @@ describe('Sites D1 API', () => {
 
     const jobs = await call('/api/v1/jobs?sort=new');
     expect(jobs.response.status).toBe(200);
-    expect(jobs.body).toHaveLength(16);
+    expect(jobs.body).toHaveLength(51);
     expect(jobs.body).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          title: 'AI Engineer',
-          company: expect.objectContaining({ name: '라피치' }),
+          title: '2026년 개발직 신입 및 경력사원 채용',
+          company: expect.objectContaining({ name: '㈜퓨전소프트' }),
         }),
       ]),
     );
@@ -420,7 +420,7 @@ describe('Sites D1 API', () => {
     db.resetBatchCount();
     const catalog = await call('/api/v1/jobs?sort=new&page=cursor&limit=40', {}, memberHeaders);
     expect(catalog.response.status).toBe(200);
-    expect(catalog.body).toMatchObject({ items: expect.any(Array), total: 16 });
+    expect(catalog.body).toMatchObject({ items: expect.any(Array), total: 51 });
     expect(db.getQueryCount()).toBe(4);
     expect(db.getBatchCount()).toBe(1);
     expect(
@@ -443,7 +443,7 @@ describe('Sites D1 API', () => {
       user: { email: 'member@example.test' },
       unreadCount: expect.any(Number),
       categories: expect.arrayContaining(['AI_ML']),
-      data: { items: expect.any(Array), total: 16 },
+      data: { items: expect.any(Array), total: 51 },
     });
     expect(db.getQueryCount()).toBe(5);
     expect(db.getBatchCount()).toBe(1);
@@ -456,7 +456,7 @@ describe('Sites D1 API', () => {
       categories: expect.arrayContaining(['AI_ML', 'WEB_DEVELOPMENT']),
       data: expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]),
     });
-    expect(fullCatalog.body.data as unknown[]).toHaveLength(16);
+    expect(fullCatalog.body.data as unknown[]).toHaveLength(51);
     expect(db.getQueryCount()).toBe(3);
     expect(db.getBatchCount()).toBe(1);
   });
@@ -473,7 +473,7 @@ describe('Sites D1 API', () => {
       newcomer,
     );
     expect(bootstrap.response.status).toBe(200);
-    expect(bootstrap.body).toMatchObject({ unreadCount: 1, data: { total: 16 } });
+    expect(bootstrap.body).toMatchObject({ unreadCount: 1, data: { total: 51 } });
   });
 
   it('serves the high-traffic read routes in one D1 dispatch each', async () => {
@@ -524,12 +524,12 @@ describe('Sites D1 API', () => {
       total: number;
     };
     expect(jobPage.items).toHaveLength(10);
-    expect(jobPage.total).toBe(16);
+    expect(jobPage.total).toBe(51);
     expect(jobPage.nextCursor).toBeTruthy();
     const nextJobs = await call(
       `/api/v1/jobs?sort=new&page=cursor&limit=10&cursor=${encodeURIComponent(jobPage.nextCursor)}`,
     );
-    expect((nextJobs.body as unknown as { items: unknown[] }).items).toHaveLength(6);
+    expect((nextJobs.body as unknown as { items: unknown[] }).items).toHaveLength(10);
     expect(
       (nextJobs.body as unknown as { items: Array<{ id: string }> }).items.map((item) => item.id),
     ).not.toContain(jobPage.items.at(-1)?.id);
@@ -641,7 +641,17 @@ describe('Sites D1 API', () => {
       '/api/v1/jobs?sort=deadline&deadlineFrom=2026-08-31T15%3A00%3A00.000Z&deadlineTo=2026-09-30T15%3A00%3A00.000Z',
     );
     expect(september.response.status).toBe(200);
-    expect(september.body).toHaveLength(0);
+    const septemberRows = september.body as unknown as Array<{ deadlineAt: string }>;
+    expect(septemberRows.length).toBeGreaterThan(0);
+    expect(
+      septemberRows.every((row) => {
+        const value = Date.parse(row.deadlineAt);
+        return (
+          value >= Date.parse('2026-08-31T15:00:00.000Z') &&
+          value < Date.parse('2026-09-30T15:00:00.000Z')
+        );
+      }),
+    ).toBe(true);
 
     const invalid = await call(
       '/api/v1/jobs?deadlineFrom=2026-09-30T15%3A00%3A00.000Z&deadlineTo=2026-08-31T15%3A00%3A00.000Z',

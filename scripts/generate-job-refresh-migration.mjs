@@ -5,13 +5,14 @@ import { argv, stdout } from 'node:process';
 import { fileURLToPath, URL } from 'node:url';
 
 export const catalogPaths = {
-  active: 'data/imports/job-refresh-2026-08-14/active.json',
-  uncertain: 'data/imports/job-refresh-2026-08-14/uncertain.json',
-  excluded: 'data/imports/job-refresh-2026-08-14/excluded.json',
-  migration: 'drizzle/0019_replace_job_catalog_20260814.sql',
+  active: 'data/imports/job-refresh-2026-08-14-v2/active.json',
+  uncertain: 'data/imports/job-refresh-2026-08-14-v2/uncertain.json',
+  excluded: 'data/imports/job-refresh-2026-08-14-v2/excluded.json',
+  audit: 'data/imports/job-refresh-2026-08-14-v2/audit.json',
+  migration: 'drizzle/0020_replace_job_catalog_20260814_verified.sql',
 };
 
-const expectedCounts = { active: 13, uncertain: 21, excluded: 30 };
+const expectedCounts = { active: 51, uncertain: 0, excluded: 19 };
 const statementBreak = '\n--> statement-breakpoint\n';
 const companySizes = new Set([
   'LARGE',
@@ -38,6 +39,10 @@ function quote(value) {
   if (typeof value === 'boolean') return value ? '1' : '0';
   if (typeof value === 'number') return String(value);
   return `'${String(value).replaceAll("'", "''")}'`;
+}
+
+function normalizeDate(value) {
+  return value ? new Date(value).toISOString() : value;
 }
 
 function assertString(value, field, { min = 0, max } = {}) {
@@ -238,13 +243,159 @@ export function validateCatalogs(active, uncertain, excluded) {
   };
 }
 
-export function generateReplacementSql({ activeSource, uncertainSource, excludedSource }) {
+function countBy(items, select) {
+  return Object.fromEntries(
+    [
+      ...items.reduce((counts, item) => {
+        const key = select(item);
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+        return counts;
+      }, new Map()),
+    ].sort(([left], [right]) => left.localeCompare(right)),
+  );
+}
+
+function assertCountMap(actual, expected, field) {
+  const normalize = (value) =>
+    Object.entries(value ?? {}).sort(([left], [right]) => left.localeCompare(right, 'en'));
+  requireCatalog(
+    JSON.stringify(normalize(actual)) === JSON.stringify(normalize(expected)),
+    `${field}가 실제 반영 대상 집계와 다릅니다.`,
+  );
+}
+
+export function validateAudit(audit, validation, active, excluded) {
+  requireCatalog(audit?.version === '1.0', 'audit 데이터 버전은 1.0이어야 합니다.');
+  requireCatalog(audit.asOfDate === '2026-08-14', 'audit.asOfDate가 교체 기준일과 다릅니다.');
+  requireCatalog(audit.timezone === 'Asia/Seoul', 'audit.timezone은 Asia/Seoul이어야 합니다.');
+  requireCatalog(
+    audit.completionStatus === 'PARTIAL_RETROSPECTIVE_WITH_USER_MANUAL_CONFIRMATION',
+    'audit.completionStatus가 승인된 수집 상태와 다릅니다.',
+  );
+  assertDate(audit.collectionStartedAt, 'audit.collectionStartedAt');
+  assertDate(audit.collectionFinishedAt, 'audit.collectionFinishedAt');
+  assertDate(audit.secondPassVerificationFinishedAt, 'audit.secondPassVerificationFinishedAt');
+
+  requireCatalog(
+    audit.counts?.activeItems === validation.counts.active,
+    'audit active 집계가 다릅니다.',
+  );
+  requireCatalog(
+    audit.counts?.deadlineUnknownItems === validation.counts.deadlineUnknown,
+    'audit deadline-unknown 집계가 다릅니다.',
+  );
+  requireCatalog(
+    audit.counts?.needsReviewItems === validation.counts.needsReview,
+    'audit needs-review 집계가 다릅니다.',
+  );
+  requireCatalog(
+    audit.counts?.totalCandidates === validation.counts.stored + validation.counts.excluded,
+    'audit 전체 후보 집계가 다릅니다.',
+  );
+
+  const excludedCounts = countBy(excluded.items, (item) => item.reasonCode);
+  requireCatalog(
+    audit.counts?.expiredItems === (excludedCounts.EXPIRED ?? 0),
+    'audit 만료 집계가 다릅니다.',
+  );
+  requireCatalog(
+    audit.counts?.careerOnlyExcluded === (excludedCounts.CAREER_ONLY ?? 0),
+    'audit 경력직 제외 집계가 다릅니다.',
+  );
+  requireCatalog(
+    audit.counts?.nonItExcluded === (excludedCounts.NON_IT ?? 0),
+    'audit 비IT 제외 집계가 다릅니다.',
+  );
+  requireCatalog(
+    audit.counts?.duplicateItems === (excludedCounts.DUPLICATE ?? 0),
+    'audit 중복 제외 집계가 다릅니다.',
+  );
+
+  assertCountMap(
+    countBy(active.items, (item) => item.sourceName),
+    audit.sourceCounts,
+    'audit.sourceCounts',
+  );
+  assertCountMap(
+    countBy(active.items, (item) => item.category),
+    audit.activeCategoryCounts,
+    'audit.activeCategoryCounts',
+  );
+  assertCountMap(
+    countBy(active.items, (item) => item.careerScope),
+    audit.activeCareerScopeCounts,
+    'audit.activeCareerScopeCounts',
+  );
+  assertCountMap(
+    countBy(active.items, (item) => item.employmentType),
+    audit.activeEmploymentTypeCounts,
+    'audit.activeEmploymentTypeCounts',
+  );
+
+  const requiredValidationFlags = [
+    'jsonParseable',
+    'sourceCountMatches',
+    'manualOverrideAuditTrailComplete',
+  ];
+  requireCatalog(
+    requiredValidationFlags.every((field) => audit.validation?.[field] === true),
+    'audit 필수 검증 플래그가 완료되지 않았습니다.',
+  );
+  const zeroValidationFields = [
+    'duplicateCanonicalUrls',
+    'duplicateCrossSiteFingerprints',
+    'expiredItemsInActiveJson',
+    'careerOnlyItemsInActiveJson',
+    'securityOrQualityItemsInActiveJson',
+    'itemsWithoutSecondPassVerification',
+    'itemsWithCopiedOldVerificationTime',
+    'rollingWithoutExplicitEvidence',
+    'activeWithoutApplicationEvidence',
+  ];
+  requireCatalog(
+    zeroValidationFields.every((field) => audit.validation?.[field] === 0),
+    'audit 무결성 검증에 미해결 항목이 있습니다.',
+  );
+
+  requireCatalog(
+    audit.manualReviewOverride?.applied === true,
+    '수동 확인 이력이 적용되지 않았습니다.',
+  );
+  requireCatalog(
+    audit.manualReviewOverride?.decision === 'ALL_NEEDS_REVIEW_RECLASSIFIED_TO_ACTIVE',
+    '수동 확인 결정이 예상 값과 다릅니다.',
+  );
+  const manualOverrideCount = audit.manualReviewOverride?.itemCount;
+  requireCatalog(manualOverrideCount === 28, '수동 확인 항목은 정확히 28건이어야 합니다.');
+  requireCatalog(
+    audit.validation?.userManualConfirmationOverrideCount === manualOverrideCount &&
+      audit.validation?.operationalActiveItemsAcceptedByUserManualReview === manualOverrideCount &&
+      Array.isArray(audit.manualReclassificationItems) &&
+      audit.manualReclassificationItems.length === manualOverrideCount,
+    '수동 확인 감사 이력의 건수가 일치하지 않습니다.',
+  );
+
+  return {
+    asOfDate: audit.asOfDate,
+    completionStatus: audit.completionStatus,
+    manualOverrideCount,
+  };
+}
+
+export function generateReplacementSql({
+  activeSource,
+  uncertainSource,
+  excludedSource,
+  auditSource,
+}) {
   const active = JSON.parse(activeSource);
   const uncertain = JSON.parse(uncertainSource);
   const excluded = JSON.parse(excludedSource);
+  const audit = JSON.parse(auditSource);
   const validation = validateCatalogs(active, uncertain, excluded);
-  const combinedChecksum = hash(JSON.stringify([active, uncertain, excluded]));
-  const appliedAt = new Date(excluded.generatedAt).toISOString();
+  const auditValidation = validateAudit(audit, validation, active, excluded);
+  const combinedChecksum = hash(JSON.stringify([active, uncertain, excluded, audit]));
+  const appliedAt = new Date(audit.secondPassVerificationFinishedAt).toISOString();
   const statements = [
     "DELETE FROM collection_items WHERE item_type = 'JOB_POSTING';",
     "DELETE FROM notifications WHERE type = 'JOB_DEADLINE';",
@@ -275,16 +426,16 @@ export function generateReplacementSql({ activeSource, uncertainSource, excluded
       item.region,
       item.remote,
       JSON.stringify(item.techStack),
-      item.publishedAt,
-      item.deadlineAt,
+      normalizeDate(item.publishedAt),
+      normalizeDate(item.deadlineAt),
       item.rolling,
       item.summary,
       item.status,
       jobFingerprint(item),
-      item.collectedAt,
-      item.lastVerifiedAt,
-      item.collectedAt,
-      item.lastVerifiedAt,
+      normalizeDate(item.collectedAt),
+      normalizeDate(item.lastVerifiedAt),
+      normalizeDate(item.collectedAt),
+      normalizeDate(item.lastVerifiedAt),
     ];
     statements.push(`INSERT INTO jobs
   (id, company_name, company_size, company_size_evidence, source_name, source_posting_id,
@@ -312,16 +463,19 @@ WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN');`,
   const result = {
     ...validation.counts,
     excludedOverlapUrls: validation.overlapUrls.length,
+    auditAsOfDate: auditValidation.asOfDate,
+    auditCompletionStatus: auditValidation.completionStatus,
+    manualOverrideCount: auditValidation.manualOverrideCount,
     policy: 'replace-all; active/deadline-unknown visible; needs-review hidden; excluded omitted',
   };
   statements.push(`INSERT INTO import_batches
   (id, kind, checksum, status, original_count, rejected_count, result, committed_at, created_at)
 VALUES
-  ('catalog-jobs-20260814', 'jobs', ${quote(combinedChecksum)}, 'COMMITTED',
+  ('catalog-jobs-20260814-v2', 'jobs', ${quote(combinedChecksum)}, 'COMMITTED',
    ${validation.counts.stored + validation.counts.excluded}, ${validation.counts.excluded},
    ${quote(JSON.stringify(result))}, ${quote(appliedAt)}, ${quote(appliedAt)});`);
   statements.push(`INSERT OR REPLACE INTO app_schema_migrations (version, checksum, applied_at)
-VALUES ('0019_replace_job_catalog_20260814', ${quote(`sha256:${combinedChecksum}`)}, ${quote(appliedAt)});`);
+VALUES ('0020_replace_job_catalog_20260814_verified', ${quote(`sha256:${combinedChecksum}`)}, ${quote(appliedAt)});`);
   statements.push('PRAGMA optimize;');
 
   return {
@@ -332,12 +486,18 @@ VALUES ('0019_replace_job_catalog_20260814', ${quote(`sha256:${combinedChecksum}
 }
 
 export async function generateJobReplacement(paths = catalogPaths) {
-  const [activeSource, uncertainSource, excludedSource] = await Promise.all([
+  const [activeSource, uncertainSource, excludedSource, auditSource] = await Promise.all([
     readFile(paths.active, 'utf8'),
     readFile(paths.uncertain, 'utf8'),
     readFile(paths.excluded, 'utf8'),
+    readFile(paths.audit, 'utf8'),
   ]);
-  const result = generateReplacementSql({ activeSource, uncertainSource, excludedSource });
+  const result = generateReplacementSql({
+    activeSource,
+    uncertainSource,
+    excludedSource,
+    auditSource,
+  });
   await writeFile(paths.migration, result.sql, 'utf8');
   return result;
 }

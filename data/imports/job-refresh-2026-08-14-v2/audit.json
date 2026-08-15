@@ -1,0 +1,1882 @@
+{
+  "version": "1.0",
+  "asOfDate": "2026-08-14",
+  "timezone": "Asia/Seoul",
+  "completionStatus": "PARTIAL_RETROSPECTIVE_WITH_USER_MANUAL_CONFIRMATION",
+  "asOfDateDirectlyObserved": false,
+  "collectionStartedAt": "2026-08-15T19:56:03+09:00",
+  "collectionFinishedAt": "2026-08-15T20:29:30+09:00",
+  "secondPassVerificationFinishedAt": "2026-08-15T22:47:05+09:00",
+  "secondPassVerificationBatches": [
+    {
+      "finishedAt": "2026-08-15T20:15:06+09:00",
+      "itemCount": 6,
+      "items": [
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49620106",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49620106"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49716794",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49716794"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49716823",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49716823"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49744417",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49744417"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49749703",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49749703"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49686653",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49686653"
+        }
+      ]
+    },
+    {
+      "finishedAt": "2026-08-15T20:15:13+09:00",
+      "itemCount": 6,
+      "items": [
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49705317",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49705317"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49757336",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49757336"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49649110",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49649110"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49730137",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49730137"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49658565",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49658565"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49761888",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49761888"
+        }
+      ]
+    },
+    {
+      "finishedAt": "2026-08-15T20:15:21+09:00",
+      "itemCount": 6,
+      "items": [
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49748610",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49748610"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49746362",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49746362"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49757173",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49757173"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49749780",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49749780"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49706105",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49706105"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49787297",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49787297"
+        }
+      ]
+    },
+    {
+      "finishedAt": "2026-08-15T20:15:26+09:00",
+      "itemCount": 5,
+      "items": [
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49781983",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49781983"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49576376",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49576376"
+        },
+        {
+          "sourceName": "NAVER LABS Careers",
+          "sourceId": "30005258",
+          "sourceUrl": "https://recruit.naverlabs.com/rcrt/view.do?annoId=30005258&lang=ko"
+        },
+        {
+          "sourceName": "Coupang Careers",
+          "sourceId": "8121392",
+          "sourceUrl": "https://www.coupang.jobs/en/jobs/8121392/신입채용-back-end-engineer-eats-ads-engineering/"
+        },
+        {
+          "sourceName": "Toss Careers",
+          "sourceId": "7816881003",
+          "sourceUrl": "https://toss.im/career/job-detail?job_id=7816881003"
+        }
+      ]
+    },
+    {
+      "finishedAt": "2026-08-15T22:47:05+09:00",
+      "itemCount": 28,
+      "verificationMethod": "USER_MANUAL_CONFIRMATION",
+      "items": [
+        {
+          "sourceName": "RocketPunch",
+          "sourceId": "159008",
+          "sourceUrl": "https://www.rocketpunch.com/jobs/159008"
+        },
+        {
+          "sourceName": "RocketPunch",
+          "sourceId": "158834",
+          "sourceUrl": "https://www.rocketpunch.com/jobs/158834"
+        },
+        {
+          "sourceName": "RocketPunch",
+          "sourceId": "159145",
+          "sourceUrl": "https://www.rocketpunch.com/jobs/159145"
+        },
+        {
+          "sourceName": "RocketPunch",
+          "sourceId": "159144",
+          "sourceUrl": "https://www.rocketpunch.com/jobs/159144"
+        },
+        {
+          "sourceName": "RocketPunch",
+          "sourceId": "156303",
+          "sourceUrl": "https://www.rocketpunch.com/jobs/156303"
+        },
+        {
+          "sourceName": "RocketPunch",
+          "sourceId": "156625",
+          "sourceUrl": "https://www.rocketpunch.com/jobs/156625"
+        },
+        {
+          "sourceName": "RocketPunch",
+          "sourceId": "158917",
+          "sourceUrl": "https://www.rocketpunch.com/jobs/158917"
+        },
+        {
+          "sourceName": "RocketPunch",
+          "sourceId": "157754",
+          "sourceUrl": "https://www.rocketpunch.com/jobs/157754"
+        },
+        {
+          "sourceName": "RocketPunch",
+          "sourceId": "156011",
+          "sourceUrl": "https://www.rocketpunch.com/jobs/156011"
+        },
+        {
+          "sourceName": "RocketPunch",
+          "sourceId": "156014",
+          "sourceUrl": "https://www.rocketpunch.com/jobs/156014"
+        },
+        {
+          "sourceName": "RocketPunch",
+          "sourceId": "156008",
+          "sourceUrl": "https://www.rocketpunch.com/jobs/156008"
+        },
+        {
+          "sourceName": "RocketPunch",
+          "sourceId": "156007",
+          "sourceUrl": "https://www.rocketpunch.com/jobs/156007"
+        },
+        {
+          "sourceName": "RocketPunch",
+          "sourceId": "158841",
+          "sourceUrl": "https://www.rocketpunch.com/jobs/158841"
+        },
+        {
+          "sourceName": "RocketPunch",
+          "sourceId": "156469",
+          "sourceUrl": "https://www.rocketpunch.com/jobs/156469"
+        },
+        {
+          "sourceName": "Dreamus Company Careers",
+          "sourceId": "227074",
+          "sourceUrl": "https://recruit.dreamuscompany.com/pages/careers_view.jsp?id=227074&jobName=All&title="
+        },
+        {
+          "sourceName": "Wanted",
+          "sourceId": "375795",
+          "sourceUrl": "https://www.wanted.co.kr/wd/375795"
+        },
+        {
+          "sourceName": "Wanted",
+          "sourceId": "356275",
+          "sourceUrl": "https://www.wanted.co.kr/wd/356275"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49763378",
+          "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/49763378"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49760249",
+          "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/49760249"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49758419",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49758419"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49631880",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49631880"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49588410",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49588410"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49379347",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49379347"
+        },
+        {
+          "sourceName": "JobKorea",
+          "sourceId": "49660820",
+          "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49660820"
+        },
+        {
+          "sourceName": "자소설닷컴",
+          "sourceId": "104762",
+          "sourceUrl": "https://jasoseol.com/recruit/104762"
+        },
+        {
+          "sourceName": "자소설닷컴",
+          "sourceId": "105543",
+          "sourceUrl": "https://jasoseol.com/recruit/105543"
+        },
+        {
+          "sourceName": "자소설닷컴",
+          "sourceId": "105547",
+          "sourceUrl": "https://jasoseol.com/recruit/105547"
+        },
+        {
+          "sourceName": "Superookie",
+          "sourceId": "6a7d25abaf923602db79ab82",
+          "sourceUrl": "https://www.superookie.com/jobs/6a7d25abaf923602db79ab82"
+        }
+      ]
+    }
+  ],
+  "counts": {
+    "totalCandidates": 70,
+    "activeItems": 51,
+    "deadlineUnknownItems": 0,
+    "needsReviewItems": 0,
+    "expiredItems": 8,
+    "removedItems": 0,
+    "careerOnlyExcluded": 7,
+    "securityExcluded": 0,
+    "qualityExcluded": 0,
+    "nonItExcluded": 1,
+    "talentPoolExcluded": 0,
+    "duplicateItems": 3
+  },
+  "sourceCounts": {
+    "Coupang Careers": 1,
+    "Dreamus Company Careers": 1,
+    "JobKorea": 27,
+    "NAVER LABS Careers": 1,
+    "RocketPunch": 14,
+    "Superookie": 1,
+    "Toss Careers": 1,
+    "Wanted": 2,
+    "자소설닷컴": 3
+  },
+  "activeCategoryCounts": {
+    "AI_ENGINEERING": 2,
+    "AI_ML": 1,
+    "BACKEND": 10,
+    "BACKEND_AND_AI": 1,
+    "BACKEND_AND_AI_DATA": 1,
+    "DATA_ANALYTICS": 1,
+    "DATA_ENGINEERING": 2,
+    "DEVOPS": 2,
+    "EMBEDDED_OR_CONTROL_SOFTWARE": 1,
+    "EMBEDDED_SOFTWARE": 1,
+    "FRONTEND": 7,
+    "FULLSTACK": 3,
+    "GAME_CLIENT": 1,
+    "IOS": 1,
+    "ML_ENGINEERING": 1,
+    "MULTI_IT_ROLE": 3,
+    "SOFTWARE_ENGINEERING": 7,
+    "SOLUTION_DEVELOPMENT": 1,
+    "WEB_DEVELOPMENT": 5
+  },
+  "activeCareerScopeCounts": {
+    "NEW_GRAD_ELIGIBLE": 32,
+    "NEW_GRAD_ONLY": 19
+  },
+  "activeEmploymentTypeCounts": {
+    "CONTRACT": 2,
+    "CONTRACT_OR_FREELANCE": 1,
+    "FULL_TIME": 26,
+    "FULL_TIME_OR_CONTRACT": 4,
+    "INTERN": 11,
+    "UNCONFIRMED": 7
+  },
+  "sources": [
+    {
+      "sourceName": "자소설닷컴",
+      "searchStartedAt": "2026-08-15T20:01:07+09:00",
+      "searchFinishedAt": "2026-08-15T20:01:21+09:00",
+      "searchKeywords": [
+        "신입 개발자",
+        "경력무관 IT",
+        "개발 인턴",
+        "백엔드",
+        "프론트엔드",
+        "AI",
+        "데이터 엔지니어",
+        "임베디드",
+        "클라우드"
+      ],
+      "categoryPagesChecked": [
+        "IT·개발",
+        "신입",
+        "경력무관",
+        "인턴"
+      ],
+      "pagesOrScrollBatchesChecked": 2,
+      "candidateCount": 4,
+      "detailPagesChecked": 4,
+      "verifiedActiveCount": 3,
+      "deadlineUnknownCount": 0,
+      "needsReviewCount": 0,
+      "expiredCount": 1,
+      "careerOnlyExcludedCount": 0,
+      "securityExcludedCount": 0,
+      "qualityExcludedCount": 0,
+      "nonItExcludedCount": 0,
+      "duplicateCount": 0,
+      "accessFailureCount": 0,
+      "exhaustionStatus": "PARTIAL",
+      "limitationReason": "공개 상세 및 검색 가능한 범위만 확인했으며 사이트 전체 페이지를 완전 소진하지 못함",
+      "manualUserConfirmedCount": 3
+    },
+    {
+      "sourceName": "사람인",
+      "searchStartedAt": "2026-08-15T20:01:07+09:00",
+      "searchFinishedAt": "2026-08-15T20:01:21+09:00",
+      "searchKeywords": [
+        "신입 개발자",
+        "경력무관 IT",
+        "개발 인턴",
+        "백엔드",
+        "프론트엔드",
+        "AI",
+        "데이터 엔지니어",
+        "임베디드",
+        "클라우드"
+      ],
+      "categoryPagesChecked": [
+        "IT·개발",
+        "신입",
+        "경력무관",
+        "인턴"
+      ],
+      "pagesOrScrollBatchesChecked": 1,
+      "candidateCount": 0,
+      "detailPagesChecked": 0,
+      "verifiedActiveCount": 0,
+      "deadlineUnknownCount": 0,
+      "needsReviewCount": 0,
+      "expiredCount": 0,
+      "careerOnlyExcludedCount": 0,
+      "securityExcludedCount": 0,
+      "qualityExcludedCount": 0,
+      "nonItExcludedCount": 0,
+      "duplicateCount": 0,
+      "accessFailureCount": 1,
+      "exhaustionStatus": "BLOCKED",
+      "limitationReason": "동적 렌더링과 접근 제한으로 공개 상세의 실제 지원 버튼을 검증할 수 있는 후보를 확보하지 못함"
+    },
+    {
+      "sourceName": "잡코리아",
+      "searchStartedAt": "2026-08-15T20:01:07+09:00",
+      "searchFinishedAt": "2026-08-15T20:14:51+09:00",
+      "searchKeywords": [
+        "신입 개발자",
+        "경력무관 IT",
+        "개발 인턴",
+        "백엔드",
+        "프론트엔드",
+        "AI",
+        "데이터 엔지니어",
+        "임베디드",
+        "클라우드"
+      ],
+      "categoryPagesChecked": [
+        "IT·개발",
+        "신입",
+        "경력무관",
+        "인턴"
+      ],
+      "pagesOrScrollBatchesChecked": 6,
+      "candidateCount": 42,
+      "detailPagesChecked": 42,
+      "verifiedActiveCount": 27,
+      "deadlineUnknownCount": 0,
+      "needsReviewCount": 0,
+      "expiredCount": 7,
+      "careerOnlyExcludedCount": 7,
+      "securityExcludedCount": 0,
+      "qualityExcludedCount": 0,
+      "nonItExcludedCount": 1,
+      "duplicateCount": 0,
+      "accessFailureCount": 1,
+      "exhaustionStatus": "PARTIAL",
+      "limitationReason": "모바일·데스크톱 공개 상세를 여러 차례 확인했으나 전체 검색 결과의 마지막 페이지까지 완전 소진한 조사는 아님",
+      "manualUserConfirmedCount": 7
+    },
+    {
+      "sourceName": "원티드",
+      "searchStartedAt": "2026-08-15T20:01:07+09:00",
+      "searchFinishedAt": "2026-08-15T20:01:21+09:00",
+      "searchKeywords": [
+        "신입 개발자",
+        "경력무관 IT",
+        "개발 인턴",
+        "백엔드",
+        "프론트엔드",
+        "AI",
+        "데이터 엔지니어",
+        "임베디드",
+        "클라우드"
+      ],
+      "categoryPagesChecked": [
+        "IT·개발",
+        "신입",
+        "경력무관",
+        "인턴"
+      ],
+      "pagesOrScrollBatchesChecked": 2,
+      "candidateCount": 2,
+      "detailPagesChecked": 2,
+      "verifiedActiveCount": 2,
+      "deadlineUnknownCount": 0,
+      "needsReviewCount": 0,
+      "expiredCount": 0,
+      "careerOnlyExcludedCount": 0,
+      "securityExcludedCount": 0,
+      "qualityExcludedCount": 0,
+      "nonItExcludedCount": 0,
+      "duplicateCount": 0,
+      "accessFailureCount": 1,
+      "exhaustionStatus": "PARTIAL",
+      "limitationReason": "일부 상세는 확인했으나 실제 지원 버튼 또는 공식 지원 페이지 상태를 검증하지 못함",
+      "manualUserConfirmedCount": 2
+    },
+    {
+      "sourceName": "점핏",
+      "searchStartedAt": "2026-08-15T20:01:26+09:00",
+      "searchFinishedAt": "2026-08-15T20:01:36+09:00",
+      "searchKeywords": [
+        "신입 개발자",
+        "경력무관 IT",
+        "개발 인턴",
+        "백엔드",
+        "프론트엔드",
+        "AI",
+        "데이터 엔지니어",
+        "임베디드",
+        "클라우드"
+      ],
+      "categoryPagesChecked": [
+        "IT·개발",
+        "신입",
+        "경력무관",
+        "인턴"
+      ],
+      "pagesOrScrollBatchesChecked": 1,
+      "candidateCount": 0,
+      "detailPagesChecked": 0,
+      "verifiedActiveCount": 0,
+      "deadlineUnknownCount": 0,
+      "needsReviewCount": 0,
+      "expiredCount": 0,
+      "careerOnlyExcludedCount": 0,
+      "securityExcludedCount": 0,
+      "qualityExcludedCount": 0,
+      "nonItExcludedCount": 0,
+      "duplicateCount": 0,
+      "accessFailureCount": 1,
+      "exhaustionStatus": "PARTIAL",
+      "limitationReason": "동적 목록과 상세 접근 제약으로 import 가능한 공개 후보를 확정하지 못함"
+    },
+    {
+      "sourceName": "인디스워크",
+      "searchStartedAt": "2026-08-15T20:01:26+09:00",
+      "searchFinishedAt": "2026-08-15T20:01:36+09:00",
+      "searchKeywords": [
+        "신입 개발자",
+        "경력무관 IT",
+        "개발 인턴",
+        "백엔드",
+        "프론트엔드",
+        "AI",
+        "데이터 엔지니어",
+        "임베디드",
+        "클라우드"
+      ],
+      "categoryPagesChecked": [
+        "IT·개발",
+        "신입",
+        "경력무관",
+        "인턴"
+      ],
+      "pagesOrScrollBatchesChecked": 2,
+      "candidateCount": 1,
+      "detailPagesChecked": 1,
+      "verifiedActiveCount": 0,
+      "deadlineUnknownCount": 0,
+      "needsReviewCount": 0,
+      "expiredCount": 0,
+      "careerOnlyExcludedCount": 0,
+      "securityExcludedCount": 0,
+      "qualityExcludedCount": 0,
+      "nonItExcludedCount": 0,
+      "duplicateCount": 1,
+      "accessFailureCount": 0,
+      "exhaustionStatus": "PARTIAL",
+      "limitationReason": "공개 글에서 후보를 확인했으나 전체 아카이브를 완전 소진하지 못함"
+    },
+    {
+      "sourceName": "링커리어",
+      "searchStartedAt": "2026-08-15T20:01:26+09:00",
+      "searchFinishedAt": "2026-08-15T20:01:36+09:00",
+      "searchKeywords": [
+        "신입 개발자",
+        "경력무관 IT",
+        "개발 인턴",
+        "백엔드",
+        "프론트엔드",
+        "AI",
+        "데이터 엔지니어",
+        "임베디드",
+        "클라우드"
+      ],
+      "categoryPagesChecked": [
+        "IT·개발",
+        "신입",
+        "경력무관",
+        "인턴"
+      ],
+      "pagesOrScrollBatchesChecked": 1,
+      "candidateCount": 0,
+      "detailPagesChecked": 0,
+      "verifiedActiveCount": 0,
+      "deadlineUnknownCount": 0,
+      "needsReviewCount": 0,
+      "expiredCount": 0,
+      "careerOnlyExcludedCount": 0,
+      "securityExcludedCount": 0,
+      "qualityExcludedCount": 0,
+      "nonItExcludedCount": 0,
+      "duplicateCount": 0,
+      "accessFailureCount": 1,
+      "exhaustionStatus": "PARTIAL",
+      "limitationReason": "로그인·동적 상세 제한으로 실제 지원 버튼 검증 가능한 후보를 확보하지 못함"
+    },
+    {
+      "sourceName": "캐치",
+      "searchStartedAt": "2026-08-15T20:01:26+09:00",
+      "searchFinishedAt": "2026-08-15T20:01:36+09:00",
+      "searchKeywords": [
+        "신입 개발자",
+        "경력무관 IT",
+        "개발 인턴",
+        "백엔드",
+        "프론트엔드",
+        "AI",
+        "데이터 엔지니어",
+        "임베디드",
+        "클라우드"
+      ],
+      "categoryPagesChecked": [
+        "IT·개발",
+        "신입",
+        "경력무관",
+        "인턴"
+      ],
+      "pagesOrScrollBatchesChecked": 1,
+      "candidateCount": 0,
+      "detailPagesChecked": 0,
+      "verifiedActiveCount": 0,
+      "deadlineUnknownCount": 0,
+      "needsReviewCount": 0,
+      "expiredCount": 0,
+      "careerOnlyExcludedCount": 0,
+      "securityExcludedCount": 0,
+      "qualityExcludedCount": 0,
+      "nonItExcludedCount": 0,
+      "duplicateCount": 0,
+      "accessFailureCount": 1,
+      "exhaustionStatus": "PARTIAL",
+      "limitationReason": "동적 렌더링과 상세 접근 제한으로 실제 지원 상태를 검증하지 못함"
+    },
+    {
+      "sourceName": "리멤버 커리어",
+      "searchStartedAt": "2026-08-15T20:01:41+09:00",
+      "searchFinishedAt": "2026-08-15T20:01:49+09:00",
+      "searchKeywords": [
+        "신입 개발자",
+        "경력무관 IT",
+        "개발 인턴",
+        "백엔드",
+        "프론트엔드",
+        "AI",
+        "데이터 엔지니어",
+        "임베디드",
+        "클라우드"
+      ],
+      "categoryPagesChecked": [
+        "IT·개발",
+        "신입",
+        "경력무관",
+        "인턴"
+      ],
+      "pagesOrScrollBatchesChecked": 1,
+      "candidateCount": 0,
+      "detailPagesChecked": 0,
+      "verifiedActiveCount": 0,
+      "deadlineUnknownCount": 0,
+      "needsReviewCount": 0,
+      "expiredCount": 0,
+      "careerOnlyExcludedCount": 0,
+      "securityExcludedCount": 0,
+      "qualityExcludedCount": 0,
+      "nonItExcludedCount": 0,
+      "duplicateCount": 0,
+      "accessFailureCount": 1,
+      "exhaustionStatus": "PARTIAL",
+      "limitationReason": "로그인 기반 상세 제한으로 실제 지원 상태를 검증하지 못함"
+    },
+    {
+      "sourceName": "로켓펀치",
+      "searchStartedAt": "2026-08-15T20:01:41+09:00",
+      "searchFinishedAt": "2026-08-15T20:01:49+09:00",
+      "searchKeywords": [
+        "신입 개발자",
+        "경력무관 IT",
+        "개발 인턴",
+        "백엔드",
+        "프론트엔드",
+        "AI",
+        "데이터 엔지니어",
+        "임베디드",
+        "클라우드"
+      ],
+      "categoryPagesChecked": [
+        "IT·개발",
+        "신입",
+        "경력무관",
+        "인턴"
+      ],
+      "pagesOrScrollBatchesChecked": 4,
+      "candidateCount": 14,
+      "detailPagesChecked": 14,
+      "verifiedActiveCount": 14,
+      "deadlineUnknownCount": 0,
+      "needsReviewCount": 0,
+      "expiredCount": 0,
+      "careerOnlyExcludedCount": 0,
+      "securityExcludedCount": 0,
+      "qualityExcludedCount": 0,
+      "nonItExcludedCount": 0,
+      "duplicateCount": 0,
+      "accessFailureCount": 0,
+      "exhaustionStatus": "PARTIAL",
+      "limitationReason": "현재 공개 상세는 확인했으나 게시·접수 시작일이 없어 2026-08-14 당시 존재 여부를 확정하지 못함",
+      "manualUserConfirmedCount": 14
+    },
+    {
+      "sourceName": "고용24",
+      "searchStartedAt": "2026-08-15T20:01:41+09:00",
+      "searchFinishedAt": "2026-08-15T20:01:49+09:00",
+      "searchKeywords": [
+        "신입 개발자",
+        "경력무관 IT",
+        "개발 인턴",
+        "백엔드",
+        "프론트엔드",
+        "AI",
+        "데이터 엔지니어",
+        "임베디드",
+        "클라우드"
+      ],
+      "categoryPagesChecked": [
+        "IT·개발",
+        "신입",
+        "경력무관",
+        "인턴"
+      ],
+      "pagesOrScrollBatchesChecked": 1,
+      "candidateCount": 0,
+      "detailPagesChecked": 0,
+      "verifiedActiveCount": 0,
+      "deadlineUnknownCount": 0,
+      "needsReviewCount": 0,
+      "expiredCount": 0,
+      "careerOnlyExcludedCount": 0,
+      "securityExcludedCount": 0,
+      "qualityExcludedCount": 0,
+      "nonItExcludedCount": 0,
+      "duplicateCount": 0,
+      "accessFailureCount": 1,
+      "exhaustionStatus": "BLOCKED",
+      "limitationReason": "검색·상세의 동적 구조로 현재 세션에서 개별 지원 버튼 상태를 검증하지 못함"
+    },
+    {
+      "sourceName": "LinkedIn Korea",
+      "searchStartedAt": "2026-08-15T20:01:41+09:00",
+      "searchFinishedAt": "2026-08-15T20:01:49+09:00",
+      "searchKeywords": [
+        "신입 개발자",
+        "경력무관 IT",
+        "개발 인턴",
+        "백엔드",
+        "프론트엔드",
+        "AI",
+        "데이터 엔지니어",
+        "임베디드",
+        "클라우드"
+      ],
+      "categoryPagesChecked": [
+        "IT·개발",
+        "신입",
+        "경력무관",
+        "인턴"
+      ],
+      "pagesOrScrollBatchesChecked": 1,
+      "candidateCount": 0,
+      "detailPagesChecked": 0,
+      "verifiedActiveCount": 0,
+      "deadlineUnknownCount": 0,
+      "needsReviewCount": 0,
+      "expiredCount": 0,
+      "careerOnlyExcludedCount": 0,
+      "securityExcludedCount": 0,
+      "qualityExcludedCount": 0,
+      "nonItExcludedCount": 0,
+      "duplicateCount": 0,
+      "accessFailureCount": 1,
+      "exhaustionStatus": "PARTIAL",
+      "limitationReason": "로그인 및 지역화된 동적 상세 제한으로 신입·지원 상태를 동시에 검증하지 못함"
+    },
+    {
+      "sourceName": "슈퍼루키",
+      "searchStartedAt": "2026-08-15T20:01:51+09:00",
+      "searchFinishedAt": "2026-08-15T20:02:04+09:00",
+      "searchKeywords": [
+        "신입 개발자",
+        "경력무관 IT",
+        "개발 인턴",
+        "백엔드",
+        "프론트엔드",
+        "AI",
+        "데이터 엔지니어",
+        "임베디드",
+        "클라우드"
+      ],
+      "categoryPagesChecked": [
+        "IT·개발",
+        "신입",
+        "경력무관",
+        "인턴"
+      ],
+      "pagesOrScrollBatchesChecked": 3,
+      "candidateCount": 3,
+      "detailPagesChecked": 3,
+      "verifiedActiveCount": 1,
+      "deadlineUnknownCount": 0,
+      "needsReviewCount": 0,
+      "expiredCount": 0,
+      "careerOnlyExcludedCount": 0,
+      "securityExcludedCount": 0,
+      "qualityExcludedCount": 0,
+      "nonItExcludedCount": 0,
+      "duplicateCount": 2,
+      "accessFailureCount": 1,
+      "exhaustionStatus": "PARTIAL",
+      "limitationReason": "공개 상세를 확인했으나 일부 공식 외부 지원 페이지는 접근 제한되며 전체 목록을 완전 소진하지 못함",
+      "manualUserConfirmedCount": 1
+    },
+    {
+      "sourceName": "커리어",
+      "searchStartedAt": "2026-08-15T20:01:51+09:00",
+      "searchFinishedAt": "2026-08-15T20:02:04+09:00",
+      "searchKeywords": [
+        "신입 개발자",
+        "경력무관 IT",
+        "개발 인턴",
+        "백엔드",
+        "프론트엔드",
+        "AI",
+        "데이터 엔지니어",
+        "임베디드",
+        "클라우드"
+      ],
+      "categoryPagesChecked": [
+        "IT·개발",
+        "신입",
+        "경력무관",
+        "인턴"
+      ],
+      "pagesOrScrollBatchesChecked": 1,
+      "candidateCount": 0,
+      "detailPagesChecked": 0,
+      "verifiedActiveCount": 0,
+      "deadlineUnknownCount": 0,
+      "needsReviewCount": 0,
+      "expiredCount": 0,
+      "careerOnlyExcludedCount": 0,
+      "securityExcludedCount": 0,
+      "qualityExcludedCount": 0,
+      "nonItExcludedCount": 0,
+      "duplicateCount": 0,
+      "accessFailureCount": 1,
+      "exhaustionStatus": "PARTIAL",
+      "limitationReason": "상세 페이지의 실제 지원 상태를 검증할 수 있는 공개 후보를 확보하지 못함"
+    },
+    {
+      "sourceName": "인크루트",
+      "searchStartedAt": "2026-08-15T20:01:51+09:00",
+      "searchFinishedAt": "2026-08-15T20:02:04+09:00",
+      "searchKeywords": [
+        "신입 개발자",
+        "경력무관 IT",
+        "개발 인턴",
+        "백엔드",
+        "프론트엔드",
+        "AI",
+        "데이터 엔지니어",
+        "임베디드",
+        "클라우드"
+      ],
+      "categoryPagesChecked": [
+        "IT·개발",
+        "신입",
+        "경력무관",
+        "인턴"
+      ],
+      "pagesOrScrollBatchesChecked": 1,
+      "candidateCount": 0,
+      "detailPagesChecked": 0,
+      "verifiedActiveCount": 0,
+      "deadlineUnknownCount": 0,
+      "needsReviewCount": 0,
+      "expiredCount": 0,
+      "careerOnlyExcludedCount": 0,
+      "securityExcludedCount": 0,
+      "qualityExcludedCount": 0,
+      "nonItExcludedCount": 0,
+      "duplicateCount": 0,
+      "accessFailureCount": 1,
+      "exhaustionStatus": "PARTIAL",
+      "limitationReason": "동적 상세 및 접근 제한으로 실제 지원 버튼을 검증할 수 있는 후보를 확보하지 못함"
+    }
+  ],
+  "officialCrossValidation": {
+    "candidatePageCount": 4,
+    "pages": [
+      {
+        "sourceName": "NAVER LABS Careers",
+        "result": "ACTIVE",
+        "sourceId": "30005258"
+      },
+      {
+        "sourceName": "Coupang Careers",
+        "result": "ACTIVE",
+        "sourceId": "8121392"
+      },
+      {
+        "sourceName": "Toss Careers",
+        "result": "ACTIVE",
+        "sourceId": "7816881003"
+      },
+      {
+        "sourceName": "Dreamus Company Careers",
+        "result": "ACTIVE",
+        "sourceId": "227074",
+        "confirmationMethod": "USER_MANUAL_CONFIRMATION",
+        "confirmedAt": "2026-08-15T22:47:05+09:00"
+      }
+    ]
+  },
+  "targetDateRetrospectiveEvidence": [
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49620106",
+      "title": "2026년 개발직 신입 및 경력사원 채용",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-07-21T00:00:00+09:00",
+      "deadlineAt": "2026-08-20T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:06+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49716794",
+      "title": "[2026 하반기] 웹개발 연구부서 신입 사원 채용",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-08-04T00:00:00+09:00",
+      "deadlineAt": "2026-09-03T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:06+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49716823",
+      "title": "렉스코드 백엔드 개발자 채용",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-08-04T00:00:00+09:00",
+      "deadlineAt": "2026-09-03T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:06+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49744417",
+      "title": "AI SaaS 관련 프론트엔드 개발자 채용 건",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-08-09T00:00:00+09:00",
+      "deadlineAt": "2026-09-08T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:06+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49749703",
+      "title": "[신입/경력] Web 프론트엔드 개발자 모집(스마트팩토리, AI 솔루션)",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-08-10T00:00:00+09:00",
+      "deadlineAt": "2026-09-09T23:59:59+09:00",
+      "rolling": true,
+      "secondPassVerifiedAt": "2026-08-15T20:15:06+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49686653",
+      "title": "Java 백엔드/AI 데이터 개발자 (신입)",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-07-30T00:00:00+09:00",
+      "deadlineAt": "2026-08-29T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:06+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49705317",
+      "title": "[에코마케팅]백엔드 개발자(Java) 인턴/신입 채용",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-08-03T00:00:00+09:00",
+      "deadlineAt": "2026-08-16T23:50:00+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:13+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49757336",
+      "title": "[재고관리 플랫폼 개발] 웹 풀스택 개발자 모집",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-08-11T00:00:00+09:00",
+      "deadlineAt": "2026-09-10T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:13+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49649110",
+      "title": "SW팀 채용",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-07-24T00:00:00+09:00",
+      "deadlineAt": "2026-09-22T23:59:59+09:00",
+      "rolling": true,
+      "secondPassVerifiedAt": "2026-08-15T20:15:13+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49730137",
+      "title": "[신입] Mobile Device Management (MDM) 솔루션 개발자 채용",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-08-06T00:00:00+09:00",
+      "deadlineAt": "2026-10-05T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:13+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49658565",
+      "title": "성장률 200프로 진행중인 회사의 개발자모집(React)",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-07-27T00:00:00+09:00",
+      "deadlineAt": "2026-08-26T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:13+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49761888",
+      "title": "[학원수료환영] 웹(Web) 개발자 모집합니다..",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-08-11T00:00:00+09:00",
+      "deadlineAt": "2026-08-25T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:13+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49748610",
+      "title": "[캐시워크] 데이터엔지니어 채용전환형 인턴",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-08-10T00:00:00+09:00",
+      "deadlineAt": null,
+      "rolling": true,
+      "secondPassVerifiedAt": "2026-08-15T20:15:21+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49746362",
+      "title": "디지털본부 Java/Spring 백엔드 개발 신입/경력직 개발자 (ERP/AI 시스템) 채용",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-08-10T00:00:00+09:00",
+      "deadlineAt": "2026-08-31T23:59:59+09:00",
+      "rolling": true,
+      "secondPassVerifiedAt": "2026-08-15T20:15:21+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49757173",
+      "title": "2026년 (주)아이웨이 개발(JAVA개발자) 경력직 및 신입 모집",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-08-11T00:00:00+09:00",
+      "deadlineAt": "2026-09-10T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:21+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49749780",
+      "title": "은행 S/W프로그램 개발",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-08-10T00:00:00+09:00",
+      "deadlineAt": "2026-09-09T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:21+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49706105",
+      "title": "제어 프로그램 개발 전문가 모십니다.",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-08-03T00:00:00+09:00",
+      "deadlineAt": "2026-08-21T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:21+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49787297",
+      "title": "Product Software Engineer(Java중심, 기획·설계 포함)신입/경력사원 모집",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-08-14T00:00:00+09:00",
+      "deadlineAt": "2026-08-31T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:21+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49781983",
+      "title": "IT개발·데이터(백엔드/서버개발 외 1개 부문) 모집 공고",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-08-13T00:00:00+09:00",
+      "deadlineAt": "2026-09-12T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:26+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49576376",
+      "title": "음성인식 엔진 / 모델 개발 담당 - 신입 / 경력",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-07-14T00:00:00+09:00",
+      "deadlineAt": "2026-09-11T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:26+09:00"
+    },
+    {
+      "sourceName": "NAVER LABS Careers",
+      "sourceId": "30005258",
+      "title": "[네이버랩스] Robot Embedded System Firmware Engineer",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-08-03T00:00:00+09:00",
+      "deadlineAt": "2026-08-18T23:59:00+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:26+09:00"
+    },
+    {
+      "sourceName": "Coupang Careers",
+      "sourceId": "8121392",
+      "title": "[신입채용] Back-end Engineer (Eats Ads Engineering)",
+      "evidenceType": "OFFICIAL_PAGE_METADATA_UPDATED_AT",
+      "evidenceAt": "2026-08-11T22:12:00+09:00",
+      "deadlineAt": null,
+      "rolling": true,
+      "secondPassVerifiedAt": "2026-08-15T20:15:26+09:00"
+    },
+    {
+      "sourceName": "Toss Careers",
+      "sourceId": "7816881003",
+      "title": "토스뱅크 Server Developer 채용 연계형 인턴십 (~8/17)",
+      "evidenceType": "APPLICATION_WINDOW_START",
+      "evidenceAt": "2026-08-04T00:00:00+09:00",
+      "deadlineAt": "2026-08-17T23:59:00+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T20:15:26+09:00"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "159008",
+      "title": "웹/앱 프론트엔드 개발자 (React/Next.js)",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": "2026-09-01T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "158834",
+      "title": "Agent Engineer (계약직)",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": "2026-09-14T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "159145",
+      "title": "데이터 엔지니어 인턴 모집",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": "2026-08-22T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "159144",
+      "title": "FDE(Forward-Deployed 엔지니어) 인턴",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": "2026-11-06T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156303",
+      "title": "DevOps 엔지니어",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": null,
+      "rolling": true,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156625",
+      "title": "Fullstack Engineer",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": null,
+      "rolling": true,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "158917",
+      "title": "AI-Native Engineer(인턴)",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": null,
+      "rolling": true,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음; 주니어 표현만으로는 신입 지원 가능 근거가 충분하지 않아 추가 확인 필요"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "157754",
+      "title": "백엔드·인프라 풀스택 엔지니어",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": null,
+      "rolling": true,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156011",
+      "title": "[캐시워크] 백엔드 개발 채용전환형 인턴",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": null,
+      "rolling": true,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156014",
+      "title": "[캐시워크] 프론트엔드 개발 채용전환형 인턴",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": null,
+      "rolling": true,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156008",
+      "title": "[캐시워크] 데이터분석 담당 채용전환형 인턴",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": null,
+      "rolling": true,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156007",
+      "title": "[캐시워크] iOS 개발 채용전환형 인턴",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": null,
+      "rolling": true,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "158841",
+      "title": "프론트엔드 엔지니어 채용",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": "2027-01-01T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156469",
+      "title": "기계 학습 엔지니어",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": null,
+      "rolling": true,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음; 자격요건의 경험 요구가 신입에게 필수인지 추가 확인 필요"
+    },
+    {
+      "sourceName": "Dreamus Company Careers",
+      "sourceId": "227074",
+      "title": "콘텐츠 플랫폼 백엔드 개발(신입)",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": null,
+      "rolling": true,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음"
+    },
+    {
+      "sourceName": "Wanted",
+      "sourceId": "375795",
+      "title": "마케팅 AI 에이전트 Backend 개발자 (신입)",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": "2026-08-31T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "상세 정보와 미래 마감일은 확인했으나 실제 지원 버튼 및 기업 공식 지원 페이지 상태를 검증하지 못함"
+    },
+    {
+      "sourceName": "Wanted",
+      "sourceId": "356275",
+      "title": "백엔드 개발자(신입)",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": null,
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "상시채용 문구는 확인했으나 실제 지원 버튼 상태를 검증하지 못함"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49763378",
+      "title": "AI 응용/백엔드 개발 포지션 신입&경력 채용",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": "2026-08-31T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "모집기간과 신입 조건은 확인했으나 실제 렌더링된 지원 버튼을 확인하지 못함"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49760249",
+      "title": "증권금융IT 전문기업 신입·경력 개발자 모집",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": "2026-09-30T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "모집기간과 신입 조건은 확인했으나 실제 렌더링된 지원 버튼을 확인하지 못함"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49758419",
+      "title": "2026년 하반기 각 부문 신입/경력 직원 채용",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": "2026-08-31T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "여러 회사·직무가 하나의 통합 공고에 묶여 직무별 신입 조건과 지원 상태를 분리할 수 없음"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49631880",
+      "title": "[신입/경력] SW개발, 시스템유지관리 (신입,경력)",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": "2026-08-14T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재는 마감 상태이며 2026-08-14 당일 실제 지원 버튼 활성 여부를 소급 확인할 수 없음"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49588410",
+      "title": "사내 프로그램 개발 및 웹 프로그램 유지보수 개발자 모집",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": "2026-08-14T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재는 마감 상태이며 2026-08-14 당일 실제 지원 버튼 활성 여부를 소급 확인할 수 없음"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49379347",
+      "title": "캐스트이즈 2026 DevOps개발자(신입)",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": "2026-08-14T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재는 마감 상태이며 2026-08-14 당일 실제 지원 버튼 활성 여부를 소급 확인할 수 없음"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49660820",
+      "title": "2026년도 엔디소프트 개발부문 채용공고",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": "2026-08-26T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "현재 페이지에는 조기 마감 표시가 있으나 조기 마감이 2026-08-14 이전인지 이후인지 소급 확인할 수 없음"
+    },
+    {
+      "sourceName": "자소설닷컴",
+      "sourceId": "104762",
+      "title": "2026 6월 신입 채용",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": "2026-12-31T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "보안 전담 직무와 포함 대상 개발 직무가 한 공고에 섞여 있고 공식 지원 페이지의 실제 버튼 상태를 검증하지 못함"
+    },
+    {
+      "sourceName": "자소설닷컴",
+      "sourceId": "105543",
+      "title": "프론트엔드 개발자 신입 채용",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": "2026-08-16T23:59:59+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "외부 공식 지원 페이지가 접근 제한으로 열리지 않아 실제 지원 버튼 상태를 검증하지 못함"
+    },
+    {
+      "sourceName": "자소설닷컴",
+      "sourceId": "105547",
+      "title": "2026 하반기 통합채용",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": null,
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "계열사·직무별 마감일과 신입 조건이 달라 하나의 개별 공고로 정규화할 수 없음"
+    },
+    {
+      "sourceName": "Superookie",
+      "sourceId": "6a7d25abaf923602db79ab82",
+      "title": "슈퍼드리머 8기 게임 클라이언트 개발자",
+      "evidenceType": "USER_MANUAL_CONFIRMATION",
+      "evidenceAt": "2026-08-15T22:47:05+09:00",
+      "deadlineAt": "2026-08-23T23:59:00+09:00",
+      "rolling": false,
+      "secondPassVerifiedAt": "2026-08-15T22:47:05+09:00",
+      "previousReviewReason": "지원 링크와 접수기간이 있으나 페이지 소스에 마감·지원기간 아님 안내 문구도 함께 노출되고 공식 지원 페이지는 접근 제한되어 실제 상태를 확정하지 못함"
+    }
+  ],
+  "sourceDominanceAudit": {
+    "dominantSource": "JobKorea",
+    "sharePercent": 52.94,
+    "additionalSweepPerformed": true,
+    "underrepresentedSourcesRechecked": [
+      "자소설닷컴",
+      "사람인",
+      "원티드",
+      "점핏",
+      "인디스워크",
+      "링커리어",
+      "캐치",
+      "리멤버 커리어",
+      "로켓펀치",
+      "고용24",
+      "LinkedIn Korea",
+      "슈퍼루키",
+      "커리어",
+      "인크루트"
+    ],
+    "reason": "사용자 수동 확인으로 기존 NEEDS_REVIEW 28건을 추가 채택해 출처가 확대됐으나, 잡코리아가 여전히 최다 출처다. 다른 사이트는 기존 접근 제한과 동적 렌더링 한계가 있었음"
+  },
+  "validation": {
+    "jsonParseable": true,
+    "sourceCountMatches": true,
+    "duplicateCanonicalUrls": 0,
+    "duplicateCrossSiteFingerprints": 0,
+    "expiredItemsInActiveJson": 0,
+    "careerOnlyItemsInActiveJson": 0,
+    "securityOrQualityItemsInActiveJson": 0,
+    "itemsWithoutSecondPassVerification": 0,
+    "itemsWithCopiedOldVerificationTime": 0,
+    "rollingWithoutExplicitEvidence": 0,
+    "activeWithoutApplicationEvidence": 0,
+    "targetDateDirectlyObserved": false,
+    "userManualConfirmationOverrideCount": 28,
+    "collectorStrictEvidencePendingForUserConfirmedItems": 28,
+    "manualOverrideAuditTrailComplete": true,
+    "operationalActiveItemsAcceptedByUserManualReview": 28
+  },
+  "limitations": [
+    "기준일은 2026-08-14이지만 실제 웹 검증은 2026-08-15 19:56 이후에 수행됐다. 메인 ACTIVE는 접수 시작일이 8월 14일 이전이고 마감일이 이후이며, 8월 15일 2차 검증에서 지원 버튼이 활성인 공고만 제한적으로 포함했다.",
+    "8월 14일 당시의 실제 버튼 상태를 직접 관찰한 것은 아니므로 결과는 완전한 당일 스냅샷이 아니라 보수적인 소급 검증 결과다.",
+    "로그인, CAPTCHA, robots 정책 또는 동적 렌더링을 우회하지 않았다. 접근 제한된 사이트는 PARTIAL 또는 BLOCKED로 기록했다.",
+    "15개 사이트 모두를 대상으로 검색했지만 모든 페이지·무한 스크롤을 끝까지 소진한 전수조사는 아니다. 따라서 누락 가능성이 있다.",
+    "publishedAt은 원문 게시일이 명확히 확인된 항목이 없어 모두 null로 유지했다. 접수 시작일을 게시일로 대체하지 않았다.",
+    "기술 스택은 원문에 명시된 명칭만 기록했으며 숫자형 내부 태그는 기술명으로 추측하지 않았다.",
+    "기존 NEEDS_REVIEW 28건은 2026-08-15T22:47:05+09:00에 사용자의 직접 확인을 근거로 ACTIVE로 재분류했다. 이 28건의 상태는 사용자 수동 검증에 따른 운영상 승인으로, 자동 수집기가 원래 요구한 모든 지원 버튼·공식 페이지 증거를 새로 확보했다는 의미는 아니다."
+  ],
+  "manualReviewOverride": {
+    "applied": true,
+    "confirmedAt": "2026-08-15T22:47:05+09:00",
+    "confirmedBy": "USER",
+    "itemCount": 28,
+    "decision": "ALL_NEEDS_REVIEW_RECLASSIFIED_TO_ACTIVE",
+    "basis": "사용자가 불확실 목록의 각 공고를 직접 확인한 뒤 모두 유효하다고 최종 확인함",
+    "collectorStrictEvidenceReplaced": false,
+    "note": "상태는 ACTIVE로 변경했지만, 기존 자동 수집 단계의 불확실 사유는 manualReclassificationItems에 보존함"
+  },
+  "manualReclassificationItems": [
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "159008",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/159008",
+      "companyName": "주식회사 사운드마인드",
+      "title": "웹/앱 프론트엔드 개발자 (React/Next.js)",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "158834",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/158834",
+      "companyName": "팀카이",
+      "title": "Agent Engineer (계약직)",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "159145",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/159145",
+      "companyName": "블리츠다이나믹스",
+      "title": "데이터 엔지니어 인턴 모집",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "159144",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/159144",
+      "companyName": "팀카이",
+      "title": "FDE(Forward-Deployed 엔지니어) 인턴",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156303",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156303",
+      "companyName": "이스트게임즈",
+      "title": "DevOps 엔지니어",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156625",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156625",
+      "companyName": "허드슨에이아이",
+      "title": "Fullstack Engineer",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "158917",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/158917",
+      "companyName": "GC메디아이",
+      "title": "AI-Native Engineer(인턴)",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음; 주니어 표현만으로는 신입 지원 가능 근거가 충분하지 않아 추가 확인 필요",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "157754",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/157754",
+      "companyName": "베스텔라랩",
+      "title": "백엔드·인프라 풀스택 엔지니어",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156011",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156011",
+      "companyName": "넛지헬스케어",
+      "title": "[캐시워크] 백엔드 개발 채용전환형 인턴",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156014",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156014",
+      "companyName": "넛지헬스케어",
+      "title": "[캐시워크] 프론트엔드 개발 채용전환형 인턴",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156008",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156008",
+      "companyName": "넛지헬스케어",
+      "title": "[캐시워크] 데이터분석 담당 채용전환형 인턴",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156007",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156007",
+      "companyName": "넛지헬스케어",
+      "title": "[캐시워크] iOS 개발 채용전환형 인턴",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "158841",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/158841",
+      "companyName": "미지웍스",
+      "title": "프론트엔드 엔지니어 채용",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156469",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156469",
+      "companyName": "몰로코",
+      "title": "기계 학습 엔지니어",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음; 자격요건의 경험 요구가 신입에게 필수인지 추가 확인 필요",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "Dreamus Company Careers",
+      "sourceId": "227074",
+      "sourceUrl": "https://recruit.dreamuscompany.com/pages/careers_view.jsp?id=227074&jobName=All&title=",
+      "companyName": "드림어스컴퍼니",
+      "title": "콘텐츠 플랫폼 백엔드 개발(신입)",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재 상세 페이지의 지원 가능 표시를 확인했으나 게시·접수 시작일을 확인하지 못해 2026-08-14 당시 존재 여부를 확정할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "Wanted",
+      "sourceId": "375795",
+      "sourceUrl": "https://www.wanted.co.kr/wd/375795",
+      "companyName": "라이트에이아이",
+      "title": "마케팅 AI 에이전트 Backend 개발자 (신입)",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "상세 정보와 미래 마감일은 확인했으나 실제 지원 버튼 및 기업 공식 지원 페이지 상태를 검증하지 못함",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "Wanted",
+      "sourceId": "356275",
+      "sourceUrl": "https://www.wanted.co.kr/wd/356275",
+      "companyName": "트리플오스",
+      "title": "백엔드 개발자(신입)",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "상시채용 문구는 확인했으나 실제 지원 버튼 상태를 검증하지 못함",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49763378",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/49763378",
+      "companyName": "㈜유알피",
+      "title": "AI 응용/백엔드 개발 포지션 신입&경력 채용",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "모집기간과 신입 조건은 확인했으나 실제 렌더링된 지원 버튼을 확인하지 못함",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49760249",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/49760249",
+      "companyName": "㈜아이낸스",
+      "title": "증권금융IT 전문기업 신입·경력 개발자 모집",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "모집기간과 신입 조건은 확인했으나 실제 렌더링된 지원 버튼을 확인하지 못함",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49758419",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49758419",
+      "companyName": "㈜포오스",
+      "title": "2026년 하반기 각 부문 신입/경력 직원 채용",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "여러 회사·직무가 하나의 통합 공고에 묶여 직무별 신입 조건과 지원 상태를 분리할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49631880",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49631880",
+      "companyName": "㈜심플비트",
+      "title": "[신입/경력] SW개발, 시스템유지관리 (신입,경력)",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재는 마감 상태이며 2026-08-14 당일 실제 지원 버튼 활성 여부를 소급 확인할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49588410",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49588410",
+      "companyName": "㈜에이코퍼레이션",
+      "title": "사내 프로그램 개발 및 웹 프로그램 유지보수 개발자 모집",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재는 마감 상태이며 2026-08-14 당일 실제 지원 버튼 활성 여부를 소급 확인할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49379347",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49379347",
+      "companyName": "㈜캐스트이즈",
+      "title": "캐스트이즈 2026 DevOps개발자(신입)",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재는 마감 상태이며 2026-08-14 당일 실제 지원 버튼 활성 여부를 소급 확인할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49660820",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49660820",
+      "companyName": "㈜엔디소프트",
+      "title": "2026년도 엔디소프트 개발부문 채용공고",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "현재 페이지에는 조기 마감 표시가 있으나 조기 마감이 2026-08-14 이전인지 이후인지 소급 확인할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "자소설닷컴",
+      "sourceId": "104762",
+      "sourceUrl": "https://jasoseol.com/recruit/104762",
+      "companyName": "안랩",
+      "title": "2026 6월 신입 채용",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "보안 전담 직무와 포함 대상 개발 직무가 한 공고에 섞여 있고 공식 지원 페이지의 실제 버튼 상태를 검증하지 못함",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "자소설닷컴",
+      "sourceId": "105543",
+      "sourceUrl": "https://jasoseol.com/recruit/105543",
+      "companyName": "에코마케팅",
+      "title": "프론트엔드 개발자 신입 채용",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "외부 공식 지원 페이지가 접근 제한으로 열리지 않아 실제 지원 버튼 상태를 검증하지 못함",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "자소설닷컴",
+      "sourceId": "105547",
+      "sourceUrl": "https://jasoseol.com/recruit/105547",
+      "companyName": "세방그룹",
+      "title": "2026 하반기 통합채용",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "계열사·직무별 마감일과 신입 조건이 달라 하나의 개별 공고로 정규화할 수 없음",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    },
+    {
+      "sourceName": "Superookie",
+      "sourceId": "6a7d25abaf923602db79ab82",
+      "sourceUrl": "https://www.superookie.com/jobs/6a7d25abaf923602db79ab82",
+      "companyName": "111퍼센트",
+      "title": "슈퍼드리머 8기 게임 클라이언트 개발자",
+      "previousStatus": "NEEDS_REVIEW",
+      "previousReviewReason": "지원 링크와 접수기간이 있으나 페이지 소스에 마감·지원기간 아님 안내 문구도 함께 노출되고 공식 지원 페이지는 접근 제한되어 실제 상태를 확정하지 못함",
+      "newStatus": "ACTIVE",
+      "confirmedAt": "2026-08-15T22:47:05+09:00",
+      "confirmationMethod": "USER_MANUAL_CONFIRMATION"
+    }
+  ]
+}

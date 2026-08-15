@@ -89,7 +89,7 @@ describe('Sites runtime schema', () => {
     expect(Number(searchCountBefore?.count)).toBeGreaterThan(0);
     const jobResults = await all<{ kind: string }>(
       db,
-      `SELECT kind FROM workspace_search WHERE workspace_search MATCH '"라피치"*'`,
+      `SELECT kind FROM workspace_search WHERE workspace_search MATCH '"퓨전소프트"*'`,
     );
     expect(jobResults.some((result) => result.kind === 'jobs')).toBe(true);
 
@@ -243,7 +243,7 @@ describe('Sites production migration baseline', () => {
                  (SELECT checksum FROM app_schema_migrations
                    WHERE version = '0018_sloppy_leech') AS checksum,
                  (SELECT checksum FROM app_schema_migrations
-                   WHERE version = '0019_replace_job_catalog_20260814') AS replacementChecksum`,
+                   WHERE version = '0020_replace_job_catalog_20260814_verified') AS replacementChecksum`,
       );
 
       expect(schema).toEqual({
@@ -255,13 +255,13 @@ describe('Sites production migration baseline', () => {
         categoryIndex: 1,
         removedNoteTables: 0,
         noteItems: 0,
-        jobs: 34,
-        visibleJobs: 16,
-        reviewJobs: 18,
+        jobs: 51,
+        visibleJobs: 51,
+        reviewJobs: 0,
         savedJobs: 0,
         jobItems: 0,
         jobDeadlineNotifications: 0,
-        jobSearchRows: 16,
+        jobSearchRows: 51,
         jobTechRows: expect.any(Number),
         orphanTechRows: 0,
         jobImportBatches: 1,
