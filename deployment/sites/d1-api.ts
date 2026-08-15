@@ -187,6 +187,21 @@ const apiUser = (row: UserRow): ApiUser => ({
   onboardingCompleted: Boolean(row.onboardingCompletedAt),
 });
 
+const allowedAdminEmails = (env: D1Env) =>
+  new Set(
+    (env.OPENAI_ADMIN_EMAILS || '')
+      .split(',')
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean),
+  );
+
+const expectedRole = (
+  identity: Identity,
+  env: D1Env,
+  currentRole?: UserRow['role'],
+): UserRow['role'] =>
+  currentRole === 'ADMIN' || allowedAdminEmails(env).has(identity.email) ? 'ADMIN' : 'MEMBER';
+
 async function audit(
   db: D1Database,
   actorId: string | null,
@@ -219,12 +234,7 @@ async function resolveUser(identity: Identity, env: D1Env): Promise<UserRow> {
     }
     row = sameEmail;
   }
-  const allowedAdmins = new Set(
-    (env.OPENAI_ADMIN_EMAILS || '')
-      .split(',')
-      .map((value) => value.trim().toLowerCase())
-      .filter(Boolean),
-  );
+  const allowedAdmins = allowedAdminEmails(env);
   const timestamp = nowIso();
   if (!row) {
     const maxActiveUsers = Math.max(1, int(env.MAX_ACTIVE_USERS, 100_000));
@@ -282,7 +292,10 @@ async function resolveUser(identity: Identity, env: D1Env): Promise<UserRow> {
     }
   } else {
     if (!asBoolean(row.isActive)) throw new RouteError(403, '비활성화된 계정입니다.');
-    const role = row.role === 'ADMIN' || allowedAdmins.has(identity.email) ? 'ADMIN' : 'MEMBER';
+    const role = expectedRole(identity, env, row.role);
+    const identityChanged =
+      row.siteUserId !== identity.userId || row.email !== identity.email || row.role !== role;
+    if (!identityChanged) return row;
     const statements = [
       db
         .prepare(
@@ -308,7 +321,13 @@ async function resolveUser(identity: Identity, env: D1Env): Promise<UserRow> {
       );
     }
     await db.batch(statements);
-    row = await first<UserRow>(db, `${userSelect} WHERE id = ?`, row.id);
+    row = {
+      ...row,
+      siteUserId: identity.userId,
+      email: identity.email,
+      role,
+      updatedAt: timestamp,
+    };
   }
   if (!row) throw new RouteError(500, '사용자 정보를 준비하지 못했습니다.');
   return row;
@@ -324,18 +343,45 @@ const routeRateKey = (method: string, pathname: string) =>
     '/:id',
   )}`;
 
-async function enforceRateLimit(request: Request, env: D1Env, userId: string, path: string) {
-  const method = request.method.toUpperCase();
+type RateLimitWindow = {
+  limit: number;
+  now: number;
+  routeKey: string;
+  windowStart: number;
+};
+
+const rateLimitWindow = (method: string, env: D1Env, path: string): RateLimitWindow => {
+  const now = Date.now();
   const configured =
     method === 'GET'
       ? int(env.RATE_LIMIT_READS_PER_MINUTE, 240)
       : int(env.RATE_LIMIT_WRITES_PER_MINUTE, 60);
-  const limit = Math.max(
-    1,
-    Math.min(10_000, path.includes('/import/') ? Math.min(10, configured) : configured),
+  return {
+    limit: Math.max(
+      1,
+      Math.min(10_000, path.includes('/import/') ? Math.min(10, configured) : configured),
+    ),
+    now,
+    routeKey: routeRateKey(method, path),
+    windowStart: Math.floor(now / 60_000),
+  };
+};
+
+const assertRateLimit = (count: number, window: RateLimitWindow) => {
+  if (count <= window.limit) return;
+  const retryAfter = Math.max(1, 60 - Math.floor((window.now % 60_000) / 1000));
+  throw new RouteError(
+    429,
+    '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
+    'RATE_LIMITED',
+    { limit: window.limit, windowSeconds: 60, retryAfter },
+    { 'retry-after': String(retryAfter) },
   );
-  const now = Date.now();
-  const windowStart = Math.floor(now / 60_000);
+};
+
+async function enforceRateLimit(request: Request, env: D1Env, userId: string, path: string) {
+  const method = request.method.toUpperCase();
+  const window = rateLimitWindow(method, env, path);
   const row = await first<{ count: number }>(
     env.DB,
     `INSERT INTO request_rate_limits (user_id, route_key, window_start, count, updated_at)
@@ -344,46 +390,37 @@ async function enforceRateLimit(request: Request, env: D1Env, userId: string, pa
      DO UPDATE SET count = request_rate_limits.count + 1, updated_at = excluded.updated_at
      RETURNING count`,
     userId,
-    routeRateKey(method, path),
-    windowStart,
-    new Date(now).toISOString(),
+    window.routeKey,
+    window.windowStart,
+    new Date(window.now).toISOString(),
   );
   const count = Number(row?.count || 1);
   if (count === 1) {
-    await run(env.DB, 'DELETE FROM request_rate_limits WHERE window_start < ?', windowStart - 2);
-  }
-  if (count > limit) {
-    const retryAfter = Math.max(1, 60 - Math.floor((now % 60_000) / 1000));
-    throw new RouteError(
-      429,
-      '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
-      'RATE_LIMITED',
-      { limit, windowSeconds: 60, retryAfter },
-      { 'retry-after': String(retryAfter) },
+    await run(
+      env.DB,
+      'DELETE FROM request_rate_limits WHERE window_start < ?',
+      window.windowStart - 2,
     );
   }
+  assertRateLimit(count, window);
 }
 
-async function collections(db: D1Database, userId: string) {
-  const folders = await all<Record<string, unknown>>(
-    db,
-    `SELECT id, parent_id AS parentId, name, icon, color, position,
-            created_at AS createdAt, updated_at AS updatedAt
-       FROM collections
-      WHERE user_id = ? AND deleted_at IS NULL
-      ORDER BY CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END, position, updated_at DESC`,
-    userId,
-  );
-  const items = await all<Record<string, unknown>>(
-    db,
-    `SELECT ci.id, ci.collection_id AS collectionId, ci.item_type AS itemType,
-            ci.target_id AS targetId, ci.label, ci.position, ci.created_at AS createdAt
-       FROM collection_items ci
-       JOIN collections c ON c.id = ci.collection_id
-      WHERE c.user_id = ? AND c.deleted_at IS NULL
-      ORDER BY ci.position`,
-    userId,
-  );
+const collectionFoldersSql = `SELECT id, parent_id AS parentId, name, icon, color, position,
+                                      created_at AS createdAt, updated_at AS updatedAt
+                                 FROM collections
+                                WHERE user_id = ? AND deleted_at IS NULL
+                                ORDER BY CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END,
+                                         position, updated_at DESC`;
+
+const collectionItemsSql = `SELECT ci.id, ci.collection_id AS collectionId,
+                                    ci.item_type AS itemType, ci.target_id AS targetId,
+                                    ci.label, ci.position, ci.created_at AS createdAt
+                               FROM collection_items ci
+                               JOIN collections c ON c.id = ci.collection_id
+                              WHERE c.user_id = ? AND c.deleted_at IS NULL
+                              ORDER BY ci.position`;
+
+const collectionValue = (folders: Record<string, unknown>[], items: Record<string, unknown>[]) => {
   const itemsByCollection = new Map<string, Record<string, unknown>[]>();
   for (const item of items) {
     const collectionId = String(item.collectionId);
@@ -395,6 +432,58 @@ async function collections(db: D1Database, userId: string) {
     ...folder,
     items: itemsByCollection.get(String(folder.id)) || [],
   }));
+};
+
+async function collections(db: D1Database, userId: string) {
+  const [folderResult, itemResult] = await db.batch<Record<string, unknown>>([
+    db.prepare(collectionFoldersSql).bind(userId),
+    db.prepare(collectionItemsSql).bind(userId),
+  ]);
+  return collectionValue(folderResult?.results || [], itemResult?.results || []);
+}
+
+type CountRow = { count: number };
+
+const unreadCountSql = `SELECT COUNT(*) AS count FROM notifications
+                         WHERE user_id = ? AND read_at IS NULL
+                           AND (expires_at IS NULL OR expires_at > ?)`;
+
+const dashboardRange = () => {
+  const now = nowIso();
+  return {
+    now,
+    weekAgo: new Date(Date.now() - 7 * 86_400_000).toISOString(),
+    weekAhead: new Date(Date.now() + 7 * 86_400_000).toISOString(),
+  };
+};
+
+const dashboardStatements = (db: D1Database, userId: string, range = dashboardRange()) => [
+  db
+    .prepare("SELECT COUNT(*) AS count FROM jobs WHERE status = 'ACTIVE' AND created_at >= ?")
+    .bind(range.weekAgo),
+  db
+    .prepare(
+      `SELECT COUNT(*) AS count
+         FROM saved_jobs sj JOIN jobs j ON j.id = sj.job_id
+        WHERE sj.user_id = ? AND j.status = 'ACTIVE' AND j.deadline_at BETWEEN ? AND ?`,
+    )
+    .bind(userId, range.now, range.weekAhead),
+  db
+    .prepare(
+      'SELECT COUNT(*) AS count FROM learning_progress WHERE user_id = ? AND next_review_at <= ?',
+    )
+    .bind(userId, range.now),
+];
+
+const dashboardValue = (results: Array<{ results?: CountRow[] }>) => ({
+  recentJobs: Number(results[0]?.results?.[0]?.count || 0),
+  expiringJobs: Number(results[1]?.results?.[0]?.count || 0),
+  dueReviews: Number(results[2]?.results?.[0]?.count || 0),
+  recentActivity: [],
+});
+
+async function dashboard(db: D1Database, userId: string) {
+  return dashboardValue(await db.batch<CountRow>(dashboardStatements(db, userId)));
 }
 
 async function ensureDeadlineNotifications(db: D1Database) {
@@ -638,153 +727,390 @@ const kstDate = () =>
     day: '2-digit',
   }).format(new Date());
 
-async function dailyChallenge(
-  db: D1Database,
-  userId: string,
-  levelSlot = 1,
-  track: 'ALGORITHM' | 'SQL' = 'ALGORITHM',
-  levels: number[] = [levelSlot],
-  repeatExclusionDays = 60,
-  allowRepeatRelaxation = false,
-) {
-  const today = kstDate();
-  let challenge = await first<{
-    id: string;
-    problemId: string;
-    levelSlot: number;
-    createdAt: string;
-  }>(
-    db,
-    `SELECT id, problem_id AS problemId, level_slot AS levelSlot, created_at AS createdAt
-       FROM daily_challenges WHERE kst_date = ? AND level_slot = ?`,
-    today,
-    levelSlot,
-  );
-  if (!challenge) {
-    const levelPlaceholders = levels.map(() => '?').join(', ');
-    const cutoff = new Date(`${today}T00:00:00.000Z`);
-    cutoff.setUTCDate(cutoff.getUTCDate() - Math.max(0, repeatExclusionDays));
-    const candidateRows = (relaxed: boolean) =>
-      all<{ id: string }>(
-        db,
-        `SELECT id FROM coding_problems
-          WHERE active = 1 AND track = ? AND level IN (${levelPlaceholders})
-            AND id NOT IN (
-              SELECT problem_id FROM daily_challenges WHERE kst_date >= ?
-            )
-          ORDER BY position, id`,
-        track,
-        ...levels,
-        relaxed ? today : cutoff.toISOString().slice(0, 10),
-      );
-    let candidates = await candidateRows(false);
-    if (!candidates.length && allowRepeatRelaxation) candidates = await candidateRows(true);
-    if (!candidates.length)
-      throw new RouteError(
-        404,
-        `오늘의 ${track === 'SQL' ? 'SQL Lv. 3~4' : `Lv. ${levelSlot}`} 문제 후보가 없습니다.`,
-      );
-    let seed = 0x811c9dc5;
-    for (const character of `${today}:${track}:${levelSlot}:${levels.join('-')}`) {
-      seed ^= character.charCodeAt(0);
-      seed = Math.imul(seed, 0x01000193) >>> 0;
-    }
-    const selected = candidates[seed % candidates.length];
-    const timestamp = nowIso();
-    const id = newId();
-    await run(
-      db,
-      'INSERT OR IGNORE INTO daily_challenges (id, kst_date, level_slot, problem_id, created_at) VALUES (?, ?, ?, ?, ?)',
-      id,
-      today,
-      levelSlot,
-      selected.id,
-      timestamp,
-    );
-    challenge = await first<{
-      id: string;
-      problemId: string;
-      levelSlot: number;
-      createdAt: string;
-    }>(
-      db,
-      `SELECT id, problem_id AS problemId, level_slot AS levelSlot, created_at AS createdAt
-         FROM daily_challenges WHERE kst_date = ? AND level_slot = ?`,
-      today,
-      levelSlot,
-    );
-  }
-  if (!challenge) throw new RouteError(500, '오늘의 문제를 준비하지 못했습니다.');
-  const exact = await first<ProblemRow>(
-    db,
-    `SELECT p.id, p.source_url AS sourceUrl, p.display_title AS displayTitle, p.level, p.track, p.tags,
-            pp.status, pp.favorite,
-            (SELECT COUNT(*) FROM solutions s WHERE s.problem_id = p.id AND s.deleted_at IS NULL) AS solutionCount
-       FROM coding_problems p
-       LEFT JOIN problem_progress pp ON pp.problem_id = p.id AND pp.user_id = ?
-      WHERE p.id = ?`,
-    userId,
-    challenge.problemId,
-  );
-  if (!exact) throw new RouteError(500, '오늘의 문제 정보를 찾지 못했습니다.');
-  const problemValue = {
-    id: exact.id,
-    sourceUrl: exact.sourceUrl,
-    displayTitle: exact.displayTitle,
-    level: exact.level,
-    track: exact.track,
-    tags: parseArray(exact.tags),
-    progress: exact.status ? [{ status: exact.status, favorite: asBoolean(exact.favorite) }] : [],
-    _count: { solutions: Number(exact.solutionCount || 0) },
-  };
-  return { ...challenge, problem: problemValue };
-}
+type DailyChallengeRow = {
+  id: string;
+  problemId: string;
+  levelSlot: number;
+  createdAt: string;
+  sourceUrl: string;
+  displayTitle: string;
+  level: number;
+  track: 'ALGORITHM' | 'SQL';
+  tags: string;
+  status: string | null;
+  favorite: number | boolean | null;
+  solutionCount: number;
+};
 
-async function dailyChallenges(db: D1Database, userId: string) {
-  const setting = await first<{
-    allowedLevels: string;
-    repeatExclusionDays: number;
-    allowRepeatRelaxation: number | boolean;
-  }>(
-    db,
-    `SELECT allowed_levels AS allowedLevels,
-            repeat_exclusion_days AS repeatExclusionDays,
-            allow_repeat_relaxation AS allowRepeatRelaxation
-       FROM daily_challenge_settings WHERE id = 1`,
-  );
+const dailyChallengeRowsSql = `SELECT dc.id, dc.problem_id AS problemId,
+                                      dc.level_slot AS levelSlot, dc.created_at AS createdAt,
+                                      p.source_url AS sourceUrl,
+                                      p.display_title AS displayTitle, p.level, p.track, p.tags,
+                                      pp.status, pp.favorite,
+                                      (SELECT COUNT(*) FROM solutions s
+                                        WHERE s.problem_id = p.id AND s.deleted_at IS NULL)
+                                        AS solutionCount
+                                 FROM daily_challenges dc
+                                 JOIN coding_problems p ON p.id = dc.problem_id AND p.active = 1
+                                 LEFT JOIN problem_progress pp
+                                   ON pp.problem_id = p.id AND pp.user_id = ?
+                                WHERE dc.kst_date = ? AND dc.level_slot IN (1, 2, 34)
+                                ORDER BY CASE dc.level_slot
+                                           WHEN 1 THEN 1 WHEN 2 THEN 2 ELSE 3 END`;
+
+type DailyChallengeSettingRow = {
+  allowedLevels: string;
+  repeatExclusionDays: number;
+  allowRepeatRelaxation: number | boolean;
+};
+
+const dailyChallengeSettingSql = `SELECT allowed_levels AS allowedLevels,
+                                          repeat_exclusion_days AS repeatExclusionDays,
+                                          allow_repeat_relaxation AS allowRepeatRelaxation
+                                     FROM daily_challenge_settings WHERE id = 1`;
+
+const dailyChallengeConfiguration = (setting?: DailyChallengeSettingRow) => {
   const configuredLevels = parseArray(setting?.allowedLevels || '[1,2]')
     .map(Number)
     .filter((level) => Number.isInteger(level) && level >= 0 && level <= 5);
   const algorithmLevels = configuredLevels.length ? configuredLevels : [1, 2];
-  const repeatExclusionDays = Math.max(0, Number(setting?.repeatExclusionDays ?? 60));
-  const allowRepeatRelaxation = asBoolean(setting?.allowRepeatRelaxation);
-  const result = [];
-  result.push(
-    await dailyChallenge(
-      db,
-      userId,
-      1,
-      'ALGORITHM',
-      [algorithmLevels[0] ?? 1],
-      repeatExclusionDays,
-      allowRepeatRelaxation,
+  return {
+    specs: [
+      { levelSlot: 1, track: 'ALGORITHM' as const, levels: [algorithmLevels[0] ?? 1] },
+      {
+        levelSlot: 2,
+        track: 'ALGORITHM' as const,
+        levels: [algorithmLevels[1] ?? algorithmLevels[0] ?? 2],
+      },
+      { levelSlot: 34, track: 'SQL' as const, levels: [3, 4] },
+    ],
+    repeatExclusionDays: Math.max(0, Number(setting?.repeatExclusionDays ?? 60)),
+    allowRepeatRelaxation: asBoolean(setting?.allowRepeatRelaxation),
+  };
+};
+
+const dailyChallengeValue = (row: DailyChallengeRow) => ({
+  id: row.id,
+  problemId: row.problemId,
+  levelSlot: row.levelSlot,
+  createdAt: row.createdAt,
+  problem: {
+    id: row.problemId,
+    sourceUrl: row.sourceUrl,
+    displayTitle: row.displayTitle,
+    level: row.level,
+    track: row.track,
+    tags: parseArray(row.tags),
+    progress: row.status ? [{ status: row.status, favorite: asBoolean(row.favorite) }] : [],
+    _count: { solutions: Number(row.solutionCount || 0) },
+  },
+});
+
+const hasEveryDailyChallenge = (rows: DailyChallengeRow[]) => {
+  const slots = new Set(rows.map((row) => Number(row.levelSlot)));
+  return [1, 2, 34].every((levelSlot) => slots.has(levelSlot));
+};
+
+async function selectMissingDailyChallenges(
+  db: D1Database,
+  today: string,
+  existingRows: DailyChallengeRow[],
+  setting?: DailyChallengeSettingRow,
+) {
+  const existingSlots = new Set(existingRows.map((row) => Number(row.levelSlot)));
+  const configuration = dailyChallengeConfiguration(setting);
+  const missing = configuration.specs.filter((spec) => !existingSlots.has(spec.levelSlot));
+  if (!missing.length) return;
+  const cutoff = new Date(`${today}T00:00:00.000Z`);
+  cutoff.setUTCDate(cutoff.getUTCDate() - configuration.repeatExclusionDays);
+  const candidateIndexes: Array<{ strict: number; relaxed?: number }> = [];
+  const candidateStatements = [];
+  for (const spec of missing) {
+    const placeholders = spec.levels.map(() => '?').join(', ');
+    const sql = `SELECT id FROM coding_problems
+                  WHERE active = 1 AND track = ? AND level IN (${placeholders})
+                    AND id NOT IN (
+                      SELECT problem_id FROM daily_challenges WHERE kst_date >= ?
+                    )
+                  ORDER BY position, id`;
+    const strict = candidateStatements.length;
+    candidateStatements.push(
+      db.prepare(sql).bind(spec.track, ...spec.levels, cutoff.toISOString().slice(0, 10)),
+    );
+    let relaxed: number | undefined;
+    if (configuration.allowRepeatRelaxation) {
+      relaxed = candidateStatements.length;
+      candidateStatements.push(db.prepare(sql).bind(spec.track, ...spec.levels, today));
+    }
+    candidateIndexes.push({ strict, relaxed });
+  }
+  const candidateResults = await db.batch<{ id: string }>(candidateStatements);
+  const timestamp = nowIso();
+  const inserts = missing.map((spec, index) => {
+    const resultIndexes = candidateIndexes[index]!;
+    let candidates = candidateResults[resultIndexes.strict]?.results || [];
+    if (!candidates.length && resultIndexes.relaxed !== undefined) {
+      candidates = candidateResults[resultIndexes.relaxed]?.results || [];
+    }
+    if (!candidates.length) {
+      throw new RouteError(
+        404,
+        `오늘의 ${spec.track === 'SQL' ? 'SQL Lv. 3~4' : `Lv. ${spec.levelSlot}`} 문제 후보가 없습니다.`,
+      );
+    }
+    let seed = 0x811c9dc5;
+    for (const character of `${today}:${spec.track}:${spec.levelSlot}:${spec.levels.join('-')}`) {
+      seed ^= character.charCodeAt(0);
+      seed = Math.imul(seed, 0x01000193) >>> 0;
+    }
+    const selected = candidates[seed % candidates.length]!;
+    return db
+      .prepare(
+        `INSERT OR IGNORE INTO daily_challenges
+           (id, kst_date, level_slot, problem_id, created_at) VALUES (?, ?, ?, ?, ?)`,
+      )
+      .bind(newId(), today, spec.levelSlot, selected.id, timestamp);
+  });
+  await db.batch(inserts);
+}
+
+async function dailyChallengeRows(db: D1Database, userId: string, today: string) {
+  return all<DailyChallengeRow>(db, dailyChallengeRowsSql, userId, today);
+}
+
+async function completeDailyChallenges(
+  db: D1Database,
+  userId: string,
+  today: string,
+  rows: DailyChallengeRow[],
+  setting?: DailyChallengeSettingRow,
+) {
+  if (!hasEveryDailyChallenge(rows)) {
+    await selectMissingDailyChallenges(db, today, rows, setting);
+    rows = await dailyChallengeRows(db, userId, today);
+  }
+  if (!hasEveryDailyChallenge(rows)) {
+    throw new RouteError(500, '오늘의 문제를 준비하지 못했습니다.');
+  }
+  return rows.map(dailyChallengeValue);
+}
+
+async function dailyChallenges(db: D1Database, userId: string) {
+  const today = kstDate();
+  const [settingResult, challengeResult] = await db.batch<Record<string, unknown>>([
+    db.prepare(dailyChallengeSettingSql),
+    db.prepare(dailyChallengeRowsSql).bind(userId, today),
+  ]);
+  const setting = (settingResult?.results?.[0] || undefined) as
+    DailyChallengeSettingRow | undefined;
+  const rows = (challengeResult?.results || []) as DailyChallengeRow[];
+  return completeDailyChallenges(db, userId, today, rows, setting);
+}
+
+async function dailyChallenge(db: D1Database, userId: string) {
+  const challenges = await dailyChallenges(db, userId);
+  const challenge = challenges.find((value) => value.levelSlot === 1);
+  if (!challenge) throw new RouteError(500, '오늘의 문제를 준비하지 못했습니다.');
+  return challenge;
+}
+
+type BatchResult = { results?: Record<string, unknown>[] };
+
+const batchRows = <T>(result: BatchResult | undefined) => (result?.results || []) as T[];
+
+const bootstrapStatementsForUser = (
+  db: D1Database,
+  userId: string,
+  includeHome: boolean,
+  today: string,
+  rateWindow: RateLimitWindow,
+) => {
+  const statements = [
+    db
+      .prepare(
+        `INSERT INTO request_rate_limits (user_id, route_key, window_start, count, updated_at)
+         VALUES (?, ?, ?, 1, ?)
+         ON CONFLICT(user_id, route_key, window_start)
+         DO UPDATE SET count = request_rate_limits.count + 1, updated_at = excluded.updated_at
+         RETURNING count`,
+      )
+      .bind(
+        userId,
+        rateWindow.routeKey,
+        rateWindow.windowStart,
+        new Date(rateWindow.now).toISOString(),
+      ),
+    db
+      .prepare('DELETE FROM request_rate_limits WHERE window_start < ?')
+      .bind(rateWindow.windowStart - 2),
+    db.prepare(unreadCountSql).bind(userId, nowIso()),
+  ];
+  if (!includeHome) return statements;
+  statements.push(
+    db.prepare(collectionFoldersSql).bind(userId),
+    db.prepare(collectionItemsSql).bind(userId),
+    ...dashboardStatements(db, userId),
+    db.prepare(dailyChallengeSettingSql),
+    db.prepare(dailyChallengeRowsSql).bind(userId, today),
+  );
+  return statements;
+};
+
+const bootstrapStatementsForSiteUser = (
+  db: D1Database,
+  siteUserId: string,
+  includeHome: boolean,
+  today: string,
+  rateWindow: RateLimitWindow,
+) => {
+  const timestamp = nowIso();
+  const statements = [
+    db.prepare(`${userSelect} WHERE site_user_id = ?`).bind(siteUserId),
+    db
+      .prepare(
+        `INSERT INTO request_rate_limits (user_id, route_key, window_start, count, updated_at)
+         SELECT id, ?, ?, 1, ? FROM users WHERE site_user_id = ?
+         ON CONFLICT(user_id, route_key, window_start)
+         DO UPDATE SET count = request_rate_limits.count + 1, updated_at = excluded.updated_at
+         RETURNING count`,
+      )
+      .bind(
+        rateWindow.routeKey,
+        rateWindow.windowStart,
+        new Date(rateWindow.now).toISOString(),
+        siteUserId,
+      ),
+    db
+      .prepare('DELETE FROM request_rate_limits WHERE window_start < ?')
+      .bind(rateWindow.windowStart - 2),
+    db
+      .prepare(
+        `SELECT COUNT(*) AS count FROM notifications
+          WHERE user_id = (SELECT id FROM users WHERE site_user_id = ?)
+            AND read_at IS NULL AND (expires_at IS NULL OR expires_at > ?)`,
+      )
+      .bind(siteUserId, timestamp),
+  ];
+  if (!includeHome) return statements;
+  const range = dashboardRange();
+  statements.push(
+    db
+      .prepare(
+        `SELECT id, parent_id AS parentId, name, icon, color, position,
+                created_at AS createdAt, updated_at AS updatedAt
+           FROM collections
+          WHERE user_id = (SELECT id FROM users WHERE site_user_id = ?)
+            AND deleted_at IS NULL
+          ORDER BY CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END, position, updated_at DESC`,
+      )
+      .bind(siteUserId),
+    db
+      .prepare(
+        `SELECT ci.id, ci.collection_id AS collectionId, ci.item_type AS itemType,
+                ci.target_id AS targetId, ci.label, ci.position, ci.created_at AS createdAt
+           FROM collection_items ci
+           JOIN collections c ON c.id = ci.collection_id
+          WHERE c.user_id = (SELECT id FROM users WHERE site_user_id = ?)
+            AND c.deleted_at IS NULL
+          ORDER BY ci.position`,
+      )
+      .bind(siteUserId),
+    db
+      .prepare("SELECT COUNT(*) AS count FROM jobs WHERE status = 'ACTIVE' AND created_at >= ?")
+      .bind(range.weekAgo),
+    db
+      .prepare(
+        `SELECT COUNT(*) AS count
+           FROM saved_jobs sj JOIN jobs j ON j.id = sj.job_id
+          WHERE sj.user_id = (SELECT id FROM users WHERE site_user_id = ?)
+            AND j.status = 'ACTIVE' AND j.deadline_at BETWEEN ? AND ?`,
+      )
+      .bind(siteUserId, range.now, range.weekAhead),
+    db
+      .prepare(
+        `SELECT COUNT(*) AS count FROM learning_progress
+          WHERE user_id = (SELECT id FROM users WHERE site_user_id = ?)
+            AND next_review_at <= ?`,
+      )
+      .bind(siteUserId, range.now),
+    db.prepare(dailyChallengeSettingSql),
+    db
+      .prepare(
+        `SELECT dc.id, dc.problem_id AS problemId, dc.level_slot AS levelSlot,
+                dc.created_at AS createdAt, p.source_url AS sourceUrl,
+                p.display_title AS displayTitle, p.level, p.track, p.tags,
+                pp.status, pp.favorite,
+                (SELECT COUNT(*) FROM solutions s
+                  WHERE s.problem_id = p.id AND s.deleted_at IS NULL) AS solutionCount
+           FROM daily_challenges dc
+           JOIN coding_problems p ON p.id = dc.problem_id AND p.active = 1
+           LEFT JOIN problem_progress pp ON pp.problem_id = p.id
+            AND pp.user_id = (SELECT id FROM users WHERE site_user_id = ?)
+          WHERE dc.kst_date = ? AND dc.level_slot IN (1, 2, 34)
+          ORDER BY CASE dc.level_slot WHEN 1 THEN 1 WHEN 2 THEN 2 ELSE 3 END`,
+      )
+      .bind(siteUserId, today),
+  );
+  return statements;
+};
+
+async function bootstrapPayload(
+  db: D1Database,
+  user: UserRow,
+  includeHome: boolean,
+  today: string,
+  rateWindow: RateLimitWindow,
+  results: BatchResult[],
+) {
+  assertRateLimit(Number(batchRows<CountRow>(results[0])[0]?.count || 1), rateWindow);
+  const unreadCount = Number(batchRows<CountRow>(results[2])[0]?.count || 0);
+  const shouldIncludeHome = includeHome && Boolean(user.onboardingCompletedAt);
+  if (!shouldIncludeHome) return { user: apiUser(user), unreadCount, home: null };
+  const setting = batchRows<DailyChallengeSettingRow>(results[8])[0];
+  const dailyRows = batchRows<DailyChallengeRow>(results[9]);
+  return {
+    user: apiUser(user),
+    unreadCount,
+    home: {
+      collections: collectionValue(
+        batchRows<Record<string, unknown>>(results[3]),
+        batchRows<Record<string, unknown>>(results[4]),
+      ),
+      dashboard: dashboardValue(results.slice(5, 8) as Array<{ results?: CountRow[] }>),
+      dailyChallenges: await completeDailyChallenges(db, user.id, today, dailyRows, setting),
+    },
+  };
+}
+
+async function bootstrap(identity: Identity, env: D1Env, includeHome: boolean) {
+  const today = kstDate();
+  const rateWindow = rateLimitWindow('GET', env, '/api/v1/bootstrap');
+  const fastResults = (await env.DB.batch<Record<string, unknown>>(
+    bootstrapStatementsForSiteUser(env.DB, identity.userId, includeHome, today, rateWindow),
+  )) as BatchResult[];
+  const existing = batchRows<UserRow>(fastResults[0])[0];
+  if (existing && !asBoolean(existing.isActive)) {
+    throw new RouteError(403, '비활성화된 계정입니다.');
+  }
+  if (
+    existing &&
+    existing.email === identity.email &&
+    existing.role === expectedRole(identity, env, existing.role)
+  ) {
+    return bootstrapPayload(env.DB, existing, includeHome, today, rateWindow, fastResults.slice(1));
+  }
+
+  const user = await resolveUser(identity, env);
+  const results = (await env.DB.batch<Record<string, unknown>>(
+    bootstrapStatementsForUser(
+      env.DB,
+      user.id,
+      includeHome && Boolean(user.onboardingCompletedAt),
+      today,
+      rateWindow,
     ),
-  );
-  result.push(
-    await dailyChallenge(
-      db,
-      userId,
-      2,
-      'ALGORITHM',
-      [algorithmLevels[1] ?? algorithmLevels[0] ?? 2],
-      repeatExclusionDays,
-      allowRepeatRelaxation,
-    ),
-  );
-  result.push(
-    await dailyChallenge(db, userId, 34, 'SQL', [3, 4], repeatExclusionDays, allowRepeatRelaxation),
-  );
-  return result;
+  )) as BatchResult[];
+  return bootstrapPayload(env.DB, user, includeHome, today, rateWindow, results);
 }
 
 type SolutionRow = {
@@ -2603,35 +2929,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
   }
 
   if (method === 'GET' && path === '/dashboard') {
-    const now = nowIso();
-    const weekAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
-    const weekAhead = new Date(Date.now() + 7 * 86_400_000).toISOString();
-    const [recent, expiring, due] = await Promise.all([
-      first<{ count: number }>(
-        db,
-        "SELECT COUNT(*) AS count FROM jobs WHERE status = 'ACTIVE' AND created_at >= ?",
-        weekAgo,
-      ),
-      first<{ count: number }>(
-        db,
-        `SELECT COUNT(*) AS count FROM saved_jobs sj JOIN jobs j ON j.id = sj.job_id WHERE sj.user_id = ? AND j.status = 'ACTIVE' AND j.deadline_at BETWEEN ? AND ?`,
-        user.id,
-        now,
-        weekAhead,
-      ),
-      first<{ count: number }>(
-        db,
-        'SELECT COUNT(*) AS count FROM learning_progress WHERE user_id = ? AND next_review_at <= ?',
-        user.id,
-        now,
-      ),
-    ]);
-    return {
-      recentJobs: Number(recent?.count || 0),
-      expiringJobs: Number(expiring?.count || 0),
-      dueReviews: Number(due?.count || 0),
-      recentActivity: [],
-    };
+    return dashboard(db, user.id);
   }
   if (method === 'GET' && path === '/search') {
     const query = cleanText(url.searchParams.get('q'));
@@ -2711,13 +3009,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
   }
 
   if (method === 'GET' && path === '/notifications/unread-count') {
-    const row = await first<{ count: number }>(
-      db,
-      `SELECT COUNT(*) AS count FROM notifications
-        WHERE user_id = ? AND read_at IS NULL AND (expires_at IS NULL OR expires_at > ?)`,
-      user.id,
-      nowIso(),
-    );
+    const row = await first<CountRow>(db, unreadCountSql, user.id, nowIso());
     return { count: Number(row?.count || 0) };
   }
   if (method === 'GET' && path === '/notifications') {
@@ -3823,6 +4115,15 @@ export async function handleD1Api(request: Request, env: D1Env) {
       );
     }
     const identity = identityFrom(request);
+    if (request.method.toUpperCase() === 'GET' && url.pathname === '/api/v1/bootstrap') {
+      return finish(
+        responseJson(
+          await bootstrap(identity, env, url.searchParams.get('home') === '1'),
+          200,
+          requestId,
+        ),
+      );
+    }
     const user = await resolveUser(identity, env);
     await enforceRateLimit(request, env, user.id, url.pathname);
     const result = await handleRoute(request, env, user, url);

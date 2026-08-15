@@ -48,7 +48,7 @@ describe('solution editor', () => {
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
         calls.push({ url, body: init?.body ? JSON.parse(String(init.body)) : undefined });
-        if (url.endsWith('/auth/me'))
+        if (url.includes('/bootstrap'))
           return response({
             user: {
               id: 'member',
@@ -58,6 +58,8 @@ describe('solution editor', () => {
               preferredLanguage: 'javascript',
               onboardingCompleted: true,
             },
+            unreadCount: 0,
+            home: null,
           });
         if (url.includes('/coding/problems?')) {
           const items = url.includes('track=SQL') ? [sqlProblem] : [problem, levelTwoProblem];

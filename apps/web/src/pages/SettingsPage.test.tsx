@@ -17,7 +17,7 @@ describe('settings page', () => {
           method: init?.method || 'GET',
           body: init?.body ? JSON.parse(String(init.body)) : undefined,
         });
-        if (url.endsWith('/auth/me')) {
+        if (url.includes('/bootstrap')) {
           return response({
             user: {
               id: 'member',
@@ -27,6 +27,8 @@ describe('settings page', () => {
               preferredLanguage: 'python',
               onboardingCompleted: true,
             },
+            unreadCount: 0,
+            home: null,
           });
         }
         return response({

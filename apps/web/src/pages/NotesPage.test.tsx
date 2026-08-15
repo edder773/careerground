@@ -31,6 +31,8 @@ const member = {
   onboardingCompleted: true,
 };
 
+const bootstrapMember = { user: member, unreadCount: 0, home: null };
+
 describe('personal note workbench', () => {
   it('creates a private note without exposing a visibility control', async () => {
     const calls: Array<{ url: string; method: string; body?: Record<string, unknown> }> = [];
@@ -43,7 +45,7 @@ describe('personal note workbench', () => {
           ? (JSON.parse(String(init.body)) as Record<string, unknown>)
           : undefined;
         calls.push({ url, method, body });
-        if (method === 'GET' && url.endsWith('/auth/me')) return response({ user: member });
+        if (method === 'GET' && url.includes('/bootstrap')) return response(bootstrapMember);
         if (method === 'GET' && url.endsWith('/notes/trash')) return response([]);
         if (method === 'GET' && url.endsWith('/notes')) return response([note]);
         return response({ ...note, id: 'new-note', title: body?.title, markdown: body?.markdown });
@@ -85,7 +87,7 @@ describe('personal note workbench', () => {
         const url = String(input);
         const method = init?.method || 'GET';
         calls.push({ url, method });
-        if (method === 'GET' && url.endsWith('/auth/me')) return response({ user: member });
+        if (method === 'GET' && url.includes('/bootstrap')) return response(bootstrapMember);
         if (method === 'GET' && url.endsWith('/notes/trash')) return response([]);
         if (method === 'GET') return response([note]);
         return response({ deleted: true });
@@ -116,7 +118,7 @@ describe('personal note workbench', () => {
         const url = String(input);
         const method = init?.method || 'GET';
         calls.push({ url, method });
-        if (method === 'GET' && url.endsWith('/auth/me')) return response({ user: member });
+        if (method === 'GET' && url.includes('/bootstrap')) return response(bootstrapMember);
         if (method === 'GET' && url.endsWith('/notes/trash'))
           return response([
             { id: 'deleted-note', title: '삭제된 면접 노트', deletedAt: '2026-08-14T00:00:00Z' },
@@ -156,7 +158,7 @@ describe('personal note workbench', () => {
       'fetch',
       vi.fn((input: RequestInfo | URL) => {
         const url = String(input);
-        if (url.endsWith('/auth/me')) return response({ user: member });
+        if (url.includes('/bootstrap')) return response(bootstrapMember);
         if (url.endsWith('/notes/trash')) return response([]);
         return response([note]);
       }),

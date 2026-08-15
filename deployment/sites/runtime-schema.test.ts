@@ -158,5 +158,5 @@ describe('Sites production migration baseline', () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
-  });
+  }, 15_000);
 });

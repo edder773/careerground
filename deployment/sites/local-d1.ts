@@ -80,7 +80,9 @@ export class LocalD1 implements D1Database {
       for (const [index, statement] of statements.entries()) {
         if (this.failBatchAt === index) throw new Error('injected D1 batch failure');
         results.push(
-          statement instanceof LocalD1Statement && /^\s*(SELECT|WITH|PRAGMA)/i.test(statement.sql)
+          statement instanceof LocalD1Statement &&
+            (/^\s*(SELECT|WITH|PRAGMA)/i.test(statement.sql) ||
+              /\bRETURNING\b/i.test(statement.sql))
             ? await statement.all<T>()
             : await statement.run<T>(),
         );

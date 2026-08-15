@@ -12,9 +12,11 @@ describe('responsive application navigation', () => {
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL) =>
-        String(input).endsWith('/auth/me')
+        String(input).includes('/bootstrap')
           ? response({
               user: { id: 'u', email: 'member@example.com', displayName: '멤버', role: 'MEMBER' },
+              unreadCount: 0,
+              home: null,
             })
           : response({}),
       ),

@@ -122,6 +122,98 @@ describe('Sites D1 API', () => {
     expect((await call('/api/v1/auth/me', {}, memberHeaders, env)).response.status).toBe(200);
   });
 
+  it('does not rewrite or reread an unchanged signed-in user', async () => {
+    await call('/api/v1/auth/me', {}, memberHeaders);
+    const before = await db
+      .prepare('SELECT updated_at AS updatedAt FROM users WHERE site_user_id = ?')
+      .bind(memberHeaders['oai-authenticated-user-id'])
+      .first<{ updatedAt: string }>();
+
+    db.resetQueryCount();
+    db.resetPreparedSql();
+    const repeated = await call('/api/v1/auth/me', {}, memberHeaders);
+
+    expect(repeated.response.status).toBe(200);
+    expect(db.getQueryCount()).toBe(2);
+    expect(db.preparedSql.filter((sql) => sql.includes('FROM users'))).toHaveLength(1);
+    expect(db.preparedSql.some((sql) => /^\s*UPDATE users/i.test(sql))).toBe(false);
+    const after = await db
+      .prepare('SELECT updated_at AS updatedAt FROM users WHERE site_user_id = ?')
+      .bind(memberHeaders['oai-authenticated-user-id'])
+      .first<{ updatedAt: string }>();
+    expect(after?.updatedAt).toBe(before?.updatedAt);
+  });
+
+  it('persists and audits a role change without rereading the user', async () => {
+    await call('/api/v1/auth/me', {}, memberHeaders, { OPENAI_ADMIN_EMAILS: '' });
+    db.resetQueryCount();
+    db.resetPreparedSql();
+
+    const promoted = await call('/api/v1/auth/me', {}, memberHeaders, {
+      OPENAI_ADMIN_EMAILS: 'member@example.test',
+    });
+
+    expect(promoted.body).toMatchObject({ user: { role: 'ADMIN' } });
+    expect(db.getQueryCount()).toBe(4);
+    expect(db.preparedSql.filter((sql) => sql.includes('FROM users'))).toHaveLength(1);
+    const stored = await db
+      .prepare('SELECT role FROM users WHERE site_user_id = ?')
+      .bind(memberHeaders['oai-authenticated-user-id'])
+      .first<{ role: string }>();
+    const roleAudit = await db
+      .prepare("SELECT action FROM audit_logs WHERE action = 'USER_ROLE_SYNCED'")
+      .first<{ action: string }>();
+    expect(stored?.role).toBe('ADMIN');
+    expect(roleAudit?.action).toBe('USER_ROLE_SYNCED');
+  });
+
+  it('returns the signed-in home workspace in one bootstrap D1 batch', async () => {
+    await call(
+      '/api/v1/auth/onboarding',
+      {
+        method: 'POST',
+        body: JSON.stringify({ displayName: '부트스트랩 멤버', preferredLanguage: 'javascript' }),
+      },
+      memberHeaders,
+    );
+    await call('/api/v1/coding/daily-challenges', {}, memberHeaders);
+
+    db.resetQueryCount();
+    db.resetPreparedSql();
+    const loaded = await call('/api/v1/bootstrap?home=1', {}, memberHeaders);
+
+    expect(loaded.response.status).toBe(200);
+    expect(loaded.body).toMatchObject({
+      user: { displayName: '부트스트랩 멤버', onboardingCompleted: true },
+      unreadCount: 1,
+      home: {
+        collections: [],
+        dashboard: { recentJobs: expect.any(Number), dueReviews: 0 },
+        dailyChallenges: [
+          expect.objectContaining({ levelSlot: 1 }),
+          expect.objectContaining({ levelSlot: 2 }),
+          expect.objectContaining({ levelSlot: 34 }),
+        ],
+      },
+    });
+    expect(db.getQueryCount()).toBe(11);
+    expect(db.preparedSql.some((sql) => /^\s*UPDATE users/i.test(sql))).toBe(false);
+    expect(loaded.response.headers.get('server-timing')).toMatch(/^app;dur=\d+\.\d$/);
+  });
+
+  it('enforces the read limit inside the bootstrap batch', async () => {
+    await call('/api/v1/auth/me', {}, memberHeaders);
+    const env = { RATE_LIMIT_READS_PER_MINUTE: '2' };
+
+    expect((await call('/api/v1/bootstrap', {}, memberHeaders, env)).response.status).toBe(200);
+    expect((await call('/api/v1/bootstrap', {}, memberHeaders, env)).response.status).toBe(200);
+    const limited = await call('/api/v1/bootstrap', {}, memberHeaders, env);
+
+    expect(limited.response.status).toBe(429);
+    expect(limited.response.headers.get('retry-after')).toMatch(/^\d+$/);
+    expect(limited.body).toMatchObject({ code: 'RATE_LIMITED' });
+  });
+
   it('persists a personal folder and external link', async () => {
     const created = await call('/api/v1/collections', {
       method: 'POST',
@@ -430,6 +522,30 @@ describe('Sites D1 API', () => {
     const adminChallenges = await call('/api/v1/coding/daily-challenges');
     const memberChallenges = await call('/api/v1/coding/daily-challenges', {}, memberHeaders);
     expect(memberChallenges.body).toEqual(adminChallenges.body);
+  });
+
+  it('loads all existing daily challenges with one joined catalog query', async () => {
+    const prepared = await call('/api/v1/coding/daily-challenges', {}, memberHeaders);
+    expect(prepared.response.status).toBe(200);
+
+    db.resetQueryCount();
+    db.resetPreparedSql();
+    const repeated = await call('/api/v1/coding/daily-challenges', {}, memberHeaders);
+
+    expect(repeated.response.status).toBe(200);
+    expect(repeated.body).toHaveLength(3);
+    expect(repeated.body).toEqual([
+      expect.objectContaining({ levelSlot: 1, problem: expect.objectContaining({ level: 1 }) }),
+      expect.objectContaining({ levelSlot: 2, problem: expect.objectContaining({ level: 2 }) }),
+      expect.objectContaining({
+        levelSlot: 34,
+        problem: expect.objectContaining({ track: 'SQL' }),
+      }),
+    ]);
+    expect(db.getQueryCount()).toBe(4);
+    expect(db.preparedSql.filter((sql) => sql.includes('FROM daily_challenges dc'))).toHaveLength(
+      1,
+    );
   });
 
   it('limits calendar queries to the requested deadline month', async () => {
