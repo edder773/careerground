@@ -77,10 +77,10 @@ describe('Sites worker bootstrap fast path', () => {
     expect(await response.json()).toMatchObject({ user: { displayName: 'Phase Two' } });
     const ledger = await db
       .prepare('SELECT checksum FROM app_schema_migrations WHERE version = ?')
-      .bind('0017_marvelous_blockbuster')
+      .bind('0018_sloppy_leech')
       .first<{ checksum: string }>();
     expect(ledger?.checksum).toBe(
-      'sha256:e2d828e1a606fe4991fdbbf71441265333188ecb79107f1ba7ce2fe44896ab32',
+      'sha256:86c1de85559a9b51e959bf7c423ad8a9e9afd3586ad672c2ec32da009057fe4b',
     );
   });
 });

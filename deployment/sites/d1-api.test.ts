@@ -130,12 +130,16 @@ describe('Sites D1 API', () => {
       .first<{ updatedAt: string }>();
 
     db.resetQueryCount();
+    db.resetBatchCount();
     db.resetPreparedSql();
     const repeated = await call('/api/v1/auth/me', {}, memberHeaders);
 
     expect(repeated.response.status).toBe(200);
     expect(db.getQueryCount()).toBe(2);
-    expect(db.preparedSql.filter((sql) => sql.includes('FROM users'))).toHaveLength(1);
+    expect(db.getBatchCount()).toBe(1);
+    expect(db.preparedSql.filter((sql) => sql.includes('site_user_id AS siteUserId'))).toHaveLength(
+      1,
+    );
     expect(db.preparedSql.some((sql) => /^\s*UPDATE users/i.test(sql))).toBe(false);
     const after = await db
       .prepare('SELECT updated_at AS updatedAt FROM users WHERE site_user_id = ?')
@@ -147,6 +151,7 @@ describe('Sites D1 API', () => {
   it('persists and audits a role change without rereading the user', async () => {
     await call('/api/v1/auth/me', {}, memberHeaders, { OPENAI_ADMIN_EMAILS: '' });
     db.resetQueryCount();
+    db.resetBatchCount();
     db.resetPreparedSql();
 
     const promoted = await call('/api/v1/auth/me', {}, memberHeaders, {
@@ -155,7 +160,10 @@ describe('Sites D1 API', () => {
 
     expect(promoted.body).toMatchObject({ user: { role: 'ADMIN' } });
     expect(db.getQueryCount()).toBe(4);
-    expect(db.preparedSql.filter((sql) => sql.includes('FROM users'))).toHaveLength(1);
+    expect(db.getBatchCount()).toBe(2);
+    expect(db.preparedSql.filter((sql) => sql.includes('site_user_id AS siteUserId'))).toHaveLength(
+      1,
+    );
     const stored = await db
       .prepare('SELECT role FROM users WHERE site_user_id = ?')
       .bind(memberHeaders['oai-authenticated-user-id'])
@@ -211,6 +219,24 @@ describe('Sites D1 API', () => {
 
     expect(limited.response.status).toBe(429);
     expect(limited.response.headers.get('retry-after')).toMatch(/^\d+$/);
+    expect(limited.body).toMatchObject({ code: 'RATE_LIMITED' });
+  });
+
+  it('enforces the read limit inside the fast job batch', async () => {
+    await call('/api/v1/auth/me', {}, memberHeaders);
+    const env = { RATE_LIMIT_READS_PER_MINUTE: '1' };
+
+    expect(
+      (await call('/api/v1/jobs?sort=new&page=cursor&limit=40', {}, memberHeaders, env)).response
+        .status,
+    ).toBe(200);
+    const limited = await call(
+      '/api/v1/jobs?sort=new&page=cursor&limit=40',
+      {},
+      memberHeaders,
+      env,
+    );
+    expect(limited.response.status).toBe(429);
     expect(limited.body).toMatchObject({ code: 'RATE_LIMITED' });
   });
 
@@ -387,6 +413,57 @@ describe('Sites D1 API', () => {
     );
   });
 
+  it('serves the job catalog and page bootstrap with one D1 dispatch each', async () => {
+    await call('/api/v1/auth/me', {}, memberHeaders);
+
+    db.resetQueryCount();
+    db.resetBatchCount();
+    const catalog = await call('/api/v1/jobs?sort=new&page=cursor&limit=40', {}, memberHeaders);
+    expect(catalog.response.status).toBe(200);
+    expect(catalog.body).toMatchObject({ items: expect.any(Array), total: 119 });
+    expect(db.getQueryCount()).toBe(4);
+    expect(db.getBatchCount()).toBe(1);
+    expect(
+      db.preparedSql.some(
+        (sql) =>
+          sql.includes('INDEXED BY idx_jobs_feed_collected_id') &&
+          sql.includes('ORDER BY j.collected_at DESC, j.id DESC'),
+      ),
+    ).toBe(true);
+
+    db.resetQueryCount();
+    db.resetBatchCount();
+    const bootstrap = await call(
+      '/api/v1/jobs/bootstrap?sort=new&page=cursor&limit=40',
+      {},
+      memberHeaders,
+    );
+    expect(bootstrap.response.status).toBe(200);
+    expect(bootstrap.body).toMatchObject({
+      user: { email: 'member@example.test' },
+      unreadCount: expect.any(Number),
+      categories: expect.arrayContaining(['백엔드']),
+      data: { items: expect.any(Array), total: 119 },
+    });
+    expect(db.getQueryCount()).toBe(7);
+    expect(db.getBatchCount()).toBe(1);
+  });
+
+  it('returns the welcome unread count when job bootstrap provisions a new user', async () => {
+    const newcomer = {
+      ...memberHeaders,
+      'oai-authenticated-user-id': 'job-bootstrap-newcomer',
+      'oai-authenticated-user-email': 'job-bootstrap-newcomer@example.test',
+    };
+    const bootstrap = await call(
+      '/api/v1/jobs/bootstrap?sort=new&page=cursor&limit=40',
+      {},
+      newcomer,
+    );
+    expect(bootstrap.response.status).toBe(200);
+    expect(bootstrap.body).toMatchObject({ unreadCount: 1, data: { total: 119 } });
+  });
+
   it('returns stable cursor pages and totals for large shared catalogs', async () => {
     const firstProblems = await call(
       '/api/v1/coding/problems?track=ALGORITHM&page=cursor&limit=25',
@@ -488,6 +565,7 @@ describe('Sites D1 API', () => {
     expect(prepared.response.status).toBe(200);
 
     db.resetQueryCount();
+    db.resetBatchCount();
     db.resetPreparedSql();
     const repeated = await call('/api/v1/coding/daily-challenges', {}, memberHeaders);
 
@@ -502,6 +580,7 @@ describe('Sites D1 API', () => {
       }),
     ]);
     expect(db.getQueryCount()).toBe(4);
+    expect(db.getBatchCount()).toBe(2);
     expect(db.preparedSql.filter((sql) => sql.includes('FROM daily_challenges dc'))).toHaveLength(
       1,
     );

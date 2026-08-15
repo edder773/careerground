@@ -341,6 +341,16 @@ export const jobs = sqliteTable(
       .where(
         sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
       ),
+    index('idx_jobs_feed_collected_id')
+      .on(table.collectedAt, table.id)
+      .where(
+        sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
+      ),
+    index('idx_jobs_active_category')
+      .on(table.category)
+      .where(
+        sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
+      ),
     index('idx_jobs_calendar_created')
       .on(table.createdAt)
       .where(

@@ -9,6 +9,20 @@ import { renderPage, response } from '../test/render';
 
 describe('domain pages', () => {
   const calls: Array<{ url: string; method: string; body?: unknown }> = [];
+  const jobBootstrap = (data: unknown, categories: string[]) =>
+    response({
+      user: {
+        id: 'member',
+        email: 'member@example.test',
+        displayName: '멤버',
+        role: 'MEMBER',
+        preferredLanguage: 'javascript',
+        onboardingCompleted: true,
+      },
+      unreadCount: 0,
+      categories,
+      data,
+    });
   beforeEach(() => {
     calls.length = 0;
   });
@@ -37,7 +51,9 @@ describe('domain pages', () => {
         const url = String(input);
         calls.push({ url, method: init?.method || 'GET' });
         if (url.endsWith('/jobs/categories')) return response(['AI 풀스택 개발']);
-        return response({ items: catalog, nextCursor: null, total: catalog.length });
+        return jobBootstrap({ items: catalog, nextCursor: null, total: catalog.length }, [
+          'AI 풀스택 개발',
+        ]);
       }),
     );
     const user = userEvent.setup();
@@ -103,8 +119,8 @@ describe('domain pages', () => {
         const url = String(input);
         calls.push({ url, method: init?.method || 'GET' });
         if (url.endsWith('/jobs/categories')) return response(['백엔드']);
-        if (url.includes('calendar=true')) return response([job]);
-        return response({ items: [job], nextCursor: null, total: 1 });
+        if (url.includes('calendar=true')) return jobBootstrap([job], ['백엔드']);
+        return jobBootstrap({ items: [job], nextCursor: null, total: 1 }, ['백엔드']);
       }),
     );
     const user = userEvent.setup();
@@ -184,8 +200,10 @@ describe('domain pages', () => {
       vi.fn((input: RequestInfo | URL) => {
         const url = String(input);
         if (url.endsWith('/jobs/categories')) return response(['백엔드']);
-        if (url.includes('calendar=true')) return response(catalog);
-        return response({ items: catalog, nextCursor: null, total: catalog.length });
+        if (url.includes('calendar=true')) return jobBootstrap(catalog, ['백엔드']);
+        return jobBootstrap({ items: catalog, nextCursor: null, total: catalog.length }, [
+          '백엔드',
+        ]);
       }),
     );
     const user = userEvent.setup();

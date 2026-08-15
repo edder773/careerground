@@ -18,12 +18,13 @@ describe('Sites package staging', () => {
       writeFileSync(join(project, 'dist/server/index.js'), 'export default {};\n');
       writeFileSync(join(project, '.openai/hosting.json'), '{"d1":"DB"}\n');
       writeFileSync(join(project, 'dist/.openai/drizzle/0017_forward.sql'), 'SELECT 17;\n');
+      writeFileSync(join(project, 'dist/.openai/drizzle/0018_index.sql'), 'SELECT 18;\n');
       writeFileSync(join(project, 'drizzle/0000_baseline.sql'), 'SELECT 0;\n');
       writeFileSync(join(project, 'drizzle/0017_forward.sql'), 'SELECT 17;\n');
 
       const result = await preparePackageStage(project, stage);
 
-      expect(result.migrations).toEqual(['0017_forward.sql']);
+      expect(result.migrations).toEqual(['0017_forward.sql', '0018_index.sql']);
       expect(() => readFileSync(join(stage, 'drizzle/0000_baseline.sql'))).toThrow();
       expect(readFileSync(join(stage, 'dist/.openai/drizzle/0017_forward.sql'), 'utf8')).toBe(
         'SELECT 17;\n',

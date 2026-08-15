@@ -125,6 +125,16 @@ export function responseSchemaFor(path: string, method = 'GET'): z.ZodType {
       .passthrough();
   }
   if (endpoint === '/jobs/categories') return z.array(z.string());
+  if (endpoint === '/jobs/bootstrap') {
+    return z
+      .object({
+        user,
+        unreadCount: z.number().nonnegative(),
+        categories: z.array(z.string()),
+        data: arrayOrCursor(job),
+      })
+      .passthrough();
+  }
   if (endpoint === '/jobs') return arrayOrCursor(job);
   if (/^\/jobs\/[^/]+$/.test(endpoint)) return job;
   if (endpoint === '/coding/problems') return arrayOrCursor(problem);

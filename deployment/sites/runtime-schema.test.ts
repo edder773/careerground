@@ -11,7 +11,7 @@ describe('Sites runtime schema', () => {
 
   beforeEach(async () => {
     db = new LocalD1();
-    await run(db, "DELETE FROM app_schema_migrations WHERE version = '0017_marvelous_blockbuster'");
+    await run(db, "DELETE FROM app_schema_migrations WHERE version = '0018_sloppy_leech'");
     await run(db, 'DROP TABLE workspace_search');
     for (const table of [
       'job_source_snapshot_items',
@@ -103,7 +103,7 @@ describe('Sites runtime schema', () => {
 });
 
 describe('Sites production migration baseline', () => {
-  it('applies the packaged 0017 migration after the existing 0016 schema without replaying history', async () => {
+  it('applies the packaged forward migrations after the existing 0016 schema without replaying history', async () => {
     const root = mkdtempSync(join(tmpdir(), 'careerground-sites-migration-'));
     const baselineDirectory = join(root, 'baseline');
     const forwardDirectory = join(root, 'forward');
@@ -121,6 +121,10 @@ describe('Sites production migration baseline', () => {
       copyFileSync(
         join('drizzle', '0017_marvelous_blockbuster.sql'),
         join(forwardDirectory, '0017_marvelous_blockbuster.sql'),
+      );
+      copyFileSync(
+        join('drizzle', '0018_sloppy_leech.sql'),
+        join(forwardDirectory, '0018_sloppy_leech.sql'),
       );
 
       const baseline = new LocalD1(databasePath, baselineDirectory);
@@ -172,6 +176,8 @@ describe('Sites production migration baseline', () => {
         learningColumns: number;
         publishedColumn: number;
         notificationIndex: number;
+        feedIndex: number;
+        categoryIndex: number;
         removedNoteTables: number;
         noteItems: number;
         checksum: string;
@@ -184,11 +190,15 @@ describe('Sites production migration baseline', () => {
                   WHERE name = 'published_at') AS publishedColumn,
                 (SELECT COUNT(*) FROM pragma_index_list('notifications')
                   WHERE name = 'idx_notifications_user_read_expiry_created') AS notificationIndex,
+                (SELECT COUNT(*) FROM pragma_index_list('jobs')
+                  WHERE name = 'idx_jobs_feed_collected_id') AS feedIndex,
+                (SELECT COUNT(*) FROM pragma_index_list('jobs')
+                  WHERE name = 'idx_jobs_active_category') AS categoryIndex,
                 (SELECT COUNT(*) FROM sqlite_schema
                   WHERE type = 'table' AND name IN ('notes', 'note_revisions')) AS removedNoteTables,
                 (SELECT COUNT(*) FROM collection_items WHERE item_type = 'NOTE') AS noteItems,
                 (SELECT checksum FROM app_schema_migrations
-                  WHERE version = '0017_marvelous_blockbuster') AS checksum`,
+                  WHERE version = '0018_sloppy_leech') AS checksum`,
       );
 
       expect(schema).toEqual({
@@ -196,9 +206,11 @@ describe('Sites production migration baseline', () => {
         learningColumns: 2,
         publishedColumn: 1,
         notificationIndex: 1,
+        feedIndex: 1,
+        categoryIndex: 1,
         removedNoteTables: 0,
         noteItems: 0,
-        checksum: 'sha256:e2d828e1a606fe4991fdbbf71441265333188ecb79107f1ba7ce2fe44896ab32',
+        checksum: 'sha256:86c1de85559a9b51e959bf7c423ad8a9e9afd3586ad672c2ec32da009057fe4b',
       });
       await expect(
         run(

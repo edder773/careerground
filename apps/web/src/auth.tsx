@@ -5,7 +5,7 @@ import { api, ApiError, type User } from './lib/api';
 type BootstrapPayload = {
   user: User;
   unreadCount: number;
-  home: null | {
+  home?: null | {
     collections: unknown[];
     dashboard: {
       recentJobs: number;
@@ -14,6 +14,35 @@ type BootstrapPayload = {
       recentActivity: unknown[];
     };
     dailyChallenges: unknown[];
+  };
+  categories?: string[];
+  data?: unknown[] | { items: unknown[]; nextCursor: string | null; total: number };
+};
+
+const initialJobsBootstrap = () => {
+  const current = new URLSearchParams(window.location.search);
+  const companySizes = current.getAll('companySize');
+  const categories = current.getAll('category');
+  const requestedSort = current.get('sort');
+  const sort = requestedSort === 'deadline' || requestedSort === 'company' ? requestedSort : 'new';
+  const search = current.get('q') || '';
+  const savedOnly = current.get('saved') === '1';
+  const request = new URLSearchParams({ sort, page: 'cursor', limit: '40' });
+  companySizes.forEach((value) => request.append('companySize', value));
+  categories.forEach((value) => request.append('category', value));
+  if (search) request.set('q', search);
+  if (savedOnly) request.set('saved', '1');
+  return {
+    path: `/jobs/bootstrap?${request.toString()}`,
+    queryKey: [
+      'jobs',
+      'list',
+      companySizes.join('|'),
+      categories.join('|'),
+      search,
+      savedOnly,
+      sort,
+    ],
   };
 };
 
@@ -33,12 +62,23 @@ export function AuthProvider({ children }: PropsWithChildren) {
     queryKey: ['me'],
     queryFn: async () => {
       const includeHome = window.location.pathname === '/';
-      const payload = await api<BootstrapPayload>(`/bootstrap${includeHome ? '?home=1' : ''}`);
+      const includeJobs = window.location.pathname === '/jobs';
+      const jobsBootstrap = includeJobs ? initialJobsBootstrap() : undefined;
+      const payload = await api<BootstrapPayload>(
+        jobsBootstrap?.path || `/bootstrap${includeHome ? '?home=1' : ''}`,
+      );
       client.setQueryData(['notification-unread-count'], { count: payload.unreadCount });
       if (payload.home) {
         client.setQueryData(['collections'], payload.home.collections);
         client.setQueryData(['dashboard'], payload.home.dashboard);
         client.setQueryData(['daily-challenges'], payload.home.dailyChallenges);
+      }
+      if (jobsBootstrap && payload.categories && payload.data && !Array.isArray(payload.data)) {
+        client.setQueryData(['jobs', 'categories'], payload.categories);
+        client.setQueryData(jobsBootstrap.queryKey, {
+          pages: [payload.data],
+          pageParams: [null],
+        });
       }
       return { user: payload.user };
     },

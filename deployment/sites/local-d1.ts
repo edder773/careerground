@@ -39,6 +39,7 @@ export class LocalD1 implements D1Database {
   private batchQueue: Promise<void> = Promise.resolve();
   private failBatchAt?: number;
   private queryCount = 0;
+  private batchCount = 0;
   preparedSql: string[] = [];
 
   constructor(filename = ':memory:', migrationsDirectory = 'drizzle') {
@@ -70,11 +71,20 @@ export class LocalD1 implements D1Database {
     return this.queryCount;
   }
 
+  resetBatchCount() {
+    this.batchCount = 0;
+  }
+
+  getBatchCount() {
+    return this.batchCount;
+  }
+
   resetPreparedSql() {
     this.preparedSql = [];
   }
 
   async batch<T>(statements: D1PreparedStatement[]): Promise<D1Result<T>[]> {
+    this.batchCount += 1;
     const execution = this.batchQueue.then(() => this.executeBatch<T>(statements));
     this.batchQueue = execution.then(
       () => undefined,

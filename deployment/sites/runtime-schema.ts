@@ -1,9 +1,9 @@
 import { all, first, run, type D1Database } from './d1.js';
 
 const schemaPromises = new WeakMap<D1Database, Promise<void>>();
-export const EXPECTED_SCHEMA_VERSION = '0017_marvelous_blockbuster';
+export const EXPECTED_SCHEMA_VERSION = '0018_sloppy_leech';
 export const EXPECTED_SCHEMA_CHECKSUM =
-  'sha256:e2d828e1a606fe4991fdbbf71441265333188ecb79107f1ba7ce2fe44896ab32';
+  'sha256:86c1de85559a9b51e959bf7c423ad8a9e9afd3586ad672c2ec32da009057fe4b';
 
 const ledgerSchema = `CREATE TABLE IF NOT EXISTS app_schema_migrations (
   version text PRIMARY KEY NOT NULL,
@@ -78,6 +78,14 @@ const additiveSchema = [
   'CREATE UNIQUE INDEX IF NOT EXISTS idx_learning_review_events_sequence ON learning_review_events(user_id, unit_id, sequence)',
   'CREATE INDEX IF NOT EXISTS idx_learning_review_events_user_reviewed ON learning_review_events(user_id, reviewed_at)',
   'CREATE INDEX IF NOT EXISTS idx_notifications_user_read_expiry_created ON notifications(user_id, read_at, expires_at, created_at)',
+  `CREATE INDEX IF NOT EXISTS idx_jobs_feed_collected_id
+     ON jobs(collected_at, id)
+    WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
+      AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
+  `CREATE INDEX IF NOT EXISTS idx_jobs_active_category
+     ON jobs(category)
+    WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
+      AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
 ] as const;
 
 const searchTriggers = [

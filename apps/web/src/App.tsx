@@ -15,9 +15,17 @@ const CodingPage = lazy(() =>
 const SolutionsPage = lazy(() =>
   import('./pages/SolutionsPage').then((module) => ({ default: module.SolutionsPage })),
 );
-const JobsPage = lazy(() =>
-  import('./pages/JobsPage').then((module) => ({ default: module.JobsPage })),
-);
+let jobsPagePromise: Promise<{ default: typeof import('./pages/JobsPage').JobsPage }> | undefined;
+export const preloadJobsPage = () => {
+  jobsPagePromise ??= import('./pages/JobsPage')
+    .then((module) => ({ default: module.JobsPage }))
+    .catch((error) => {
+      jobsPagePromise = undefined;
+      throw error;
+    });
+  return jobsPagePromise;
+};
+const JobsPage = lazy(preloadJobsPage);
 const LearningPage = lazy(() =>
   import('./pages/LearningPage').then((module) => ({ default: module.LearningPage })),
 );

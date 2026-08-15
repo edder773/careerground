@@ -53,6 +53,11 @@ type JobFontSize = 'comfortable' | 'large' | 'largest';
 type CalendarEventType = 'start' | 'deadline' | 'rolling';
 type CalendarEvent = { job: Job; type: CalendarEventType };
 type CursorPage<T> = { items: T[]; nextCursor: string | null; total: number };
+type JobBootstrapPayload = {
+  unreadCount: number;
+  categories: string[];
+  data: Job[] | CursorPage<Job>;
+};
 
 const KOREA_OFFSET_MS = 9 * 60 * 60 * 1000;
 const sizeLabels: Record<string, string> = {
@@ -612,13 +617,6 @@ export function JobsPage() {
   }, [companySizes, searchParams, selectedCategories, setSearchParams, sort]);
 
   const bounds = monthBounds(visibleMonth);
-  const categories = useQuery({
-    queryKey: ['jobs', 'categories'],
-    queryFn: () => api<string[]>('/jobs/categories'),
-    staleTime: 10 * 60_000,
-    gcTime: 30 * 60_000,
-    refetchOnWindowFocus: false,
-  });
   const queryParams = new URLSearchParams({
     sort: viewMode === 'calendar' ? 'deadline' : sort,
     ...(viewMode === 'calendar'
@@ -640,7 +638,12 @@ export function JobsPage() {
       savedOnly,
       `${visibleMonth.getUTCFullYear()}-${visibleMonth.getUTCMonth()}`,
     ],
-    queryFn: () => api<Job[]>(`/jobs?${query}`),
+    queryFn: async () => {
+      const payload = await api<JobBootstrapPayload>(`/jobs/bootstrap?${query}`);
+      client.setQueryData(['notification-unread-count'], { count: payload.unreadCount });
+      client.setQueryData(['jobs', 'categories'], payload.categories);
+      return Array.isArray(payload.data) ? payload.data : payload.data.items;
+    },
     enabled: viewMode === 'calendar',
     placeholderData: keepPreviousData,
     staleTime: 60_000,
@@ -658,19 +661,33 @@ export function JobsPage() {
       sort,
     ],
     initialPageParam: null as string | null,
-    queryFn: ({ pageParam }) => {
+    queryFn: async ({ pageParam }) => {
       const params = new URLSearchParams({ sort, page: 'cursor', limit: '40' });
       companySizes.forEach((value) => params.append('companySize', value));
       selectedCategories.forEach((value) => params.append('category', value));
       if (search) params.set('q', search);
       if (savedOnly) params.set('saved', '1');
       if (pageParam) params.set('cursor', pageParam);
-      return api<CursorPage<Job>>(`/jobs?${params.toString()}`);
+      const payload = await api<JobBootstrapPayload>(`/jobs/bootstrap?${params.toString()}`);
+      client.setQueryData(['notification-unread-count'], { count: payload.unreadCount });
+      client.setQueryData(['jobs', 'categories'], payload.categories);
+      if (Array.isArray(payload.data)) {
+        return { items: payload.data, nextCursor: null, total: payload.data.length };
+      }
+      return payload.data;
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor || undefined,
     enabled: viewMode === 'list',
     staleTime: 60_000,
     gcTime: 10 * 60_000,
+    refetchOnWindowFocus: false,
+  });
+  const categories = useQuery({
+    queryKey: ['jobs', 'categories'],
+    queryFn: () => api<string[]>('/jobs/categories'),
+    enabled: viewMode === 'calendar' ? calendarJobs.isSuccess : listJobs.isSuccess,
+    staleTime: 10 * 60_000,
+    gcTime: 30 * 60_000,
     refetchOnWindowFocus: false,
   });
   const jobRows =

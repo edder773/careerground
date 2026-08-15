@@ -9,6 +9,7 @@ import {
   parseObject,
   run,
   type D1Database,
+  type D1PreparedStatement,
 } from './d1.js';
 import {
   canonicalJobUrl,
@@ -237,9 +238,10 @@ async function audit(
   );
 }
 
-async function resolveUser(identity: Identity, env: D1Env): Promise<UserRow> {
+async function resolveUser(identity: Identity, env: D1Env, knownRow?: UserRow): Promise<UserRow> {
   const db = env.DB;
-  let row = await first<UserRow>(db, `${userSelect} WHERE site_user_id = ?`, identity.userId);
+  let row =
+    knownRow || (await first<UserRow>(db, `${userSelect} WHERE site_user_id = ?`, identity.userId));
   if (!row) {
     const sameEmail = await first<UserRow>(db, `${userSelect} WHERE email = ?`, identity.email);
     if (sameEmail && sameEmail.siteUserId !== identity.userId) {
@@ -416,6 +418,68 @@ async function enforceRateLimit(request: Request, env: D1Env, userId: string, pa
     );
   }
   assertRateLimit(count, window);
+}
+
+const requestContextStatementsForSiteUser = (
+  db: D1Database,
+  siteUserId: string,
+  window: RateLimitWindow,
+  includeUnread: boolean,
+) => {
+  const statements = [
+    db.prepare(`${userSelect} WHERE site_user_id = ?`).bind(siteUserId),
+    db
+      .prepare(
+        `INSERT INTO request_rate_limits (user_id, route_key, window_start, count, updated_at)
+         SELECT id, ?, ?, 1, ? FROM users WHERE site_user_id = ?
+         ON CONFLICT(user_id, route_key, window_start)
+         DO UPDATE SET count = request_rate_limits.count + 1, updated_at = excluded.updated_at
+         RETURNING count`,
+      )
+      .bind(window.routeKey, window.windowStart, new Date(window.now).toISOString(), siteUserId),
+  ];
+  if (includeUnread) {
+    statements.push(
+      db
+        .prepare('DELETE FROM request_rate_limits WHERE window_start < ?')
+        .bind(window.windowStart - 2),
+      db
+        .prepare(
+          `SELECT COUNT(*) AS count FROM notifications
+            WHERE user_id = (SELECT id FROM users WHERE site_user_id = ?)
+              AND read_at IS NULL AND (expires_at IS NULL OR expires_at > ?)`,
+        )
+        .bind(siteUserId, nowIso()),
+    );
+  }
+  return statements;
+};
+
+async function resolveUserAndRateLimit(
+  identity: Identity,
+  request: Request,
+  env: D1Env,
+  path: string,
+) {
+  const window = rateLimitWindow(request.method.toUpperCase(), env, path);
+  const results = (await env.DB.batch(
+    requestContextStatementsForSiteUser(env.DB, identity.userId, window, false),
+  )) as BatchResult[];
+  const candidate = batchRows<UserRow>(results[0])[0];
+  const rateCount = batchRows<CountRow>(results[1])[0];
+  if (candidate && !asBoolean(candidate.isActive)) {
+    throw new RouteError(403, '비활성화된 계정입니다.');
+  }
+  const role = candidate ? expectedRole(identity, env, candidate.role) : undefined;
+  const unchanged =
+    candidate &&
+    candidate.siteUserId === identity.userId &&
+    candidate.email === identity.email &&
+    candidate.role === role;
+  const user = unchanged ? candidate : await resolveUser(identity, env, candidate);
+  if (rateCount) assertRateLimit(Number(rateCount.count || 1), window);
+  else await enforceRateLimit(request, env, user.id, path);
+  return user;
 }
 
 const collectionFoldersSql = `SELECT id, parent_id AS parentId, name, icon, color, position,
@@ -1385,16 +1449,26 @@ function serializeJobRows(rows: Record<string, unknown>[]) {
   }));
 }
 
-async function calendarJobList(
+type JobOwner = { kind: 'userId' | 'siteUserId'; value: string };
+
+type JobReadPlan = {
+  statements: D1PreparedStatement[];
+  value(results: BatchResult[]): unknown;
+};
+
+const jobOwnerSql = (owner: JobOwner) =>
+  owner.kind === 'userId' ? '?' : '(SELECT id FROM users WHERE site_user_id = ?)';
+
+function calendarJobPlan(
   db: D1Database,
-  userId: string,
+  owner: JobOwner,
   from: string,
   to: string,
   companySizes: string[],
   categories: string[],
   query: string,
   savedOnly: boolean,
-) {
+): JobReadPlan {
   const filters: string[] = [];
   const filterValues: unknown[] = [];
   if (companySizes.length) {
@@ -1422,15 +1496,17 @@ async function calendarJobList(
            j.company_size, j.source_name, j.last_verified_at,
            sj.status AS savedStatus, sj.memo AS savedMemo, sj.bookmarked AS savedBookmarked
       FROM jobs j INDEXED BY ${indexName}
-      LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ?
+      LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ${jobOwnerSql(owner)}
      WHERE j.status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
        AND j.career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
        AND ${scheduleClause}
        ${filters.length ? `AND ${filters.join(' AND ')}` : ''}
      LIMIT 1001`;
   const statement = (indexName: string, scheduleClause: string, ...scheduleValues: unknown[]) =>
-    db.prepare(select(indexName, scheduleClause)).bind(userId, ...scheduleValues, ...filterValues);
-  const resultSets = await db.batch<Record<string, unknown>>([
+    db
+      .prepare(select(indexName, scheduleClause))
+      .bind(owner.value, ...scheduleValues, ...filterValues);
+  const statements = [
     statement('idx_jobs_calendar_deadline', 'j.deadline_at >= ? AND j.deadline_at < ?', from, to),
     statement(
       'idx_jobs_calendar_collected',
@@ -1445,27 +1521,32 @@ async function calendarJobList(
       to,
     ),
     statement('idx_jobs_calendar_rolling', 'j.rolling = 1'),
-  ]);
-  const unique = new Map<string, Record<string, unknown>>();
-  for (const result of resultSets) {
-    if ((result.results || []).length > 1000) {
-      throw new RouteError(
-        422,
-        '달력 일정이 너무 많습니다. 검색어나 필터로 범위를 좁혀주세요.',
-        'CALENDAR_RESULT_LIMIT',
-      );
-    }
-    for (const row of result.results || []) unique.set(String(row.id), row);
-  }
-  return serializeJobRows([...unique.values()]);
+  ];
+  return {
+    statements,
+    value(results) {
+      const unique = new Map<string, Record<string, unknown>>();
+      for (const result of results) {
+        if ((result.results || []).length > 1000) {
+          throw new RouteError(
+            422,
+            '달력 일정이 너무 많습니다. 검색어나 필터로 범위를 좁혀주세요.',
+            'CALENDAR_RESULT_LIMIT',
+          );
+        }
+        for (const row of result.results || []) unique.set(String(row.id), row);
+      }
+      return serializeJobRows([...unique.values()]);
+    },
+  };
 }
 
-async function jobList(db: D1Database, userId: string, url: URL) {
+function jobListPlan(db: D1Database, owner: JobOwner, url: URL): JobReadPlan {
   const clauses = [
     "j.status IN ('ACTIVE', 'DEADLINE_UNKNOWN')",
     "j.career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')",
   ];
-  const values: unknown[] = [userId];
+  const values: unknown[] = [];
   const companySizes = [...new Set(url.searchParams.getAll('companySize').filter(Boolean))].slice(
     0,
     100,
@@ -1492,7 +1573,8 @@ async function jobList(db: D1Database, userId: string, url: URL) {
       values.push(match);
     }
   }
-  if (url.searchParams.get('saved') === '1') clauses.push('sj.bookmarked = 1');
+  const savedOnly = url.searchParams.get('saved') === '1';
+  if (savedOnly) clauses.push('sj.bookmarked = 1');
   const deadlineFrom = url.searchParams.get('deadlineFrom');
   const deadlineTo = url.searchParams.get('deadlineTo');
   const calendar = url.searchParams.get('calendar') === 'true';
@@ -1510,16 +1592,7 @@ async function jobList(db: D1Database, userId: string, url: URL) {
   if (calendar && deadlineFrom && deadlineTo) {
     const from = new Date(deadlineFrom).toISOString();
     const to = new Date(deadlineTo).toISOString();
-    return calendarJobList(
-      db,
-      userId,
-      from,
-      to,
-      companySizes,
-      categories,
-      query,
-      url.searchParams.get('saved') === '1',
-    );
+    return calendarJobPlan(db, owner, from, to, companySizes, categories, query, savedOnly);
   } else {
     if (deadlineFrom) {
       clauses.push('j.deadline_at >= ?');
@@ -1536,7 +1609,7 @@ async function jobList(db: D1Database, userId: string, url: URL) {
       ? "COALESCE(j.deadline_at, '9999') ASC, j.id ASC"
       : sortMode === 'company'
         ? 'j.company_name ASC, j.id ASC'
-        : "COALESCE(j.collected_at, '') DESC, j.id DESC";
+        : 'j.collected_at DESC, j.id DESC';
   const indexName =
     sortMode === 'deadline'
       ? 'idx_jobs_deadline_status'
@@ -1546,7 +1619,7 @@ async function jobList(db: D1Database, userId: string, url: URL) {
           ? 'idx_jobs_category_created_status'
           : companySizes.length
             ? 'idx_jobs_size_created_status'
-            : 'idx_jobs_calendar_collected';
+            : 'idx_jobs_feed_collected_id';
   const paged = cursorPageRequested(url.searchParams);
   const limit = paged ? cursorLimit(url.searchParams, 40, 100) : 200;
   const baseClauses = [...clauses];
@@ -1571,45 +1644,63 @@ async function jobList(db: D1Database, userId: string, url: URL) {
     }
     values.push(cursorValue, cursorValue, cursorId);
   }
-  const rows = await all<Record<string, unknown>>(
-    db,
-    `SELECT j.id, j.title, j.category, j.region, j.remote, j.tech_stack,
+  const statements = [
+    db
+      .prepare(
+        `SELECT j.id, j.title, j.category, j.region, j.remote, j.tech_stack,
             j.published_at, j.collected_at, j.deadline_at, j.rolling, substr(j.summary, 1, 320) AS summary,
             j.source_url, j.company_name,
             j.company_size, j.source_name, j.last_verified_at,
             sj.status AS savedStatus, sj.memo AS savedMemo, sj.bookmarked AS savedBookmarked
        FROM jobs j ${calendar ? '' : `INDEXED BY ${indexName}`}
-       LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ?
+       LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ${jobOwnerSql(owner)}
       WHERE ${clauses.join(' AND ')}
       ORDER BY ${order} LIMIT ?`,
-    ...values,
-    limit + (paged ? 1 : 0),
-  );
-  const hasMore = paged && rows.length > limit;
-  const pageRows = hasMore ? rows.slice(0, limit) : rows;
-  const items = serializeJobRows(pageRows);
-  if (!paged) return items;
-  const total = await first<{ count: number }>(
-    db,
-    `SELECT COUNT(*) AS count
-       FROM jobs j
-       LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ?
-      WHERE ${baseClauses.join(' AND ')}`,
-    ...baseValues,
-  );
-  const last = pageRows.at(-1);
-  const cursorValue = last
-    ? sortMode === 'deadline'
-      ? String(last.deadline_at || '9999')
-      : sortMode === 'company'
-        ? String(last.company_name || '')
-        : String(last.collected_at || '')
-    : '';
+      )
+      .bind(owner.value, ...values, limit + (paged ? 1 : 0)),
+  ];
+  if (paged) {
+    statements.push(
+      db
+        .prepare(
+          `SELECT COUNT(*) AS count
+             FROM jobs j
+             ${savedOnly ? `LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ${jobOwnerSql(owner)}` : ''}
+            WHERE ${baseClauses.join(' AND ')}`,
+        )
+        .bind(...(savedOnly ? [owner.value, ...baseValues] : baseValues)),
+    );
+  }
   return {
-    items,
-    nextCursor: hasMore && last ? encodeCursor({ value: cursorValue, id: last.id }) : null,
-    total: Number(total?.count || 0),
-  } satisfies CursorPage<(typeof items)[number]>;
+    statements,
+    value(results) {
+      const rows = batchRows<Record<string, unknown>>(results[0]);
+      const hasMore = paged && rows.length > limit;
+      const pageRows = hasMore ? rows.slice(0, limit) : rows;
+      const items = serializeJobRows(pageRows);
+      if (!paged) return items;
+      const total = batchRows<{ count: number }>(results[1])[0];
+      const last = pageRows.at(-1);
+      const cursorValue = last
+        ? sortMode === 'deadline'
+          ? String(last.deadline_at || '9999')
+          : sortMode === 'company'
+            ? String(last.company_name || '')
+            : String(last.collected_at || '')
+        : '';
+      return {
+        items,
+        nextCursor: hasMore && last ? encodeCursor({ value: cursorValue, id: last.id }) : null,
+        total: Number(total?.count || 0),
+      } satisfies CursorPage<(typeof items)[number]>;
+    },
+  };
+}
+
+async function jobList(db: D1Database, userId: string, url: URL) {
+  const plan = jobListPlan(db, { kind: 'userId', value: userId }, url);
+  const results = (await db.batch(plan.statements)) as BatchResult[];
+  return plan.value(results);
 }
 
 async function jobDetail(db: D1Database, userId: string, jobId: string) {
@@ -1631,16 +1722,84 @@ async function jobDetail(db: D1Database, userId: string, jobId: string) {
   return serializeJobRows([row])[0];
 }
 
-async function jobCategories(db: D1Database) {
-  const rows = await all<{ category: string }>(
-    db,
+const jobCategoriesStatement = (db: D1Database) =>
+  db.prepare(
     `SELECT DISTINCT category
-       FROM jobs INDEXED BY idx_jobs_category_created_status
+       FROM jobs INDEXED BY idx_jobs_active_category
       WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
         AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
       ORDER BY category LIMIT 100`,
   );
-  return rows.map((row) => row.category);
+
+const jobCategoryValues = (result: BatchResult | undefined) =>
+  batchRows<{ category: string }>(result).map((row) => row.category);
+
+async function jobCategories(db: D1Database) {
+  const [result] = (await db.batch([jobCategoriesStatement(db)])) as BatchResult[];
+  return jobCategoryValues(result);
+}
+
+type JobReadMode = 'data' | 'categories' | 'bootstrap';
+
+async function fastJobRead(
+  identity: Identity,
+  request: Request,
+  env: D1Env,
+  url: URL,
+  mode: JobReadMode,
+) {
+  const includeData = mode !== 'categories';
+  const includeCategories = mode !== 'data';
+  const includeUnread = mode === 'bootstrap';
+  const window = rateLimitWindow(request.method.toUpperCase(), env, url.pathname);
+  const statements = requestContextStatementsForSiteUser(
+    env.DB,
+    identity.userId,
+    window,
+    includeUnread,
+  );
+  const categoriesIndex = includeCategories ? statements.length : -1;
+  if (includeCategories) statements.push(jobCategoriesStatement(env.DB));
+  const plan = includeData
+    ? jobListPlan(env.DB, { kind: 'siteUserId', value: identity.userId }, url)
+    : undefined;
+  const dataIndex = statements.length;
+  if (plan) statements.push(...plan.statements);
+  const results = (await env.DB.batch(statements)) as BatchResult[];
+  const candidate = batchRows<UserRow>(results[0])[0];
+  const rateCount = batchRows<CountRow>(results[1])[0];
+  if (candidate && !asBoolean(candidate.isActive)) {
+    throw new RouteError(403, '비활성화된 계정입니다.');
+  }
+  const role = candidate ? expectedRole(identity, env, candidate.role) : undefined;
+  const unchanged =
+    candidate &&
+    candidate.siteUserId === identity.userId &&
+    candidate.email === identity.email &&
+    candidate.role === role;
+  const user = unchanged ? candidate : await resolveUser(identity, env, candidate);
+  let unreadCount = includeUnread ? Number(batchRows<CountRow>(results[3])[0]?.count || 0) : 0;
+  if (rateCount) {
+    assertRateLimit(Number(rateCount.count || 1), window);
+  } else if (includeUnread) {
+    const fallback = (await env.DB.batch(
+      bootstrapStatementsForUser(env.DB, user.id, false, kstDate(), window),
+    )) as BatchResult[];
+    assertRateLimit(Number(batchRows<CountRow>(fallback[0])[0]?.count || 1), window);
+    unreadCount = Number(batchRows<CountRow>(fallback[2])[0]?.count || 0);
+  } else {
+    await enforceRateLimit(request, env, user.id, url.pathname);
+  }
+  const categories = includeCategories ? jobCategoryValues(results[categoriesIndex]) : undefined;
+  const data = plan ? plan.value(results.slice(dataIndex)) : undefined;
+  if (mode === 'categories') return categories || [];
+  if (mode === 'data') return data;
+  return {
+    user: apiUser(user),
+    unreadCount,
+    categories: categories || [],
+    data,
+  };
 }
 
 async function learningList(db: D1Database, userId: string) {
@@ -4003,8 +4162,22 @@ export async function handleD1Api(request: Request, env: D1Env) {
         ),
       );
     }
-    const user = await resolveUser(identity, env);
-    await enforceRateLimit(request, env, user.id, url.pathname);
+    if (request.method.toUpperCase() === 'GET') {
+      const fastJobMode =
+        url.pathname === '/api/v1/jobs'
+          ? 'data'
+          : url.pathname === '/api/v1/jobs/categories'
+            ? 'categories'
+            : url.pathname === '/api/v1/jobs/bootstrap'
+              ? 'bootstrap'
+              : undefined;
+      if (fastJobMode) {
+        return finish(
+          responseJson(await fastJobRead(identity, request, env, url, fastJobMode), 200, requestId),
+        );
+      }
+    }
+    const user = await resolveUserAndRateLimit(identity, request, env, url.pathname);
     const result = await handleRoute(request, env, user, url);
     return finish(result instanceof Response ? result : responseJson(result, 200, requestId));
   } catch (error) {
