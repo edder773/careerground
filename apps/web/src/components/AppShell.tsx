@@ -22,7 +22,7 @@ import {
   X,
 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { brand, productLinks } from '@careerground/config';
 import { useAuth } from '../auth';
 import { api } from '../lib/api';
@@ -68,6 +68,7 @@ export function AppShell({
   onViewMode,
 }: PropsWithChildren<{ viewMode: ViewMode; onViewMode: (mode: ViewMode) => void }>) {
   const { user, logout } = useAuth();
+  const client = useQueryClient();
   const location = useLocation();
   const navigate = useNavigate();
   const [drawer, setDrawer] = useState(false);
@@ -152,6 +153,19 @@ export function AppShell({
     setQuery('');
     navigate(item.href);
   };
+  const preloadLearningData = () => {
+    if (!user) return;
+    void client.prefetchQuery({
+      queryKey: ['learning'],
+      queryFn: () => api<unknown[]>('/learning'),
+      staleTime: 5 * 60_000,
+    });
+  };
+  const learningIntentProps = {
+    onPointerEnter: preloadLearningData,
+    onPointerDown: preloadLearningData,
+    onFocus: preloadLearningData,
+  };
 
   const nav = (
     <>
@@ -172,6 +186,7 @@ export function AppShell({
             to={to}
             end={to === '/'}
             className={({ isActive }) => (isActive ? 'active' : '')}
+            {...(to === '/learning' ? learningIntentProps : {})}
           >
             <Icon size={18} aria-hidden="true" />
             <span>{label}</span>
@@ -324,7 +339,12 @@ export function AppShell({
         {navigation
           .filter(({ to }) => ['/', '/learning', '/jobs', '/coding'].includes(to))
           .map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} end={to === '/'}>
+            <NavLink
+              key={to}
+              to={to}
+              end={to === '/'}
+              {...(to === '/learning' ? learningIntentProps : {})}
+            >
               <Icon />
               <span>{label}</span>
             </NavLink>

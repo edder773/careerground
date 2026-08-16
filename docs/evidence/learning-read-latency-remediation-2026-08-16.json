@@ -1,0 +1,202 @@
+{
+  "schema": "careerground-learning-read-latency-remediation/v1",
+  "generatedAt": "2026-08-16T05:57:21.232Z",
+  "scope": "Learning library direct entry, unit detail D1 dispatch consolidation, and intent prefetch",
+  "baselineSource": "docs/evidence/d1-read-performance-and-learning-diagnosis-2026-08-16.json",
+  "priorProductionObservation": {
+    "source": "Sites Worker logs, successful HTTP 200 requests only",
+    "lookbackMinutes": 180,
+    "learningLibrary": {
+      "samples": 1,
+      "applicationMs": 192,
+      "workerWallMs": 196,
+      "workerCpuMs": 2
+    },
+    "learningUnitDetail": {
+      "samples": 4,
+      "applicationMs": { "min": 524, "p50": 530, "max": 536 },
+      "workerWallMs": { "min": 536, "p50": 541, "max": 548 },
+      "workerCpuMs": { "min": 3, "p50": 3, "max": 4 }
+    },
+    "dataRows": {
+      "learningSources": 4,
+      "learningUnits": 23,
+      "flashcards": 46,
+      "learningQuestions": 23,
+      "learningQuestionAttempts": 0,
+      "learningProgress": 2
+    }
+  },
+  "controlledBenchmark": {
+    "command": "node --import tsx scripts/performance/benchmark-learning-read-path.mjs",
+    "environment": {
+      "runtime": "Node.js v24.19.0",
+      "database": "node:sqlite in-memory D1 compatibility adapter",
+      "data": "repository migrations and learning seed",
+      "samples": 9,
+      "artificialD1DispatchLatencyMs": 25,
+      "networkIncluded": false
+    },
+    "dataShape": {
+      "sources": 4,
+      "units": 23,
+      "selectedUnit": {
+        "flashcards": 2,
+        "questions": 1,
+        "attempts": 0
+      }
+    },
+    "before": {
+      "capturedAt": "2026-08-16T05:50:10.484Z",
+      "directEntryDataSequence": {
+        "httpRequests": 2,
+        "paths": ["GET /bootstrap", "GET /learning"],
+        "p50Ms": 63.05,
+        "p95Ms": 80.09,
+        "maxD1Dispatches": 2,
+        "maxPreparedStatements": 5,
+        "responseBytes": 21512
+      },
+      "learningLibrary": {
+        "p50Ms": 31.53,
+        "p95Ms": 32.18,
+        "maxD1Dispatches": 1,
+        "maxPreparedStatements": 3,
+        "responseBytes": 21272
+      },
+      "unitDetail": {
+        "p50Ms": 93.92,
+        "p95Ms": 96.14,
+        "maxD1Dispatches": 5,
+        "maxPreparedStatements": 6,
+        "sequentialDispatchWaves": 3,
+        "responseBytes": 2558
+      }
+    },
+    "after": {
+      "capturedAt": "2026-08-16T05:57:21.232Z",
+      "directEntryDataSequence": {
+        "httpRequests": 1,
+        "paths": ["GET /learning/bootstrap"],
+        "p50Ms": 30.85,
+        "p95Ms": 31.81,
+        "maxD1Dispatches": 1,
+        "maxPreparedStatements": 3,
+        "responseBytes": 21508
+      },
+      "learningLibrary": {
+        "p50Ms": 30.72,
+        "p95Ms": 32.06,
+        "maxD1Dispatches": 1,
+        "maxPreparedStatements": 3,
+        "responseBytes": 21272
+      },
+      "unitDetail": {
+        "p50Ms": 30.97,
+        "p95Ms": 31.58,
+        "maxD1Dispatches": 1,
+        "maxPreparedStatements": 6,
+        "sequentialDispatchWaves": 1,
+        "responseBytes": 2558
+      }
+    },
+    "change": {
+      "directEntryHttpRequestReductionPercent": 50.0,
+      "directEntryD1DispatchReductionPercent": 50.0,
+      "directEntryP50ReductionPercent": 51.07,
+      "directEntryP95ReductionPercent": 60.28,
+      "unitDetailD1DispatchReductionPercent": 80.0,
+      "unitDetailDispatchWaveReductionPercent": 66.67,
+      "unitDetailP50ReductionPercent": 67.03,
+      "unitDetailP95ReductionPercent": 67.15
+    },
+    "interpretation": "The artificial delay exposes D1 dispatch structure and relative wait reduction only; it is not a production latency claim."
+  },
+  "implementedArchitecture": {
+    "directLearningEntry": {
+      "endpoint": "GET /api/v1/learning/bootstrap",
+      "d1DispatchesForEstablishedUser": 1,
+      "statements": [
+        "authenticated user plus unread notification count",
+        "per-user route rate-limit upsert",
+        "learning source and unit summary JSON aggregation"
+      ],
+      "clientHydration": [
+        "authentication user",
+        "notification-unread-count query cache",
+        "learning query cache"
+      ]
+    },
+    "unitDetail": {
+      "endpoint": "GET /api/v1/learning/units/:id",
+      "d1DispatchesForEstablishedUser": 1,
+      "preparedStatements": 6,
+      "batchContents": [
+        "authenticated user lookup",
+        "per-user route rate-limit upsert",
+        "published unit, source, and current-user progress",
+        "unit flashcards",
+        "unit questions",
+        "current-user attempts for questions in the unit"
+      ],
+      "responseAssembly": "The four route-data results are assembled after the single batch completes."
+    },
+    "prefetch": {
+      "routeModule": "LearningPage uses a retryable shared import promise and starts loading from the application entry point.",
+      "libraryData": "Learning navigation pointer enter, pointer down, or keyboard focus starts a five-minute React Query prefetch.",
+      "unitDetail": "Learning card pointer enter or keyboard focus starts the same query used by the modal, so a successful prefetch is reused on click."
+    }
+  },
+  "correctnessAndSecurity": {
+    "identity": "Server identity still comes only from platform authenticated-user headers.",
+    "authorization": "Learning progress and attempts remain constrained to the resolved current user in server-side SQL.",
+    "rateLimit": "The per-user per-route rate-limit upsert remains in the same D1 batch and is asserted before the response is returned.",
+    "publicationBoundary": "Only published units under allowed source statuses can be returned.",
+    "missingUnit": "An empty unit result still produces HTTP 404.",
+    "cacheAuthority": "React Query caches server responses but does not become the durable source of truth."
+  },
+  "regressionEvidence": {
+    "fullSuite": {
+      "tests": 119,
+      "status": "passed",
+      "breakdown": {
+        "contracts": 10,
+        "api": 33,
+        "web": 22,
+        "sitesAndTroubleshooting": 54
+      }
+    },
+    "sitesD1Api": {
+      "tests": 36,
+      "status": "passed",
+      "assertions": [
+        "learning bootstrap uses one D1 batch and three statements for an established user",
+        "learning unit detail uses one D1 batch and six statements for an established user",
+        "bootstrap and detail payloads retain their expected shapes"
+      ]
+    },
+    "webTargeted": {
+      "tests": 8,
+      "status": "passed",
+      "assertions": [
+        "direct /learning entry uses one bootstrap HTTP request and hydrates the learning cache",
+        "learning navigation intent starts library prefetch",
+        "learning card hover starts detail prefetch",
+        "opening a prefetched card reuses the cached request"
+      ]
+    },
+    "typecheck": "passed for the full workspace and Sites Worker",
+    "lint": "passed for all changed implementation, test, and benchmark files",
+    "builds": {
+      "sitesProduction": "passed",
+      "troubleshootingWikiProduction": "passed"
+    }
+  },
+  "limitations": [
+    "Controlled timings exclude internet latency, browser rendering, asset downloads, and production D1 latency.",
+    "The one-dispatch counts describe steady reads for an already provisioned unchanged user; first-ever account provisioning can require additional writes and reads.",
+    "Intent prefetch reduces click-to-content wait only when the pointer or keyboard focus arrives before activation and the request completes or advances in time.",
+    "No post-deployment production latency percentile is claimed in this manifest.",
+    "No schema migration or new index was added because the measured bottleneck was dispatch structure and the relevant unit, question, flashcard, progress, and attempt indexes already exist."
+  ]
+}

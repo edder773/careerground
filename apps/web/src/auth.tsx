@@ -25,6 +25,11 @@ const initialJobsBootstrap = () => {
   };
 };
 
+const initialLearningBootstrap = () => ({
+  path: '/learning/bootstrap',
+  queryKey: ['learning'] as const,
+});
+
 type AuthContextValue = {
   user: User | null;
   loading: boolean;
@@ -42,9 +47,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
     queryFn: async () => {
       const includeHome = window.location.pathname === '/';
       const includeJobs = window.location.pathname === '/jobs';
+      const includeLearning = window.location.pathname === '/learning';
       const jobsBootstrap = includeJobs ? initialJobsBootstrap() : undefined;
+      const learningBootstrap = includeLearning ? initialLearningBootstrap() : undefined;
       const payload = await api<BootstrapPayload>(
-        jobsBootstrap?.path || `/bootstrap${includeHome ? '?home=1' : ''}`,
+        jobsBootstrap?.path ||
+          learningBootstrap?.path ||
+          `/bootstrap${includeHome ? '?home=1' : ''}`,
       );
       client.setQueryData(['notification-unread-count'], { count: payload.unreadCount });
       if (payload.home) {
@@ -58,6 +67,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
       } else if (jobsBootstrap && payload.categories && Array.isArray(payload.data)) {
         client.setQueryData(['jobs', 'categories'], payload.categories);
         client.setQueryData(jobsBootstrap.queryKey, payload.data);
+      }
+      if (learningBootstrap && Array.isArray(payload.data)) {
+        client.setQueryData(learningBootstrap.queryKey, payload.data);
       }
       return { user: payload.user };
     },

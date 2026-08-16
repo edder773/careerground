@@ -51,6 +51,12 @@ type Source = {
   units: UnitSummary[];
 };
 
+const learningUnitQuery = (unitId: string) => ({
+  queryKey: ['learning-unit', unitId] as const,
+  queryFn: () => api<Unit>(`/learning/units/${unitId}`),
+  staleTime: 5 * 60_000,
+});
+
 function summaryPreview(markdown: string) {
   const paragraphs = markdown
     .replace(/```[\s\S]*?```/g, '')
@@ -75,11 +81,7 @@ function LearningUnitModal({
   onClose: () => void;
 }) {
   const client = useQueryClient();
-  const unit = useQuery({
-    queryKey: ['learning-unit', unitId],
-    queryFn: () => api<Unit>(`/learning/units/${unitId}`),
-    staleTime: 5 * 60_000,
-  });
+  const unit = useQuery(learningUnitQuery(unitId));
   const complete = useMutation({
     mutationFn: () =>
       api('/learning/review', {
@@ -305,6 +307,7 @@ function LearningQuestion({
 }
 
 export function LearningPage() {
+  const client = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selected, setSelected] = useState<{ unitId: string; index: number }>();
   const [expandedSources, setExpandedSources] = useState<Set<string>>(new Set());
@@ -391,6 +394,8 @@ export function LearningPage() {
                     <button
                       type="button"
                       className="learning-card-trigger"
+                      onPointerEnter={() => void client.prefetchQuery(learningUnitQuery(unit.id))}
+                      onFocus={() => void client.prefetchQuery(learningUnitQuery(unit.id))}
                       onClick={() => {
                         setSelected({ unitId: unit.id, index });
                         const next = new URLSearchParams(searchParams);

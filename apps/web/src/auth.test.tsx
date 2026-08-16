@@ -103,4 +103,47 @@ describe('initial workspace bootstrap', () => {
     expect(client.getQueryData(['jobs', 'categories'])).toEqual(['백엔드']);
     expect(client.getQueryData(['jobs', 'catalog'])).toEqual(catalog);
   });
+
+  it('hydrates the learning library from one learning bootstrap request', async () => {
+    window.history.replaceState({}, '', '/learning?unit=unit-one');
+    const sources = [
+      {
+        id: 'source-one',
+        title: '학습 자료',
+        subject: '데이터',
+        category: '기초',
+        units: [{ id: 'unit-one', title: '첫 단원' }],
+      },
+    ];
+    const fetchMock = vi.fn((_input: RequestInfo | URL) =>
+      response({
+        user: {
+          id: 'member',
+          email: 'member@example.test',
+          displayName: '학습 멤버',
+          role: 'MEMBER',
+          preferredLanguage: 'javascript',
+          onboardingCompleted: true,
+        },
+        unreadCount: 1,
+        data: sources,
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+    render(
+      <QueryClientProvider client={client}>
+        <AuthProvider>
+          <AuthProbe />
+        </AuthProvider>
+      </QueryClientProvider>,
+    );
+
+    expect(await screen.findByText('학습 멤버')).toBeInTheDocument();
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain('/learning/bootstrap');
+    expect(client.getQueryData(['learning'])).toEqual(sources);
+    expect(client.getQueryData(['notification-unread-count'])).toEqual({ count: 1 });
+  });
 });

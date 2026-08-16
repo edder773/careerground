@@ -1899,6 +1899,8 @@ function fastReadPlanFor(db: D1Database, owner: ReadOwner, url: URL): FastReadPl
     return problemListPlan(db, owner, url.searchParams);
   }
   if (url.pathname === '/api/v1/learning') return learningListPlan(db, owner);
+  const learningUnitMatch = url.pathname.match(/^\/api\/v1\/learning\/units\/([^/]+)$/);
+  if (learningUnitMatch) return learningUnitDetailPlan(db, owner, learningUnitMatch[1]);
   if (url.pathname === '/api/v1/learning/due') {
     return {
       statements: [learningDueStatement(db, owner)],
@@ -2017,69 +2019,118 @@ async function learningList(db: D1Database, userId: string) {
   return plan.value((await db.batch(plan.statements)) as BatchResult[]);
 }
 
-async function learningUnitDetail(db: D1Database, userId: string, unitId: string) {
-  const unit = await first<Record<string, unknown>>(
-    db,
-    `SELECT u.id, u.source_id AS sourceId, u.title, u.summary, u.concepts, u.visuals,
-            s.title AS sourceTitle, s.subject, s.category,
-            lp.completed, lp.next_review_at AS nextReviewAt
-       FROM learning_units u
-       JOIN learning_sources s ON s.id = u.source_id
-       LEFT JOIN learning_progress lp ON lp.unit_id = u.id AND lp.user_id = ?
-      WHERE u.id = ? AND u.published = 1
-        AND s.status IN ('READY', 'UPLOADED', 'REQUIRES_MANUAL_PROCESSING')`,
-    userId,
-    unitId,
-  );
-  if (!unit) throw new RouteError(404, '학습 단원을 찾을 수 없습니다.');
-  const [flashcards, questions, attempts] = await Promise.all([
-    all<Record<string, unknown>>(
-      db,
-      `SELECT id, front, back FROM flashcards
-        WHERE unit_id = ? ORDER BY created_at`,
-      unitId,
-    ),
-    all<Record<string, unknown>>(
-      db,
-      `SELECT id, prompt, type, choices FROM learning_questions
-        WHERE unit_id = ? ORDER BY created_at`,
-      unitId,
-    ),
-    all<Record<string, unknown>>(
-      db,
-      `SELECT a.id, a.question_id AS questionId, a.response, a.correct,
-              a.attempted_at AS attemptedAt
-         FROM learning_question_attempts a
-         JOIN learning_questions q ON q.id = a.question_id
-        WHERE a.user_id = ? AND q.unit_id = ?
-        ORDER BY a.attempted_at DESC LIMIT 100`,
-      userId,
-      unitId,
-    ),
-  ]);
-  const attemptsByQuestion = new Map<string, Record<string, unknown>[]>();
-  for (const attempt of attempts) {
-    const questionId = String(attempt.questionId);
-    attemptsByQuestion.set(questionId, [
-      ...(attemptsByQuestion.get(questionId) || []),
-      { ...attempt, correct: asBoolean(attempt.correct) },
-    ]);
+async function fastLearningBootstrap(identity: Identity, request: Request, env: D1Env, url: URL) {
+  const window = rateLimitWindow(request.method.toUpperCase(), env, url.pathname);
+  const statements = requestContextStatementsForSiteUser(env.DB, identity.userId, window, true);
+  const plan = learningListPlan(env.DB, { kind: 'siteUserId', value: identity.userId });
+  const dataIndex = statements.length;
+  statements.push(...plan.statements);
+  const results = (await env.DB.batch(statements)) as BatchResult[];
+  const candidate = batchRows<UserRow & { unreadCount?: number }>(results[0])[0];
+  const rateCount = batchRows<CountRow>(results[1])[0];
+  if (candidate && !asBoolean(candidate.isActive)) {
+    throw new RouteError(403, '비활성화된 계정입니다.');
+  }
+  const role = candidate ? expectedRole(identity, env, candidate.role) : undefined;
+  const unchanged =
+    candidate &&
+    candidate.siteUserId === identity.userId &&
+    candidate.email === identity.email &&
+    candidate.role === role;
+  const user = unchanged ? candidate : await resolveUser(identity, env, candidate);
+  let unreadCount = Number(candidate?.unreadCount || 0);
+  if (rateCount) {
+    assertRateLimit(Number(rateCount.count || 1), window);
+  } else {
+    const fallback = (await env.DB.batch(
+      bootstrapStatementsForUser(env.DB, user.id, false, kstDate(), window),
+    )) as BatchResult[];
+    assertRateLimit(Number(batchRows<CountRow>(fallback[0])[0]?.count || 1), window);
+    unreadCount = Number(batchRows<CountRow>(fallback[1])[0]?.count || 0);
   }
   return {
-    ...unit,
-    concepts: parseArray(unit.concepts),
-    visuals: parseJsonArray(unit.visuals),
-    flashcards,
-    questions: questions.map((question) => ({
-      ...question,
-      choices: parseArray(question.choices),
-      attempts: attemptsByQuestion.get(String(question.id)) || [],
-    })),
-    progress:
-      unit.completed === null || unit.completed === undefined
-        ? []
-        : [{ completed: asBoolean(unit.completed), nextReviewAt: unit.nextReviewAt }],
+    user: apiUser(user),
+    unreadCount,
+    data: plan.value(results.slice(dataIndex)),
   };
+}
+
+function learningUnitDetailPlan(db: D1Database, owner: ReadOwner, unitId: string): FastReadPlan {
+  return {
+    statements: [
+      db
+        .prepare(
+          `SELECT u.id, u.source_id AS sourceId, u.title, u.summary, u.concepts, u.visuals,
+                  s.title AS sourceTitle, s.subject, s.category,
+                  lp.completed, lp.next_review_at AS nextReviewAt
+             FROM learning_units u
+             JOIN learning_sources s ON s.id = u.source_id
+             LEFT JOIN learning_progress lp ON lp.unit_id = u.id
+              AND lp.user_id = ${readOwnerSql(owner)}
+            WHERE u.id = ? AND u.published = 1
+              AND s.status IN ('READY', 'UPLOADED', 'REQUIRES_MANUAL_PROCESSING')`,
+        )
+        .bind(owner.value, unitId),
+      db
+        .prepare(
+          `SELECT id, front, back FROM flashcards
+            WHERE unit_id = ? ORDER BY created_at`,
+        )
+        .bind(unitId),
+      db
+        .prepare(
+          `SELECT id, prompt, type, choices FROM learning_questions
+            WHERE unit_id = ? ORDER BY created_at`,
+        )
+        .bind(unitId),
+      db
+        .prepare(
+          `SELECT a.id, a.question_id AS questionId, a.response, a.correct,
+                  a.attempted_at AS attemptedAt
+             FROM learning_questions q
+             JOIN learning_question_attempts a ON a.question_id = q.id
+              AND a.user_id = ${readOwnerSql(owner)}
+            WHERE q.unit_id = ?
+            ORDER BY a.attempted_at DESC LIMIT 100`,
+        )
+        .bind(owner.value, unitId),
+    ],
+    value(results) {
+      const unit = batchRows<Record<string, unknown>>(results[0])[0];
+      if (!unit) throw new RouteError(404, '학습 단원을 찾을 수 없습니다.');
+      const flashcards = batchRows<Record<string, unknown>>(results[1]);
+      const questions = batchRows<Record<string, unknown>>(results[2]);
+      const attempts = batchRows<Record<string, unknown>>(results[3]);
+      const attemptsByQuestion = new Map<string, Record<string, unknown>[]>();
+      for (const attempt of attempts) {
+        const questionId = String(attempt.questionId);
+        attemptsByQuestion.set(questionId, [
+          ...(attemptsByQuestion.get(questionId) || []),
+          { ...attempt, correct: asBoolean(attempt.correct) },
+        ]);
+      }
+      return {
+        ...unit,
+        concepts: parseArray(unit.concepts),
+        visuals: parseJsonArray(unit.visuals),
+        flashcards,
+        questions: questions.map((question) => ({
+          ...question,
+          choices: parseArray(question.choices),
+          attempts: attemptsByQuestion.get(String(question.id)) || [],
+        })),
+        progress:
+          unit.completed === null || unit.completed === undefined
+            ? []
+            : [{ completed: asBoolean(unit.completed), nextReviewAt: unit.nextReviewAt }],
+      };
+    },
+  };
+}
+
+async function learningUnitDetail(db: D1Database, userId: string, unitId: string) {
+  const plan = learningUnitDetailPlan(db, { kind: 'userId', value: userId }, unitId);
+  return plan.value((await db.batch(plan.statements)) as BatchResult[]);
 }
 
 async function recordLearningReview(
@@ -4343,6 +4394,11 @@ export async function handleD1Api(request: Request, env: D1Env) {
       if (fastJobMode) {
         return finish(
           responseJson(await fastJobRead(identity, request, env, url, fastJobMode), 200, requestId),
+        );
+      }
+      if (url.pathname === '/api/v1/learning/bootstrap') {
+        return finish(
+          responseJson(await fastLearningBootstrap(identity, request, env, url), 200, requestId),
         );
       }
       const readPlan = fastReadPlanFor(env.DB, { kind: 'siteUserId', value: identity.userId }, url);

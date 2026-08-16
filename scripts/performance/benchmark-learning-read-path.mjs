@@ -142,7 +142,7 @@ const unitId = units[0]?.id;
 if (!unitId) throw new Error('Learning benchmark requires at least one published unit.');
 await request(`/learning/units/${encodeURIComponent(unitId)}`);
 
-const initialData = await sample(['/bootstrap', '/learning']);
+const initialData = await sample(['/learning/bootstrap']);
 const list = await sample(['/learning']);
 const detail = await sample([`/learning/units/${encodeURIComponent(unitId)}`]);
 

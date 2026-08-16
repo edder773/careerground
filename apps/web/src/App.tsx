@@ -26,9 +26,18 @@ export const preloadJobsPage = () => {
   return jobsPagePromise;
 };
 const JobsPage = lazy(preloadJobsPage);
-const LearningPage = lazy(() =>
-  import('./pages/LearningPage').then((module) => ({ default: module.LearningPage })),
-);
+let learningPagePromise:
+  Promise<{ default: typeof import('./pages/LearningPage').LearningPage }> | undefined;
+export const preloadLearningPage = () => {
+  learningPagePromise ??= import('./pages/LearningPage')
+    .then((module) => ({ default: module.LearningPage }))
+    .catch((error) => {
+      learningPagePromise = undefined;
+      throw error;
+    });
+  return learningPagePromise;
+};
+const LearningPage = lazy(preloadLearningPage);
 const RankingPage = lazy(() =>
   import('./pages/RankingPage').then((module) => ({ default: module.RankingPage })),
 );

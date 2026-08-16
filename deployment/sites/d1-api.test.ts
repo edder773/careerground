@@ -496,6 +496,41 @@ describe('Sites D1 API', () => {
     }
   });
 
+  it('serves learning bootstrap and unit detail in one D1 dispatch each', async () => {
+    await call('/api/v1/auth/me', {}, memberHeaders);
+
+    db.resetQueryCount();
+    db.resetBatchCount();
+    const bootstrap = await call('/api/v1/learning/bootstrap', {}, memberHeaders);
+    expect(bootstrap.response.status).toBe(200);
+    expect(bootstrap.body).toMatchObject({
+      user: { email: 'member@example.test' },
+      unreadCount: expect.any(Number),
+      data: expect.arrayContaining([expect.objectContaining({ units: expect.any(Array) })]),
+    });
+    expect(db.getQueryCount()).toBe(3);
+    expect(db.getBatchCount()).toBe(1);
+
+    const sources = bootstrap.body.data as unknown as Array<{
+      units: Array<{ id: string }>;
+    }>;
+    const unitId = sources.flatMap((source) => source.units)[0]?.id;
+    expect(unitId).toBeTruthy();
+
+    db.resetQueryCount();
+    db.resetBatchCount();
+    const detail = await call(`/api/v1/learning/units/${unitId}`, {}, memberHeaders);
+    expect(detail.response.status).toBe(200);
+    expect(detail.body).toMatchObject({
+      id: unitId,
+      flashcards: expect.any(Array),
+      questions: expect.any(Array),
+      progress: expect.any(Array),
+    });
+    expect(db.getQueryCount()).toBe(6);
+    expect(db.getBatchCount()).toBe(1);
+  });
+
   it('returns stable cursor pages and totals for large shared catalogs', async () => {
     const firstProblems = await call(
       '/api/v1/coding/problems?track=ALGORITHM&page=cursor&limit=25',

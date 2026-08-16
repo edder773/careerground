@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -38,6 +38,21 @@ describe('responsive application navigation', () => {
     await userEvent.setup().click(screen.getByRole('button', { name: '메뉴 열기' }));
     expect(screen.getAllByRole('navigation', { name: '주요 메뉴' })).toHaveLength(2);
     expect(screen.getByRole('button', { name: '메뉴 닫기' })).toBeInTheDocument();
+  });
+
+  it('prefetches learning data when navigation intent is shown', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    renderWithProviders(client);
+    expect((await screen.findAllByText('멤버')).length).toBeGreaterThan(0);
+
+    await userEvent.setup().hover(screen.getAllByRole('link', { name: '학습' })[0]!);
+
+    const fetchMock = vi.mocked(fetch);
+    await waitFor(() =>
+      expect(fetchMock.mock.calls.some(([input]) => String(input).endsWith('/learning'))).toBe(
+        true,
+      ),
+    );
   });
 });
 

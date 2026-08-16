@@ -133,6 +133,15 @@ export function responseSchemaFor(path: string, method = 'GET'): z.ZodType {
       })
       .passthrough();
   }
+  if (endpoint === '/learning/bootstrap') {
+    return z
+      .object({
+        user,
+        unreadCount: z.number().nonnegative(),
+        data: z.array(learningSource),
+      })
+      .passthrough();
+  }
   if (endpoint === '/jobs') return arrayOrCursor(job);
   if (/^\/jobs\/[^/]+$/.test(endpoint)) return job;
   if (endpoint === '/coding/problems') return arrayOrCursor(problem);
