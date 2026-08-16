@@ -659,11 +659,32 @@ describe('Sites D1 API', () => {
     expect(invalid.response.status).toBe(400);
   });
 
-  it('returns start, deadline, and rolling schedule data for calendar rendering', async () => {
+  it('keeps registration, application start, and collection timestamps separate', async () => {
+    const candidates = await db
+      .prepare('SELECT id FROM jobs WHERE rolling = 0 ORDER BY id LIMIT 3')
+      .all<{ id: string }>();
+    const [published, application, collectedOnly] = candidates.results;
+    expect(published && application && collectedOnly).toBeTruthy();
+    await db.batch([
+      db
+        .prepare('UPDATE jobs SET published_at = ?, application_start_at = NULL WHERE id = ?')
+        .bind('2026-08-02T00:00:00.000Z', published!.id),
+      db
+        .prepare('UPDATE jobs SET application_start_at = ?, published_at = NULL WHERE id = ?')
+        .bind('2026-08-03T00:00:00.000Z', application!.id),
+      db
+        .prepare(
+          'UPDATE jobs SET published_at = NULL, application_start_at = NULL, deadline_at = NULL WHERE id = ?',
+        )
+        .bind(collectedOnly!.id),
+    ]);
     const calendar = await call(
       '/api/v1/jobs?calendar=true&sort=deadline&deadlineFrom=2026-07-31T15%3A00%3A00.000Z&deadlineTo=2026-08-31T15%3A00%3A00.000Z',
     );
     const rows = calendar.body as unknown as Array<{
+      id: string;
+      publishedAt: string | null;
+      applicationStartAt: string | null;
       collectedAt: string;
       deadlineAt: string | null;
       rolling: boolean;
@@ -671,7 +692,11 @@ describe('Sites D1 API', () => {
     expect(calendar.response.status).toBe(200);
     expect(rows.length).toBeGreaterThan(0);
     expect(rows.some((row) => row.rolling)).toBe(true);
-    expect(rows.some((row) => Boolean(row.collectedAt))).toBe(true);
+    expect(rows.some((row) => row.id === published!.id && Boolean(row.publishedAt))).toBe(true);
+    expect(rows.some((row) => row.id === application!.id && Boolean(row.applicationStartAt))).toBe(
+      true,
+    );
+    expect(rows.some((row) => row.id === collectedOnly!.id)).toBe(false);
     expect(rows.some((row) => Boolean(row.deadlineAt))).toBe(true);
   });
 

@@ -396,6 +396,7 @@ model JobPosting {
   remote              Boolean          @default(false)
   techStack           String[]
   publishedAt         DateTime?
+  applicationStartAt  DateTime?
   deadlineAt          DateTime?
   rolling             Boolean          @default(false)
   collectedAt         DateTime
@@ -416,6 +417,7 @@ model JobPosting {
   @@index([status, category, createdAt])
   @@index([status, careerScope, deadlineAt])
   @@index([status, careerScope, publishedAt])
+  @@index([status, careerScope, applicationStartAt])
   @@index([status, careerScope, collectedAt])
   @@index([status, careerScope, rolling])
   @@index([companyId, title])

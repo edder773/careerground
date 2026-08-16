@@ -1,9 +1,9 @@
 import { all, first, run, type D1Database } from './d1.js';
 
 const schemaPromises = new WeakMap<D1Database, Promise<void>>();
-export const EXPECTED_SCHEMA_VERSION = '0018_sloppy_leech';
+export const EXPECTED_SCHEMA_VERSION = '0021_separate_job_schedule_dates';
 export const EXPECTED_SCHEMA_CHECKSUM =
-  'sha256:86c1de85559a9b51e959bf7c423ad8a9e9afd3586ad672c2ec32da009057fe4b';
+  'sha256:4e31cdb8719763ac88c1fb0311e50720237367cd0b88be0c9dfee26a962adb78';
 
 const ledgerSchema = `CREATE TABLE IF NOT EXISTS app_schema_migrations (
   version text PRIMARY KEY NOT NULL,
@@ -84,6 +84,14 @@ const additiveSchema = [
       AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
   `CREATE INDEX IF NOT EXISTS idx_jobs_active_category
      ON jobs(category)
+    WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
+      AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
+  `CREATE INDEX IF NOT EXISTS idx_jobs_calendar_published
+     ON jobs(published_at)
+    WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
+      AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
+  `CREATE INDEX IF NOT EXISTS idx_jobs_calendar_application_start
+     ON jobs(application_start_at)
     WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
       AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
 ] as const;
@@ -238,11 +246,18 @@ async function addLearningQuestionColumns(db: D1Database) {
 
 async function addJobColumns(db: D1Database) {
   const columns = await all<{ name: string }>(db, 'PRAGMA table_info(jobs)');
-  if (columns.some((column) => column.name === 'published_at')) return;
-  try {
-    await run(db, 'ALTER TABLE jobs ADD COLUMN published_at text');
-  } catch (error) {
-    if (!String(error).toLowerCase().includes('duplicate column')) throw error;
+  const names = new Set(columns.map((column) => column.name));
+  const missing = [
+    ['published_at', 'ALTER TABLE jobs ADD COLUMN published_at text'],
+    ['application_start_at', 'ALTER TABLE jobs ADD COLUMN application_start_at text'],
+  ] as const;
+  for (const [name, sql] of missing) {
+    if (names.has(name)) continue;
+    try {
+      await run(db, sql);
+    } catch (error) {
+      if (!String(error).toLowerCase().includes('duplicate column')) throw error;
+    }
   }
 }
 
@@ -288,7 +303,7 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
        (SELECT COUNT(*) FROM pragma_table_info('learning_questions')
          WHERE name IN ('type', 'choices')) AS questionColumnCount,
        (SELECT COUNT(*) FROM pragma_table_info('jobs')
-         WHERE name = 'published_at') AS jobColumnCount,
+         WHERE name IN ('published_at', 'application_start_at')) AS jobColumnCount,
        (SELECT COUNT(*) FROM sqlite_schema
          WHERE type = 'table' AND name IN ('notes', 'note_revisions')) AS removedNoteTableCount,
        (SELECT COUNT(*) FROM collection_items WHERE item_type = 'NOTE') AS removedNoteItemCount,
@@ -321,7 +336,7 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
       triggerCount === 15 &&
       progressColumnCount === 3 &&
       questionColumnCount === 2 &&
-      jobColumnCount === 1 &&
+      jobColumnCount === 2 &&
       removedNoteTableCount === 0 &&
       removedNoteItemCount === 0 &&
       removedNoteSearchCount === 0 &&
@@ -427,10 +442,10 @@ async function applyRuntimeSchema(db: D1Database) {
   await run(db, ledgerSchema);
   // Parent tables must exist before SQLite can prepare child-table statements.
   for (const sql of additiveSchema.slice(0, 6)) await run(db, sql);
+  await addJobColumns(db);
   await db.batch(additiveSchema.slice(6).map((sql) => db.prepare(sql)));
   await addLearningProgressColumns(db);
   await addLearningQuestionColumns(db);
-  await addJobColumns(db);
   await run(
     db,
     `CREATE VIRTUAL TABLE IF NOT EXISTS workspace_search USING fts5(

@@ -88,6 +88,7 @@ export class JobsService {
           remote: item.remote,
           techStack: item.techStack,
           publishedAt: item.publishedAt ? new Date(item.publishedAt) : null,
+          applicationStartAt: item.applicationStartAt ? new Date(item.applicationStartAt) : null,
           deadlineAt: item.deadlineAt ? new Date(item.deadlineAt) : null,
           rolling: item.rolling,
           collectedAt: new Date(item.collectedAt),
@@ -186,7 +187,7 @@ export class JobsService {
                   },
                 },
                 {
-                  collectedAt: {
+                  applicationStartAt: {
                     ...(deadlineFrom ? { gte: deadlineFrom } : {}),
                     ...(deadlineTo ? { lt: deadlineTo } : {}),
                   },
@@ -212,6 +213,7 @@ export class JobsService {
         remote: true,
         techStack: true,
         publishedAt: true,
+        applicationStartAt: true,
         collectedAt: true,
         deadlineAt: true,
         rolling: true,

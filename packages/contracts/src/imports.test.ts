@@ -21,6 +21,8 @@ describe('import contracts', () => {
       region: '서울',
       remote: false,
       techStack: [],
+      publishedAt: '2026-08-10T00:00:00.000Z',
+      applicationStartAt: '2026-08-12T00:00:00.000Z',
       rolling: true,
       collectedAt: '2026-08-14T00:00:00.000Z',
       lastVerifiedAt: '2026-08-14T00:00:00.000Z',
@@ -39,6 +41,11 @@ describe('import contracts', () => {
         snapshot: { mode: 'FULL', sources: ['example'] },
       }).snapshot,
     ).toEqual({ mode: 'FULL', sources: ['example'] });
+    const parsed = jobImportSchema.parse(base);
+    expect(parsed.items[0]).toMatchObject({
+      publishedAt: '2026-08-10T00:00:00.000Z',
+      applicationStartAt: '2026-08-12T00:00:00.000Z',
+    });
     expect(
       jobImportSchema.safeParse({ ...base, snapshot: { mode: 'DELTA', sources: ['example'] } })
         .success,

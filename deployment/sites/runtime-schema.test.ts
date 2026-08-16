@@ -11,7 +11,10 @@ describe('Sites runtime schema', () => {
 
   beforeEach(async () => {
     db = new LocalD1();
-    await run(db, "DELETE FROM app_schema_migrations WHERE version = '0018_sloppy_leech'");
+    await run(
+      db,
+      "DELETE FROM app_schema_migrations WHERE version = '0021_separate_job_schedule_dates'",
+    );
     await run(db, 'DROP TABLE workspace_search');
     for (const table of [
       'job_source_snapshot_items',
@@ -69,6 +72,10 @@ describe('Sites runtime schema', () => {
     const progressColumns = await all<{ name: string }>(db, 'PRAGMA table_info(learning_progress)');
     expect(progressColumns.map((column) => column.name)).toEqual(
       expect.arrayContaining(['review_version', 'completed_at', 'mastered_at']),
+    );
+    const jobColumns = await all<{ name: string }>(db, 'PRAGMA table_info(jobs)');
+    expect(jobColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining(['published_at', 'application_start_at']),
     );
 
     const removedNotes = await first<{ tables: number; items: number; constraints: number }>(
@@ -192,6 +199,9 @@ describe('Sites production migration baseline', () => {
         questions: number;
         learningColumns: number;
         publishedColumn: number;
+        applicationStartColumn: number;
+        scheduleIndexes: number;
+        legacyCalendarIndexes: number;
         notificationIndex: number;
         feedIndex: number;
         categoryIndex: number;
@@ -216,6 +226,16 @@ describe('Sites production migration baseline', () => {
                   WHERE name IN ('type', 'choices')) AS learningColumns,
                 (SELECT COUNT(*) FROM pragma_table_info('jobs')
                   WHERE name = 'published_at') AS publishedColumn,
+                (SELECT COUNT(*) FROM pragma_table_info('jobs')
+                  WHERE name = 'application_start_at') AS applicationStartColumn,
+                (SELECT COUNT(*) FROM pragma_index_list('jobs')
+                  WHERE name IN (
+                    'idx_jobs_calendar_published', 'idx_jobs_calendar_application_start'
+                  )) AS scheduleIndexes,
+                (SELECT COUNT(*) FROM pragma_index_list('jobs')
+                  WHERE name IN (
+                    'idx_jobs_calendar_collected', 'idx_jobs_calendar_created'
+                  )) AS legacyCalendarIndexes,
                 (SELECT COUNT(*) FROM pragma_index_list('notifications')
                   WHERE name = 'idx_notifications_user_read_expiry_created') AS notificationIndex,
                 (SELECT COUNT(*) FROM pragma_index_list('jobs')
@@ -250,6 +270,9 @@ describe('Sites production migration baseline', () => {
         questions: countBefore?.count,
         learningColumns: 2,
         publishedColumn: 1,
+        applicationStartColumn: 1,
+        scheduleIndexes: 2,
+        legacyCalendarIndexes: 0,
         notificationIndex: 1,
         feedIndex: 1,
         categoryIndex: 1,
@@ -269,6 +292,20 @@ describe('Sites production migration baseline', () => {
         replacementChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
       });
       expect(schema?.jobTechRows).toBeGreaterThan(0);
+      for (const indexName of [
+        'idx_jobs_calendar_published',
+        'idx_jobs_calendar_application_start',
+      ]) {
+        const plan = await all<{ detail: string }>(
+          upgraded,
+          `EXPLAIN QUERY PLAN
+           SELECT id FROM jobs INDEXED BY ${indexName}
+            WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
+              AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
+              AND ${indexName.endsWith('published') ? 'published_at' : 'application_start_at'} >= '2026-08-01T00:00:00.000Z'`,
+        );
+        expect(plan.some((row) => row.detail.includes(`USING INDEX ${indexName}`))).toBe(true);
+      }
       await expect(
         run(
           upgraded,

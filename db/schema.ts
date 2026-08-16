@@ -313,6 +313,7 @@ export const jobs = sqliteTable(
     remote: integer('remote', { mode: 'boolean' }).notNull().default(false),
     techStack: text('tech_stack').notNull().default('[]'),
     publishedAt: text('published_at'),
+    applicationStartAt: text('application_start_at'),
     deadlineAt: text('deadline_at'),
     rolling: integer('rolling', { mode: 'boolean' }).notNull().default(false),
     summary: text('summary').notNull(),
@@ -336,8 +337,13 @@ export const jobs = sqliteTable(
       .where(
         sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
       ),
-    index('idx_jobs_calendar_collected')
-      .on(table.collectedAt)
+    index('idx_jobs_calendar_published')
+      .on(table.publishedAt)
+      .where(
+        sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
+      ),
+    index('idx_jobs_calendar_application_start')
+      .on(table.applicationStartAt)
       .where(
         sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
       ),
@@ -350,11 +356,6 @@ export const jobs = sqliteTable(
       .on(table.category)
       .where(
         sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
-      ),
-    index('idx_jobs_calendar_created')
-      .on(table.createdAt)
-      .where(
-        sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE') AND ${table.collectedAt} IS NULL`,
       ),
     index('idx_jobs_calendar_rolling')
       .on(table.id)

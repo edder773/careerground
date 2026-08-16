@@ -59,7 +59,7 @@ describe('Sites worker bootstrap fast path', () => {
     expect(db.preparedSql[0]).toContain('app_schema_migrations');
   });
 
-  it('repairs a missing legacy schema ledger only after the fast path detects it', async () => {
+  it('repairs a missing schema ledger through the latest migration only after the fast path detects it', async () => {
     await db.prepare('DROP TABLE app_schema_migrations').run();
 
     const response = await worker.fetch(
@@ -77,10 +77,10 @@ describe('Sites worker bootstrap fast path', () => {
     expect(await response.json()).toMatchObject({ user: { displayName: 'Phase Two' } });
     const ledger = await db
       .prepare('SELECT checksum FROM app_schema_migrations WHERE version = ?')
-      .bind('0018_sloppy_leech')
+      .bind('0021_separate_job_schedule_dates')
       .first<{ checksum: string }>();
     expect(ledger?.checksum).toBe(
-      'sha256:86c1de85559a9b51e959bf7c423ad8a9e9afd3586ad672c2ec32da009057fe4b',
+      'sha256:4e31cdb8719763ac88c1fb0311e50720237367cd0b88be0c9dfee26a962adb78',
     );
   });
 });

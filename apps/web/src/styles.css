@@ -5872,7 +5872,7 @@ body {
 .job-card-schedule {
   margin: 11px 0 3px;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 7px;
 }
 
@@ -5888,8 +5888,14 @@ body {
   border-radius: 9px;
 }
 
-.job-card-schedule .schedule-start {
+.job-card-schedule .schedule-application {
   border-left-color: #3d79cf;
+}
+
+.job-card-schedule .schedule-published {
+  background: #f7f4fc;
+  border-color: #e6def3;
+  border-left-color: #8065b8;
 }
 
 .job-card-schedule .schedule-deadline {
@@ -6099,8 +6105,13 @@ body {
   content: '';
 }
 
-.job-calendar-legend .schedule-start::before,
-.job-modal-schedule .schedule-start span::before {
+.job-calendar-legend .schedule-published::before,
+.job-modal-schedule .schedule-published span::before {
+  background: #8065b8;
+}
+
+.job-calendar-legend .schedule-application::before,
+.job-modal-schedule .schedule-application span::before {
   background: #3d79cf;
 }
 
@@ -6311,7 +6322,13 @@ body {
   font-weight: 850;
 }
 
-.calendar-job.schedule-start {
+.calendar-job.schedule-published {
+  color: #654394;
+  background: #f0eafa;
+  border-left: 3px solid #8065b8;
+}
+
+.calendar-job.schedule-application {
   color: #285a9c;
   background: #e7f0fc;
   border-left: 3px solid #3d79cf;
@@ -6531,7 +6548,7 @@ body {
 .job-modal-schedule {
   margin: 18px 0 13px;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -6701,7 +6718,12 @@ body {
   text-align: center;
 }
 
-.schedule-list-badge.schedule-start {
+.schedule-list-badge.schedule-published {
+  color: #654394;
+  background: #f0eafa;
+}
+
+.schedule-list-badge.schedule-application {
   color: #285a9c;
   background: #e7f0fc;
 }
@@ -7533,4 +7555,37 @@ body {
   .jobs-page .job-actions .application-memo {
     grid-column: auto;
   }
+}
+
+/* Keep all three daily recommendations readable as one vertical list. */
+.finder-home .today-feature .today-problem-list {
+  grid-template-columns: 1fr;
+}
+
+.finder-home .today-feature .today-problem-list a {
+  min-height: 42px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: 1fr;
+  align-items: center;
+}
+
+.finder-home .today-feature .today-problem-list small,
+.finder-home .today-feature .today-problem-list strong,
+.finder-home .today-feature .today-problem-list b {
+  grid-row: 1;
+  margin: 0;
+}
+
+.finder-home .today-feature .today-problem-list strong {
+  grid-column: 2;
+  overflow: visible;
+  font-size: clamp(10px, 0.85vw, 12px);
+  line-height: 1.25;
+  text-overflow: clip;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.finder-home .today-feature .today-problem-list b {
+  grid-column: 3;
 }

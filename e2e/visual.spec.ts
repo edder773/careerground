@@ -129,7 +129,8 @@ test('captures core domain screens', async ({ page }) => {
       await page.getByRole('button', { name: '달력' }).click();
       await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
       await expect(page.locator('.calendar-job').first()).toBeVisible();
-      await expect(page.locator('.job-calendar-legend')).toContainText('시작일');
+      await expect(page.locator('.job-calendar-legend')).toContainText('등록일');
+      await expect(page.locator('.job-calendar-legend')).toContainText('접수 시작일');
       await expect(page.getByText('시작·확인일', { exact: true })).toHaveCount(0);
       await page.screenshot({
         path: 'test-results/visual/jobs-calendar-desktop-1440.png',
@@ -166,7 +167,8 @@ test('captures core domain screens', async ({ page }) => {
   await page.goto('/jobs');
   await page.getByRole('button', { name: '달력' }).click();
   await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
-  await expect(page.locator('.job-calendar-legend')).toContainText('시작일');
+  await expect(page.locator('.job-calendar-legend')).toContainText('등록일');
+  await expect(page.locator('.job-calendar-legend')).toContainText('접수 시작일');
   await expect(page.getByText('시작·확인일', { exact: true })).toHaveCount(0);
   await page.screenshot({
     path: 'test-results/visual/jobs-calendar-mobile-375.png',
@@ -225,7 +227,9 @@ test('captures core domain screens', async ({ page }) => {
   });
 });
 
-test('keeps the calendar start label compact on desktop and mobile', async ({ page }) => {
+test('keeps registration and application start labels separate on desktop and mobile', async ({
+  page,
+}) => {
   await mkdir('test-results/visual', { recursive: true });
   await login(page, 'calendar-label@careerground.local');
 
@@ -237,11 +241,45 @@ test('keeps the calendar start label compact on desktop and mobile', async ({ pa
     await page.goto('/jobs');
     await page.getByRole('button', { name: '달력' }).click();
     await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
-    await expect(page.locator('.job-calendar-legend')).toContainText('시작일');
+    await expect(page.locator('.job-calendar-legend')).toContainText('등록일');
+    await expect(page.locator('.job-calendar-legend')).toContainText('접수 시작일');
     await expect(page.getByText('시작·확인일', { exact: true })).toHaveCount(0);
-    await expect(page.locator('.calendar-job').first()).toContainText('시작일');
     await page.screenshot({
       path: `test-results/visual/jobs-calendar-label-${viewport.name}.png`,
+      fullPage: false,
+    });
+  }
+});
+
+test('stacks the three daily recommendations without wrapping their titles', async ({ page }) => {
+  await mkdir('test-results/visual', { recursive: true });
+  await login(page, 'daily-layout@careerground.local');
+
+  for (const viewport of [
+    { name: 'desktop-1440', width: 1440, height: 900 },
+    { name: 'mobile-375', width: 375, height: 812 },
+  ]) {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto('/');
+    const rows = page.locator('.today-problem-list a');
+    await expect(rows).toHaveCount(3);
+    const layout = await rows.evaluateAll((elements) =>
+      elements.map((element) => {
+        const row = element.getBoundingClientRect();
+        const title = element.querySelector('strong');
+        return {
+          left: Math.round(row.left),
+          top: Math.round(row.top),
+          whiteSpace: title ? getComputedStyle(title).whiteSpace : '',
+        };
+      }),
+    );
+    expect(new Set(layout.map((item) => item.left)).size).toBe(1);
+    expect(layout[0]!.top).toBeLessThan(layout[1]!.top);
+    expect(layout[1]!.top).toBeLessThan(layout[2]!.top);
+    expect(layout.every((item) => item.whiteSpace === 'nowrap')).toBe(true);
+    await page.screenshot({
+      path: `test-results/visual/home-daily-vertical-${viewport.name}.png`,
       fullPage: false,
     });
   }

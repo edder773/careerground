@@ -80,8 +80,14 @@ describe('domain pages', () => {
     const deadlineAt = new Date(
       Date.UTC(now.getFullYear(), now.getMonth(), 15, 6, 0, 0),
     ).toISOString();
-    const collectedAt = new Date(
+    const publishedAt = new Date(
+      Date.UTC(now.getFullYear(), now.getMonth(), 3, 6, 0, 0),
+    ).toISOString();
+    const applicationStartAt = new Date(
       Date.UTC(now.getFullYear(), now.getMonth(), 5, 6, 0, 0),
+    ).toISOString();
+    const collectedAt = new Date(
+      Date.UTC(now.getFullYear(), now.getMonth(), 10, 6, 0, 0),
     ).toISOString();
     const job = {
       id: '11111111-1111-4111-8111-111111111111',
@@ -90,6 +96,8 @@ describe('domain pages', () => {
       region: '서울',
       remote: false,
       techStack: ['TypeScript'],
+      publishedAt,
+      applicationStartAt,
       collectedAt,
       deadlineAt,
       rolling: false,
@@ -112,18 +120,19 @@ describe('domain pages', () => {
 
     expect(await screen.findByText('Example Careers')).toBeInTheDocument();
     expect(screen.getByText('careers.example.com')).toBeInTheDocument();
-    expect(screen.getByText(/최신일/)).toBeInTheDocument();
+    expect(screen.getByText(/확인일/)).toBeInTheDocument();
     expect(screen.queryByText(/마지막 확인/)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '달력' }));
     const legend = await screen.findByLabelText('일정 색상 안내');
-    expect(within(legend).getByText('시작일')).toBeInTheDocument();
+    expect(within(legend).getByText('등록일')).toBeInTheDocument();
+    expect(within(legend).getByText('접수 시작일')).toBeInTheDocument();
     expect(screen.queryByText('시작·확인일')).not.toBeInTheDocument();
     expect(within(legend).getByText('마감일')).toBeInTheDocument();
     expect(within(legend).getByText('상시')).toBeInTheDocument();
     await user.click(
       await screen.findByRole('button', {
-        name: '캘린더테크 신입 플랫폼 엔지니어 마감일 상세 보기',
+        name: '캘린더테크 신입 플랫폼 엔지니어 등록일 상세 보기',
       }),
     );
     const dialog = screen.getByRole('dialog', { name: '캘린더테크' });
@@ -150,6 +159,7 @@ describe('domain pages', () => {
         region: '서울',
         remote: false,
         techStack: ['TypeScript'],
+        applicationStartAt: collectedAt,
         collectedAt,
         deadlineAt,
         rolling: false,

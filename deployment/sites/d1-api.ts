@@ -1446,6 +1446,7 @@ function serializeJobRows(rows: Record<string, unknown>[]) {
     remote: asBoolean(row.remote),
     techStack: parseArray(row.tech_stack),
     publishedAt: row.published_at || null,
+    applicationStartAt: row.application_start_at || null,
     collectedAt: row.collected_at,
     deadlineAt: row.deadline_at,
     rolling: asBoolean(row.rolling),
@@ -1503,7 +1504,8 @@ function calendarJobPlan(
   if (savedOnly) filters.push('sj.bookmarked = 1');
   const select = (indexName: string, scheduleClause: string) => `
     SELECT j.id, j.title, j.category, j.region, j.remote, j.tech_stack,
-           j.published_at, j.collected_at, j.deadline_at, j.rolling, substr(j.summary, 1, 320) AS summary,
+           j.published_at, j.application_start_at, j.collected_at, j.deadline_at, j.rolling,
+           substr(j.summary, 1, 320) AS summary,
            j.source_url, j.company_name,
            j.company_size, j.source_name, j.last_verified_at,
            sj.status AS savedStatus, sj.memo AS savedMemo, sj.bookmarked AS savedBookmarked
@@ -1521,14 +1523,14 @@ function calendarJobPlan(
   const statements = [
     statement('idx_jobs_calendar_deadline', 'j.deadline_at >= ? AND j.deadline_at < ?', from, to),
     statement(
-      'idx_jobs_calendar_collected',
-      'j.collected_at >= ? AND j.collected_at < ?',
+      'idx_jobs_calendar_published',
+      'j.published_at >= ? AND j.published_at < ?',
       from,
       to,
     ),
     statement(
-      'idx_jobs_calendar_created',
-      'j.collected_at IS NULL AND j.created_at >= ? AND j.created_at < ?',
+      'idx_jobs_calendar_application_start',
+      'j.application_start_at >= ? AND j.application_start_at < ?',
       from,
       to,
     ),
@@ -1661,7 +1663,8 @@ function jobListPlan(db: D1Database, owner: ReadOwner, url: URL): JobReadPlan {
     db
       .prepare(
         `SELECT j.id, j.title, j.category, j.region, j.remote, j.tech_stack,
-            j.published_at, j.collected_at, j.deadline_at, j.rolling, substr(j.summary, 1, 320) AS summary,
+            j.published_at, j.application_start_at, j.collected_at, j.deadline_at, j.rolling,
+            substr(j.summary, 1, 320) AS summary,
             j.source_url, j.company_name,
             j.company_size, j.source_name, j.last_verified_at,
             sj.status AS savedStatus, sj.memo AS savedMemo, sj.bookmarked AS savedBookmarked
@@ -1728,7 +1731,8 @@ async function jobDetail(db: D1Database, userId: string, jobId: string) {
     db,
     `SELECT j.id, j.title, j.category, j.region, j.remote,
             COALESCE((SELECT json_group_array(jts.name) FROM job_tech_stacks jts WHERE jts.job_id = j.id), j.tech_stack) AS tech_stack,
-            j.published_at, j.collected_at, j.deadline_at, j.rolling, j.summary, j.source_url,
+            j.published_at, j.application_start_at, j.collected_at, j.deadline_at, j.rolling,
+            j.summary, j.source_url,
             j.company_name, j.company_size, j.source_name, j.last_verified_at,
             sj.status AS savedStatus, sj.memo AS savedMemo, sj.bookmarked AS savedBookmarked
        FROM jobs j
@@ -2451,9 +2455,10 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
         `INSERT INTO jobs
              (id, company_name, company_size, company_size_evidence, source_name,
               source_posting_id, source_url, title, category, career_scope, career_evidence,
-              employment_type, region, remote, tech_stack, published_at, deadline_at, rolling, summary,
-              status, fingerprint, collected_at, last_verified_at, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              employment_type, region, remote, tech_stack, published_at, application_start_at,
+              deadline_at, rolling, summary, status, fingerprint, collected_at, last_verified_at,
+              created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT(source_url) DO UPDATE SET
              company_name = excluded.company_name, company_size = excluded.company_size,
              company_size_evidence = excluded.company_size_evidence,
@@ -2463,6 +2468,7 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
              employment_type = excluded.employment_type, region = excluded.region,
              remote = excluded.remote, tech_stack = excluded.tech_stack,
              published_at = excluded.published_at,
+             application_start_at = excluded.application_start_at,
              deadline_at = excluded.deadline_at, rolling = excluded.rolling,
              summary = excluded.summary, status = excluded.status,
              fingerprint = excluded.fingerprint, collected_at = excluded.collected_at,
@@ -2485,6 +2491,7 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
         item.remote ? 1 : 0,
         JSON.stringify(item.techStack),
         item.publishedAt || null,
+        item.applicationStartAt || null,
         item.deadlineAt || null,
         item.rolling ? 1 : 0,
         item.summary,

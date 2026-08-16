@@ -148,6 +148,13 @@
       "when": 1786801986521,
       "tag": "0020_replace_job_catalog_20260814_verified",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1786844453965,
+      "tag": "0021_separate_job_schedule_dates",
+      "breakpoints": true
     }
   ]
 }

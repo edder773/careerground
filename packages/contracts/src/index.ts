@@ -58,6 +58,7 @@ export const jobImportItemSchema = z.object({
   remote: z.boolean().default(false),
   techStack: z.array(z.string().trim().min(1).max(50)).max(30).default([]),
   publishedAt: z.string().datetime({ offset: true }).optional(),
+  applicationStartAt: z.string().datetime({ offset: true }).optional(),
   deadlineAt: z.string().datetime({ offset: true }).optional(),
   rolling: z.boolean().default(false),
   collectedAt: z.string().datetime({ offset: true }),
