@@ -192,6 +192,19 @@
       "troubleshootingWikiProduction": "passed"
     }
   },
+  "deploymentPackagingGuard": {
+    "initialPublishStatus": "failed before the version became live",
+    "failure": "The repository-root migration history was packaged and attempted to recreate job_source_snapshot_items.",
+    "failureMessage": "table job_source_snapshot_items already exists",
+    "correctedProcedure": "preparePackageStage was used before the official Sites packager so repository-root baseline migrations were not overlaid.",
+    "packagedForwardMigrations": [
+      "0017_marvelous_blockbuster.sql",
+      "0018_sloppy_leech.sql",
+      "0019_replace_job_catalog_20260814.sql",
+      "0020_replace_job_catalog_20260814_verified.sql",
+      "0021_separate_job_schedule_dates.sql"
+    ]
+  },
   "limitations": [
     "Controlled timings exclude internet latency, browser rendering, asset downloads, and production D1 latency.",
     "The one-dispatch counts describe steady reads for an already provisioned unchanged user; first-ever account provisioning can require additional writes and reads.",

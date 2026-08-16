@@ -535,6 +535,31 @@ rate-limit UPSERT는 제거되지 않았다. 사용자 조회와 실제 route da
 React Query cache는 서버 응답을 잠시 재사용할 뿐 영구 데이터 원본이 아니다. 학습 완료나 답안
 제출 후에는 기존 invalidation이 목록과 상세을 다시 검증한다.
 
+## 배포 중 발견한 migration 패키징 경계
+
+첫 게시 archive는 공식 Sites packager를 저장소 root에 바로 적용하면서 과거 baseline migration
+전체를 포함했다. 운영 DB에는 해당 schema가 이미 있으므로 `job_source_snapshot_items` table을
+다시 만들려는 단계에서 배포가 실패했고 그 버전은 live가 되지 않았다.
+
+이 저장소는 runtime bootstrap 이후의 순방향 migration만 운영 배포에 포함하는 별도 stage 절차를
+이미 갖고 있다. 재패키징은 다음 순서를 사용했다.
+
+```text
+repository dist
+  └─ preparePackageStage
+       ├─ dist/server와 static assets 복사
+       ├─ hosting metadata 복사
+       ├─ dist에 이미 선별된 forward migration 검증
+       └─ repository-root baseline migration은 복사하지 않음
+
+safe stage
+  └─ official Sites package-site.sh
+       └─ production archive
+```
+
+재패키징 결과 포함된 migration은 0017–0021 다섯 개뿐이었다. 이 경계는 학습 성능 코드와 무관하지만
+동일 버전을 운영에 올리기 위해 필요한 배포 안전 조건이므로 함께 기록한다.
+
 ## 예상 사용자 체감
 
 정량적으로 보장할 수 있는 것은 다음과 같다.
