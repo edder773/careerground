@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-15T04:53:22.452Z",
+  "scope": "CareerGround authenticated job catalog read path",
+  "productionBaseline": {
+    "source": "Sites Worker logs captured before remediation",
+    "capturedAt": "2026-08-15T03:50:00.000Z",
+    "list": {
+      "route": "GET /api/v1/jobs?sort=new&page=cursor&limit=40",
+      "applicationDurationMs": 899,
+      "workerWallTimeMs": 913,
+      "workerCpuTimeMs": 6
+    },
+    "calendar": {
+      "route": "GET /api/v1/jobs?sort=deadline&calendar=true",
+      "applicationDurationMs": 722,
+      "workerWallTimeMs": 732,
+      "workerCpuTimeMs": 5
+    }
+  },
+  "controlledBenchmark": {
+    "command": "pnpm exec tsx scripts/performance/benchmark-job-read-path.mjs",
+    "runtime": "Node.js 24.19.0",
+    "database": "node:sqlite in-memory D1 compatibility adapter",
+    "data": "repository migrations and 121-job catalog seed",
+    "samples": 9,
+    "artificialD1DispatchLatencyMs": 25,
+    "before": {
+      "capturedAt": "2026-08-15T04:40:48.844Z",
+      "p50Ms": 124.21,
+      "p95Ms": 126.81,
+      "maxD1Dispatches": 4,
+      "returnedItems": 40,
+      "total": 119
+    },
+    "after": {
+      "capturedAt": "2026-08-15T04:53:22.452Z",
+      "p50Ms": 31.59,
+      "p95Ms": 32.0,
+      "maxD1Dispatches": 1,
+      "returnedItems": 40,
+      "total": 119
+    },
+    "change": {
+      "d1DispatchReductionPercent": 75.0,
+      "p50ReductionPercent": 74.57,
+      "p95ReductionPercent": 74.77
+    },
+    "interpretation": "The artificial latency makes D1 dispatch count visible. It is a controlled relative comparison and is not a production latency claim."
+  },
+  "queryPlanAfter": {
+    "list": ["SCAN j USING INDEX idx_jobs_feed_collected_id"],
+    "categories": ["SCAN jobs USING INDEX idx_jobs_active_category"],
+    "temporarySortObserved": false
+  },
+  "validation": {
+    "lint": "passed",
+    "formatCheck": "passed",
+    "typecheck": "passed for all workspace packages and Sites worker",
+    "tests": {
+      "passed": 111,
+      "failed": 0
+    },
+    "performanceBudget": {
+      "failures": 0,
+      "jobsCursorP95Ms": 11.2,
+      "jobsCursorResponseBytes": 26092,
+      "jobsCursorPreparedStatementCount": 4
+    },
+    "sitesBuild": {
+      "status": "passed",
+      "jobsChunkRawBytes": 28600,
+      "jobsChunkGzipBytes": 8660,
+      "migrationFiles": ["0017_marvelous_blockbuster.sql", "0018_sloppy_leech.sql"]
+    }
+  }
+}

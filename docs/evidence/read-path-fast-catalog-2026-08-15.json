@@ -1,0 +1,103 @@
+{
+  "schema": "careerground-read-path-fast-catalog/v1",
+  "generatedAt": "2026-08-15T15:53:16.8375675+09:00",
+  "scope": "authenticated high-traffic read paths and the jobs in-memory catalog",
+  "productionBaseline": {
+    "source": "Sites Worker aggregate logs captured before this deployment",
+    "note": "These are pre-change application and Worker timings, not post-change claims.",
+    "routes": [
+      { "route": "home bootstrap", "applicationMs": 694, "wallMs": 697, "cpuMs": 3 },
+      { "route": "jobs list", "applicationMs": 202, "wallMs": 206, "cpuMs": 2 },
+      { "route": "jobs calendar", "applicationMs": 363, "wallMs": 367, "cpuMs": 3 },
+      { "route": "coding problems", "applicationMs": 546, "wallMs": 555, "cpuMs": 3 },
+      { "route": "learning", "applicationMs": 381, "wallMs": 388, "cpuMs": 2 },
+      { "route": "learning due", "applicationMs": 387, "wallMs": 391, "cpuMs": 1 },
+      { "route": "collections trash", "applicationMs": 366, "wallMs": 371, "cpuMs": 3 }
+    ]
+  },
+  "controlledBenchmark": {
+    "command": "pnpm exec tsx scripts/performance/benchmark-job-read-path.mjs",
+    "environment": {
+      "runtime": "Node.js v24.19.0",
+      "database": "fresh node:sqlite D1 compatibility adapter per sample",
+      "data": "repository migrations and seed with 119 public jobs",
+      "samples": 9,
+      "artificialD1DispatchDelayMs": 25,
+      "networkIncluded": false
+    },
+    "before": {
+      "scope": "direct paged GET /jobs after the preceding D1 round-trip remediation",
+      "p50Ms": 31.92,
+      "p95Ms": 32.22,
+      "maxD1DispatchCount": 1,
+      "returnedItems": 40,
+      "totalItems": 119
+    },
+    "after": {
+      "directPagedJobs": {
+        "p50Ms": 31.39,
+        "p95Ms": 32.63,
+        "maxD1DispatchCount": 1,
+        "maxPreparedStatementCount": 4,
+        "returnedItems": 40,
+        "totalItems": 119
+      },
+      "jobsCatalogBootstrap": {
+        "p50Ms": 31.53,
+        "p95Ms": 41.4,
+        "maxD1DispatchCount": 1,
+        "maxPreparedStatementCount": 3,
+        "returnedItems": 119,
+        "responseBytes": 78690
+      }
+    },
+    "interpretation": [
+      "The existing direct paged route retained one D1 dispatch without a material controlled-latency regression.",
+      "The catalog bootstrap is a new request shape, so no before/after percentage is claimed for it.",
+      "After catalog hydration, jobs filter, search, sort, saved-only, calendar-month, and list/calendar view changes issue zero read requests; regression tests verify this behavior."
+    ]
+  },
+  "structuralComparison": [
+    { "path": "home bootstrap", "metric": "prepared statements", "before": 11, "after": 5 },
+    { "path": "jobs page bootstrap", "metric": "prepared statements", "before": 7, "after": 3 },
+    { "path": "coding problems", "metric": "D1 dispatches", "before": 3, "after": 1 },
+    { "path": "learning summary", "metric": "D1 dispatches", "before": 3, "after": 1 },
+    { "path": "learning due", "metric": "D1 dispatches", "before": 2, "after": 1 },
+    { "path": "collections", "metric": "D1 dispatches", "before": 2, "after": 1 },
+    { "path": "collections trash", "metric": "D1 dispatches", "before": 2, "after": 1 },
+    {
+      "path": "jobs interaction after hydration",
+      "metric": "read requests per UI change",
+      "before": 1,
+      "after": 0
+    }
+  ],
+  "validation": {
+    "lint": "pass",
+    "formatCheck": "pass",
+    "typecheck": "pass for contracts, UI, API, web, docs, and Sites",
+    "tests": { "passed": 112, "failed": 0 },
+    "performanceBudget": {
+      "status": "pass",
+      "failures": 0,
+      "jobsCursorP95Ms": 10.92,
+      "jobsCursorBytes": 26092,
+      "jobsCursorPreparedStatements": 4,
+      "codingProblemsCursorP95Ms": 7.58,
+      "codingProblemsCursorBytes": 13166,
+      "codingProblemsCursorPreparedStatements": 3
+    },
+    "sitesBuild": {
+      "status": "pass",
+      "jobsPageRawBytes": 27740,
+      "jobsPageGzipBytes": 8620,
+      "stagedMigrations": ["0017_marvelous_blockbuster.sql", "0018_sloppy_leech.sql"]
+    }
+  },
+  "limitations": [
+    "Controlled benchmark timings exclude production network and D1 latency.",
+    "Post-deployment production latency is not claimed until new production requests exist.",
+    "The first visit still includes authentication, HTML and JavaScript download, and platform cold-start variability.",
+    "The catalog is user-personalized and retained only in that browser's authenticated React Query memory; it is not shared through a public HTTP cache."
+  ]
+}
