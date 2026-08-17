@@ -1781,8 +1781,9 @@ p {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(760px, 100%);
-  max-height: min(820px, calc(100vh - 48px));
+  width: min(1040px, calc(100vw - 48px));
+  height: min(880px, calc(100dvh - 48px));
+  max-height: calc(100dvh - 48px);
   overflow: hidden;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -1792,28 +1793,28 @@ p {
   box-shadow: 0 32px 90px rgba(22, 29, 50, 0.3);
 }
 .learning-unit-modal > header {
-  padding: 22px 24px;
+  padding: 26px 32px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 20px;
   color: white;
   background: linear-gradient(135deg, #4f5eb2, #344175);
 }
 .learning-unit-modal header span {
   color: #cfd5ff;
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 850;
   letter-spacing: 0.12em;
 }
 .learning-unit-modal header h2 {
-  margin: 5px 0 0;
-  font-size: 22px;
-  line-height: 1.35;
+  margin: 7px 0 0;
+  font-size: 30px;
+  line-height: 1.25;
 }
 .learning-unit-modal header button {
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   display: grid;
   flex: 0 0 auto;
@@ -1824,138 +1825,153 @@ p {
   border-radius: 50%;
 }
 .learning-unit-modal header button svg {
-  width: 17px;
+  width: 20px;
 }
 .learning-modal-content {
   overflow-y: auto;
-  padding: 22px 24px 28px;
+  padding: 30px 40px 40px;
+  scrollbar-gutter: stable;
 }
 .learning-concept-map {
-  margin-bottom: 17px;
+  margin-bottom: 24px;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 .learning-concept-map span {
-  padding: 5px 8px;
+  padding: 8px 12px;
   color: #4f5eaa;
   background: #eceefa;
   border: 1px solid #dadef3;
   border-radius: 999px;
-  font-size: 8px;
+  font-size: 13px;
   font-weight: 800;
 }
 .learning-markdown {
   color: #3f474f;
-  font-size: 11px;
-  line-height: 1.75;
+  font-size: 16px;
+  line-height: 1.8;
 }
 .learning-markdown h2 {
-  margin: 0 0 10px;
-  font-size: 18px;
+  margin: 0 0 14px;
+  font-size: 26px;
+  line-height: 1.35;
 }
 .learning-markdown h3 {
-  margin: 22px 0 8px;
+  margin: 28px 0 10px;
   color: #44529c;
-  font-size: 13px;
+  font-size: 20px;
+  line-height: 1.4;
 }
 .learning-markdown p,
 .learning-markdown ul,
 .learning-markdown ol,
 .learning-markdown blockquote {
-  margin: 8px 0;
+  margin: 12px 0;
 }
 .learning-markdown ul,
 .learning-markdown ol {
-  padding-left: 20px;
+  padding-left: 24px;
 }
 .learning-markdown blockquote {
-  padding: 11px 13px;
+  padding: 16px 18px;
   color: #4f5964;
   background: #f0f2f8;
   border-left: 3px solid #6573c5;
-  border-radius: 0 9px 9px 0;
+  border-radius: 0 12px 12px 0;
 }
 .learning-markdown pre {
   overflow-x: auto;
-  padding: 14px;
+  padding: 18px;
   color: #e6e9f4;
   background: #242a3b;
-  border-radius: 11px;
-  font-size: 9px;
-  line-height: 1.65;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.7;
 }
 .learning-recall-section {
-  margin-top: 22px;
-  padding-top: 20px;
+  margin-top: 30px;
+  padding-top: 28px;
   border-top: 1px solid #e5e7ec;
 }
 .learning-section-title {
-  margin-bottom: 10px;
+  margin-bottom: 14px;
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 12px;
 }
 .learning-section-title > svg {
-  width: 23px;
+  width: 28px;
   color: #5968bb;
 }
 .learning-section-title span {
   color: #828993;
-  font-size: 8px;
+  font-size: 12px;
 }
 .learning-section-title h3 {
-  margin: 1px 0 0;
-  font-size: 13px;
+  margin: 2px 0 0;
+  font-size: 19px;
+  line-height: 1.4;
 }
 .learning-flashcards,
 .learning-questions {
   display: grid;
-  gap: 7px;
+  gap: 12px;
 }
 .learning-flashcards details,
 .learning-questions details {
-  padding: 11px 12px;
+  padding: 16px 18px;
   background: white;
   border: 1px solid #e2e5eb;
-  border-radius: 10px;
+  border-radius: 14px;
 }
 .learning-flashcards summary,
 .learning-questions summary {
   color: #414a55;
   cursor: pointer;
-  font-size: 10px;
+  font-size: 15px;
   font-weight: 750;
+  line-height: 1.5;
 }
 .learning-flashcards p,
 .learning-questions p,
 .learning-questions ul {
-  margin: 9px 0 0;
+  margin: 12px 0 0;
   color: #667079;
-  font-size: 9px;
-  line-height: 1.65;
+  font-size: 14px;
+  line-height: 1.75;
 }
 .learning-questions ul {
-  padding-left: 18px;
+  padding-left: 22px;
+}
+.learning-unit-modal .learning-unit-actions {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7ec;
+}
+.learning-unit-modal .folder-save-trigger,
+.learning-unit-modal .primary-button.compact {
+  min-height: 44px;
+  padding-right: 16px;
+  padding-left: 16px;
+  font-size: 13px;
+}
+.learning-unit-modal .learning-question-form {
+  gap: 14px;
+  padding: 20px;
+  font-size: 15px;
+}
+.learning-unit-modal .learning-choice-list {
+  gap: 10px;
+}
+.learning-unit-modal .learning-choice-list label {
+  min-height: 48px;
+  padding: 11px 14px;
+  font-size: 14px;
 }
 @media (max-width: 640px) {
   .unit-grid {
     grid-template-columns: 1fr;
-  }
-  .learning-modal-backdrop {
-    padding: 10px;
-  }
-  .learning-unit-modal {
-    max-height: calc(100vh - 20px);
-    border-radius: 18px;
-  }
-  .learning-unit-modal > header,
-  .learning-modal-content {
-    padding-right: 16px;
-    padding-left: 16px;
-  }
-  .learning-unit-modal header h2 {
-    font-size: 18px;
   }
 }
 
@@ -2141,8 +2157,8 @@ p {
 }
 
 .learning-visual-section {
-  margin: 0 0 22px;
-  padding: 16px;
+  margin: 0 0 30px;
+  padding: 20px;
   background: #f2f3f7;
   border: 1px solid #e0e2ea;
   border-radius: 16px;
@@ -2180,28 +2196,28 @@ p {
   position: absolute;
   right: 10px;
   bottom: 10px;
-  min-height: 28px;
-  padding: 0 9px;
+  min-height: 36px;
+  padding: 0 12px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
   color: white;
   background: rgba(37, 42, 58, 0.84);
   border-radius: 8px;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 800;
   backdrop-filter: blur(8px);
 }
 
 .learning-visual-grid a span svg {
-  width: 12px;
+  width: 14px;
 }
 
 .learning-visual-grid figcaption {
-  margin-top: 8px;
+  margin-top: 10px;
   color: #68707d;
-  font-size: 9px;
-  line-height: 1.55;
+  font-size: 13px;
+  line-height: 1.65;
 }
 
 @media (max-width: 1180px) {
@@ -2227,12 +2243,29 @@ p {
 
   .learning-unit-modal {
     width: 100%;
-    max-height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
     border-radius: 0;
   }
 
   .learning-modal-backdrop {
     padding: 0;
+  }
+
+  .learning-unit-modal > header {
+    padding: 18px 20px;
+  }
+
+  .learning-unit-modal header h2 {
+    font-size: 23px;
+  }
+
+  .learning-modal-content {
+    padding: 22px 20px 32px;
+  }
+
+  .learning-visual-section {
+    padding: 16px;
   }
 }
 .ranking-notice {
