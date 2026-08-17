@@ -410,9 +410,9 @@ export function CodingPage() {
       {problems.isError && <div className="error-panel">문제 목록을 불러오지 못했습니다.</div>}
       {!problems.isLoading && !problems.isError && displayList.length === 0 && (
         <div className="empty-panel coding-problem-empty">
-          <h3>
+          <h2>
             {scope === 'solved' ? '아직 해결한 문제가 없습니다' : '조건에 맞는 문제가 없습니다'}
-          </h3>
+          </h2>
           <p>
             {scope === 'solved'
               ? '전체 문제에서 첫 문제를 골라 풀이를 기록해보세요.'

@@ -75,6 +75,7 @@ test.describe('CareerGround MVP vertical slices', () => {
       page.getByRole('link', { name: '코딩테스트' }).first().click(),
     ]);
     await expect(page.getByRole('heading', { name: '코딩테스트' })).toBeVisible();
+    await page.getByRole('button', { name: '전체 문제', exact: true }).click();
     await page.getByRole('button', { name: '폴더에 저장' }).first().click();
     const codingFolderDialog = page.getByRole('dialog', { name: /저장할 폴더/ });
     const codingFolderOption = codingFolderDialog.getByRole('checkbox', { name: renamed });

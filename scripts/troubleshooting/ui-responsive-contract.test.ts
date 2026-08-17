@@ -24,6 +24,10 @@ describe('UI polish responsive contracts', () => {
     expect(polish).toContain('text-overflow: clip;\n  white-space: normal;');
     expect(home).toContain('className="today-summary-link"');
     expect(home).toContain('className="virtual-folders"');
+    expect(polish).toContain(
+      '.virtual-folders > a span {\n  align-self: start;\n  color: #5f6672;',
+    );
+    expect(polish).toContain('.settings-profile-summary dt {\n  color: #5f6672;');
     expect(home).not.toContain('오늘 복습');
     expect(home).not.toContain('복습 예정');
     expect(learning).not.toContain(

@@ -7267,7 +7267,7 @@ body {
 
 .virtual-folders > a span {
   align-self: start;
-  color: #737985;
+  color: #5f6672;
   font-size: 10px;
   line-height: 1.4;
 }
@@ -7405,7 +7405,7 @@ body {
 }
 
 .settings-profile-summary dt {
-  color: #737985;
+  color: #5f6672;
   font-size: 11px;
   font-weight: 700;
 }
