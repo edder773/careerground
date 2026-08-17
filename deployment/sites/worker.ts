@@ -50,7 +50,7 @@ const withSecurityHeaders = (response: Response) => {
 async function serveApi(request: Request, env: SitesEnv) {
   if (env.DB) {
     const pathname = new URL(request.url).pathname;
-    if (pathname === '/api/v1/health/live') {
+    if (pathname === '/api/v1/health/live' || pathname === '/api/v1/bootstrap') {
       return handleD1Api(request, { ...env, DB: env.DB });
     }
     try {

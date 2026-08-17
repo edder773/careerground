@@ -14,7 +14,7 @@ describe('solution editor', () => {
       track: 'ALGORITHM' as const,
       tags: ['구현'],
       sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/1',
-      progress: [],
+      progress: [{ status: 'SOLVED', favorite: false }],
       _count: { solutions: 0 },
     };
     const levelTwoProblem = {
@@ -23,6 +23,7 @@ describe('solution editor', () => {
       displayTitle: '데모 문제 Lv. 2',
       level: 2,
       sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/2',
+      progress: [],
     };
     const sqlProblem = {
       ...problem,
@@ -48,7 +49,7 @@ describe('solution editor', () => {
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
         calls.push({ url, body: init?.body ? JSON.parse(String(init.body)) : undefined });
-        if (url.endsWith('/auth/me'))
+        if (url.includes('/bootstrap'))
           return response({
             user: {
               id: 'member',
@@ -58,9 +59,14 @@ describe('solution editor', () => {
               preferredLanguage: 'javascript',
               onboardingCompleted: true,
             },
+            unreadCount: 0,
+            home: null,
           });
         if (url.includes('/coding/problems?')) {
-          const items = url.includes('track=SQL') ? [sqlProblem] : [problem, levelTwoProblem];
+          const catalog = url.includes('track=SQL') ? [sqlProblem] : [problem, levelTwoProblem];
+          const items = url.includes('scope=solved')
+            ? catalog.filter((item) => item.progress[0]?.status === 'SOLVED')
+            : catalog;
           return response({ items, nextCursor: null, total: items.length });
         }
         if (url.endsWith('/coding/daily-challenges'))
@@ -88,6 +94,30 @@ describe('solution editor', () => {
     const dailySection = screen.getByRole('region', { name: '오늘의 문제' });
     expect(dailySection.querySelectorAll('article')).toHaveLength(3);
     expect(dailySection.querySelectorAll('a[href^="/solutions?"]')).toHaveLength(3);
+    expect(screen.getByRole('button', { name: '내가 푼 문제' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await waitFor(() =>
+      expect(
+        Array.from(document.querySelectorAll('.problem-grid h2')).map(
+          (heading) => heading.textContent,
+        ),
+      ).toEqual(['데모 문제']),
+    );
+    expect(calls.some((call) => call.url.includes('scope=solved'))).toBe(true);
+    await user.click(screen.getByRole('button', { name: '전체 문제' }));
+    await waitFor(() =>
+      expect(
+        Array.from(document.querySelectorAll('.problem-grid h2')).map(
+          (heading) => heading.textContent,
+        ),
+      ).toEqual(['데모 문제', '데모 문제 Lv. 2']),
+    );
+    expect(screen.getByRole('button', { name: '전체 문제' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     await user.click(within(dailySection).getAllByRole('button', { name: '풀이 기록' })[0]!);
     expect(screen.getByRole('dialog', { name: '데모 문제' })).toBeInTheDocument();
     expect(screen.queryByText(/자동 저장 초안을 복원/)).not.toBeInTheDocument();

@@ -24,7 +24,6 @@ enum CollectionItemType {
   JOB_POSTING
   CODING_PROBLEM
   SOLUTION
-  NOTE
   EXTERNAL_LINK
 }
 
@@ -124,7 +123,6 @@ model User {
   deletedAt             DateTime?
   preference            UserPreference?
   collections           Collection[]
-  notes                 Note[]
   learningProgress      LearningProgress[]
   reviewSchedules       ReviewSchedule[]
   savedJobs             SavedJob[]
@@ -185,36 +183,6 @@ model CollectionItem {
 
   @@unique([collectionId, itemType, targetId])
   @@index([collectionId, position])
-}
-
-model Note {
-  id         String         @id @default(uuid()) @db.Uuid
-  userId     String         @db.Uuid
-  title      String         @db.VarChar(200)
-  markdown   String
-  visibility Visibility     @default(PRIVATE)
-  linkedType String?        @db.VarChar(40)
-  linkedId   String?        @db.VarChar(100)
-  currentRev Int            @default(1)
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
-  deletedAt  DateTime?
-  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  revisions  NoteRevision[]
-
-  @@index([userId, updatedAt])
-  @@index([linkedType, linkedId])
-}
-
-model NoteRevision {
-  id        String   @id @default(uuid()) @db.Uuid
-  noteId    String   @db.Uuid
-  revision  Int
-  markdown  String
-  createdAt DateTime @default(now())
-  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
-
-  @@unique([noteId, revision])
 }
 
 model LearningSource {
@@ -428,6 +396,7 @@ model JobPosting {
   remote              Boolean          @default(false)
   techStack           String[]
   publishedAt         DateTime?
+  applicationStartAt  DateTime?
   deadlineAt          DateTime?
   rolling             Boolean          @default(false)
   collectedAt         DateTime
@@ -448,6 +417,7 @@ model JobPosting {
   @@index([status, category, createdAt])
   @@index([status, careerScope, deadlineAt])
   @@index([status, careerScope, publishedAt])
+  @@index([status, careerScope, applicationStartAt])
   @@index([status, careerScope, collectedAt])
   @@index([status, careerScope, rolling])
   @@index([companyId, title])

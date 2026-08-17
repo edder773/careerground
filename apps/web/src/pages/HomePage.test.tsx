@@ -49,8 +49,7 @@ describe('folder workspace', () => {
           folders[1]!.items.push({ id: 'item-1', ...body });
           return response(folders[1]!.items[0]);
         }
-        if (url.endsWith('/dashboard'))
-          return response({ recentJobs: 4, expiringJobs: 1, dueReviews: 2 });
+        if (url.endsWith('/dashboard')) return response({ recentJobs: 4, expiringJobs: 1 });
         if (url.endsWith('/coding/daily-challenges'))
           return response([
             {
@@ -100,6 +99,9 @@ describe('folder workspace', () => {
     expect(screen.getByText('오늘의 Lv. 2')).toBeInTheDocument();
     expect(screen.getByText('오늘의 SQL')).toBeInTheDocument();
     expect(screen.getByText('SQL · Lv. 3')).toBeInTheDocument();
+    expect(screen.queryByText('오늘 복습')).not.toBeInTheDocument();
+    expect(screen.queryByText('복습 예정')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /관심 공고.*지원 후보 모음/ })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /새 폴더/ }));
     await user.type(screen.getByRole('textbox', { name: '폴더 이름' }), '코테 모음');
     await user.click(screen.getByRole('button', { name: '만들기' }));

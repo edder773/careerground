@@ -8,7 +8,6 @@ const sizes = {
   codingProblems: 10_000,
   solutions: 20_000,
   comments: 100_000,
-  notesPerUser: 1_000,
   notificationsPerUser: 10_000,
 };
 const now = '2026-08-13T00:00:00.000Z';
@@ -134,33 +133,6 @@ await insertChunks(sizes.comments, (index) => [
       now,
     ),
 ]);
-await insertChunks(sizes.notesPerUser, (index) => [
-  db
-    .prepare(
-      `INSERT INTO notes
-       (id, user_id, title, markdown, visibility, current_rev, created_at, updated_at)
-       VALUES (?, ?, ?, ?, 'PRIVATE', 1, ?, ?)`,
-    )
-    .bind(
-      `perf-note-${index}`,
-      userId,
-      `Synthetic note ${index}`,
-      `# Synthetic note ${index}\n\nList<String> and a < b`,
-      now,
-      now,
-    ),
-  db
-    .prepare(
-      `INSERT INTO note_revisions (id, note_id, revision, markdown, created_at)
-       VALUES (?, ?, 1, ?, ?)`,
-    )
-    .bind(
-      `perf-note-revision-${index}`,
-      `perf-note-${index}`,
-      `# Synthetic note ${index}\n\nList<String> and a < b`,
-      now,
-    ),
-]);
 await insertChunks(sizes.notificationsPerUser, (index) => [
   db
     .prepare(
@@ -217,7 +189,6 @@ const metrics = {
   codingProblemsCursor: await measure('/coding/problems?page=cursor&limit=60'),
   solutions: await measure('/coding/solutions'),
   solutionsCursor: await measure('/coding/solutions?page=cursor&limit=10'),
-  notes: await measure('/notes'),
   notifications: await measure('/notifications'),
   search: await measure('/search?q=Synthetic'),
 };

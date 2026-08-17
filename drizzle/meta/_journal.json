@@ -120,6 +120,41 @@
       "when": 1786691728380,
       "tag": "0016_full_audit_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1786761523468,
+      "tag": "0017_marvelous_blockbuster",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1786769313100,
+      "tag": "0018_sloppy_leech",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1786789261550,
+      "tag": "0019_replace_job_catalog_20260814",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1786801986521,
+      "tag": "0020_replace_job_catalog_20260814_verified",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1786844453965,
+      "tag": "0021_separate_job_schedule_dates",
+      "breakpoints": true
     }
   ]
 }

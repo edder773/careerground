@@ -122,6 +122,124 @@ describe('Sites D1 API', () => {
     expect((await call('/api/v1/auth/me', {}, memberHeaders, env)).response.status).toBe(200);
   });
 
+  it('does not rewrite or reread an unchanged signed-in user', async () => {
+    await call('/api/v1/auth/me', {}, memberHeaders);
+    const before = await db
+      .prepare('SELECT updated_at AS updatedAt FROM users WHERE site_user_id = ?')
+      .bind(memberHeaders['oai-authenticated-user-id'])
+      .first<{ updatedAt: string }>();
+
+    db.resetQueryCount();
+    db.resetBatchCount();
+    db.resetPreparedSql();
+    const repeated = await call('/api/v1/auth/me', {}, memberHeaders);
+
+    expect(repeated.response.status).toBe(200);
+    expect(db.getQueryCount()).toBe(2);
+    expect(db.getBatchCount()).toBe(1);
+    expect(db.preparedSql.filter((sql) => sql.includes('site_user_id AS siteUserId'))).toHaveLength(
+      1,
+    );
+    expect(db.preparedSql.some((sql) => /^\s*UPDATE users/i.test(sql))).toBe(false);
+    const after = await db
+      .prepare('SELECT updated_at AS updatedAt FROM users WHERE site_user_id = ?')
+      .bind(memberHeaders['oai-authenticated-user-id'])
+      .first<{ updatedAt: string }>();
+    expect(after?.updatedAt).toBe(before?.updatedAt);
+  });
+
+  it('persists and audits a role change without rereading the user', async () => {
+    await call('/api/v1/auth/me', {}, memberHeaders, { OPENAI_ADMIN_EMAILS: '' });
+    db.resetQueryCount();
+    db.resetBatchCount();
+    db.resetPreparedSql();
+
+    const promoted = await call('/api/v1/auth/me', {}, memberHeaders, {
+      OPENAI_ADMIN_EMAILS: 'member@example.test',
+    });
+
+    expect(promoted.body).toMatchObject({ user: { role: 'ADMIN' } });
+    expect(db.getQueryCount()).toBe(4);
+    expect(db.getBatchCount()).toBe(2);
+    expect(db.preparedSql.filter((sql) => sql.includes('site_user_id AS siteUserId'))).toHaveLength(
+      1,
+    );
+    const stored = await db
+      .prepare('SELECT role FROM users WHERE site_user_id = ?')
+      .bind(memberHeaders['oai-authenticated-user-id'])
+      .first<{ role: string }>();
+    const roleAudit = await db
+      .prepare("SELECT action FROM audit_logs WHERE action = 'USER_ROLE_SYNCED'")
+      .first<{ action: string }>();
+    expect(stored?.role).toBe('ADMIN');
+    expect(roleAudit?.action).toBe('USER_ROLE_SYNCED');
+  });
+
+  it('returns the signed-in home workspace in one bootstrap D1 batch', async () => {
+    await call(
+      '/api/v1/auth/onboarding',
+      {
+        method: 'POST',
+        body: JSON.stringify({ displayName: '부트스트랩 멤버', preferredLanguage: 'javascript' }),
+      },
+      memberHeaders,
+    );
+    await call('/api/v1/coding/daily-challenges', {}, memberHeaders);
+
+    db.resetQueryCount();
+    db.resetPreparedSql();
+    const loaded = await call('/api/v1/bootstrap?home=1', {}, memberHeaders);
+
+    expect(loaded.response.status).toBe(200);
+    expect(loaded.body).toMatchObject({
+      user: { displayName: '부트스트랩 멤버', onboardingCompleted: true },
+      unreadCount: 1,
+      home: {
+        collections: [],
+        dashboard: { recentJobs: expect.any(Number), expiringJobs: expect.any(Number) },
+        dailyChallenges: [
+          expect.objectContaining({ levelSlot: 1 }),
+          expect.objectContaining({ levelSlot: 2 }),
+          expect.objectContaining({ levelSlot: 34 }),
+        ],
+      },
+    });
+    expect(db.getQueryCount()).toBe(5);
+    expect(db.preparedSql.some((sql) => /^\s*UPDATE users/i.test(sql))).toBe(false);
+    expect(loaded.response.headers.get('server-timing')).toMatch(/^app;dur=\d+\.\d$/);
+  });
+
+  it('enforces the read limit inside the bootstrap batch', async () => {
+    await call('/api/v1/auth/me', {}, memberHeaders);
+    const env = { RATE_LIMIT_READS_PER_MINUTE: '2' };
+
+    expect((await call('/api/v1/bootstrap', {}, memberHeaders, env)).response.status).toBe(200);
+    expect((await call('/api/v1/bootstrap', {}, memberHeaders, env)).response.status).toBe(200);
+    const limited = await call('/api/v1/bootstrap', {}, memberHeaders, env);
+
+    expect(limited.response.status).toBe(429);
+    expect(limited.response.headers.get('retry-after')).toMatch(/^\d+$/);
+    expect(limited.body).toMatchObject({ code: 'RATE_LIMITED' });
+  });
+
+  it('enforces the read limit inside the fast job batch', async () => {
+    await call('/api/v1/auth/me', {}, memberHeaders);
+    const env = { RATE_LIMIT_READS_PER_MINUTE: '1' };
+
+    expect(
+      (await call('/api/v1/jobs?sort=new&page=cursor&limit=40', {}, memberHeaders, env)).response
+        .status,
+    ).toBe(200);
+    const limited = await call(
+      '/api/v1/jobs?sort=new&page=cursor&limit=40',
+      {},
+      memberHeaders,
+      env,
+    );
+    expect(limited.response.status).toBe(429);
+    expect(limited.body).toMatchObject({ code: 'RATE_LIMITED' });
+  });
+
   it('persists a personal folder and external link', async () => {
     const created = await call('/api/v1/collections', {
       method: 'POST',
@@ -201,66 +319,25 @@ describe('Sites D1 API', () => {
     ).toEqual([item.body.id, secondItem.body.id]);
   });
 
-  it('persists note revisions for the current user', async () => {
-    const original =
-      'List<String>\nvector<pair<int, int>>\na < b && c > d\n<script>alert(1)</script>';
-    const created = await call('/api/v1/notes', {
-      method: 'POST',
-      body: JSON.stringify({ title: 'D1 메모', markdown: original, visibility: 'MEMBERS' }),
-    });
-    const note = created.body as { id: string };
-    expect(created.body).toMatchObject({ markdown: original });
-    const updated = await call('/api/v1/notes', {
-      method: 'POST',
-      body: JSON.stringify({
-        id: note.id,
-        baseRevision: 1,
-        title: 'D1 메모',
-        markdown: '두 번째 기록',
-        visibility: 'PRIVATE',
-      }),
-    });
-    expect(updated.response.status).toBe(200);
-    const conflict = await call('/api/v1/notes', {
-      method: 'POST',
-      body: JSON.stringify({
-        id: note.id,
-        baseRevision: 1,
-        title: '충돌 저장',
-        markdown: '덮어쓰면 안 됩니다.',
-      }),
-    });
-    expect(conflict.response.status).toBe(409);
-    expect(conflict.body).toMatchObject({ code: 'REVISION_CONFLICT' });
+  it('removes the personal notes feature and rejects note collection items', async () => {
+    const noteTables = await db
+      .prepare(
+        "SELECT COUNT(*) AS count FROM sqlite_schema WHERE type = 'table' AND name IN ('notes', 'note_revisions')",
+      )
+      .first<{ count: number }>();
+    expect(noteTables?.count).toBe(0);
 
-    const listed = await call('/api/v1/notes');
-    expect(listed.body).toEqual([
-      expect.objectContaining({
-        id: note.id,
-        markdown: '두 번째 기록',
-        visibility: 'PRIVATE',
-        currentRev: 2,
-        revisions: [
-          expect.objectContaining({ revision: 2 }),
-          expect.objectContaining({ revision: 1 }),
-        ],
-      }),
-    ]);
-
-    const otherUserNotes = await call('/api/v1/notes', {}, memberHeaders);
-    expect(otherUserNotes.body).toEqual([]);
-    const removed = await call(`/api/v1/notes/${note.id}`, { method: 'DELETE' });
-    expect(removed.response.status).toBe(200);
-    expect((await call('/api/v1/notes')).body).toEqual([]);
-    expect((await call('/api/v1/notes/trash')).body).toEqual([
-      expect.objectContaining({ id: note.id, title: 'D1 메모' }),
-    ]);
-    expect(
-      (await call(`/api/v1/notes/${note.id}/restore`, { method: 'POST' })).response.status,
-    ).toBe(200);
-    expect((await call('/api/v1/notes')).body).toEqual([
-      expect.objectContaining({ id: note.id, currentRev: 2 }),
-    ]);
+    expect((await call('/api/v1/notes')).response.status).toBe(404);
+    const created = await call('/api/v1/collections', {
+      method: 'POST',
+      body: JSON.stringify({ name: '지원 준비', icon: 'folder', color: 'violet' }),
+    });
+    const folder = created.body as { id: string };
+    const noteItem = await call(`/api/v1/collections/${folder.id}/items`, {
+      method: 'POST',
+      body: JSON.stringify({ itemType: 'NOTE', targetId: 'removed-note' }),
+    });
+    expect(noteItem.response.status).toBe(422);
   });
 
   it('replaces dummy records with the imported job and problem catalogs', async () => {
@@ -287,21 +364,21 @@ describe('Sites D1 API', () => {
       )
       .first<{ count: number }>();
 
-    expect(jobCount?.count).toBe(121);
-    expect(currentJobCount?.count).toBe(120);
-    expect(expiredJobCount?.count).toBe(1);
+    expect(jobCount?.count).toBe(51);
+    expect(currentJobCount?.count).toBe(51);
+    expect(expiredJobCount?.count).toBe(0);
     expect(problemCount?.count).toBe(427);
     expect(sqlProblemCount?.count).toBe(62);
     expect(dummyCount?.count).toBe(0);
 
     const jobs = await call('/api/v1/jobs?sort=new');
     expect(jobs.response.status).toBe(200);
-    expect(jobs.body).toHaveLength(119);
+    expect(jobs.body).toHaveLength(51);
     expect(jobs.body).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          title: 'Fullstack Engineer',
-          company: expect.objectContaining({ name: 'Hudson AI' }),
+          title: '2026년 개발직 신입 및 경력사원 채용',
+          company: expect.objectContaining({ name: '㈜퓨전소프트' }),
         }),
       ]),
     );
@@ -332,8 +409,126 @@ describe('Sites D1 API', () => {
     const categories = await call('/api/v1/jobs/categories');
     expect(categories.response.status).toBe(200);
     expect(categories.body).toEqual(
-      expect.arrayContaining(['AI 풀스택 개발', '백엔드', '프론트엔드']),
+      expect.arrayContaining(['AI_ML', 'SOFTWARE_ENGINEERING', 'WEB_DEVELOPMENT']),
     );
+  });
+
+  it('serves the job catalog and page bootstrap with one D1 dispatch each', async () => {
+    await call('/api/v1/auth/me', {}, memberHeaders);
+
+    db.resetQueryCount();
+    db.resetBatchCount();
+    const catalog = await call('/api/v1/jobs?sort=new&page=cursor&limit=40', {}, memberHeaders);
+    expect(catalog.response.status).toBe(200);
+    expect(catalog.body).toMatchObject({ items: expect.any(Array), total: 51 });
+    expect(db.getQueryCount()).toBe(4);
+    expect(db.getBatchCount()).toBe(1);
+    expect(
+      db.preparedSql.some(
+        (sql) =>
+          sql.includes('INDEXED BY idx_jobs_feed_collected_id') &&
+          sql.includes('ORDER BY j.collected_at DESC, j.id DESC'),
+      ),
+    ).toBe(true);
+
+    db.resetQueryCount();
+    db.resetBatchCount();
+    const bootstrap = await call(
+      '/api/v1/jobs/bootstrap?sort=new&page=cursor&limit=40',
+      {},
+      memberHeaders,
+    );
+    expect(bootstrap.response.status).toBe(200);
+    expect(bootstrap.body).toMatchObject({
+      user: { email: 'member@example.test' },
+      unreadCount: expect.any(Number),
+      categories: expect.arrayContaining(['AI_ML']),
+      data: { items: expect.any(Array), total: 51 },
+    });
+    expect(db.getQueryCount()).toBe(5);
+    expect(db.getBatchCount()).toBe(1);
+
+    db.resetQueryCount();
+    db.resetBatchCount();
+    const fullCatalog = await call('/api/v1/jobs/bootstrap?catalog=true', {}, memberHeaders);
+    expect(fullCatalog.response.status).toBe(200);
+    expect(fullCatalog.body).toMatchObject({
+      categories: expect.arrayContaining(['AI_ML', 'WEB_DEVELOPMENT']),
+      data: expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]),
+    });
+    expect(fullCatalog.body.data as unknown[]).toHaveLength(51);
+    expect(db.getQueryCount()).toBe(3);
+    expect(db.getBatchCount()).toBe(1);
+  });
+
+  it('returns the welcome unread count when job bootstrap provisions a new user', async () => {
+    const newcomer = {
+      ...memberHeaders,
+      'oai-authenticated-user-id': 'job-bootstrap-newcomer',
+      'oai-authenticated-user-email': 'job-bootstrap-newcomer@example.test',
+    };
+    const bootstrap = await call(
+      '/api/v1/jobs/bootstrap?sort=new&page=cursor&limit=40',
+      {},
+      newcomer,
+    );
+    expect(bootstrap.response.status).toBe(200);
+    expect(bootstrap.body).toMatchObject({ unreadCount: 1, data: { total: 51 } });
+  });
+
+  it('serves the high-traffic read routes in one D1 dispatch each', async () => {
+    await call('/api/v1/auth/me', {}, memberHeaders);
+    const cases = [
+      ['/api/v1/coding/problems?track=ALGORITHM&page=cursor&limit=25', 3],
+      ['/api/v1/learning', 3],
+      ['/api/v1/learning/due', 3],
+      ['/api/v1/collections', 3],
+      ['/api/v1/collections/trash', 3],
+    ] as const;
+
+    for (const [path, queryCount] of cases) {
+      db.resetQueryCount();
+      db.resetBatchCount();
+      const result = await call(path, {}, memberHeaders);
+      expect(result.response.status, path).toBe(200);
+      expect(db.getQueryCount(), path).toBe(queryCount);
+      expect(db.getBatchCount(), path).toBe(1);
+    }
+  });
+
+  it('serves learning bootstrap and unit detail in one D1 dispatch each', async () => {
+    await call('/api/v1/auth/me', {}, memberHeaders);
+
+    db.resetQueryCount();
+    db.resetBatchCount();
+    const bootstrap = await call('/api/v1/learning/bootstrap', {}, memberHeaders);
+    expect(bootstrap.response.status).toBe(200);
+    expect(bootstrap.body).toMatchObject({
+      user: { email: 'member@example.test' },
+      unreadCount: expect.any(Number),
+      data: expect.arrayContaining([expect.objectContaining({ units: expect.any(Array) })]),
+    });
+    expect(db.getQueryCount()).toBe(3);
+    expect(db.getBatchCount()).toBe(1);
+
+    const sources = bootstrap.body.data as unknown as Array<{
+      units: Array<{ id: string }>;
+    }>;
+    const unitId = sources.flatMap((source) => source.units)[0]?.id;
+    expect(unitId).toBeTruthy();
+
+    db.resetQueryCount();
+    db.resetBatchCount();
+    const detail = await call(`/api/v1/learning/units/${unitId}`, {}, memberHeaders);
+    expect(detail.response.status).toBe(200);
+    expect(detail.body).toMatchObject({
+      id: unitId,
+      flashcards: expect.any(Array),
+      questions: expect.any(Array),
+      progress: expect.any(Array),
+    });
+    expect(db.getQueryCount()).toBe(6);
+    expect(db.getBatchCount()).toBe(1);
   });
 
   it('returns stable cursor pages and totals for large shared catalogs', async () => {
@@ -357,34 +552,78 @@ describe('Sites D1 API', () => {
       problemPage.items.at(-1)?.id,
     );
 
-    const firstJobs = await call('/api/v1/jobs?sort=new&page=cursor&limit=20');
+    const firstJobs = await call('/api/v1/jobs?sort=new&page=cursor&limit=10');
     const jobPage = firstJobs.body as unknown as {
       items: Array<{ id: string }>;
       nextCursor: string;
       total: number;
     };
-    expect(jobPage.items).toHaveLength(20);
-    expect(jobPage.total).toBe(119);
+    expect(jobPage.items).toHaveLength(10);
+    expect(jobPage.total).toBe(51);
+    expect(jobPage.nextCursor).toBeTruthy();
     const nextJobs = await call(
-      `/api/v1/jobs?sort=new&page=cursor&limit=20&cursor=${encodeURIComponent(jobPage.nextCursor)}`,
+      `/api/v1/jobs?sort=new&page=cursor&limit=10&cursor=${encodeURIComponent(jobPage.nextCursor)}`,
     );
+    expect((nextJobs.body as unknown as { items: unknown[] }).items).toHaveLength(10);
     expect(
       (nextJobs.body as unknown as { items: Array<{ id: string }> }).items.map((item) => item.id),
     ).not.toContain(jobPage.items.at(-1)?.id);
   });
 
+  it('returns only the signed-in user solved problems when the solved scope is requested', async () => {
+    const catalog = await call(
+      '/api/v1/coding/problems?track=ALGORITHM&page=cursor&limit=25',
+      {},
+      memberHeaders,
+    );
+    const firstProblem = (
+      catalog.body as unknown as { items: Array<{ id: string; displayTitle: string }> }
+    ).items[0];
+    expect(firstProblem).toBeTruthy();
+
+    await call(
+      `/api/v1/coding/problems/${firstProblem!.id}/status`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'SOLVED' }),
+      },
+      memberHeaders,
+    );
+
+    const solved = await call(
+      '/api/v1/coding/problems?scope=solved&track=ALGORITHM&page=cursor&limit=25',
+      {},
+      memberHeaders,
+    );
+    expect(solved.body).toMatchObject({
+      total: 1,
+      nextCursor: null,
+      items: [
+        {
+          id: firstProblem!.id,
+          progress: [{ status: 'SOLVED', favorite: false }],
+        },
+      ],
+    });
+
+    const otherUser = await call(
+      '/api/v1/coding/problems?scope=solved&track=ALGORITHM&page=cursor&limit=25',
+    );
+    expect(otherUser.body).toMatchObject({ total: 0, nextCursor: null, items: [] });
+  });
+
   it('accepts repeated company-size and category filters', async () => {
-    const sizes = await call('/api/v1/jobs?companySize=STARTUP&companySize=FOREIGN');
+    const sizes = await call('/api/v1/jobs?companySize=UNCLASSIFIED&companySize=FOREIGN');
     const sizeRows = sizes.body as unknown as Array<{ company: { size: string } }>;
     expect(sizeRows.length).toBeGreaterThan(0);
-    expect(sizeRows.every((row) => ['STARTUP', 'FOREIGN'].includes(row.company.size))).toBe(true);
-
-    const categories = await call(
-      '/api/v1/jobs?category=%EB%B0%B1%EC%97%94%EB%93%9C&category=AI%20%ED%92%80%EC%8A%A4%ED%83%9D%20%EA%B0%9C%EB%B0%9C',
+    expect(sizeRows.every((row) => ['UNCLASSIFIED', 'FOREIGN'].includes(row.company.size))).toBe(
+      true,
     );
+
+    const categories = await call('/api/v1/jobs?category=AI_ML&category=WEB_DEVELOPMENT');
     const categoryRows = categories.body as unknown as Array<{ category: string }>;
     expect(categoryRows.length).toBeGreaterThan(0);
-    expect(categoryRows.every((row) => ['백엔드', 'AI 풀스택 개발'].includes(row.category))).toBe(
+    expect(categoryRows.every((row) => ['AI_ML', 'WEB_DEVELOPMENT'].includes(row.category))).toBe(
       true,
     );
   });
@@ -432,19 +671,39 @@ describe('Sites D1 API', () => {
     expect(memberChallenges.body).toEqual(adminChallenges.body);
   });
 
-  it('limits calendar queries to the requested deadline month', async () => {
-    const september = await call(
-      '/api/v1/jobs?sort=deadline&deadlineFrom=2026-08-31T15%3A00%3A00.000Z&deadlineTo=2026-09-30T15%3A00%3A00.000Z',
-    );
-    expect(september.response.status).toBe(200);
-    const septemberRows = september.body as unknown as Array<{ deadlineAt: string }>;
-    expect(septemberRows.length).toBeGreaterThan(0);
+  it('loads all existing daily challenges with one joined catalog query', async () => {
+    const prepared = await call('/api/v1/coding/daily-challenges', {}, memberHeaders);
+    expect(prepared.response.status).toBe(200);
 
+    db.resetQueryCount();
+    db.resetBatchCount();
+    db.resetPreparedSql();
+    const repeated = await call('/api/v1/coding/daily-challenges', {}, memberHeaders);
+
+    expect(repeated.response.status).toBe(200);
+    expect(repeated.body).toHaveLength(3);
+    expect(repeated.body).toEqual([
+      expect.objectContaining({ levelSlot: 1, problem: expect.objectContaining({ level: 1 }) }),
+      expect.objectContaining({ levelSlot: 2, problem: expect.objectContaining({ level: 2 }) }),
+      expect.objectContaining({
+        levelSlot: 34,
+        problem: expect.objectContaining({ track: 'SQL' }),
+      }),
+    ]);
+    expect(db.getQueryCount()).toBe(3);
+    expect(db.getBatchCount()).toBe(1);
+    expect(db.preparedSql.filter((sql) => sql.includes('FROM daily_challenges dc'))).toHaveLength(
+      1,
+    );
+  });
+
+  it('limits calendar queries to the requested deadline month', async () => {
     const august = await call(
       '/api/v1/jobs?sort=deadline&deadlineFrom=2026-07-31T15%3A00%3A00.000Z&deadlineTo=2026-08-31T15%3A00%3A00.000Z',
     );
     const augustRows = august.body as unknown as Array<{ deadlineAt: string }>;
-    expect(augustRows.length).toBeGreaterThan(septemberRows.length);
+    expect(august.response.status).toBe(200);
+    expect(augustRows.length).toBeGreaterThan(0);
     expect(
       augustRows.every((row) => {
         const value = Date.parse(row.deadlineAt);
@@ -455,17 +714,54 @@ describe('Sites D1 API', () => {
       }),
     ).toBe(true);
 
+    const september = await call(
+      '/api/v1/jobs?sort=deadline&deadlineFrom=2026-08-31T15%3A00%3A00.000Z&deadlineTo=2026-09-30T15%3A00%3A00.000Z',
+    );
+    expect(september.response.status).toBe(200);
+    const septemberRows = september.body as unknown as Array<{ deadlineAt: string }>;
+    expect(septemberRows.length).toBeGreaterThan(0);
+    expect(
+      septemberRows.every((row) => {
+        const value = Date.parse(row.deadlineAt);
+        return (
+          value >= Date.parse('2026-08-31T15:00:00.000Z') &&
+          value < Date.parse('2026-09-30T15:00:00.000Z')
+        );
+      }),
+    ).toBe(true);
+
     const invalid = await call(
       '/api/v1/jobs?deadlineFrom=2026-09-30T15%3A00%3A00.000Z&deadlineTo=2026-08-31T15%3A00%3A00.000Z',
     );
     expect(invalid.response.status).toBe(400);
   });
 
-  it('returns start, deadline, and rolling schedule data for calendar rendering', async () => {
+  it('keeps registration, application start, and collection timestamps separate', async () => {
+    const candidates = await db
+      .prepare('SELECT id FROM jobs WHERE rolling = 0 ORDER BY id LIMIT 3')
+      .all<{ id: string }>();
+    const [published, application, collectedOnly] = candidates.results;
+    expect(published && application && collectedOnly).toBeTruthy();
+    await db.batch([
+      db
+        .prepare('UPDATE jobs SET published_at = ?, application_start_at = NULL WHERE id = ?')
+        .bind('2026-08-02T00:00:00.000Z', published!.id),
+      db
+        .prepare('UPDATE jobs SET application_start_at = ?, published_at = NULL WHERE id = ?')
+        .bind('2026-08-03T00:00:00.000Z', application!.id),
+      db
+        .prepare(
+          'UPDATE jobs SET published_at = NULL, application_start_at = NULL, deadline_at = NULL WHERE id = ?',
+        )
+        .bind(collectedOnly!.id),
+    ]);
     const calendar = await call(
       '/api/v1/jobs?calendar=true&sort=deadline&deadlineFrom=2026-07-31T15%3A00%3A00.000Z&deadlineTo=2026-08-31T15%3A00%3A00.000Z',
     );
     const rows = calendar.body as unknown as Array<{
+      id: string;
+      publishedAt: string | null;
+      applicationStartAt: string | null;
       collectedAt: string;
       deadlineAt: string | null;
       rolling: boolean;
@@ -473,7 +769,11 @@ describe('Sites D1 API', () => {
     expect(calendar.response.status).toBe(200);
     expect(rows.length).toBeGreaterThan(0);
     expect(rows.some((row) => row.rolling)).toBe(true);
-    expect(rows.some((row) => Boolean(row.collectedAt))).toBe(true);
+    expect(rows.some((row) => row.id === published!.id && Boolean(row.publishedAt))).toBe(true);
+    expect(rows.some((row) => row.id === application!.id && Boolean(row.applicationStartAt))).toBe(
+      true,
+    );
+    expect(rows.some((row) => row.id === collectedOnly!.id)).toBe(false);
     expect(rows.some((row) => Boolean(row.deadlineAt))).toBe(true);
   });
 
@@ -775,7 +1075,7 @@ describe('Sites D1 API', () => {
     expect(afterMaintenance?.count).toBe(1);
   });
 
-  it('runs scheduled expiry and review notifications under a single lease', async () => {
+  it('runs scheduled expiry without creating review notifications under a single lease', async () => {
     await call('/api/v1/auth/me');
     const user = await db
       .prepare("SELECT id FROM users WHERE site_user_id = 'site-admin'")
@@ -799,11 +1099,26 @@ describe('Sites D1 API', () => {
       )
       .bind(new Date(Date.now() - 86_400_000).toISOString())
       .run();
+    await db
+      .prepare(
+        `INSERT INTO request_rate_limits (user_id, route_key, window_start, count, updated_at)
+         VALUES (?, 'stale-read', ?, 1, ?)`,
+      )
+      .bind(user!.id, Math.floor(Date.now() / 60_000) - 10, timestamp)
+      .run();
 
     const result = await runScheduledMaintenance({ DB: db });
     expect(result).toMatchObject({ acquired: true });
     expect(result.expiredJobs).toBeGreaterThan(0);
-    expect(result.notifications).toBe(1);
+    expect(result.notifications).toBe(0);
+    const reviewNotifications = await db
+      .prepare("SELECT COUNT(*) AS count FROM notifications WHERE type = 'LEARNING_REVIEW'")
+      .first<{ count: number }>();
+    expect(reviewNotifications?.count).toBe(0);
+    const staleRateLimits = await db
+      .prepare("SELECT COUNT(*) AS count FROM request_rate_limits WHERE route_key = 'stale-read'")
+      .first<{ count: number }>();
+    expect(staleRateLimits?.count).toBe(0);
 
     await db
       .prepare(
@@ -856,7 +1171,7 @@ describe('Sites D1 API', () => {
     );
   });
 
-  it('loads the learning summary library with two bounded queries', async () => {
+  it('loads the learning summary library with one bounded query', async () => {
     db.resetPreparedSql();
     const learning = await call('/api/v1/learning');
     const learningQueries = db.preparedSql.filter((sql) =>
@@ -864,7 +1179,7 @@ describe('Sites D1 API', () => {
     );
 
     expect(learning.response.status).toBe(200);
-    expect(learningQueries).toHaveLength(2);
+    expect(learningQueries).toHaveLength(1);
   });
 
   it('publishes all reconstructed PDF learning sources to every signed-in member', async () => {

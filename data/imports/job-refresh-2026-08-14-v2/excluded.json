@@ -1,0 +1,183 @@
+{
+  "generatedAt": "2026-08-15T20:29:30+09:00",
+  "items": [
+    {
+      "sourceName": "자소설닷컴",
+      "sourceUrl": "https://jasoseol.com/recruit/102825",
+      "companyName": "마이다스그룹",
+      "title": "백엔드 개발자 채용(채용서비스)",
+      "excludedAt": "2026-08-15T20:01:21+09:00",
+      "reasonCode": "EXPIRED",
+      "reasonDetail": "접수기간이 2026-03-04~2026-03-15로 기준일 이전에 종료됨"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49569201",
+      "companyName": "㈜티윈",
+      "title": "[상현] 2026년 백엔드 경력직 채용합니다",
+      "excludedAt": "2026-08-15T20:01:21+09:00",
+      "reasonCode": "CAREER_ONLY",
+      "reasonDetail": "지원자격이 경력으로만 표시되어 신입 지원 근거가 없음"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49610203",
+      "companyName": "카카오뱅크",
+      "title": "데이터 엔지니어 - Data Warehouse",
+      "excludedAt": "2026-08-15T20:01:21+09:00",
+      "reasonCode": "CAREER_ONLY",
+      "reasonDetail": "지원자격이 경력으로만 표시되어 신입 지원 근거가 없음"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49722176",
+      "companyName": "㈜대성학력개발연구소",
+      "title": "[대성학원그룹] 백엔드개발자 경력 채용",
+      "excludedAt": "2026-08-15T20:10:32+09:00",
+      "reasonCode": "CAREER_ONLY",
+      "reasonDetail": "자격요건에 경력 5년 이상이 필수로 명시됨"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/49614693",
+      "companyName": "㈜대웅제약",
+      "title": "[대웅] Data실 데이터 엔지니어 채용",
+      "excludedAt": "2026-08-15T20:10:32+09:00",
+      "reasonCode": "CAREER_ONLY",
+      "reasonDetail": "자격요건에 경력 3년 이상이 필수로 명시됨"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/49572400",
+      "companyName": "앨트웰㈜",
+      "title": "2026년 전산팀 경력사원 채용공고",
+      "excludedAt": "2026-08-15T20:10:32+09:00",
+      "reasonCode": "CAREER_ONLY",
+      "reasonDetail": "자격요건에 경력 1년 이상이 필수로 명시됨"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49768946",
+      "companyName": "㈜이도",
+      "title": "이도에스테이트(주) IT사업팀 백엔드/ 웹 개발 채용 (단기 계약직)",
+      "excludedAt": "2026-08-15T20:10:32+09:00",
+      "reasonCode": "CAREER_ONLY",
+      "reasonDetail": "자격요건에 경력 7년 이상이 필수로 명시됨"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49768138",
+      "companyName": "㈜아이엠알",
+      "title": "(울산)소프트웨어 개발자 모집",
+      "excludedAt": "2026-08-15T20:10:32+09:00",
+      "reasonCode": "CAREER_ONLY",
+      "reasonDetail": "자격요건에 경력 5년 이상이 필수로 명시됨"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49366952",
+      "companyName": "㈜트웬티온스",
+      "title": "[경력무관] Web Software Engineer 모집",
+      "excludedAt": "2026-08-15T20:14:51+09:00",
+      "reasonCode": "EXPIRED",
+      "reasonDetail": "접수기간이 2026-06-12~2026-07-12로 기준일 이전에 종료됨"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49567901",
+      "companyName": "추계예술대학교",
+      "title": "학술정보원 전산팀 정규직 채용 - 추계예술대학교",
+      "excludedAt": "2026-08-15T20:14:51+09:00",
+      "reasonCode": "EXPIRED",
+      "reasonDetail": "접수기간이 2026-07-13~2026-07-26으로 기준일 이전에 종료됨"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49372761",
+      "companyName": "㈜뉴제스트",
+      "title": "[신입 가능] 프론트엔드 개발자 채용(채용시 마감)",
+      "excludedAt": "2026-08-15T20:10:32+09:00",
+      "reasonCode": "EXPIRED",
+      "reasonDetail": "접수 마감일이 2026-08-13으로 기준일 이전임"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49735374",
+      "companyName": "㈜게임엔",
+      "title": "백엔드 python 개발자 채용",
+      "excludedAt": "2026-08-15T20:10:32+09:00",
+      "reasonCode": "EXPIRED",
+      "reasonDetail": "접수 마감일이 2026-08-13으로 기준일 이전임"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49739871",
+      "companyName": "㈜아이엔에쓰",
+      "title": "[(주)아이엔에쓰] 26년 신입사원 모집(전문 LGCNS 교육 및 인턴 후 정규직)",
+      "excludedAt": "2026-08-15T20:10:32+09:00",
+      "reasonCode": "EXPIRED",
+      "reasonDetail": "접수 마감일이 2026-08-12로 기준일 이전임"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49721219",
+      "companyName": "㈜쎄믹스",
+      "title": "2026년 하반기 신입/경력 채용 (개발(야탑))",
+      "excludedAt": "2026-08-15T20:10:32+09:00",
+      "reasonCode": "EXPIRED",
+      "reasonDetail": "접수 마감일이 2026-08-12로 기준일 이전임"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49665656",
+      "companyName": "노아에이티에스㈜",
+      "title": "노아에이티에스 2026년 분야별 경력/신입 채용",
+      "excludedAt": "2026-08-15T20:10:32+09:00",
+      "reasonCode": "EXPIRED",
+      "reasonDetail": "접수 마감일이 2026-08-06으로 기준일 이전임"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49775611",
+      "companyName": "㈜유도",
+      "title": "㈜유도 신입 및 경력사원 모집",
+      "excludedAt": "2026-08-15T20:10:32+09:00",
+      "reasonCode": "NON_IT",
+      "reasonDetail": "모집분야가 컨트롤러 조립, 기계가공, 고객지원, 사출성형, 해외영업으로 확인되어 IT 개발 직무가 아님"
+    },
+    {
+      "sourceName": "Superookie",
+      "sourceUrl": "https://www.superookie.com/jobs/6a7b213c3737dc3b1c7db322",
+      "companyName": "쿠팡",
+      "title": "[쿠팡 신입채용] Eats Ads Engineering Backend Engineer",
+      "excludedAt": "2026-08-15T20:02:04+09:00",
+      "reasonCode": "DUPLICATE",
+      "reasonDetail": "동일 공고의 기업 공식 채용 URL을 메인 활성 JSON의 대표 URL로 유지함",
+      "alternateSourceUrls": [
+        "https://www.coupang.jobs/en/jobs/8121392/신입채용-back-end-engineer-eats-ads-engineering/"
+      ]
+    },
+    {
+      "sourceName": "Superookie",
+      "sourceUrl": "https://www.superookie.com/jobs/6a705abcceaa351f28727c14",
+      "companyName": "토스뱅크",
+      "title": "Server Developer 채용 연계형 인턴십",
+      "excludedAt": "2026-08-15T20:02:04+09:00",
+      "reasonCode": "DUPLICATE",
+      "reasonDetail": "동일 공고의 토스 공식 채용 URL을 메인 활성 JSON의 대표 URL로 유지함",
+      "alternateSourceUrls": ["https://toss.im/career/job-detail?job_id=7816881003"]
+    },
+    {
+      "sourceName": "인디스워크",
+      "sourceUrl": "https://inthiswork.com/archives/385914",
+      "companyName": "드림어스컴퍼니",
+      "title": "콘텐츠 플랫폼 백엔드 개발(신입)",
+      "excludedAt": "2026-08-15T20:01:36+09:00",
+      "reasonCode": "DUPLICATE",
+      "reasonDetail": "동일 공고의 기업 공식 채용 URL을 불확실 JSON의 대표 URL로 유지함",
+      "alternateSourceUrls": [
+        "https://recruit.dreamuscompany.com/pages/careers_view.jsp?id=227074&jobName=All&title="
+      ]
+    }
+  ]
+}

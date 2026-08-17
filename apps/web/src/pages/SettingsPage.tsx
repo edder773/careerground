@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { LogOut, Pencil, Save, Settings, X } from 'lucide-react';
+import { CheckCircle2, LogOut, Pencil, Save, Settings, X } from 'lucide-react';
 import { useAuth } from '../auth';
 import { api, json } from '../lib/api';
 
@@ -16,6 +16,13 @@ type Profile = {
     deadlineNotifications: boolean;
     reviewNotifications: boolean;
   } | null;
+};
+
+const languageLabels: Record<string, string> = {
+  python: 'Python',
+  java: 'Java',
+  javascript: 'JavaScript',
+  cpp: 'C++',
 };
 
 export function SettingsPage() {
@@ -91,8 +98,8 @@ export function SettingsPage() {
   };
 
   return (
-    <div>
-      <section className="page-heading">
+    <div className="settings-page">
+      <section className="page-heading settings-heading">
         <div>
           <span className="eyebrow">
             <Settings size={15} /> 내 계정
@@ -141,115 +148,157 @@ export function SettingsPage() {
                 </button>
               )}
             </header>
-            <label>
-              이메일
-              <input value={profile.data?.email || ''} disabled />
-            </label>
-            <label>
-              표시 이름
-              <input
-                value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
-                minLength={2}
-                maxLength={80}
-                required
-                disabled={!editing}
-                aria-invalid={save.isError || undefined}
-                aria-describedby={save.isError ? 'settings-submit-error' : undefined}
-              />
-            </label>
-            <label>
-              GitHub 사용자명
-              <input
-                value={githubUsername}
-                onChange={(event) => setGithubUsername(event.target.value)}
-                pattern="(?!-)(?!.*--)[a-zA-Z0-9-]{1,39}(?<!-)"
-                disabled={!editing}
-              />
-            </label>
-            <label>
-              프로필 이미지 URL
-              <input
-                type="url"
-                value={avatarUrl}
-                onChange={(event) => setAvatarUrl(event.target.value)}
-                disabled={!editing}
-              />
-            </label>
-            <label>
-              선호 코드 언어
-              <select
-                value={preferredLanguage}
-                onChange={(event) => setPreferredLanguage(event.target.value)}
-                disabled={!editing}
-              >
-                <option value="python">Python</option>
-                <option value="java">Java</option>
-                <option value="javascript">JavaScript</option>
-                <option value="cpp">C++</option>
-              </select>
-            </label>
-            {editing && (
-              <div className="settings-actions">
-                <button
-                  type="submit"
-                  className="primary-button compact"
-                  disabled={save.isPending || !dirty}
-                >
-                  <Save /> 변경 저장
-                </button>
-                <button type="button" className="ghost-button compact" onClick={cancel}>
-                  <X /> 취소
-                </button>
+            {editing ? (
+              <div className="settings-edit-fields">
+                <label>
+                  이메일
+                  <input value={profile.data?.email || ''} disabled />
+                  <small>로그인 계정의 이메일은 여기서 변경할 수 없습니다.</small>
+                </label>
+                <label>
+                  표시 이름
+                  <input
+                    value={displayName}
+                    onChange={(event) => setDisplayName(event.target.value)}
+                    minLength={2}
+                    maxLength={80}
+                    required
+                    aria-invalid={save.isError || undefined}
+                    aria-describedby={save.isError ? 'settings-submit-error' : undefined}
+                  />
+                </label>
+                <label>
+                  GitHub 사용자명
+                  <input
+                    value={githubUsername}
+                    onChange={(event) => setGithubUsername(event.target.value)}
+                    pattern="(?!-)(?!.*--)[a-zA-Z0-9-]{1,39}(?<!-)"
+                    placeholder="미등록"
+                  />
+                </label>
+                <label>
+                  프로필 이미지 URL
+                  <input
+                    type="url"
+                    value={avatarUrl}
+                    onChange={(event) => setAvatarUrl(event.target.value)}
+                    placeholder="https://"
+                  />
+                </label>
+                <label>
+                  선호 코드 언어
+                  <select
+                    value={preferredLanguage}
+                    onChange={(event) => setPreferredLanguage(event.target.value)}
+                  >
+                    <option value="python">Python</option>
+                    <option value="java">Java</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="cpp">C++</option>
+                  </select>
+                </label>
               </div>
+            ) : (
+              <dl className="settings-profile-summary">
+                <div>
+                  <dt>이메일</dt>
+                  <dd>{profile.data?.email || '—'}</dd>
+                </div>
+                <div>
+                  <dt>표시 이름</dt>
+                  <dd>{profile.data?.displayName || '—'}</dd>
+                </div>
+                <div>
+                  <dt>GitHub 사용자명</dt>
+                  <dd>{profile.data?.githubUsername || '미등록'}</dd>
+                </div>
+                <div>
+                  <dt>프로필 이미지</dt>
+                  <dd>{profile.data?.avatarUrl ? '등록됨' : '미등록'}</dd>
+                </div>
+                <div>
+                  <dt>선호 코드 언어</dt>
+                  <dd>{languageLabels[profile.data?.preferredLanguage || ''] || '—'}</dd>
+                </div>
+              </dl>
             )}
+          </section>
+          <div className="settings-side-stack">
+            <section className={`settings-card ${editing ? 'is-editing' : ''}`}>
+              <header className="settings-card-header">
+                <div>
+                  <h2>인앱 알림</h2>
+                  <p>필요한 활동과 일정만 놓치지 않도록 알려드립니다.</p>
+                </div>
+              </header>
+              {editing ? (
+                <div className="notification-edit-list">
+                  <label className="check-label">
+                    <input
+                      type="checkbox"
+                      checked={commentNotifications}
+                      onChange={(event) => setCommentNotifications(event.target.checked)}
+                    />
+                    댓글과 답글
+                  </label>
+                  <label className="check-label">
+                    <input
+                      type="checkbox"
+                      checked={deadlineNotifications}
+                      onChange={(event) => setDeadlineNotifications(event.target.checked)}
+                    />
+                    관심 공고 마감
+                  </label>
+                </div>
+              ) : (
+                <ul className="notification-preference-list">
+                  {[
+                    ['댓글과 답글', commentNotifications],
+                    ['관심 공고 마감', deadlineNotifications],
+                  ].map(([label, enabled]) => (
+                    <li key={String(label)}>
+                      <span>{label}</span>
+                      <strong className={enabled ? 'enabled' : ''}>
+                        {enabled && <CheckCircle2 aria-hidden="true" />}
+                        {enabled ? '받기' : '끄기'}
+                      </strong>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+            <section className="settings-card account-card">
+              <header className="settings-card-header">
+                <div>
+                  <h2>계정</h2>
+                  <p>현재 기기에서 CareerGround 사용을 종료합니다.</p>
+                </div>
+              </header>
+              <button type="button" className="account-logout-button" onClick={() => void logout()}>
+                <LogOut /> OpenAI 계정에서 로그아웃
+              </button>
+            </section>
+          </div>
+        </div>
+        {editing && (
+          <div className="settings-form-actions">
+            <button
+              type="submit"
+              className="primary-button compact"
+              disabled={save.isPending || !dirty}
+            >
+              <Save /> 변경 저장
+            </button>
+            <button type="button" className="ghost-button compact" onClick={cancel}>
+              <X /> 취소
+            </button>
             {save.isError && (
               <div className="form-error" id="settings-submit-error" role="alert">
                 설정을 저장하지 못했습니다.
               </div>
             )}
-          </section>
-          <section className={`settings-card ${editing ? 'is-editing' : ''}`}>
-            <header className="settings-card-header">
-              <div>
-                <h2>인앱 알림</h2>
-                <p>코딩 랭킹은 모든 멤버의 풀이 기록으로 자동 집계됩니다.</p>
-              </div>
-            </header>
-            <label className="check-label">
-              <input
-                type="checkbox"
-                checked={commentNotifications}
-                onChange={(event) => setCommentNotifications(event.target.checked)}
-                disabled={!editing}
-              />
-              댓글과 답글
-            </label>
-            <label className="check-label">
-              <input
-                type="checkbox"
-                checked={deadlineNotifications}
-                onChange={(event) => setDeadlineNotifications(event.target.checked)}
-                disabled={!editing}
-              />
-              관심 공고 마감
-            </label>
-            <label className="check-label">
-              <input
-                type="checkbox"
-                checked={reviewNotifications}
-                onChange={(event) => setReviewNotifications(event.target.checked)}
-                disabled={!editing}
-              />
-              학습 복습 예정
-            </label>
-            <div className="admin-divider" />
-            <h2>계정</h2>
-            <button type="button" className="ghost-button" onClick={() => void logout()}>
-              <LogOut /> OpenAI 계정에서 로그아웃
-            </button>
-          </section>
-        </div>
+          </div>
+        )}
       </form>
     </div>
   );

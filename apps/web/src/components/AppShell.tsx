@@ -8,7 +8,6 @@ import {
   ChevronRight,
   Code2,
   FolderKanban,
-  FileText,
   Grid2X2,
   GraduationCap,
   Home,
@@ -23,7 +22,7 @@ import {
   X,
 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { brand, productLinks } from '@careerground/config';
 import { useAuth } from '../auth';
 import { api } from '../lib/api';
@@ -33,7 +32,6 @@ import '../styles/shell.css';
 const navigation = [
   { to: '/', label: '홈', icon: Home },
   { to: '/learning', label: '학습', icon: BookOpen },
-  { to: '/notes', label: '노트', icon: FileText },
   { to: '/jobs', label: '채용공고', icon: BriefcaseBusiness },
   { to: '/coding', label: '코딩테스트', icon: Code2 },
   { to: '/solutions', label: '풀이 기록', icon: Users },
@@ -44,7 +42,6 @@ const navigation = [
 const titles: Record<string, string> = {
   '/': '나의 작업대',
   '/learning': '학습 라이브러리',
-  '/notes': '개인 노트',
   '/jobs': '신입 IT 채용공고',
   '/coding': '코딩테스트',
   '/solutions': '풀이 기록',
@@ -71,6 +68,7 @@ export function AppShell({
   onViewMode,
 }: PropsWithChildren<{ viewMode: ViewMode; onViewMode: (mode: ViewMode) => void }>) {
   const { user, logout } = useAuth();
+  const client = useQueryClient();
   const location = useLocation();
   const navigate = useNavigate();
   const [drawer, setDrawer] = useState(false);
@@ -155,6 +153,19 @@ export function AppShell({
     setQuery('');
     navigate(item.href);
   };
+  const preloadLearningData = () => {
+    if (!user) return;
+    void client.prefetchQuery({
+      queryKey: ['learning'],
+      queryFn: () => api<unknown[]>('/learning'),
+      staleTime: 5 * 60_000,
+    });
+  };
+  const learningIntentProps = {
+    onPointerEnter: preloadLearningData,
+    onPointerDown: preloadLearningData,
+    onFocus: preloadLearningData,
+  };
 
   const nav = (
     <>
@@ -169,26 +180,27 @@ export function AppShell({
       </div>
       <nav className="side-nav" aria-label="주요 메뉴">
         <span className="side-nav-label">나의 작업대</span>
-        {navigation.slice(0, 4).map(({ to, label, icon: Icon }) => (
+        {navigation.slice(0, 3).map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}
             end={to === '/'}
             className={({ isActive }) => (isActive ? 'active' : '')}
+            {...(to === '/learning' ? learningIntentProps : {})}
           >
             <Icon size={18} aria-hidden="true" />
             <span>{label}</span>
           </NavLink>
         ))}
         <span className="side-nav-label">함께 성장</span>
-        {navigation.slice(4, 7).map(({ to, label, icon: Icon }) => (
+        {navigation.slice(3, 6).map(({ to, label, icon: Icon }) => (
           <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'active' : '')}>
             <Icon size={18} aria-hidden="true" />
             <span>{label}</span>
           </NavLink>
         ))}
         <span className="side-nav-label">소식과 관리</span>
-        {navigation.slice(7).map(({ to, label, icon: Icon }) => (
+        {navigation.slice(6).map(({ to, label, icon: Icon }) => (
           <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'active' : '')}>
             <Icon size={18} aria-hidden="true" />
             <span>{label}</span>
@@ -327,7 +339,12 @@ export function AppShell({
         {navigation
           .filter(({ to }) => ['/', '/learning', '/jobs', '/coding'].includes(to))
           .map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} end={to === '/'}>
+            <NavLink
+              key={to}
+              to={to}
+              end={to === '/'}
+              {...(to === '/learning' ? learningIntentProps : {})}
+            >
               <Icon />
               <span>{label}</span>
             </NavLink>

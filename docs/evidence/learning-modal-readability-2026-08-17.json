@@ -1,0 +1,45 @@
+{
+  "schema": "careerground-learning-modal-readability/v1",
+  "date": "2026-08-17",
+  "scope": "learning unit dialog readability",
+  "baseline": {
+    "desktopModalWidthPx": 760,
+    "headerTitlePx": 22,
+    "bodyPx": 11,
+    "supportingTextPx": [8, 9, 10],
+    "closeTargetPx": 34
+  },
+  "after": {
+    "desktop1440x900": {
+      "modalWidthPx": 1040,
+      "modalHeightPx": 852,
+      "headerTitlePx": 30,
+      "bodyPx": 16,
+      "minimumSupportingTextPx": 12,
+      "closeTargetPx": 44
+    },
+    "mobile375x812": {
+      "modalWidthPx": 375,
+      "modalHeightPx": 812,
+      "headerTitlePx": 23,
+      "bodyPx": 16,
+      "closeTargetPx": 44
+    }
+  },
+  "method": {
+    "kind": "deterministic CSS contract",
+    "desktopFormula": {
+      "width": "min(1040px, 100vw - 48px)",
+      "height": "min(880px, 100dvh - 48px)"
+    },
+    "mobileRule": "At 760px and below the dialog uses 100% width and 100dvh height.",
+    "note": "These are layout contract values, not screenshot-derived measurements."
+  },
+  "validation": {
+    "webTestFiles": 11,
+    "webTests": 24,
+    "webTypecheck": "passed",
+    "sitesBuild": "passed",
+    "status": "passed"
+  }
+}

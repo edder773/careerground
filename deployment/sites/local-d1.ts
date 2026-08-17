@@ -36,8 +36,10 @@ class LocalD1Statement implements D1PreparedStatement {
 
 export class LocalD1 implements D1Database {
   private readonly sqlite: DatabaseSync;
+  private batchQueue: Promise<void> = Promise.resolve();
   private failBatchAt?: number;
   private queryCount = 0;
+  private batchCount = 0;
   preparedSql: string[] = [];
 
   constructor(filename = ':memory:', migrationsDirectory = 'drizzle') {
@@ -69,18 +71,38 @@ export class LocalD1 implements D1Database {
     return this.queryCount;
   }
 
+  resetBatchCount() {
+    this.batchCount = 0;
+  }
+
+  getBatchCount() {
+    return this.batchCount;
+  }
+
   resetPreparedSql() {
     this.preparedSql = [];
   }
 
   async batch<T>(statements: D1PreparedStatement[]): Promise<D1Result<T>[]> {
+    this.batchCount += 1;
+    const execution = this.batchQueue.then(() => this.executeBatch<T>(statements));
+    this.batchQueue = execution.then(
+      () => undefined,
+      () => undefined,
+    );
+    return execution;
+  }
+
+  private async executeBatch<T>(statements: D1PreparedStatement[]): Promise<D1Result<T>[]> {
     this.sqlite.exec('BEGIN IMMEDIATE');
     try {
       const results: D1Result<T>[] = [];
       for (const [index, statement] of statements.entries()) {
         if (this.failBatchAt === index) throw new Error('injected D1 batch failure');
         results.push(
-          statement instanceof LocalD1Statement && /^\s*(SELECT|WITH|PRAGMA)/i.test(statement.sql)
+          statement instanceof LocalD1Statement &&
+            (/^\s*(SELECT|WITH|PRAGMA)/i.test(statement.sql) ||
+              /\bRETURNING\b/i.test(statement.sql))
             ? await statement.all<T>()
             : await statement.run<T>(),
         );

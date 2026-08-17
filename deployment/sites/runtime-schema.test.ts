@@ -11,6 +11,10 @@ describe('Sites runtime schema', () => {
 
   beforeEach(async () => {
     db = new LocalD1();
+    await run(
+      db,
+      "DELETE FROM app_schema_migrations WHERE version = '0021_separate_job_schedule_dates'",
+    );
     await run(db, 'DROP TABLE workspace_search');
     for (const table of [
       'job_source_snapshot_items',
@@ -69,17 +73,32 @@ describe('Sites runtime schema', () => {
     expect(progressColumns.map((column) => column.name)).toEqual(
       expect.arrayContaining(['review_version', 'completed_at', 'mastered_at']),
     );
+    const jobColumns = await all<{ name: string }>(db, 'PRAGMA table_info(jobs)');
+    expect(jobColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining(['published_at', 'application_start_at']),
+    );
+
+    const removedNotes = await first<{ tables: number; items: number; constraints: number }>(
+      db,
+      `SELECT
+         (SELECT COUNT(*) FROM sqlite_schema
+           WHERE type = 'table' AND name IN ('notes', 'note_revisions')) AS tables,
+         (SELECT COUNT(*) FROM collection_items WHERE item_type = 'NOTE') AS items,
+         (SELECT COUNT(*) FROM sqlite_schema
+           WHERE type = 'table' AND name = 'collection_items' AND sql LIKE '%''NOTE''%') AS constraints`,
+    );
+    expect(removedNotes).toEqual({ tables: 0, items: 0, constraints: 0 });
 
     const searchCountBefore = await first<{ count: number }>(
       db,
       'SELECT COUNT(*) AS count FROM workspace_search',
     );
     expect(Number(searchCountBefore?.count)).toBeGreaterThan(0);
-    const backendResults = await all<{ kind: string }>(
+    const jobResults = await all<{ kind: string }>(
       db,
-      `SELECT kind FROM workspace_search WHERE workspace_search MATCH '"백엔드"*'`,
+      `SELECT kind FROM workspace_search WHERE workspace_search MATCH '"퓨전소프트"*'`,
     );
-    expect(backendResults.some((result) => result.kind === 'jobs')).toBe(true);
+    expect(jobResults.some((result) => result.kind === 'jobs')).toBe(true);
 
     await ensureRuntimeSchema(db);
     const searchCountAfter = await first<{ count: number }>(
@@ -91,7 +110,7 @@ describe('Sites runtime schema', () => {
 });
 
 describe('Sites production migration baseline', () => {
-  it('applies the packaged 0016 migration after the existing 0015 schema without replaying history', async () => {
+  it('applies the packaged forward migrations after the existing 0016 schema without replaying history', async () => {
     const root = mkdtempSync(join(tmpdir(), 'careerground-sites-migration-'));
     const baselineDirectory = join(root, 'baseline');
     const forwardDirectory = join(root, 'forward');
@@ -103,15 +122,72 @@ describe('Sites production migration baseline', () => {
       const migrations = readdirSync('drizzle')
         .filter((file) => /^\d{4}_.+\.sql$/.test(file))
         .sort();
-      for (const migration of migrations.filter((file) => Number(file.slice(0, 4)) < 16)) {
+      for (const migration of migrations.filter((file) => Number(file.slice(0, 4)) < 17)) {
         copyFileSync(join('drizzle', migration), join(baselineDirectory, migration));
       }
-      copyFileSync(
-        join('drizzle', '0016_full_audit_hardening.sql'),
-        join(forwardDirectory, '0016_full_audit_hardening.sql'),
-      );
+      for (const migration of migrations.filter((file) => Number(file.slice(0, 4)) >= 17)) {
+        copyFileSync(join('drizzle', migration), join(forwardDirectory, migration));
+      }
 
       const baseline = new LocalD1(databasePath, baselineDirectory);
+      await run(
+        baseline,
+        `INSERT INTO users
+          (id, site_user_id, email, display_name, role, is_active, preferred_language,
+           ranking_opt_in, comment_notifications, deadline_notifications, review_notifications,
+           created_at, updated_at)
+         VALUES ('note-owner', 'note-owner', 'note-owner@example.test', 'Note Owner',
+                 'MEMBER', 1, 'javascript', 1, 1, 1, 1, '2026-08-15', '2026-08-15')`,
+      );
+      await run(
+        baseline,
+        `INSERT INTO collections
+          (id, user_id, name, icon, color, position, created_at, updated_at)
+         VALUES ('note-folder', 'note-owner', '기존 노트 폴더', 'folder', 'amber', 0,
+                 '2026-08-15', '2026-08-15')`,
+      );
+      await run(
+        baseline,
+        `INSERT INTO notes
+          (id, user_id, title, markdown, visibility, current_rev, created_at, updated_at)
+         VALUES ('note-to-delete', 'note-owner', '삭제 대상', '백업하지 않을 원문',
+                 'PRIVATE', 1, '2026-08-15', '2026-08-15')`,
+      );
+      await run(
+        baseline,
+        `INSERT INTO note_revisions (id, note_id, revision, markdown, created_at)
+         VALUES ('note-revision-to-delete', 'note-to-delete', 1, '백업하지 않을 원문',
+                 '2026-08-15')`,
+      );
+      await run(
+        baseline,
+        `INSERT INTO collection_items
+          (id, collection_id, item_type, target_id, label, position, created_at)
+         VALUES ('note-item-to-delete', 'note-folder', 'NOTE', 'note-to-delete', '삭제 대상', 0,
+                  '2026-08-15')`,
+      );
+      await run(
+        baseline,
+        `INSERT INTO saved_jobs
+          (id, user_id, job_id, status, bookmarked, memo, created_at, updated_at)
+         SELECT 'legacy-saved-job', 'note-owner', id, 'INTERESTED', 1, '',
+                '2026-08-15', '2026-08-15'
+           FROM jobs LIMIT 1`,
+      );
+      await run(
+        baseline,
+        `INSERT INTO collection_items
+          (id, collection_id, item_type, target_id, label, position, created_at)
+         SELECT 'legacy-job-item', 'note-folder', 'JOB_POSTING', id, title, 1, '2026-08-15'
+           FROM jobs LIMIT 1`,
+      );
+      await run(
+        baseline,
+        `INSERT INTO notifications
+          (id, user_id, type, title, message, href, created_at)
+         VALUES ('legacy-job-notification', 'note-owner', 'JOB_DEADLINE', '마감 알림',
+                 '기존 공고 알림', '/jobs', '2026-08-15')`,
+      );
       const countBefore = await first<{ count: number }>(
         baseline,
         'SELECT COUNT(*) AS count FROM learning_questions',
@@ -123,8 +199,26 @@ describe('Sites production migration baseline', () => {
         questions: number;
         learningColumns: number;
         publishedColumn: number;
+        applicationStartColumn: number;
+        scheduleIndexes: number;
+        legacyCalendarIndexes: number;
         notificationIndex: number;
+        feedIndex: number;
+        categoryIndex: number;
+        removedNoteTables: number;
+        noteItems: number;
+        jobs: number;
+        visibleJobs: number;
+        reviewJobs: number;
+        savedJobs: number;
+        jobItems: number;
+        jobDeadlineNotifications: number;
+        jobSearchRows: number;
+        jobTechRows: number;
+        orphanTechRows: number;
+        jobImportBatches: number;
         checksum: string;
+        replacementChecksum: string;
       }>(
         upgraded,
         `SELECT (SELECT COUNT(*) FROM learning_questions) AS questions,
@@ -132,19 +226,86 @@ describe('Sites production migration baseline', () => {
                   WHERE name IN ('type', 'choices')) AS learningColumns,
                 (SELECT COUNT(*) FROM pragma_table_info('jobs')
                   WHERE name = 'published_at') AS publishedColumn,
+                (SELECT COUNT(*) FROM pragma_table_info('jobs')
+                  WHERE name = 'application_start_at') AS applicationStartColumn,
+                (SELECT COUNT(*) FROM pragma_index_list('jobs')
+                  WHERE name IN (
+                    'idx_jobs_calendar_published', 'idx_jobs_calendar_application_start'
+                  )) AS scheduleIndexes,
+                (SELECT COUNT(*) FROM pragma_index_list('jobs')
+                  WHERE name IN (
+                    'idx_jobs_calendar_collected', 'idx_jobs_calendar_created'
+                  )) AS legacyCalendarIndexes,
                 (SELECT COUNT(*) FROM pragma_index_list('notifications')
                   WHERE name = 'idx_notifications_user_read_expiry_created') AS notificationIndex,
-                (SELECT checksum FROM app_schema_migrations
-                  WHERE version = '0016_full_audit_hardening') AS checksum`,
+                (SELECT COUNT(*) FROM pragma_index_list('jobs')
+                  WHERE name = 'idx_jobs_feed_collected_id') AS feedIndex,
+                (SELECT COUNT(*) FROM pragma_index_list('jobs')
+                  WHERE name = 'idx_jobs_active_category') AS categoryIndex,
+                (SELECT COUNT(*) FROM sqlite_schema
+                  WHERE type = 'table' AND name IN ('notes', 'note_revisions')) AS removedNoteTables,
+                 (SELECT COUNT(*) FROM collection_items WHERE item_type = 'NOTE') AS noteItems,
+                 (SELECT COUNT(*) FROM jobs) AS jobs,
+                 (SELECT COUNT(*) FROM jobs
+                   WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN')) AS visibleJobs,
+                 (SELECT COUNT(*) FROM jobs WHERE status = 'NEEDS_REVIEW') AS reviewJobs,
+                 (SELECT COUNT(*) FROM saved_jobs) AS savedJobs,
+                 (SELECT COUNT(*) FROM collection_items
+                   WHERE item_type = 'JOB_POSTING') AS jobItems,
+                 (SELECT COUNT(*) FROM notifications
+                   WHERE type = 'JOB_DEADLINE') AS jobDeadlineNotifications,
+                 (SELECT COUNT(*) FROM workspace_search WHERE kind = 'jobs') AS jobSearchRows,
+                 (SELECT COUNT(*) FROM job_tech_stacks) AS jobTechRows,
+                 (SELECT COUNT(*) FROM job_tech_stacks AS stack
+                   LEFT JOIN jobs ON jobs.id = stack.job_id
+                   WHERE jobs.id IS NULL) AS orphanTechRows,
+                 (SELECT COUNT(*) FROM import_batches WHERE kind = 'jobs') AS jobImportBatches,
+                 (SELECT checksum FROM app_schema_migrations
+                   WHERE version = '0018_sloppy_leech') AS checksum,
+                 (SELECT checksum FROM app_schema_migrations
+                   WHERE version = '0020_replace_job_catalog_20260814_verified') AS replacementChecksum`,
       );
 
       expect(schema).toEqual({
         questions: countBefore?.count,
         learningColumns: 2,
         publishedColumn: 1,
+        applicationStartColumn: 1,
+        scheduleIndexes: 2,
+        legacyCalendarIndexes: 0,
         notificationIndex: 1,
-        checksum: 'sha256:69fa089214693f323703a327d853996d67129c136f80b8997cfc79a4a43b797d',
+        feedIndex: 1,
+        categoryIndex: 1,
+        removedNoteTables: 0,
+        noteItems: 0,
+        jobs: 51,
+        visibleJobs: 51,
+        reviewJobs: 0,
+        savedJobs: 0,
+        jobItems: 0,
+        jobDeadlineNotifications: 0,
+        jobSearchRows: 51,
+        jobTechRows: expect.any(Number),
+        orphanTechRows: 0,
+        jobImportBatches: 1,
+        checksum: 'sha256:86c1de85559a9b51e959bf7c423ad8a9e9afd3586ad672c2ec32da009057fe4b',
+        replacementChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
       });
+      expect(schema?.jobTechRows).toBeGreaterThan(0);
+      for (const indexName of [
+        'idx_jobs_calendar_published',
+        'idx_jobs_calendar_application_start',
+      ]) {
+        const plan = await all<{ detail: string }>(
+          upgraded,
+          `EXPLAIN QUERY PLAN
+           SELECT id FROM jobs INDEXED BY ${indexName}
+            WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
+              AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
+              AND ${indexName.endsWith('published') ? 'published_at' : 'application_start_at'} >= '2026-08-01T00:00:00.000Z'`,
+        );
+        expect(plan.some((row) => row.detail.includes(`USING INDEX ${indexName}`))).toBe(true);
+      }
       await expect(
         run(
           upgraded,
@@ -158,5 +319,5 @@ describe('Sites production migration baseline', () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
-  });
+  }, 15_000);
 });
