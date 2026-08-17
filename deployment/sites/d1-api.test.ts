@@ -570,6 +570,48 @@ describe('Sites D1 API', () => {
     ).not.toContain(jobPage.items.at(-1)?.id);
   });
 
+  it('returns only the signed-in user solved problems when the solved scope is requested', async () => {
+    const catalog = await call(
+      '/api/v1/coding/problems?track=ALGORITHM&page=cursor&limit=25',
+      {},
+      memberHeaders,
+    );
+    const firstProblem = (
+      catalog.body as unknown as { items: Array<{ id: string; displayTitle: string }> }
+    ).items[0];
+    expect(firstProblem).toBeTruthy();
+
+    await call(
+      `/api/v1/coding/problems/${firstProblem!.id}/status`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'SOLVED' }),
+      },
+      memberHeaders,
+    );
+
+    const solved = await call(
+      '/api/v1/coding/problems?scope=solved&track=ALGORITHM&page=cursor&limit=25',
+      {},
+      memberHeaders,
+    );
+    expect(solved.body).toMatchObject({
+      total: 1,
+      nextCursor: null,
+      items: [
+        {
+          id: firstProblem!.id,
+          progress: [{ status: 'SOLVED', favorite: false }],
+        },
+      ],
+    });
+
+    const otherUser = await call(
+      '/api/v1/coding/problems?scope=solved&track=ALGORITHM&page=cursor&limit=25',
+    );
+    expect(otherUser.body).toMatchObject({ total: 0, nextCursor: null, items: [] });
+  });
+
   it('accepts repeated company-size and category filters', async () => {
     const sizes = await call('/api/v1/jobs?companySize=UNCLASSIFIED&companySize=FOREIGN');
     const sizeRows = sizes.body as unknown as Array<{ company: { size: string } }>;

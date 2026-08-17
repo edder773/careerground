@@ -1792,6 +1792,37 @@ p {
   border-radius: 24px;
   box-shadow: 0 32px 90px rgba(22, 29, 50, 0.3);
 }
+.problem-scope-tabs {
+  width: fit-content;
+  margin: 0 0 12px;
+  padding: 4px;
+  display: flex;
+  gap: 4px;
+  background: #eceef3;
+  border-radius: 12px;
+}
+.problem-scope-tabs button {
+  min-width: 132px;
+  min-height: 40px;
+  padding: 0 18px;
+  color: #5f6672;
+  background: transparent;
+  border: 0;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 800;
+}
+.problem-scope-tabs button.active {
+  color: white;
+  background: #5363b8;
+  box-shadow: 0 4px 12px rgba(55, 67, 127, 0.2);
+}
+.coding-problem-empty {
+  margin-bottom: 18px;
+}
+.coding-problem-empty .primary-button {
+  margin-top: 14px;
+}
 .learning-unit-modal > header {
   padding: 26px 32px;
   display: flex;
@@ -2955,6 +2986,13 @@ p {
   .filter-bar {
     align-items: flex-start;
     flex-wrap: wrap;
+  }
+  .problem-scope-tabs {
+    width: 100%;
+  }
+  .problem-scope-tabs button {
+    min-width: 0;
+    flex: 1;
   }
   .filter-bar > span {
     width: 100%;

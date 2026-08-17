@@ -746,6 +746,7 @@ function problemListPlan(
   const countValues: unknown[] = [];
   const level = search.get('level');
   const track = search.get('track');
+  const scope = search.get('scope');
   if (level) {
     clauses.push('p.level = ?');
     filterValues.push(Number(level));
@@ -757,6 +758,16 @@ function problemListPlan(
     filterValues.push(track);
     countClauses.push('counted.track = ?');
     countValues.push(track);
+  }
+  if (scope === 'solved') {
+    clauses.push("pp.status = 'SOLVED'");
+    countClauses.push(
+      `EXISTS (SELECT 1 FROM problem_progress counted_progress
+                WHERE counted_progress.problem_id = counted.id
+                  AND counted_progress.user_id = ${readOwnerSql(owner)}
+                  AND counted_progress.status = 'SOLVED')`,
+    );
+    countValues.push(owner.value);
   }
   const paged = cursorPageRequested(search);
   const limit = paged ? cursorLimit(search, 60, 100) : 500;
