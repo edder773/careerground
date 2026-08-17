@@ -165,9 +165,7 @@
       "excludedAt": "2026-08-15T20:02:04+09:00",
       "reasonCode": "DUPLICATE",
       "reasonDetail": "동일 공고의 토스 공식 채용 URL을 메인 활성 JSON의 대표 URL로 유지함",
-      "alternateSourceUrls": [
-        "https://toss.im/career/job-detail?job_id=7816881003"
-      ]
+      "alternateSourceUrls": ["https://toss.im/career/job-detail?job_id=7816881003"]
     },
     {
       "sourceName": "인디스워크",

@@ -86,13 +86,7 @@
       "employmentType": "FULL_TIME_OR_CONTRACT",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Tailwind CSS",
-        "Vite",
-        "i18next",
-        "Zod",
-        "Nanostores"
-      ],
+      "techStack": ["Tailwind CSS", "Vite", "i18next", "Zod", "Nanostores"],
       "publishedAt": null,
       "deadlineAt": "2026-09-08T23:59:59+09:00",
       "rolling": false,
@@ -138,11 +132,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Java",
-        "Spring",
-        "Spring Boot"
-      ],
+      "techStack": ["Java", "Spring", "Spring Boot"],
       "publishedAt": null,
       "deadlineAt": "2026-08-29T23:59:59+09:00",
       "rolling": false,
@@ -165,9 +155,7 @@
       "employmentType": "INTERN",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Java"
-      ],
+      "techStack": ["Java"],
       "publishedAt": null,
       "deadlineAt": "2026-08-16T23:50:00+09:00",
       "rolling": false,
@@ -236,9 +224,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "MDM"
-      ],
+      "techStack": ["MDM"],
       "publishedAt": null,
       "deadlineAt": "2026-10-05T23:59:59+09:00",
       "rolling": false,
@@ -261,9 +247,7 @@
       "employmentType": "FULL_TIME_OR_CONTRACT",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "React"
-      ],
+      "techStack": ["React"],
       "publishedAt": null,
       "deadlineAt": "2026-08-26T23:59:59+09:00",
       "rolling": false,
@@ -332,10 +316,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Java",
-        "Spring"
-      ],
+      "techStack": ["Java", "Spring"],
       "publishedAt": null,
       "deadlineAt": "2026-08-31T23:59:59+09:00",
       "rolling": true,
@@ -358,9 +339,7 @@
       "employmentType": "FULL_TIME",
       "region": "경기 안양",
       "remote": false,
-      "techStack": [
-        "Java"
-      ],
+      "techStack": ["Java"],
       "publishedAt": null,
       "deadlineAt": "2026-09-10T23:59:59+09:00",
       "rolling": false,
@@ -489,13 +468,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "C",
-        "C++",
-        "Deep Learning",
-        "Machine Learning",
-        "LLM"
-      ],
+      "techStack": ["C", "C++", "Deep Learning", "Machine Learning", "LLM"],
       "publishedAt": null,
       "deadlineAt": "2026-09-11T23:59:59+09:00",
       "rolling": false,
@@ -518,16 +491,7 @@
       "employmentType": "FULL_TIME",
       "region": "경기 성남",
       "remote": false,
-      "techStack": [
-        "C",
-        "C++",
-        "RTOS",
-        "SPI",
-        "I2C",
-        "USB",
-        "CAN",
-        "Ethernet"
-      ],
+      "techStack": ["C", "C++", "RTOS", "SPI", "I2C", "USB", "CAN", "Ethernet"],
       "publishedAt": null,
       "deadlineAt": "2026-08-18T23:59:00+09:00",
       "rolling": false,
@@ -550,12 +514,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Java",
-        "AWS",
-        "Kafka",
-        "EMR"
-      ],
+      "techStack": ["Java", "AWS", "Kafka", "EMR"],
       "publishedAt": null,
       "deadlineAt": null,
       "rolling": true,
@@ -622,10 +581,7 @@
       "employmentType": "FULL_TIME",
       "region": "미확인",
       "remote": false,
-      "techStack": [
-        "React",
-        "Next.js"
-      ],
+      "techStack": ["React", "Next.js"],
       "publishedAt": null,
       "deadlineAt": "2026-09-01T23:59:59+09:00",
       "rolling": false,
@@ -878,9 +834,7 @@
       "employmentType": "INTERN",
       "region": "미확인",
       "remote": false,
-      "techStack": [
-        "iOS"
-      ],
+      "techStack": ["iOS"],
       "publishedAt": null,
       "deadlineAt": null,
       "rolling": true,
@@ -1024,16 +978,7 @@
       "employmentType": "UNCONFIRMED",
       "region": "경기 성남시",
       "remote": false,
-      "techStack": [
-        "Kotlin",
-        "Spring Boot",
-        "Java",
-        "MySQL",
-        "Redis",
-        "MongoDB",
-        "Git",
-        "Jira"
-      ],
+      "techStack": ["Kotlin", "Spring Boot", "Java", "MySQL", "Redis", "MongoDB", "Git", "Jira"],
       "publishedAt": null,
       "deadlineAt": null,
       "rolling": false,
@@ -1217,11 +1162,7 @@
       "employmentType": "FULL_TIME",
       "region": "미확인",
       "remote": false,
-      "techStack": [
-        "Linux",
-        "ML",
-        "MLOps"
-      ],
+      "techStack": ["Linux", "ML", "MLOps"],
       "publishedAt": null,
       "deadlineAt": "2026-12-31T23:59:59+09:00",
       "rolling": false,
