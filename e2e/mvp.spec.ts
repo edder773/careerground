@@ -6,12 +6,12 @@ test.describe('CareerGround MVP vertical slices', () => {
     await login(page);
   });
 
-  test('OpenAI-only authentication and common Finder workspace load', async ({ page }) => {
+  test('Google-only authentication and common Finder workspace load', async ({ page }) => {
     await expect(page.getByText('CareerGround', { exact: true }).first()).toBeVisible();
     await expect(page.getByRole('navigation', { name: '주요 메뉴' })).toBeVisible();
     await expect(page.getByRole('button', { name: '검색' })).toBeVisible();
     await logout(page);
-    await expect(page.getByRole('link', { name: 'OpenAI 계정으로 계속' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Google 계정으로 시작하기' })).toBeVisible();
     await expect(page.getByLabel('이메일')).toHaveCount(0);
     await expect(page.getByLabel('비밀번호')).toHaveCount(0);
   });
@@ -19,16 +19,10 @@ test.describe('CareerGround MVP vertical slices', () => {
   test('first login requires a name and one of four code languages', async ({ page }) => {
     await logout(page);
     const email = `onboarding-${Date.now()}@example.com`;
-    await page.context().setExtraHTTPHeaders({
-      'oai-authenticated-user-id': `e2e:${email}`,
-      'oai-authenticated-user-email': email,
-      'oai-authenticated-user-full-name': 'OpenAI%20User',
-      'oai-authenticated-user-full-name-encoding': 'percent-encoded-utf-8',
-    });
-    await page.goto('/');
+    await login(page, email, false, 'Google User');
     await expect(page.getByRole('heading', { name: '어떻게 불러드릴까요?' })).toBeVisible();
     await expect(page.locator('input[name="preferredLanguage"]')).toHaveCount(4);
-    await expect(page.getByRole('button', { name: /내 작업대 시작하기/ })).toBeDisabled();
+    await expect(page.getByLabel('이름')).toHaveValue('Google User');
     await page.getByLabel('이름').fill('첫 가입자');
     await page.getByLabel('C++').check();
     await page.getByRole('button', { name: /내 작업대 시작하기/ }).click();
@@ -355,13 +349,13 @@ test.describe('CareerGround MVP vertical slices', () => {
     await expect(page.getByRole('heading', { name: learningTitle })).toBeVisible();
   });
 
-  test('OpenAI first login provisions a MEMBER and MEMBER cannot open admin', async ({ page }) => {
+  test('Google first login provisions a MEMBER and MEMBER cannot open admin', async ({ page }) => {
     await logout(page);
     await login(page, 'admin@careerground.local');
     await page.getByRole('link', { name: '관리자' }).first().click();
-    await expect(page.getByRole('heading', { name: 'OpenAI 멤버' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Google 멤버' })).toBeVisible();
     await logout(page);
-    await login(page, `openai-member-${Date.now()}@example.com`);
+    await login(page, `google-member-${Date.now()}@example.com`);
     await page.goto('/admin');
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole('heading', { name: '내 폴더', level: 1 })).toBeVisible();

@@ -4331,7 +4331,7 @@ body {
   background: #f5f6f7;
 }
 
-.openai-login-card {
+.google-login-card {
   width: min(390px, 100%);
   padding: 38px 34px;
   display: grid;
@@ -4342,70 +4342,73 @@ body {
   box-shadow: 0 22px 60px rgba(42, 46, 62, 0.13);
 }
 
-.openai-login-card h2 {
+.google-login-card h2 {
   margin: 2px 0 -7px;
   font-size: 25px;
   letter-spacing: -0.035em;
 }
 
-.openai-login-card > p {
+.google-login-card > p {
   margin: 0 0 7px;
   color: var(--muted);
   font-size: 12px;
   line-height: 1.65;
 }
 
-.openai-mark {
+.google-login-mark {
   width: 54px;
   height: 54px;
   display: grid;
   place-items: center;
-  color: white;
-  background: #111318;
+  color: #3859a8;
+  background: #eef3ff;
   border-radius: 16px;
 }
 
-.openai-mark svg {
+.google-login-mark svg {
   width: 25px;
   height: 25px;
 }
 
-.openai-button {
-  min-height: 52px;
-  padding: 0 18px;
+.google-button-slot {
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+}
+
+.google-button-slot > div {
+  max-width: 100%;
+}
+
+.google-login-skeleton {
+  min-height: 44px;
+  margin-top: -60px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 11px;
-  color: white;
-  background: #111318;
-  border: 1px solid #111318;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 800;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
+  color: #606672;
+  background: #f5f6f8;
+  border-radius: 8px;
+  font-size: 12px;
 }
 
-.openai-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(17, 19, 24, 0.2);
-}
-
-.openai-button-mark {
-  width: 23px;
-  height: 23px;
-  display: grid;
-  place-items: center;
-  color: #111318;
-  background: white;
-  border-radius: 50%;
+.google-login-status,
+.google-login-error {
+  min-height: 24px;
+  margin: -4px 0;
   font-size: 11px;
-  font-weight: 900;
+  line-height: 1.5;
 }
 
-.openai-login-card small {
+.google-login-status {
+  color: #526172;
+}
+
+.google-login-error {
+  color: #a33737;
+}
+
+.google-login-card small {
   min-height: 24px;
   color: #656974;
   font-size: 9px;
@@ -5326,7 +5329,7 @@ body {
 }
 
 @media (max-width: 640px) {
-  .openai-login-card {
+  .google-login-card {
     margin-top: -42px;
     padding: 26px 22px;
   }

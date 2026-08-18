@@ -275,7 +275,7 @@ export function SettingsPage() {
                 </div>
               </header>
               <button type="button" className="account-logout-button" onClick={() => void logout()}>
-                <LogOut /> OpenAI 계정에서 로그아웃
+                <LogOut /> Google 계정에서 로그아웃
               </button>
             </section>
           </div>

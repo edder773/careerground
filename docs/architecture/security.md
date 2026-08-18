@@ -2,10 +2,12 @@
 
 ## 인증/권한
 
-- OpenAI Sites가 제공하는 OpenAI 계정이 유일한 interactive 로그인 방식이다.
-- private Site dispatcher가 전달한 `oai-authenticated-user-id`와 검증 이메일을 계정에 연결하며 OpenAI token은 저장하지 않는다.
-- Sites D1 경로는 Worker 내부에서 OpenAI 사용자 헤더를 읽고 모든 개인 데이터 쿼리를 내부 사용자 ID로 제한한다. 브라우저가 임의로 보낸 인증 헤더를 신뢰하는 별도 외부 API 경로는 없다.
-- 최초 가입자는 항상 `MEMBER`이며 `OPENAI_ADMIN_EMAILS` allowlist만 `ADMIN`이 된다.
+- Google Identity Services가 유일한 interactive 로그인 방식이다.
+- Worker는 Google JWKS로 ID 토큰 서명을 검증하고 `iss`, `aud`, `exp`, `iat`, `email_verified`, `sub`를 확인한다. Google access token과 client secret은 저장하지 않는다.
+- Google `sub`는 `auth_identities`의 불변 provider subject로 저장한다. 이메일만으로 기존 사용자를 자동 연결하지 않는다.
+- 브라우저에는 무작위 세션 토큰을 `HttpOnly`, `Secure`, `SameSite=Lax` 쿠키로 전달하고 D1에는 SHA-256 해시만 저장한다.
+- health와 Google 로그인 endpoint 외의 API는 세션이 필요하며, 모든 개인 데이터 쿼리를 세션의 내부 사용자 ID로 제한한다.
+- 최초 가입자는 항상 `MEMBER`이며 `ADMIN_EMAILS` allowlist만 `ADMIN`이 된다.
 - 활성 사용자 수는 `MAX_ACTIVE_USERS`로 제한한다.
 
 ## HTTP/API

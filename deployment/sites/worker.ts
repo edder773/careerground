@@ -7,8 +7,11 @@ type Fetcher = { fetch(request: Request): Promise<Response> };
 type SitesEnv = {
   ASSETS: Fetcher;
   DB?: D1Database;
-  OPENAI_ADMIN_EMAILS?: string;
+  ADMIN_EMAILS?: string;
+  AUTH_TEST_MODE?: string;
+  GOOGLE_CLIENT_ID?: string;
   MAX_ACTIVE_USERS?: string;
+  REQUEST_LOGGING?: string;
 };
 
 type SitesExecutionContext = {
@@ -36,9 +39,10 @@ const withSecurityHeaders = (response: Response) => {
   headers.set('x-frame-options', 'DENY');
   headers.set('referrer-policy', 'strict-origin-when-cross-origin');
   headers.set('permissions-policy', 'camera=(), microphone=(), geolocation=()');
+  headers.set('cross-origin-opener-policy', 'same-origin-allow-popups');
   headers.set(
     'content-security-policy',
-    "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self' data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'",
+    "default-src 'self'; base-uri 'self'; connect-src 'self' https://accounts.google.com/gsi/; font-src 'self' data:; form-action 'self'; frame-ancestors 'none'; frame-src https://accounts.google.com/gsi/; img-src 'self' data: blob: https://lh3.googleusercontent.com; object-src 'none'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style",
   );
   return new Response(response.body, {
     status: response.status,
@@ -50,13 +54,15 @@ const withSecurityHeaders = (response: Response) => {
 async function serveApi(request: Request, env: SitesEnv) {
   if (env.DB) {
     const pathname = new URL(request.url).pathname;
-    if (pathname === '/api/v1/health/live' || pathname === '/api/v1/bootstrap') {
+    if (pathname === '/api/v1/health/live') {
       return handleD1Api(request, { ...env, DB: env.DB });
     }
     try {
       await ensureRuntimeSchema(env.DB);
     } catch (error) {
-      console.error('D1 runtime schema initialization failed', error);
+      console.error('D1 runtime schema initialization failed', {
+        message: error instanceof Error ? error.message : String(error),
+      });
       return json(
         {
           code: 'DB_SCHEMA_INITIALIZATION_FAILED',

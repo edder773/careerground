@@ -1,9 +1,9 @@
 import { all, first, run, type D1Database } from './d1.js';
 
 const schemaPromises = new WeakMap<D1Database, Promise<void>>();
-export const EXPECTED_SCHEMA_VERSION = '0021_separate_job_schedule_dates';
+export const EXPECTED_SCHEMA_VERSION = '0022_google_auth';
 export const EXPECTED_SCHEMA_CHECKSUM =
-  'sha256:4e31cdb8719763ac88c1fb0311e50720237367cd0b88be0c9dfee26a962adb78';
+  'sha256:d453c92ca558c68ae6efc1e9f6ef86e49a93422442aa0ad3bdc17de76e509f2d';
 
 const ledgerSchema = `CREATE TABLE IF NOT EXISTS app_schema_migrations (
   version text PRIMARY KEY NOT NULL,
@@ -68,6 +68,26 @@ const additiveSchema = [
     lease_until text NOT NULL,
     updated_at text NOT NULL
   )`,
+  `CREATE TABLE IF NOT EXISTS auth_identities (
+    id text PRIMARY KEY NOT NULL,
+    user_id text NOT NULL,
+    provider text NOT NULL,
+    provider_subject text NOT NULL,
+    email text NOT NULL,
+    created_at text NOT NULL,
+    updated_at text NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT chk_auth_identities_provider CHECK(provider IN ('GOOGLE'))
+  )`,
+  `CREATE TABLE IF NOT EXISTS auth_sessions (
+    id text PRIMARY KEY NOT NULL,
+    user_id text NOT NULL,
+    token_hash text NOT NULL,
+    expires_at text NOT NULL,
+    last_seen_at text NOT NULL,
+    created_at text NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`,
   'CREATE UNIQUE INDEX IF NOT EXISTS idx_job_source_snapshots_batch_source ON job_source_snapshots(import_batch_id, source_name)',
   'CREATE INDEX IF NOT EXISTS idx_job_source_snapshots_source_collected ON job_source_snapshots(source_name, collected_at)',
   'CREATE UNIQUE INDEX IF NOT EXISTS idx_job_source_snapshot_items_unique ON job_source_snapshot_items(snapshot_id, job_id)',
@@ -77,6 +97,11 @@ const additiveSchema = [
   'CREATE INDEX IF NOT EXISTS idx_learning_question_attempts_user_question ON learning_question_attempts(user_id, question_id, attempted_at)',
   'CREATE UNIQUE INDEX IF NOT EXISTS idx_learning_review_events_sequence ON learning_review_events(user_id, unit_id, sequence)',
   'CREATE INDEX IF NOT EXISTS idx_learning_review_events_user_reviewed ON learning_review_events(user_id, reviewed_at)',
+  'CREATE UNIQUE INDEX IF NOT EXISTS idx_auth_identities_provider_subject ON auth_identities(provider, provider_subject)',
+  'CREATE INDEX IF NOT EXISTS idx_auth_identities_user ON auth_identities(user_id)',
+  'CREATE UNIQUE INDEX IF NOT EXISTS idx_auth_sessions_token_hash ON auth_sessions(token_hash)',
+  'CREATE INDEX IF NOT EXISTS idx_auth_sessions_user ON auth_sessions(user_id)',
+  'CREATE INDEX IF NOT EXISTS idx_auth_sessions_expires ON auth_sessions(expires_at)',
   'CREATE INDEX IF NOT EXISTS idx_notifications_user_read_expiry_created ON notifications(user_id, read_at, expires_at, created_at)',
   `CREATE INDEX IF NOT EXISTS idx_jobs_feed_collected_id
      ON jobs(collected_at, id)
@@ -274,9 +299,47 @@ export type RuntimeSchemaState = {
   removedNoteItemCount: number;
   removedNoteSearchCount: number;
   legacyNoteConstraintCount: number;
+  authTableCount: number;
+  legacyIdentityColumnCount: number;
 };
 
 export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchemaState> {
+  const inventory = await first<{
+    tableCount: number;
+    workspaceSearchCount: number;
+    collectionItemsCount: number;
+  }>(
+    db,
+    `SELECT
+       (SELECT COUNT(*) FROM sqlite_schema
+         WHERE type = 'table' AND name IN (
+           'app_schema_migrations', 'job_source_snapshot_items', 'job_source_snapshots',
+           'job_tech_stacks', 'learning_question_attempts', 'learning_review_events',
+           'scheduler_leases', 'workspace_search', 'auth_identities', 'auth_sessions'
+         )) AS tableCount,
+       (SELECT COUNT(*) FROM sqlite_schema
+         WHERE type = 'table' AND name = 'workspace_search') AS workspaceSearchCount,
+       (SELECT COUNT(*) FROM sqlite_schema
+         WHERE type = 'table' AND name = 'collection_items') AS collectionItemsCount`,
+  );
+  if (!Number(inventory?.workspaceSearchCount) || !Number(inventory?.collectionItemsCount)) {
+    return {
+      ready: false,
+      expectedVersion: EXPECTED_SCHEMA_VERSION,
+      appliedVersion: null,
+      tableCount: Number(inventory?.tableCount || 0),
+      triggerCount: 0,
+      progressColumnCount: 0,
+      questionColumnCount: 0,
+      jobColumnCount: 0,
+      removedNoteTableCount: 0,
+      removedNoteItemCount: 0,
+      removedNoteSearchCount: 0,
+      legacyNoteConstraintCount: 0,
+      authTableCount: 0,
+      legacyIdentityColumnCount: 0,
+    };
+  }
   const state = await first<{
     tableCount: number;
     triggerCount: number;
@@ -287,6 +350,8 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
     removedNoteItemCount: number;
     removedNoteSearchCount: number;
     legacyNoteConstraintCount: number;
+    authTableCount: number;
+    legacyIdentityColumnCount: number;
   }>(
     db,
     `SELECT
@@ -294,7 +359,7 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
          WHERE type = 'table' AND name IN (
            'app_schema_migrations', 'job_source_snapshot_items', 'job_source_snapshots',
            'job_tech_stacks', 'learning_question_attempts', 'learning_review_events',
-           'scheduler_leases', 'workspace_search'
+           'scheduler_leases', 'workspace_search', 'auth_identities', 'auth_sessions'
          )) AS tableCount,
        (SELECT COUNT(*) FROM sqlite_schema
          WHERE type = 'trigger' AND name GLOB 'trg_*_search_*') AS triggerCount,
@@ -310,7 +375,11 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
        (SELECT COUNT(*) FROM workspace_search WHERE kind = 'notes') AS removedNoteSearchCount,
        (SELECT COUNT(*) FROM sqlite_schema
          WHERE type = 'table' AND name = 'collection_items' AND sql LIKE '%''NOTE''%')
-         AS legacyNoteConstraintCount`,
+         AS legacyNoteConstraintCount,
+       (SELECT COUNT(*) FROM sqlite_schema
+         WHERE type = 'table' AND name IN ('auth_identities', 'auth_sessions')) AS authTableCount,
+       (SELECT COUNT(*) FROM pragma_table_info('users')
+         WHERE name = 'site_user_id') AS legacyIdentityColumnCount`,
   );
   const tableCount = Number(state?.tableCount || 0);
   const triggerCount = Number(state?.triggerCount || 0);
@@ -321,8 +390,10 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
   const removedNoteItemCount = Number(state?.removedNoteItemCount || 0);
   const removedNoteSearchCount = Number(state?.removedNoteSearchCount || 0);
   const legacyNoteConstraintCount = Number(state?.legacyNoteConstraintCount || 0);
+  const authTableCount = Number(state?.authTableCount || 0);
+  const legacyIdentityColumnCount = Number(state?.legacyIdentityColumnCount || 0);
   const ledger =
-    tableCount === 8
+    tableCount === 10
       ? await first<{ version: string; checksum: string }>(
           db,
           'SELECT version, checksum FROM app_schema_migrations WHERE version = ?',
@@ -332,7 +403,7 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
   const appliedVersion = ledger?.version || null;
   return {
     ready:
-      tableCount === 8 &&
+      tableCount === 10 &&
       triggerCount === 15 &&
       progressColumnCount === 3 &&
       questionColumnCount === 2 &&
@@ -341,6 +412,8 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
       removedNoteItemCount === 0 &&
       removedNoteSearchCount === 0 &&
       legacyNoteConstraintCount === 0 &&
+      authTableCount === 2 &&
+      legacyIdentityColumnCount === 0 &&
       appliedVersion === EXPECTED_SCHEMA_VERSION &&
       ledger?.checksum === EXPECTED_SCHEMA_CHECKSUM,
     expectedVersion: EXPECTED_SCHEMA_VERSION,
@@ -354,21 +427,21 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
     removedNoteItemCount,
     removedNoteSearchCount,
     legacyNoteConstraintCount,
+    authTableCount,
+    legacyIdentityColumnCount,
   };
 }
 
-async function expectedMigrationApplied(db: D1Database) {
-  try {
-    const row = await first<{ checksum: string }>(
-      db,
-      'SELECT checksum FROM app_schema_migrations WHERE version = ?',
-      EXPECTED_SCHEMA_VERSION,
-    );
-    return row?.checksum === EXPECTED_SCHEMA_CHECKSUM;
-  } catch (error) {
-    if (String(error).toLowerCase().includes('no such table')) return false;
-    throw error;
-  }
+async function removeLegacyIdentityData(db: D1Database) {
+  const columns = await all<{ name: string }>(db, 'PRAGMA table_info(users)');
+  if (!columns.some((column) => column.name === 'site_user_id')) return;
+
+  await db.batch([
+    db.prepare('DELETE FROM audit_logs'),
+    db.prepare('DELETE FROM users'),
+    db.prepare('DROP INDEX IF EXISTS idx_users_site_user_id'),
+  ]);
+  await run(db, 'ALTER TABLE users DROP COLUMN site_user_id');
 }
 
 async function removeNotesSchema(db: D1Database) {
@@ -437,13 +510,25 @@ async function removeNotesSchema(db: D1Database) {
 }
 
 async function applyRuntimeSchema(db: D1Database) {
-  if (await expectedMigrationApplied(db)) return;
+  if ((await inspectRuntimeSchema(db)).ready) return;
 
   await run(db, ledgerSchema);
+  await run(
+    db,
+    `CREATE VIRTUAL TABLE IF NOT EXISTS workspace_search USING fts5(
+      kind UNINDEXED,
+      entity_id UNINDEXED,
+      owner_id UNINDEXED,
+      title,
+      body,
+      tokenize = 'unicode61 remove_diacritics 2'
+    )`,
+  );
   // Parent tables must exist before SQLite can prepare child-table statements.
-  for (const sql of additiveSchema.slice(0, 6)) await run(db, sql);
+  for (const sql of additiveSchema.slice(0, 8)) await run(db, sql);
+  await removeLegacyIdentityData(db);
   await addJobColumns(db);
-  await db.batch(additiveSchema.slice(6).map((sql) => db.prepare(sql)));
+  await db.batch(additiveSchema.slice(8).map((sql) => db.prepare(sql)));
   await addLearningProgressColumns(db);
   await addLearningQuestionColumns(db);
   await run(

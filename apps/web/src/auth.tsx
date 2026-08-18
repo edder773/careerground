@@ -84,10 +84,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
       error: me.error instanceof ApiError && me.error.status !== 401 ? me.error : null,
       retry: () => void me.refetch(),
       logout: async () => {
-        window.location.assign('/signout-with-chatgpt?return_to=%2F');
+        await api('/auth/logout', { method: 'POST' });
+        client.removeQueries({ predicate: (query) => query.queryKey[0] !== 'me' });
+        client.setQueryData(['me'], { user: null });
       },
     }),
-    [me.data, me.error, me.isLoading, me.refetch],
+    [client, me.data, me.error, me.isLoading, me.refetch],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

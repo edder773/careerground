@@ -2,6 +2,7 @@
 import { performance } from 'node:perf_hooks';
 import { handleD1Api } from '../../deployment/sites/d1-api.ts';
 import { LocalD1 } from '../../deployment/sites/local-d1.ts';
+import { createGoogleTestSession } from './google-test-session.mjs';
 
 const sizes = {
   jobs: 50_000,
@@ -12,20 +13,22 @@ const sizes = {
 };
 const now = '2026-08-13T00:00:00.000Z';
 const db = new LocalD1();
-const headers = {
-  'oai-authenticated-user-id': 'performance-user',
-  'oai-authenticated-user-email': 'performance@example.test',
-  'oai-authenticated-user-full-name': 'Performance%20User',
-  'oai-authenticated-user-full-name-encoding': 'percent-encoded-utf-8',
+const env = {
+  DB: db,
+  ADMIN_EMAILS: '',
+  AUTH_TEST_MODE: 'true',
+  MAX_ACTIVE_USERS: '100',
+  REQUEST_LOGGING: 'false',
 };
+const sessionCookie = await createGoogleTestSession(env, {
+  subject: 'performance-user',
+  email: 'performance@example.test',
+  displayName: 'Performance User',
+});
+const headers = { cookie: sessionCookie };
 
 async function api(path) {
-  return handleD1Api(new Request(`https://benchmark.invalid/api/v1${path}`, { headers }), {
-    DB: db,
-    OPENAI_ADMIN_EMAILS: '',
-    MAX_ACTIVE_USERS: '100',
-    REQUEST_LOGGING: 'false',
-  });
+  return handleD1Api(new Request(`https://benchmark.invalid/api/v1${path}`, { headers }), env);
 }
 
 const auth = await api('/auth/me');

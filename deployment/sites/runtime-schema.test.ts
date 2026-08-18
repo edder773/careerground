@@ -11,10 +11,7 @@ describe('Sites runtime schema', () => {
 
   beforeEach(async () => {
     db = new LocalD1();
-    await run(
-      db,
-      "DELETE FROM app_schema_migrations WHERE version = '0021_separate_job_schedule_dates'",
-    );
+    await run(db, "DELETE FROM app_schema_migrations WHERE version = '0022_google_auth'");
     await run(db, 'DROP TABLE workspace_search');
     for (const table of [
       'job_source_snapshot_items',
@@ -23,6 +20,8 @@ describe('Sites runtime schema', () => {
       'learning_question_attempts',
       'learning_review_events',
       'scheduler_leases',
+      'auth_sessions',
+      'auth_identities',
     ]) {
       await run(db, `DROP TABLE ${table}`);
     }
@@ -54,7 +53,7 @@ describe('Sites runtime schema', () => {
        WHERE type IN ('table', 'view') AND name IN (
          'workspace_search', 'job_source_snapshot_items', 'job_source_snapshots',
          'job_tech_stacks', 'learning_question_attempts', 'learning_review_events',
-         'scheduler_leases'
+         'scheduler_leases', 'auth_identities', 'auth_sessions'
        )`,
     );
     expect(new Set(tables.map((table) => table.name))).toEqual(
@@ -66,6 +65,8 @@ describe('Sites runtime schema', () => {
         'learning_question_attempts',
         'learning_review_events',
         'scheduler_leases',
+        'auth_identities',
+        'auth_sessions',
       ]),
     );
 
@@ -77,6 +78,8 @@ describe('Sites runtime schema', () => {
     expect(jobColumns.map((column) => column.name)).toEqual(
       expect.arrayContaining(['published_at', 'application_start_at']),
     );
+    const userColumns = await all<{ name: string }>(db, 'PRAGMA table_info(users)');
+    expect(userColumns.some((column) => column.name === 'site_user_id')).toBe(false);
 
     const removedNotes = await first<{ tables: number; items: number; constraints: number }>(
       db,
@@ -195,6 +198,7 @@ describe('Sites production migration baseline', () => {
       baseline.close();
 
       const upgraded = new LocalD1(databasePath, forwardDirectory);
+      await ensureRuntimeSchema(upgraded);
       const schema = await first<{
         questions: number;
         learningColumns: number;
@@ -219,6 +223,10 @@ describe('Sites production migration baseline', () => {
         jobImportBatches: number;
         checksum: string;
         replacementChecksum: string;
+        googleChecksum: string;
+        authTables: number;
+        legacyIdentityColumns: number;
+        users: number;
       }>(
         upgraded,
         `SELECT (SELECT COUNT(*) FROM learning_questions) AS questions,
@@ -263,7 +271,14 @@ describe('Sites production migration baseline', () => {
                  (SELECT checksum FROM app_schema_migrations
                    WHERE version = '0018_sloppy_leech') AS checksum,
                  (SELECT checksum FROM app_schema_migrations
-                   WHERE version = '0020_replace_job_catalog_20260814_verified') AS replacementChecksum`,
+                   WHERE version = '0020_replace_job_catalog_20260814_verified') AS replacementChecksum,
+                 (SELECT checksum FROM app_schema_migrations
+                   WHERE version = '0022_google_auth') AS googleChecksum,
+                 (SELECT COUNT(*) FROM sqlite_schema
+                   WHERE type = 'table' AND name IN ('auth_identities', 'auth_sessions')) AS authTables,
+                 (SELECT COUNT(*) FROM pragma_table_info('users')
+                   WHERE name = 'site_user_id') AS legacyIdentityColumns,
+                 (SELECT COUNT(*) FROM users) AS users`,
       );
 
       expect(schema).toEqual({
@@ -290,6 +305,10 @@ describe('Sites production migration baseline', () => {
         jobImportBatches: 1,
         checksum: 'sha256:86c1de85559a9b51e959bf7c423ad8a9e9afd3586ad672c2ec32da009057fe4b',
         replacementChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
+        googleChecksum: 'sha256:d453c92ca558c68ae6efc1e9f6ef86e49a93422442aa0ad3bdc17de76e509f2d',
+        authTables: 2,
+        legacyIdentityColumns: 0,
+        users: 0,
       });
       expect(schema?.jobTechRows).toBeGreaterThan(0);
       for (const indexName of [

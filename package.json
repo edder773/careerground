@@ -9,7 +9,9 @@
     "pnpm": "11.21.0"
   },
   "scripts": {
-    "dev": "pnpm --parallel --filter @careerground/api --filter @careerground/web dev",
+    "dev": "node --import tsx deployment/sites/dev.ts",
+    "dev:sites:api": "node --import tsx deployment/sites/local-d1-server.ts",
+    "dev:sites:web": "VITE_API_URL=/api/v1 VITE_API_PROXY_ORIGIN=http://127.0.0.1:4000 pnpm --filter @careerground/web dev",
     "build": "pnpm --filter @careerground/contracts build && pnpm --filter @careerground/ui build && pnpm --filter @careerground/api build && pnpm --filter @careerground/web build && pnpm --filter @careerground/docs build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -34,7 +36,7 @@
     "docs:build": "pnpm --filter @careerground/docs build",
     "sites:build": "pnpm --filter @careerground/contracts build && pnpm --filter @careerground/web build:sites && node deployment/sites/build.mjs",
     "sites:stage": "node --import tsx deployment/sites/prepare-package-stage.ts",
-    "sites:typecheck": "tsc --noEmit --strict --skipLibCheck --target ES2022 --module NodeNext --moduleResolution NodeNext --types node --lib ES2022,DOM deployment/sites/d1.ts deployment/sites/d1-api.ts deployment/sites/worker.ts deployment/sites/local-d1.ts deployment/sites/local-d1-server.ts deployment/sites/prepare-package-stage.ts",
+    "sites:typecheck": "tsc --noEmit --strict --skipLibCheck --target ES2022 --module NodeNext --moduleResolution NodeNext --types node --lib ES2022,DOM deployment/sites/d1.ts deployment/sites/d1-api.ts deployment/sites/worker.ts deployment/sites/local-d1.ts deployment/sites/local-d1-server.ts deployment/sites/dev.ts deployment/sites/prepare-package-stage.ts",
     "evidence:collect": "node --import tsx scripts/troubleshooting/collect-evidence.ts",
     "troubleshoot:generate": "node --import tsx scripts/troubleshooting/generate.ts",
     "troubleshoot:validate": "node --import tsx scripts/troubleshooting/validate.ts",

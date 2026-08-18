@@ -33,6 +33,7 @@ generatedByAI: false
 | 08-15 | [액션 버튼 일관성·추천 제목 잘림·복습 일정 제거](./2026-08-15-action-consistency-and-review-removal.md)    | 운영 UI 개선   | 동일 폭 액션·제목 전체 표시·복습 UI 0개  |
 | 08-16 | [D1 조회 병목 제거와 학습 페이지 잔여 지연 분석](./2026-08-16-d1-read-performance-and-learning-latency.md) | 운영 성능 분석 | 채용 dispatch 4→1, 학습 상세 5회 진단    |
 | 08-16 | [학습 페이지 D1 왕복 통합과 선행 로딩 적용](./2026-08-16-learning-read-latency-remediation.md)             | 운영 성능 개선 | 직접 진입 2→1, 학습 상세 dispatch 5→1    |
+| 08-18 | [OpenAI 전달 헤더에서 Google 검증 세션으로 전환](./2026-08-18-google-auth-migration.md)                    | #36            | RS256 검증, 익명 공통 API 401            |
 
 Dependabot PR #4는 pnpm 11/Node 24를 지원하는 `pnpm/action-setup@6` 갱신이며 별도 장애가 없어 Sites runtime 문서의 도구 체인 맥락에 포함했다. PR #3 이전의 닫힌 #1/#2는 구현이 병합되지 않았으므로 운영 변경 기록에 포함하지 않았다.
 

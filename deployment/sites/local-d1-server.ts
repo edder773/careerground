@@ -1,9 +1,11 @@
 import { createServer } from 'node:http';
 import { handleD1Api } from './d1-api.js';
 import { LocalD1 } from './local-d1.js';
+import { ensureRuntimeSchema } from './runtime-schema.js';
 
 const port = Number(process.env.PORT || 4000);
 const db = new LocalD1();
+await ensureRuntimeSchema(db);
 const fixtureTime = '2026-08-13T00:00:00.000Z';
 
 await db.batch([
@@ -85,16 +87,24 @@ const server = createServer(async (incoming, outgoing) => {
     });
     const response = await handleD1Api(request, {
       DB: db,
-      OPENAI_ADMIN_EMAILS: 'admin@careerground.local',
+      ADMIN_EMAILS: 'admin@careerground.local',
+      AUTH_TEST_MODE: 'true',
       MAX_ACTIVE_USERS: '100',
+      REQUEST_LOGGING: 'false',
     });
     outgoing.statusCode = response.status;
     response.headers.forEach((value, name) => outgoing.setHeader(name, value));
     outgoing.end(Buffer.from(await response.arrayBuffer()));
   } catch (error) {
+    console.error('Local D1 request failed', error);
     outgoing.statusCode = 500;
     outgoing.setHeader('content-type', 'application/json; charset=utf-8');
-    outgoing.end(JSON.stringify({ code: 'LOCAL_D1_ERROR', message: String(error) }));
+    outgoing.end(
+      JSON.stringify({
+        code: 'LOCAL_D1_ERROR',
+        message: '로컬 D1 요청을 처리하지 못했습니다. 서버 로그를 확인해주세요.',
+      }),
+    );
   }
 });
 

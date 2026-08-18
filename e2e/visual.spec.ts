@@ -20,21 +20,42 @@ async function expectNoSeriousViolations(page: Page) {
   ).toEqual([]);
 }
 
+async function mockGoogleIdentityScript(page: Page) {
+  await page.route('https://accounts.google.com/gsi/client', (route) =>
+    route.fulfill({
+      contentType: 'application/javascript',
+      body: `window.google={accounts:{id:{initialize:function(){},renderButton:function(parent){var button=document.createElement('button');button.type='button';button.textContent='G  Google 계정으로 계속';button.setAttribute('aria-label','Google 계정으로 계속');button.style.cssText='width:300px;height:44px;border:1px solid #dadce0;border-radius:4px;background:#fff;color:#3c4043;font:500 14px Arial,sans-serif;cursor:pointer';parent.appendChild(button)}}}};`,
+    }),
+  );
+}
+
 test('captures responsive home screenshots and has no serious accessibility violations', async ({
   page,
 }, testInfo) => {
   await mkdir('test-results/visual', { recursive: true });
+  await mockGoogleIdentityScript(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
-  await expect(page.getByRole('link', { name: 'OpenAI 계정으로 계속' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Google 계정으로 시작하기' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Google 계정으로 계속' })).toBeVisible();
+  await expect(page.getByText('로그인 준비 중…')).toBeHidden();
   if (testInfo.project.name === 'chromium') {
-    await expect(page).toHaveScreenshot('login-openai.png');
+    await expect(page).toHaveScreenshot('login-google.png');
   }
   await page.screenshot({
-    path: 'test-results/visual/login-openai-desktop.png',
+    path: 'test-results/visual/login-google-desktop.png',
     fullPage: false,
   });
   await expectNoSeriousViolations(page);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await expect(page.getByRole('button', { name: 'Google 계정으로 계속' })).toBeVisible();
+  if (testInfo.project.name === 'chromium') {
+    await expect(page).toHaveScreenshot('login-google-mobile.png', {
+      maxDiffPixelRatio: 0.06,
+    });
+  }
+  await expectNoSeriousViolations(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
   await login(page, 'visual@careerground.local');
   for (const viewport of viewports) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });

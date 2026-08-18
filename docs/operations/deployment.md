@@ -6,8 +6,8 @@
 
 ```mermaid
 flowchart LR
-  User["OpenAI 로그인 사용자"] --> Sites["Sites 인증 경계"]
-  Sites --> Worker["정적 자산 + Worker"]
+  User["Google 로그인 사용자"] --> GIS["Google Identity Services"]
+  GIS --> Worker["Sites 정적 자산 + Worker"]
   Worker --> D1["DB binding: D1"]
 ```
 
@@ -42,8 +42,7 @@ E2E는 `deployment/sites/local-d1-server.ts`가 메모리 D1 fixture를 직접 �
    - `dist/server/index.js`
    - `dist/.openai/hosting.json`
    - `dist/.openai/drizzle/*.sql`
-   - 이 기존 프로젝트에서는 `dist/.openai/drizzle/0017_marvelous_blockbuster.sql`과
-     `0018_sloppy_leech.sql`만 존재
+   - 이 기존 프로젝트에서는 운영 기준선 이후인 `0017`~`0022` migration만 존재
 6. **같은 commit SHA와 archive**를 새 Sites version으로 저장한다.
 7. visibility를 `public`으로 지정해 운영 배포한다.
 8. 배포 상태가 완료될 때까지 확인하고 `/api/v1/health/ready`가 `200`, `database: d1`을 반환하는지 검사한다.
@@ -54,7 +53,9 @@ E2E는 `deployment/sites/local-d1-server.ts`가 메모리 D1 fixture를 직접 �
 ## 설정과 비밀
 
 - `.openai/hosting.json`의 `d1: "DB"`가 운영 데이터 바인딩이다.
-- `OPENAI_ADMIN_EMAILS`는 명시적 관리자 allowlist다. 최초 가입자를 자동 관리자로 승격하지 않는다.
+- `GOOGLE_CLIENT_ID`는 Google 웹 OAuth 클라이언트 ID다. 브라우저와 Worker가 같은 값을 사용한다.
+- `ADMIN_EMAILS`는 검증된 Google 이메일의 명시적 관리자 allowlist다. 최초 가입자를 자동 관리자로 승격하지 않는다.
+- `AUTH_TEST_MODE`는 로컬 D1 회귀 테스트 전용이며 운영 환경에 설정하지 않는다.
 - `RATE_LIMIT_READS_PER_MINUTE`, `RATE_LIMIT_WRITES_PER_MINUTE`는 선택 설정이며 기본값은 각각 240/60이다.
 - `MAX_ACTIVE_USERS`는 활성 사용자 상한이다.
 - `OPENAI_API_KEY`는 앱 런타임과 트러블슈팅 기록에 필수가 아니다. 선택적 AI 문서 재작성 workflow에서만 사용한다.

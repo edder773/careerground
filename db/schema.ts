@@ -18,7 +18,6 @@ export const users = sqliteTable(
   'users',
   {
     id: text('id').primaryKey(),
-    siteUserId: text('site_user_id').notNull(),
     email: text('email').notNull(),
     displayName: text('display_name').notNull(),
     role: text('role').notNull().default('MEMBER'),
@@ -41,7 +40,6 @@ export const users = sqliteTable(
     ...timestamps,
   },
   (table) => [
-    uniqueIndex('idx_users_site_user_id').on(table.siteUserId),
     uniqueIndex('idx_users_email').on(table.email),
     check('chk_users_role', sql`${table.role} IN ('ADMIN', 'MEMBER')`),
     check(
@@ -49,6 +47,44 @@ export const users = sqliteTable(
       sql`${table.preferredLanguage} IN ('python', 'java', 'javascript', 'cpp')`,
     ),
     check('chk_users_active', sql`${table.isActive} IN (0, 1)`),
+  ],
+);
+
+export const authIdentities = sqliteTable(
+  'auth_identities',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    provider: text('provider').notNull(),
+    providerSubject: text('provider_subject').notNull(),
+    email: text('email').notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('idx_auth_identities_provider_subject').on(table.provider, table.providerSubject),
+    index('idx_auth_identities_user').on(table.userId),
+    check('chk_auth_identities_provider', sql`${table.provider} IN ('GOOGLE')`),
+  ],
+);
+
+export const authSessions = sqliteTable(
+  'auth_sessions',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tokenHash: text('token_hash').notNull(),
+    expiresAt: text('expires_at').notNull(),
+    lastSeenAt: text('last_seen_at').notNull(),
+    createdAt: text('created_at').notNull(),
+  },
+  (table) => [
+    uniqueIndex('idx_auth_sessions_token_hash').on(table.tokenHash),
+    index('idx_auth_sessions_user').on(table.userId),
+    index('idx_auth_sessions_expires').on(table.expiresAt),
   ],
 );
 

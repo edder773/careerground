@@ -1,19 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { handleD1Api, runScheduledMaintenance } from './d1-api.js';
 import { LocalD1 } from './local-d1.js';
+import { ensureRuntimeSchema } from './runtime-schema.js';
 
 const adminHeaders = {
-  'oai-authenticated-user-id': 'site-admin',
-  'oai-authenticated-user-email': 'admin@example.test',
-  'oai-authenticated-user-full-name': 'Admin%20User',
-  'oai-authenticated-user-full-name-encoding': 'percent-encoded-utf-8',
+  'x-test-google-sub': 'google-admin',
+  'x-test-google-email': 'admin@example.test',
+  'x-test-google-name': 'Admin User',
 };
 
 const memberHeaders = {
-  'oai-authenticated-user-id': 'site-member',
-  'oai-authenticated-user-email': 'member@example.test',
-  'oai-authenticated-user-full-name': 'Member%20User',
-  'oai-authenticated-user-full-name-encoding': 'percent-encoded-utf-8',
+  'x-test-google-sub': 'google-member',
+  'x-test-google-email': 'member@example.test',
+  'x-test-google-name': 'Member User',
 };
 
 const importApproval = (preview: Record<string, unknown>, reviewedRowCount: number) => {
@@ -32,9 +31,12 @@ const importApproval = (preview: Record<string, unknown>, reviewedRowCount: numb
 
 describe('Sites D1 API', () => {
   let db: LocalD1;
+  let sessionCookies: Map<string, string>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     db = new LocalD1();
+    sessionCookies = new Map();
+    await ensureRuntimeSchema(db);
   });
 
   afterEach(() => db.close());
@@ -45,23 +47,46 @@ describe('Sites D1 API', () => {
     headers: Record<string, string> = adminHeaders,
     env: Record<string, string> = {},
   ) {
-    const requestHeaders = new Headers(headers);
+    const environment = {
+      DB: db,
+      ADMIN_EMAILS: 'admin@example.test',
+      AUTH_TEST_MODE: 'true',
+      MAX_ACTIVE_USERS: '100',
+      REQUEST_LOGGING: 'false',
+      ...env,
+    };
+    const subject = headers['x-test-google-sub'];
+    let cookie = subject ? sessionCookies.get(subject) : undefined;
+    if (subject && !cookie) {
+      const login = await handleD1Api(
+        new Request('https://careerground.example/api/v1/auth/test', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            subject,
+            email: headers['x-test-google-email'],
+            displayName: headers['x-test-google-name'],
+          }),
+        }),
+        environment,
+      );
+      expect(login.status).toBe(200);
+      cookie = login.headers.get('set-cookie')?.split(';')[0];
+      if (!cookie) throw new Error('Test Google login did not issue a session cookie.');
+      sessionCookies.set(subject, cookie);
+    }
+    const requestHeaders = new Headers();
+    if (cookie) requestHeaders.set('cookie', cookie);
     if (init.body && !(init.body instanceof FormData))
       requestHeaders.set('content-type', 'application/json');
     const response = await handleD1Api(
       new Request(`https://careerground.example${path}`, { ...init, headers: requestHeaders }),
-      {
-        DB: db,
-        OPENAI_ADMIN_EMAILS: 'admin@example.test',
-        MAX_ACTIVE_USERS: '100',
-        REQUEST_LOGGING: 'false',
-        ...env,
-      },
+      environment,
     );
     return { response, body: (await response.json()) as Record<string, unknown> };
   }
 
-  it('provisions normal first users as MEMBER and only allowlisted users as ADMIN', async () => {
+  it('provisions Google users, requires a session, and ignores legacy OpenAI headers', async () => {
     const health = await call('/api/v1/health', {}, {});
     expect(health.response.status).toBe(200);
     expect(health.body).toMatchObject({ status: 'ok', database: 'd1' });
@@ -105,6 +130,20 @@ describe('Sites D1 API', () => {
     const unauthenticated = await call('/api/v1/auth/me', {}, {});
     expect(unauthenticated.response.status).toBe(401);
     expect(unauthenticated.body).toMatchObject({ code: 'UNAUTHORIZED' });
+    expect((await call('/api/v1/jobs', {}, {})).response.status).toBe(401);
+    expect((await call('/api/v1/learning', {}, {})).response.status).toBe(401);
+    expect((await call('/api/v1/coding/problems', {}, {})).response.status).toBe(401);
+
+    const legacyOnly = await handleD1Api(
+      new Request('https://careerground.example/api/v1/auth/me', {
+        headers: {
+          'oai-authenticated-user-id': 'legacy-openai-user',
+          'oai-authenticated-user-email': 'legacy@example.test',
+        },
+      }),
+      { DB: db, AUTH_TEST_MODE: 'true', REQUEST_LOGGING: 'false' },
+    );
+    expect(legacyOnly.status).toBe(401);
   });
 
   it('rate limits each user and normalized route with Retry-After', async () => {
@@ -122,57 +161,12 @@ describe('Sites D1 API', () => {
     expect((await call('/api/v1/auth/me', {}, memberHeaders, env)).response.status).toBe(200);
   });
 
-  it('does not rewrite or reread an unchanged signed-in user', async () => {
-    await call('/api/v1/auth/me', {}, memberHeaders);
-    const before = await db
-      .prepare('SELECT updated_at AS updatedAt FROM users WHERE site_user_id = ?')
-      .bind(memberHeaders['oai-authenticated-user-id'])
-      .first<{ updatedAt: string }>();
-
-    db.resetQueryCount();
-    db.resetBatchCount();
-    db.resetPreparedSql();
-    const repeated = await call('/api/v1/auth/me', {}, memberHeaders);
-
-    expect(repeated.response.status).toBe(200);
-    expect(db.getQueryCount()).toBe(2);
-    expect(db.getBatchCount()).toBe(1);
-    expect(db.preparedSql.filter((sql) => sql.includes('site_user_id AS siteUserId'))).toHaveLength(
-      1,
-    );
-    expect(db.preparedSql.some((sql) => /^\s*UPDATE users/i.test(sql))).toBe(false);
-    const after = await db
-      .prepare('SELECT updated_at AS updatedAt FROM users WHERE site_user_id = ?')
-      .bind(memberHeaders['oai-authenticated-user-id'])
-      .first<{ updatedAt: string }>();
-    expect(after?.updatedAt).toBe(before?.updatedAt);
-  });
-
-  it('persists and audits a role change without rereading the user', async () => {
-    await call('/api/v1/auth/me', {}, memberHeaders, { OPENAI_ADMIN_EMAILS: '' });
-    db.resetQueryCount();
-    db.resetBatchCount();
-    db.resetPreparedSql();
-
-    const promoted = await call('/api/v1/auth/me', {}, memberHeaders, {
-      OPENAI_ADMIN_EMAILS: 'member@example.test',
-    });
-
-    expect(promoted.body).toMatchObject({ user: { role: 'ADMIN' } });
-    expect(db.getQueryCount()).toBe(4);
-    expect(db.getBatchCount()).toBe(2);
-    expect(db.preparedSql.filter((sql) => sql.includes('site_user_id AS siteUserId'))).toHaveLength(
-      1,
-    );
-    const stored = await db
-      .prepare('SELECT role FROM users WHERE site_user_id = ?')
-      .bind(memberHeaders['oai-authenticated-user-id'])
-      .first<{ role: string }>();
-    const roleAudit = await db
-      .prepare("SELECT action FROM audit_logs WHERE action = 'USER_ROLE_SYNCED'")
-      .first<{ action: string }>();
-    expect(stored?.role).toBe('ADMIN');
-    expect(roleAudit?.action).toBe('USER_ROLE_SYNCED');
+  it('revokes the opaque session on logout', async () => {
+    expect((await call('/api/v1/auth/me')).response.status).toBe(200);
+    const logout = await call('/api/v1/auth/logout', { method: 'POST' });
+    expect(logout.response.status).toBe(200);
+    expect(logout.response.headers.get('set-cookie')).toContain('Max-Age=0');
+    expect((await call('/api/v1/auth/me')).response.status).toBe(401);
   });
 
   it('returns the signed-in home workspace in one bootstrap D1 batch', async () => {
@@ -204,7 +198,7 @@ describe('Sites D1 API', () => {
         ],
       },
     });
-    expect(db.getQueryCount()).toBe(5);
+    expect(db.getQueryCount()).toBe(6);
     expect(db.preparedSql.some((sql) => /^\s*UPDATE users/i.test(sql))).toBe(false);
     expect(loaded.response.headers.get('server-timing')).toMatch(/^app;dur=\d+\.\d$/);
   });
@@ -445,7 +439,7 @@ describe('Sites D1 API', () => {
       categories: expect.arrayContaining(['AI_ML']),
       data: { items: expect.any(Array), total: 51 },
     });
-    expect(db.getQueryCount()).toBe(5);
+    expect(db.getQueryCount()).toBe(6);
     expect(db.getBatchCount()).toBe(1);
 
     db.resetQueryCount();
@@ -457,15 +451,15 @@ describe('Sites D1 API', () => {
       data: expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]),
     });
     expect(fullCatalog.body.data as unknown[]).toHaveLength(51);
-    expect(db.getQueryCount()).toBe(3);
+    expect(db.getQueryCount()).toBe(4);
     expect(db.getBatchCount()).toBe(1);
   });
 
   it('returns the welcome unread count when job bootstrap provisions a new user', async () => {
     const newcomer = {
       ...memberHeaders,
-      'oai-authenticated-user-id': 'job-bootstrap-newcomer',
-      'oai-authenticated-user-email': 'job-bootstrap-newcomer@example.test',
+      'x-test-google-sub': 'job-bootstrap-newcomer',
+      'x-test-google-email': 'job-bootstrap-newcomer@example.test',
     };
     const bootstrap = await call(
       '/api/v1/jobs/bootstrap?sort=new&page=cursor&limit=40',
@@ -508,7 +502,7 @@ describe('Sites D1 API', () => {
       unreadCount: expect.any(Number),
       data: expect.arrayContaining([expect.objectContaining({ units: expect.any(Array) })]),
     });
-    expect(db.getQueryCount()).toBe(3);
+    expect(db.getQueryCount()).toBe(4);
     expect(db.getBatchCount()).toBe(1);
 
     const sources = bootstrap.body.data as unknown as Array<{
@@ -691,7 +685,7 @@ describe('Sites D1 API', () => {
       }),
     ]);
     expect(db.getQueryCount()).toBe(3);
-    expect(db.getBatchCount()).toBe(1);
+    expect(db.getBatchCount()).toBe(0);
     expect(db.preparedSql.filter((sql) => sql.includes('FROM daily_challenges dc'))).toHaveLength(
       1,
     );
@@ -1060,7 +1054,7 @@ describe('Sites D1 API', () => {
 
     const beforeMaintenance = await db
       .prepare(
-        "SELECT COUNT(*) AS count FROM notifications WHERE type = 'JOB_DEADLINE' AND user_id = (SELECT id FROM users WHERE site_user_id = 'site-admin')",
+        "SELECT COUNT(*) AS count FROM notifications WHERE type = 'JOB_DEADLINE' AND user_id = (SELECT user_id FROM auth_identities WHERE provider = 'GOOGLE' AND provider_subject = 'google-admin')",
       )
       .first<{ count: number }>();
     expect(beforeMaintenance?.count).toBe(0);
@@ -1069,7 +1063,7 @@ describe('Sites D1 API', () => {
     expect(maintenance).toMatchObject({ acquired: true, notifications: 1 });
     const afterMaintenance = await db
       .prepare(
-        "SELECT COUNT(*) AS count FROM notifications WHERE type = 'JOB_DEADLINE' AND user_id = (SELECT id FROM users WHERE site_user_id = 'site-admin')",
+        "SELECT COUNT(*) AS count FROM notifications WHERE type = 'JOB_DEADLINE' AND user_id = (SELECT user_id FROM auth_identities WHERE provider = 'GOOGLE' AND provider_subject = 'google-admin')",
       )
       .first<{ count: number }>();
     expect(afterMaintenance?.count).toBe(1);
@@ -1078,7 +1072,9 @@ describe('Sites D1 API', () => {
   it('runs scheduled expiry without creating review notifications under a single lease', async () => {
     await call('/api/v1/auth/me');
     const user = await db
-      .prepare("SELECT id FROM users WHERE site_user_id = 'site-admin'")
+      .prepare(
+        "SELECT user_id AS id FROM auth_identities WHERE provider = 'GOOGLE' AND provider_subject = 'google-admin'",
+      )
       .first<{ id: string }>();
     const unit = await db
       .prepare('SELECT id FROM learning_units WHERE published = 1 LIMIT 1')
@@ -1136,7 +1132,9 @@ describe('Sites D1 API', () => {
   it('filters notifications and traverses a stable cursor', async () => {
     await call('/api/v1/auth/me');
     const user = await db
-      .prepare("SELECT id FROM users WHERE site_user_id = 'site-admin'")
+      .prepare(
+        "SELECT user_id AS id FROM auth_identities WHERE provider = 'GOOGLE' AND provider_subject = 'google-admin'",
+      )
       .first<{ id: string }>();
     for (let index = 0; index < 3; index += 1) {
       await db

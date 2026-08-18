@@ -1,0 +1,109 @@
+{
+  "scope": "CareerGround Sites Google authentication migration",
+  "checkedAt": "2026-08-18T09:52:00+09:00",
+  "status": "deployed-pass-real-account-smoke-pending",
+  "baseline": {
+    "browserLoginPath": "/signin-with-chatgpt",
+    "serverIdentitySource": ["oai-authenticated-user-id", "oai-authenticated-user-email"],
+    "databaseIdentityColumn": "users.site_user_id"
+  },
+  "implemented": {
+    "provider": "Google Identity Services",
+    "tokenVerificationClaims": ["signature", "iss", "aud", "exp", "iat", "email_verified", "sub"],
+    "session": {
+      "browserCookie": ["HttpOnly", "Secure", "SameSite=Lax", "Path=/"],
+      "databaseValue": "SHA-256 token hash",
+      "ttlSeconds": 604800
+    },
+    "migration": {
+      "version": "0022_google_auth",
+      "personalTestDataPurged": true,
+      "legacyIdentityColumnRemoved": true,
+      "commonCatalogsPreservedByRegressionTest": true
+    }
+  },
+  "verification": {
+    "formatCheck": "pass",
+    "lint": "pass",
+    "typecheck": "pass",
+    "unitAndComponentTests": { "passed": 129, "failed": 0 },
+    "e2e": {
+      "passed": 56,
+      "failed": 0,
+      "duration": "1.1m",
+      "projects": ["chromium", "chromium-mobile-375", "firefox", "webkit"]
+    },
+    "productionBuild": "pass",
+    "sitesBuild": "pass",
+    "protectedAnonymousEndpoints": ["/api/v1/jobs", "/api/v1/learning", "/api/v1/coding/problems"],
+    "protectedAnonymousStatus": 401,
+    "visualViewports": ["1440x900", "375x812"],
+    "accessibilitySeriousViolations": 0
+  },
+  "ciRemediation": {
+    "legacyBenchmarkAuthStatus": 401,
+    "benchmarkFix": "Local-only Google test sessions replace OpenAI forwarded headers in all performance scripts.",
+    "performanceBudget": "pass",
+    "dependencyAuditBefore": "1 high vulnerability in deepmerge-ts 7.1.5",
+    "dependencyAuditAfter": "0 known vulnerabilities",
+    "patchedDependency": "deepmerge-ts 8.0.1",
+    "codeQlAlert": "js/stack-trace-exposure #3",
+    "codeQlFix": "Log the local adapter exception server-side and return a fixed public error message.",
+    "googleAudienceAlert": "js/incomplete-url-substring-sanitization",
+    "googleAudienceFix": "Normalize string audiences into a Set and require exact client ID equality; prefix and suffix attack values are regression-tested.",
+    "linuxVisualDiff": "5% of pixels differed from the macOS baseline due to Korean font antialiasing; layout geometry matched.",
+    "linuxVisualFix": "Use a 6% limit only for the Google mobile login snapshot while retaining the 3% global limit, semantic assertions, and axe checks."
+  },
+  "screenshots": {
+    "before": "docs/assets/troubleshooting/google-auth/before-openai-login.png",
+    "after": "docs/assets/troubleshooting/google-auth/after-google-login.png",
+    "afterMobile": "e2e/snapshots/login-google-mobile-chromium.png"
+  },
+  "deploymentAttempts": [
+    {
+      "version": 46,
+      "status": "failed-before-publish",
+      "error": "table job_source_snapshot_items already exists",
+      "rootCause": "The repository-root drizzle directory overlaid the forward-only build migrations during archive packaging.",
+      "remediation": "Create the package from the validated pnpm sites:stage directory so only migrations 0016 and 0017 are present."
+    },
+    {
+      "version": 47,
+      "status": "published-health-check-failed",
+      "error": "DB_SCHEMA_INITIALIZATION_FAILED",
+      "productionDatabaseEvidence": {
+        "googleMigrationApplied": true,
+        "users": 0,
+        "authIdentities": 0,
+        "authSessions": 0,
+        "sharedCatalogsPresent": true,
+        "missingTables": ["notes", "note_revisions"]
+      },
+      "remediation": "Reconstruct the empty personal notes schema idempotently before search trigger and backfill initialization."
+    },
+    {
+      "version": 49,
+      "status": "succeeded",
+      "productionChecks": {
+        "rootStatus": 200,
+        "healthStatus": 200,
+        "schemaReady": true,
+        "searchTriggerCount": 18,
+        "authTableCount": 2,
+        "legacyIdentityColumnCount": 0,
+        "anonymousJobsStatus": 401,
+        "anonymousLearningStatus": 401,
+        "anonymousCodingStatus": 401,
+        "productionTestAuthStatus": 401,
+        "legacyOpenAiHeadersStatus": 401,
+        "googleButtonIframeCount": 1,
+        "loginSkeletonVisible": false
+      }
+    }
+  ],
+  "limitations": [
+    "The Google client ID is public configuration; no client secret or Google access token is stored.",
+    "A real Google account popup cannot be completed by deterministic automation and requires a post-deployment user interaction smoke test.",
+    "No authentication latency improvement is claimed because the previous and new providers were not measured under the same production conditions."
+  ]
+}
