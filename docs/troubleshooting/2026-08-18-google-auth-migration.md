@@ -88,6 +88,18 @@ Google 이름은 최초 가입 화면의 입력 초깃값으로 전달된다. �
 
 인증 지연 시간은 이전 provider와 Google provider를 같은 운영 조건에서 측정하지 않았으므로 정량 개선을 주장하지 않는다. 실제 Google 계정 팝업 완료는 자동화가 대신할 수 없으며 운영 배포 후 사용자가 한 번 상호작용해 확인해야 한다.
 
+## 운영 배포 중 발견한 migration archive 충돌
+
+첫 version 46 배포는 publish 전에 `table job_source_snapshot_items already exists`로 중단됐다. 애플리케이션의 `sites:build` 결과는 운영 기준선 이후의 `0016`, `0017`만 포함했지만, 공식 packager를 저장소 루트에 직접 실행하면서 루트 `drizzle/`의 `0000`~`0015`가 archive에 다시 덮어써졌다. runtime bootstrap으로 이미 생성된 운영 테이블에 과거 `0013`을 재실행한 것이 직접 원인이었다.
+
+```diff
+- package-site.sh <repository-root> <archive>
++ pnpm sites:stage <empty-temporary-directory>
++ package-site.sh <staged-directory> <archive>
+```
+
+`sites:stage`는 archive에 기준선 이전 migration이 하나라도 있으면 실패하며, repository-root `drizzle/`를 의도적으로 복사하지 않는다. 재배포 archive에는 `0016_full_audit_hardening.sql`, `0017_google_auth.sql` 두 파일만 포함되는 것을 `tar` 목록으로 재확인했다. 이 실패는 새 Worker가 publish되기 전 migration 단계에서 발생했으므로 성공 배포로 기록하지 않았고, 수정 archive는 새 Git commit과 Sites version으로 다시 저장한다.
+
 ## 근거
 
 - `docs/evidence/google-auth-2026-08-18.json`

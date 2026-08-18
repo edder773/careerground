@@ -45,6 +45,15 @@
     "after": "docs/assets/troubleshooting/google-auth/after-google-login.png",
     "afterMobile": "e2e/snapshots/login-google-mobile-chromium.png"
   },
+  "deploymentAttempts": [
+    {
+      "version": 46,
+      "status": "failed-before-publish",
+      "error": "table job_source_snapshot_items already exists",
+      "rootCause": "The repository-root drizzle directory overlaid the forward-only build migrations during archive packaging.",
+      "remediation": "Create the package from the validated pnpm sites:stage directory so only migrations 0016 and 0017 are present."
+    }
+  ],
   "limitations": [
     "The Google client ID is public configuration; no client secret or Google access token is stored.",
     "A real Google account popup cannot be completed by deterministic automation and requires a post-deployment user interaction smoke test.",
