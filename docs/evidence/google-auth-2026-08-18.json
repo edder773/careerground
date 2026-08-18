@@ -40,6 +40,14 @@
     "visualViewports": ["1440x900", "375x812"],
     "accessibilitySeriousViolations": 0
   },
+  "ciRemediation": {
+    "legacyBenchmarkAuthStatus": 401,
+    "benchmarkFix": "Local-only Google test sessions replace OpenAI forwarded headers in all performance scripts.",
+    "performanceBudget": "pass",
+    "dependencyAuditBefore": "1 high vulnerability in deepmerge-ts 7.1.5",
+    "dependencyAuditAfter": "0 known vulnerabilities",
+    "patchedDependency": "deepmerge-ts 8.0.1"
+  },
   "screenshots": {
     "before": "docs/assets/troubleshooting/google-auth/before-openai-login.png",
     "after": "docs/assets/troubleshooting/google-auth/after-google-login.png",

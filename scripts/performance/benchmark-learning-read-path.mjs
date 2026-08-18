@@ -2,6 +2,7 @@
 import { performance } from 'node:perf_hooks';
 import { handleD1Api } from '../../deployment/sites/d1-api.ts';
 import { LocalD1 } from '../../deployment/sites/local-d1.ts';
+import { createGoogleTestSession } from './google-test-session.mjs';
 
 const artificialDispatchLatencyMs = 25;
 const sampleCount = 9;
@@ -66,21 +67,21 @@ class MeasuredD1 {
   }
 }
 
-const headers = {
-  'oai-authenticated-user-id': 'learning-performance-user',
-  'oai-authenticated-user-email': 'learning-performance@example.test',
-  'oai-authenticated-user-full-name': 'Learning%20Performance',
-  'oai-authenticated-user-full-name-encoding': 'percent-encoded-utf-8',
-};
-
 const base = new LocalD1();
 const measured = new MeasuredD1(base);
 const env = {
   DB: measured,
-  OPENAI_ADMIN_EMAILS: '',
+  ADMIN_EMAILS: '',
+  AUTH_TEST_MODE: 'true',
   MAX_ACTIVE_USERS: '100',
   REQUEST_LOGGING: 'false',
 };
+const sessionCookie = await createGoogleTestSession(env, {
+  subject: 'learning-performance-user',
+  email: 'learning-performance@example.test',
+  displayName: 'Learning Performance',
+});
+const headers = { cookie: sessionCookie };
 
 async function request(path) {
   const response = await handleD1Api(

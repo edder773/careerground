@@ -19,3 +19,5 @@ overrides:
   js-yaml: 4.3.1
   # drizzle-kit pulls a legacy esbuild through @esbuild-kit; pin it to the patched runtime API.
   esbuild: 0.28.2
+  # Prisma 7.9.1 still pins the advisory-affected 7.x release; 8.0.1 contains the stack-exhaustion fix.
+  deepmerge-ts: 8.0.1

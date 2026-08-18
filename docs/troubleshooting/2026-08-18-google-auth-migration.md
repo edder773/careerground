@@ -106,6 +106,12 @@ runtime schema가 검색 backfill보다 먼저 두 테이블과 인덱스를 `IF
 
 version 49 재배포 후 운영 health는 200과 `ready: true`를 반환했다. 검색 트리거 18개, 인증 테이블 2개, legacy identity 컬럼 0개를 확인했고, 비로그인 채용·학습·코딩 API, 운영 테스트 로그인 endpoint, 구 OpenAI 헤더 인증은 모두 401이었다. 운영 로그인 화면은 Google 버튼 iframe 1개가 렌더링되고 loading skeleton이 사라진 상태를 확인했다. 이후 최신 `main`의 노트 기능 제거와 채용·학습 성능 개선을 병합하면서 Google migration 번호를 `0022`로 이동하고 검색 트리거 기대값을 15개로 갱신했다. 실제 Google 계정 선택과 consent 완료는 사용자의 계정 상호작용으로 한 번 더 확인해야 한다.
 
+## PR CI에서 발견한 잔여 OpenAI 의존과 전이 의존성 취약점
+
+최신 `main` 병합 뒤 제품 API 테스트는 통과했지만 성능 예산 스크립트는 제거된 OpenAI 전달 헤더로 `/auth/me`를 호출해 `401`로 중단됐다. 모든 성능 스크립트가 공통 helper로 runtime schema를 준비하고 로컬에서만 활성화되는 `/auth/test`로 Google 세션 쿠키를 만든 뒤 동일한 인증 경계를 통과하도록 바꿨다. 성능 예산은 재실행 후 실패 항목 0개였고, 별도 phase/job/learning benchmark 4개도 모두 종료 코드 0을 확인했다.
+
+같은 CI의 `pnpm audit --audit-level high`는 Prisma 7.9.1이 고정한 `deepmerge-ts 7.1.5`의 recursive graph stack exhaustion 취약점 1개를 탐지했다. Prisma 최신 안정판도 같은 버전을 고정하고 있어 workspace override로 패치판 8.0.1을 사용했다. `prisma generate` 호환성을 확인했고 audit 결과는 고위험 1개에서 알려진 취약점 0개로 바뀌었다.
+
 ## 근거
 
 - `docs/evidence/google-auth-2026-08-18.json`

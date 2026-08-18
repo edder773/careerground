@@ -2,14 +2,22 @@
 import { performance } from 'node:perf_hooks';
 import { handleD1Api } from '../../deployment/sites/d1-api.ts';
 import { LocalD1 } from '../../deployment/sites/local-d1.ts';
+import { createGoogleTestSession } from './google-test-session.mjs';
 
 const db = new LocalD1();
-const headers = {
-  'oai-authenticated-user-id': 'phase-one-user',
-  'oai-authenticated-user-email': 'phase-one@example.test',
-  'oai-authenticated-user-full-name': 'Phase%20One',
-  'oai-authenticated-user-full-name-encoding': 'percent-encoded-utf-8',
+const env = {
+  DB: db,
+  ADMIN_EMAILS: '',
+  AUTH_TEST_MODE: 'true',
+  MAX_ACTIVE_USERS: '100',
+  REQUEST_LOGGING: 'false',
 };
+const sessionCookie = await createGoogleTestSession(env, {
+  subject: 'phase-one-user',
+  email: 'phase-one@example.test',
+  displayName: 'Phase One',
+});
+const headers = { cookie: sessionCookie };
 
 async function api(path, init = {}) {
   return handleD1Api(
@@ -17,12 +25,7 @@ async function api(path, init = {}) {
       ...init,
       headers: { ...headers, ...(init.body ? { 'content-type': 'application/json' } : {}) },
     }),
-    {
-      DB: db,
-      OPENAI_ADMIN_EMAILS: '',
-      MAX_ACTIVE_USERS: '100',
-      REQUEST_LOGGING: 'false',
-    },
+    env,
   );
 }
 
