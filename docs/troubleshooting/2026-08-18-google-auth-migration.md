@@ -100,6 +100,10 @@ Google 이름은 최초 가입 화면의 입력 초깃값으로 전달된다. �
 
 `sites:stage`는 archive에 기준선 이전 migration이 하나라도 있으면 실패하며, repository-root `drizzle/`를 의도적으로 복사하지 않는다. 재배포 archive에는 `0016_full_audit_hardening.sql`, `0017_google_auth.sql` 두 파일만 포함되는 것을 `tar` 목록으로 재확인했다. 이 실패는 새 Worker가 publish되기 전 migration 단계에서 발생했으므로 성공 배포로 기록하지 않았고, 수정 archive는 새 Git commit과 Sites version으로 다시 저장한다.
 
+version 47은 publish됐지만 첫 운영 health check에서 `DB_SCHEMA_INITIALIZATION_FAILED`를 반환했다. 운영 D1을 읽어 `0017_google_auth` 적용, 사용자·인증 데이터 0건, 공통 카탈로그 보존을 확인했고, 기준 스키마 중 `notes`, `note_revisions` 두 개인 테이블만 누락된 것을 찾았다. 검색 backfill은 빈 개인 노트 테이블도 참조하므로 이 누락이 초기화 전체를 503으로 만들었다.
+
+runtime schema가 검색 backfill보다 먼저 두 테이블과 인덱스를 `IF NOT EXISTS`로 복구하도록 보정했다. 기존 개인 데이터는 이미 폐기됐기 때문에 빈 테이블만 생성하며 공통 카탈로그 행은 변경하지 않는다. 누락 상태를 재현해 notes 테이블 2개와 인덱스 2개가 복구되고 D1 API 회귀 테스트까지 포함한 30개 검증이 통과하는 테스트를 추가했다.
+
 ## 근거
 
 - `docs/evidence/google-auth-2026-08-18.json`

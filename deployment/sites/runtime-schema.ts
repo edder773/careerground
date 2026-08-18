@@ -11,6 +11,34 @@ const ledgerSchema = `CREATE TABLE IF NOT EXISTS app_schema_migrations (
   applied_at text NOT NULL
 )`;
 
+const personalWorkspaceSchema = [
+  `CREATE TABLE IF NOT EXISTS notes (
+    id text PRIMARY KEY NOT NULL,
+    user_id text NOT NULL,
+    title text NOT NULL,
+    markdown text NOT NULL,
+    visibility text DEFAULT 'PRIVATE' NOT NULL,
+    linked_type text,
+    linked_id text,
+    current_rev integer DEFAULT 1 NOT NULL,
+    deleted_at text,
+    created_at text NOT NULL,
+    updated_at text NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CHECK(visibility IN ('PRIVATE', 'MEMBERS'))
+  )`,
+  `CREATE TABLE IF NOT EXISTS note_revisions (
+    id text PRIMARY KEY NOT NULL,
+    note_id text NOT NULL,
+    revision integer NOT NULL,
+    markdown text NOT NULL,
+    created_at text NOT NULL,
+    FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE
+  )`,
+  'CREATE INDEX IF NOT EXISTS idx_notes_user_updated ON notes(user_id, updated_at)',
+  'CREATE UNIQUE INDEX IF NOT EXISTS idx_note_revisions_note_revision ON note_revisions(note_id, revision)',
+] as const;
+
 const additiveSchema = [
   `CREATE TABLE IF NOT EXISTS job_source_snapshots (
     id text PRIMARY KEY NOT NULL,
@@ -376,6 +404,9 @@ async function applyRuntimeSchema(db: D1Database) {
 
   await run(db, ledgerSchema);
   await removeLegacyIdentityData(db);
+  // Some runtime-bootstrapped production databases predate the personal note tables.
+  // Recreate their empty shape before the search backfill references them.
+  for (const sql of personalWorkspaceSchema) await run(db, sql);
   // Parent tables must exist before SQLite can prepare child-table statements.
   for (const sql of additiveSchema.slice(0, 8)) await run(db, sql);
   await db.batch(additiveSchema.slice(8).map((sql) => db.prepare(sql)));

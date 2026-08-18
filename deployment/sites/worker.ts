@@ -59,7 +59,9 @@ async function serveApi(request: Request, env: SitesEnv) {
     try {
       await ensureRuntimeSchema(env.DB);
     } catch (error) {
-      console.error('D1 runtime schema initialization failed', error);
+      console.error('D1 runtime schema initialization failed', {
+        message: error instanceof Error ? error.message : String(error),
+      });
       return json(
         {
           code: 'DB_SCHEMA_INITIALIZATION_FAILED',

@@ -52,6 +52,20 @@
       "error": "table job_source_snapshot_items already exists",
       "rootCause": "The repository-root drizzle directory overlaid the forward-only build migrations during archive packaging.",
       "remediation": "Create the package from the validated pnpm sites:stage directory so only migrations 0016 and 0017 are present."
+    },
+    {
+      "version": 47,
+      "status": "published-health-check-failed",
+      "error": "DB_SCHEMA_INITIALIZATION_FAILED",
+      "productionDatabaseEvidence": {
+        "googleMigrationApplied": true,
+        "users": 0,
+        "authIdentities": 0,
+        "authSessions": 0,
+        "sharedCatalogsPresent": true,
+        "missingTables": ["notes", "note_revisions"]
+      },
+      "remediation": "Reconstruct the empty personal notes schema idempotently before search trigger and backfill initialization."
     }
   ],
   "limitations": [

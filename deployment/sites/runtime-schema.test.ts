@@ -92,6 +92,31 @@ describe('Sites runtime schema', () => {
     );
     expect(searchCountAfter?.count).toBe(searchCountBefore?.count);
   });
+
+  it('reconstructs an empty personal notes schema when a legacy runtime database omitted it', async () => {
+    await run(db, 'DROP TABLE note_revisions');
+    await run(db, 'DROP TABLE notes');
+
+    await ensureRuntimeSchema(db);
+
+    const tables = await all<{ name: string }>(
+      db,
+      `SELECT name FROM sqlite_schema
+       WHERE type = 'table' AND name IN ('notes', 'note_revisions')`,
+    );
+    const indexes = await all<{ name: string }>(
+      db,
+      `SELECT name FROM sqlite_schema
+       WHERE type = 'index' AND name IN (
+         'idx_notes_user_updated', 'idx_note_revisions_note_revision'
+       )`,
+    );
+    expect(tables.map((table) => table.name).sort()).toEqual(['note_revisions', 'notes']);
+    expect(indexes.map((index) => index.name).sort()).toEqual([
+      'idx_note_revisions_note_revision',
+      'idx_notes_user_updated',
+    ]);
+  });
 });
 
 describe('Sites production migration baseline', () => {
