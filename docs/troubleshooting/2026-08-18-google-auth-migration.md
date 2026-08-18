@@ -115,6 +115,8 @@ version 50은 병합 commit을 정상 게시했고 `0022_google_auth`도 ledger�
 
 행 단위 운영 검증에서는 `users`, `auth_identities`, `auth_sessions`가 0건인데도 과거 `collections`, `learning_progress`, `problem_progress`, `notifications`, `request_rate_limits`가 남은 모순을 발견했다. 운영 D1 경로에서 `DELETE users` 당시 foreign-key cascade가 적용됐다고 가정한 것이 원인이었다. `0023_purge_legacy_personal_data`는 모든 사용자 소유 테이블을 의존 순서대로 직접 삭제하고, `workspace_search`에서는 빈 owner를 사용하는 공통 카탈로그만 보존한다.
 
+version 51에 병합 commit `ddfe4a4`를 배포한 뒤 health는 `0023_purge_legacy_personal_data` 적용과 `ready: true`를 반환했다. 운영 DB에서 사용자·인증·폴더·풀이·진도·지원·알림·감사 로그 등 개인 테이블 19개를 각각 조회해 모두 0건임을 확인했다. 동시에 채용 51건, 코딩문제 427건, 학습자료 23건은 유지됐고 검색 행은 개인 고아 레코드 1건이 제거되어 502건에서 501건으로 줄었다. 비로그인 채용·학습·코딩 API와 운영 테스트 로그인은 모두 401이었다. 실제 브라우저에서는 Google iframe 1개, OpenAI 문구 0개, loading skeleton 0개, 콘솔 오류 0개를 확인했다.
+
 ## PR CI에서 발견한 잔여 OpenAI 의존과 전이 의존성 취약점
 
 최신 `main` 병합 뒤 제품 API 테스트는 통과했지만 성능 예산 스크립트는 제거된 OpenAI 전달 헤더로 `/auth/me`를 호출해 `401`로 중단됐다. 모든 성능 스크립트가 공통 helper로 runtime schema를 준비하고 로컬에서만 활성화되는 `/auth/test`로 Google 세션 쿠키를 만든 뒤 동일한 인증 경계를 통과하도록 바꿨다. 성능 예산은 재실행 후 실패 항목 0개였고, 별도 phase/job/learning benchmark 4개도 모두 종료 코드 0을 확인했다.

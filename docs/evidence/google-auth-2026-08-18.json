@@ -1,7 +1,7 @@
 {
   "scope": "CareerGround Sites Google authentication migration",
-  "checkedAt": "2026-08-18T12:16:00+09:00",
-  "status": "personal-purge-follow-up-deployment-pending",
+  "checkedAt": "2026-08-18T12:41:00+09:00",
+  "status": "deployed-pass-real-account-smoke-pending",
   "baseline": {
     "browserLoginPath": "/signin-with-chatgpt",
     "serverIdentitySource": ["oai-authenticated-user-id", "oai-authenticated-user-email"],
@@ -36,6 +36,7 @@
     },
     "productionBuild": "pass",
     "sitesBuild": "pass",
+    "remoteCiRequiredChecks": "pass",
     "protectedAnonymousEndpoints": ["/api/v1/jobs", "/api/v1/learning", "/api/v1/coding/problems"],
     "protectedAnonymousStatus": 401,
     "visualViewports": ["1440x900", "375x812"],
@@ -121,6 +122,42 @@
       },
       "finding": "Users and auth tables were empty, but orphaned rows remained in legacy user-owned tables because the production migration path did not cascade DELETE users.",
       "remediation": "Apply 0023_purge_legacy_personal_data with explicit child-to-parent deletes while preserving shared catalogs."
+    },
+    {
+      "version": 51,
+      "status": "succeeded",
+      "source": {
+        "commitSha": "ddfe4a4732eeeb7095ee35f5dca2d62e9337f32c",
+        "pullRequest": 37,
+        "deploymentId": "appgdep_6a83d40a1fe081918d7f4b4787ee1d78",
+        "localArchiveSha256": "64223f8ee82c5eaa2b4fd8e61fd14f7dc9ccffaf97710b474c9c3c414b50d0c9"
+      },
+      "productionChecks": {
+        "rootStatus": 200,
+        "healthStatus": 200,
+        "schemaReady": true,
+        "expectedVersion": "0023_purge_legacy_personal_data",
+        "appliedVersion": "0023_purge_legacy_personal_data",
+        "tableCount": 10,
+        "triggerCount": 15,
+        "authTableCount": 2,
+        "legacyIdentityColumnCount": 0,
+        "jobs": 51,
+        "problems": 427,
+        "learning": 23,
+        "workspaceSearchRows": 501,
+        "personalTablesChecked": 19,
+        "personalRows": 0,
+        "anonymousAuthStatus": 401,
+        "anonymousJobsStatus": 401,
+        "anonymousLearningStatus": 401,
+        "anonymousCodingStatus": 401,
+        "productionTestAuthStatus": 401,
+        "googleButtonIframeCount": 1,
+        "loginSkeletonVisible": false,
+        "openAiTextCount": 0,
+        "browserConsoleErrors": 0
+      }
     }
   ],
   "limitations": [
