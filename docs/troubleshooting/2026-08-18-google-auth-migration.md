@@ -44,10 +44,15 @@ Google ID token
 
 ## 핵심 이론 3: provider 교체 migration은 개인 데이터와 공통 카탈로그를 분리한다
 
-`0022_google_auth`는 사용자의 요구에 따라 기존 개인 테스트 데이터를 삭제한 뒤 OpenAI 전용 unique index와 `site_user_id` 컬럼을 제거한다. FK cascade로 폴더, 지원 상태, 진도, 풀이, 댓글, 알림과 세션성 데이터가 함께 제거된다. 채용공고, 학습자료, 코딩문제와 같은 사용자 비소유 공통 카탈로그는 보존한다.
+`0022_google_auth`는 OpenAI 전용 unique index와 `site_user_id` 컬럼을 제거하고 Google identity/session 테이블을 만든다. `0023_purge_legacy_personal_data`는 D1 migration 실행 시 foreign-key cascade 설정에 의존하지 않고 폴더, 지원 상태, 진도, 풀이, 댓글, 알림과 세션성 데이터를 자식 테이블부터 명시적으로 삭제한다. 채용공고, 학습자료, 코딩문제와 같은 사용자 비소유 공통 카탈로그는 보존한다.
 
 ```diff
 + DELETE FROM audit_logs;
++ DELETE FROM collections;
++ DELETE FROM learning_progress;
++ DELETE FROM problem_progress;
++ DELETE FROM notifications;
++ DELETE FROM request_rate_limits;
 + DELETE FROM users;
 + DROP INDEX idx_users_site_user_id;
 + ALTER TABLE users DROP COLUMN site_user_id;
@@ -55,7 +60,7 @@ Google ID token
 + CREATE TABLE auth_sessions (...);
 ```
 
-운영 migration이 누락되는 상황에 대비해 runtime schema 검사도 `auth_identities`, `auth_sessions`, legacy column 부재, `0022_google_auth` ledger를 확인한다. migration 회귀 테스트는 0016 기준 DB에 0017~0022를 순서대로 적용해 사용자 수 0, auth table 2개, legacy column 0개와 기존 학습 문항 수 보존을 확인한다.
+운영 migration이 누락되는 상황에 대비해 runtime schema 검사도 `auth_identities`, `auth_sessions`, legacy column 부재, `0023_purge_legacy_personal_data` ledger를 확인한다. runtime 보정은 이 ledger가 없을 때만 개인 데이터 전량 삭제를 수행하고 삭제문과 ledger 기록을 하나의 D1 batch로 묶었다. 따라서 중간 실패 후 재시도하더라도 이후 정상 Google 회원 데이터가 다시 삭제되지 않는다. migration 회귀 테스트는 0016 기준 DB에 0017~0023을 순서대로 적용해 개인 테이블 합계 0, auth table 2개, legacy column 0개와 기존 학습 문항·채용·코딩 공통 데이터 보존을 확인한다.
 
 ## 화면 전후
 
@@ -106,6 +111,10 @@ runtime schema가 검색 backfill보다 먼저 두 테이블과 인덱스를 `IF
 
 version 49 재배포 후 운영 health는 200과 `ready: true`를 반환했다. 검색 트리거 18개, 인증 테이블 2개, legacy identity 컬럼 0개를 확인했고, 비로그인 채용·학습·코딩 API, 운영 테스트 로그인 endpoint, 구 OpenAI 헤더 인증은 모두 401이었다. 운영 로그인 화면은 Google 버튼 iframe 1개가 렌더링되고 loading skeleton이 사라진 상태를 확인했다. 이후 최신 `main`의 노트 기능 제거와 채용·학습 성능 개선을 병합하면서 Google migration 번호를 `0022`로 이동하고 검색 트리거 기대값을 15개로 갱신했다. 실제 Google 계정 선택과 consent 완료는 사용자의 계정 상호작용으로 한 번 더 확인해야 한다.
 
+version 50은 병합 commit을 정상 게시했고 `0022_google_auth`도 ledger에 적용됐다. 첫 병렬 smoke 요청은 migration 적용과 겹쳐 일부 `503 DB_SCHEMA_INITIALIZATION_FAILED`를 반환했지만, ledger 반영 뒤 재검사는 health 200, `ready: true`, 채용 51건·코딩 427건·학습 23건을 반환했다. 비로그인 공통 API 세 곳은 모두 401이었다.
+
+행 단위 운영 검증에서는 `users`, `auth_identities`, `auth_sessions`가 0건인데도 과거 `collections`, `learning_progress`, `problem_progress`, `notifications`, `request_rate_limits`가 남은 모순을 발견했다. 운영 D1 경로에서 `DELETE users` 당시 foreign-key cascade가 적용됐다고 가정한 것이 원인이었다. `0023_purge_legacy_personal_data`는 모든 사용자 소유 테이블을 의존 순서대로 직접 삭제하고, `workspace_search`에서는 빈 owner를 사용하는 공통 카탈로그만 보존한다.
+
 ## PR CI에서 발견한 잔여 OpenAI 의존과 전이 의존성 취약점
 
 최신 `main` 병합 뒤 제품 API 테스트는 통과했지만 성능 예산 스크립트는 제거된 OpenAI 전달 헤더로 `/auth/me`를 호출해 `401`로 중단됐다. 모든 성능 스크립트가 공통 helper로 runtime schema를 준비하고 로컬에서만 활성화되는 `/auth/test`로 Google 세션 쿠키를 만든 뒤 동일한 인증 경계를 통과하도록 바꿨다. 성능 예산은 재실행 후 실패 항목 0개였고, 별도 phase/job/learning benchmark 4개도 모두 종료 코드 0을 확인했다.
@@ -126,6 +135,7 @@ Google 토큰의 `aud` 배열 검사에는 정확 일치 연산을 사용하고 
 - `deployment/sites/d1-api.test.ts`
 - `deployment/sites/runtime-schema.test.ts`
 - `drizzle/0022_google_auth.sql`
+- `drizzle/0023_purge_legacy_personal_data.sql`
 - `apps/web/src/pages/LoginPage.test.tsx`
 - `e2e/mvp.spec.ts`
 - `e2e/visual.spec.ts`

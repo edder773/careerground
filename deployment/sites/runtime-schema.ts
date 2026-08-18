@@ -1,9 +1,9 @@
 import { all, first, run, type D1Database } from './d1.js';
 
 const schemaPromises = new WeakMap<D1Database, Promise<void>>();
-export const EXPECTED_SCHEMA_VERSION = '0022_google_auth';
+export const EXPECTED_SCHEMA_VERSION = '0023_purge_legacy_personal_data';
 export const EXPECTED_SCHEMA_CHECKSUM =
-  'sha256:d453c92ca558c68ae6efc1e9f6ef86e49a93422442aa0ad3bdc17de76e509f2d';
+  'sha256:33d7868739506072fe37c9ba0f19a863fc1343c53c31e45b79390acfaa1b9f6f';
 
 const ledgerSchema = `CREATE TABLE IF NOT EXISTS app_schema_migrations (
   version text PRIMARY KEY NOT NULL,
@@ -444,6 +444,49 @@ async function removeLegacyIdentityData(db: D1Database) {
   await run(db, 'ALTER TABLE users DROP COLUMN site_user_id');
 }
 
+async function purgeLegacyPersonalData(db: D1Database) {
+  const ledger = await first<{ count: number }>(
+    db,
+    'SELECT COUNT(*) AS count FROM app_schema_migrations WHERE version = ?',
+    EXPECTED_SCHEMA_VERSION,
+  );
+  if (Number(ledger?.count)) return;
+
+  const statements = [
+    'DELETE FROM solution_comments',
+    'DELETE FROM solution_reactions',
+    'DELETE FROM solution_revisions',
+    'DELETE FROM solutions',
+    'DELETE FROM collection_items',
+    'DELETE FROM collections',
+    'DELETE FROM daily_challenge_participations',
+    'DELETE FROM saved_jobs',
+    'DELETE FROM learning_question_attempts',
+    'DELETE FROM learning_review_events',
+    'DELETE FROM learning_progress',
+    'DELETE FROM problem_progress',
+    'DELETE FROM notifications',
+    'DELETE FROM request_rate_limits',
+    'DELETE FROM import_previews',
+    'DELETE FROM auth_sessions',
+    'DELETE FROM auth_identities',
+    'DELETE FROM audit_logs',
+    "DELETE FROM workspace_search WHERE owner_id <> ''",
+    'DELETE FROM users',
+  ].map((sql) => db.prepare(sql));
+  statements.push(
+    db
+      .prepare(
+        `INSERT OR REPLACE INTO app_schema_migrations (version, checksum, applied_at)
+         VALUES (?, ?, ?)`,
+      )
+      .bind(EXPECTED_SCHEMA_VERSION, EXPECTED_SCHEMA_CHECKSUM, new Date().toISOString()),
+  );
+  // D1 executes a batch transactionally, so a failed purge cannot leave the
+  // ledger absent and accidentally delete users created on a later retry.
+  await db.batch(statements);
+}
+
 async function removeNotesSchema(db: D1Database) {
   const tableState = await first<{ current: number; replacement: number }>(
     db,
@@ -527,6 +570,7 @@ async function applyRuntimeSchema(db: D1Database) {
   // Parent tables must exist before SQLite can prepare child-table statements.
   for (const sql of additiveSchema.slice(0, 8)) await run(db, sql);
   await removeLegacyIdentityData(db);
+  await purgeLegacyPersonalData(db);
   await addJobColumns(db);
   await db.batch(additiveSchema.slice(8).map((sql) => db.prepare(sql)));
   await addLearningProgressColumns(db);

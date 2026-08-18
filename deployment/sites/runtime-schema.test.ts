@@ -12,6 +12,10 @@ describe('Sites runtime schema', () => {
   beforeEach(async () => {
     db = new LocalD1();
     await run(db, "DELETE FROM app_schema_migrations WHERE version = '0022_google_auth'");
+    await run(
+      db,
+      "DELETE FROM app_schema_migrations WHERE version = '0023_purge_legacy_personal_data'",
+    );
     await run(db, 'DROP TABLE workspace_search');
     for (const table of [
       'job_source_snapshot_items',
@@ -224,9 +228,11 @@ describe('Sites production migration baseline', () => {
         checksum: string;
         replacementChecksum: string;
         googleChecksum: string;
+        personalPurgeChecksum: string;
         authTables: number;
         legacyIdentityColumns: number;
         users: number;
+        personalRows: number;
       }>(
         upgraded,
         `SELECT (SELECT COUNT(*) FROM learning_questions) AS questions,
@@ -274,11 +280,32 @@ describe('Sites production migration baseline', () => {
                    WHERE version = '0020_replace_job_catalog_20260814_verified') AS replacementChecksum,
                  (SELECT checksum FROM app_schema_migrations
                    WHERE version = '0022_google_auth') AS googleChecksum,
+                 (SELECT checksum FROM app_schema_migrations
+                   WHERE version = '0023_purge_legacy_personal_data') AS personalPurgeChecksum,
                  (SELECT COUNT(*) FROM sqlite_schema
                    WHERE type = 'table' AND name IN ('auth_identities', 'auth_sessions')) AS authTables,
                  (SELECT COUNT(*) FROM pragma_table_info('users')
                    WHERE name = 'site_user_id') AS legacyIdentityColumns,
-                 (SELECT COUNT(*) FROM users) AS users`,
+                 (SELECT COUNT(*) FROM users) AS users,
+                 (SELECT COUNT(*) FROM collections) +
+                 (SELECT COUNT(*) FROM collection_items) +
+                 (SELECT COUNT(*) FROM problem_progress) +
+                 (SELECT COUNT(*) FROM daily_challenge_participations) +
+                 (SELECT COUNT(*) FROM solutions) +
+                 (SELECT COUNT(*) FROM solution_revisions) +
+                 (SELECT COUNT(*) FROM solution_reactions) +
+                 (SELECT COUNT(*) FROM solution_comments) +
+                 (SELECT COUNT(*) FROM saved_jobs) +
+                 (SELECT COUNT(*) FROM learning_progress) +
+                 (SELECT COUNT(*) FROM learning_review_events) +
+                 (SELECT COUNT(*) FROM learning_question_attempts) +
+                 (SELECT COUNT(*) FROM notifications) +
+                 (SELECT COUNT(*) FROM request_rate_limits) +
+                 (SELECT COUNT(*) FROM import_previews) +
+                 (SELECT COUNT(*) FROM auth_identities) +
+                 (SELECT COUNT(*) FROM auth_sessions) +
+                 (SELECT COUNT(*) FROM audit_logs) +
+                 (SELECT COUNT(*) FROM workspace_search WHERE owner_id <> '') AS personalRows`,
       );
 
       expect(schema).toEqual({
@@ -306,9 +333,12 @@ describe('Sites production migration baseline', () => {
         checksum: 'sha256:86c1de85559a9b51e959bf7c423ad8a9e9afd3586ad672c2ec32da009057fe4b',
         replacementChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
         googleChecksum: 'sha256:d453c92ca558c68ae6efc1e9f6ef86e49a93422442aa0ad3bdc17de76e509f2d',
+        personalPurgeChecksum:
+          'sha256:33d7868739506072fe37c9ba0f19a863fc1343c53c31e45b79390acfaa1b9f6f',
         authTables: 2,
         legacyIdentityColumns: 0,
         users: 0,
+        personalRows: 0,
       });
       expect(schema?.jobTechRows).toBeGreaterThan(0);
       for (const indexName of [
