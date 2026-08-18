@@ -1,7 +1,7 @@
 {
   "scope": "CareerGround Sites Google authentication migration",
-  "checkedAt": "2026-08-18T09:52:00+09:00",
-  "status": "deployed-pass-real-account-smoke-pending",
+  "checkedAt": "2026-08-18T12:16:00+09:00",
+  "status": "personal-purge-follow-up-deployment-pending",
   "baseline": {
     "browserLoginPath": "/signin-with-chatgpt",
     "serverIdentitySource": ["oai-authenticated-user-id", "oai-authenticated-user-email"],
@@ -16,7 +16,8 @@
       "ttlSeconds": 604800
     },
     "migration": {
-      "version": "0022_google_auth",
+      "identityVersion": "0022_google_auth",
+      "personalPurgeVersion": "0023_purge_legacy_personal_data",
       "personalTestDataPurged": true,
       "legacyIdentityColumnRemoved": true,
       "commonCatalogsPreservedByRegressionTest": true
@@ -99,6 +100,27 @@
         "googleButtonIframeCount": 1,
         "loginSkeletonVisible": false
       }
+    },
+    {
+      "version": 50,
+      "status": "published-follow-up-required",
+      "productionChecks": {
+        "rootStatus": 200,
+        "healthStatusAfterMigration": 200,
+        "schemaReady": true,
+        "expectedVersion": "0022_google_auth",
+        "jobs": 51,
+        "problems": 427,
+        "learning": 23,
+        "anonymousJobsStatus": 401,
+        "anonymousLearningStatus": 401,
+        "anonymousCodingStatus": 401,
+        "googleButtonIframeCount": 1,
+        "loginSkeletonVisible": false,
+        "openAiTextCount": 0
+      },
+      "finding": "Users and auth tables were empty, but orphaned rows remained in legacy user-owned tables because the production migration path did not cascade DELETE users.",
+      "remediation": "Apply 0023_purge_legacy_personal_data with explicit child-to-parent deletes while preserving shared catalogs."
     }
   ],
   "limitations": [

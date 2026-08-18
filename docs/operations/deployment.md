@@ -42,7 +42,7 @@ E2E는 `deployment/sites/local-d1-server.ts`가 메모리 D1 fixture를 직접 �
    - `dist/server/index.js`
    - `dist/.openai/hosting.json`
    - `dist/.openai/drizzle/*.sql`
-   - 이 기존 프로젝트에서는 운영 기준선 이후인 `0017`~`0022` migration만 존재
+   - 이 기존 프로젝트에서는 운영 기준선 이후인 `0017`~`0023` migration만 존재
 6. **같은 commit SHA와 archive**를 새 Sites version으로 저장한다.
 7. visibility를 `public`으로 지정해 운영 배포한다.
 8. 배포 상태가 완료될 때까지 확인하고 `/api/v1/health/ready`가 `200`, `database: d1`을 반환하는지 검사한다.
