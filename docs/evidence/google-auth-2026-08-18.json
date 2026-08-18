@@ -48,7 +48,9 @@
     "dependencyAuditAfter": "0 known vulnerabilities",
     "patchedDependency": "deepmerge-ts 8.0.1",
     "codeQlAlert": "js/stack-trace-exposure #3",
-    "codeQlFix": "Log the local adapter exception server-side and return a fixed public error message."
+    "codeQlFix": "Log the local adapter exception server-side and return a fixed public error message.",
+    "googleAudienceAlert": "js/incomplete-url-substring-sanitization",
+    "googleAudienceFix": "Normalize string audiences into a Set and require exact client ID equality; prefix and suffix attack values are regression-tested."
   },
   "screenshots": {
     "before": "docs/assets/troubleshooting/google-auth/before-openai-login.png",

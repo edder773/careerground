@@ -85,6 +85,18 @@ describe('Google authentication primitives', () => {
         1_800_000_000,
       ),
     ).rejects.toThrow('GOOGLE_TOKEN_AUDIENCE_INVALID');
+
+    resetGoogleKeyCacheForTests();
+    await expect(
+      verifyGoogleCredential(
+        await credential(pair.privateKey, {
+          aud: [`prefix-${GOOGLE_CLIENT_ID}`, `${GOOGLE_CLIENT_ID}.attacker.invalid`],
+        }),
+        GOOGLE_CLIENT_ID,
+        fetcher as typeof fetch,
+        1_800_000_000,
+      ),
+    ).rejects.toThrow('GOOGLE_TOKEN_AUDIENCE_INVALID');
   });
 
   it('rejects expired or unverified Google identities', async () => {

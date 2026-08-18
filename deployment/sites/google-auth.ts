@@ -111,8 +111,12 @@ export async function verifyGoogleCredential(
   );
   if (!verified) throw new Error('GOOGLE_TOKEN_SIGNATURE_INVALID');
 
-  const audiences = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
-  if (!audiences.includes(expectedClientId)) throw new Error('GOOGLE_TOKEN_AUDIENCE_INVALID');
+  const audiences = new Set(
+    (Array.isArray(payload.aud) ? payload.aud : [payload.aud]).filter(
+      (audience): audience is string => typeof audience === 'string',
+    ),
+  );
+  if (!audiences.has(expectedClientId)) throw new Error('GOOGLE_TOKEN_AUDIENCE_INVALID');
   if (typeof payload.iss !== 'string' || !GOOGLE_ISSUERS.has(payload.iss)) {
     throw new Error('GOOGLE_TOKEN_ISSUER_INVALID');
   }
