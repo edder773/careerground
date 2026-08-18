@@ -80,7 +80,7 @@ Google 이름은 최초 가입 화면의 입력 초깃값으로 전달된다. �
 | `pnpm format:check` | 통과                                             |
 | `pnpm lint`         | 통과                                             |
 | `pnpm typecheck`    | 통과                                             |
-| `pnpm test`         | 109/109 통과                                     |
+| `pnpm test`         | 110/110 통과                                     |
 | `pnpm test:e2e`     | 48/48 통과, Chromium·Firefox·WebKit·375px 모바일 |
 | `pnpm build`        | 통과                                             |
 | `pnpm sites:build`  | 통과, `0016`·`0017` 순방향 migration 포함        |
@@ -103,6 +103,8 @@ Google 이름은 최초 가입 화면의 입력 초깃값으로 전달된다. �
 version 47은 publish됐지만 첫 운영 health check에서 `DB_SCHEMA_INITIALIZATION_FAILED`를 반환했다. 운영 D1을 읽어 `0017_google_auth` 적용, 사용자·인증 데이터 0건, 공통 카탈로그 보존을 확인했고, 기준 스키마 중 `notes`, `note_revisions` 두 개인 테이블만 누락된 것을 찾았다. 검색 backfill은 빈 개인 노트 테이블도 참조하므로 이 누락이 초기화 전체를 503으로 만들었다.
 
 runtime schema가 검색 backfill보다 먼저 두 테이블과 인덱스를 `IF NOT EXISTS`로 복구하도록 보정했다. 기존 개인 데이터는 이미 폐기됐기 때문에 빈 테이블만 생성하며 공통 카탈로그 행은 변경하지 않는다. 누락 상태를 재현해 notes 테이블 2개와 인덱스 2개가 복구되고 D1 API 회귀 테스트까지 포함한 30개 검증이 통과하는 테스트를 추가했다.
+
+version 48 재배포 후 운영 health는 200과 `ready: true`를 반환했다. 검색 트리거 18개, 인증 테이블 2개, legacy identity 컬럼 0개를 확인했고, 비로그인 채용·학습·코딩 API, 운영 테스트 로그인 endpoint, 구 OpenAI 헤더 인증은 모두 401이었다. 운영 로그인 화면은 Google 버튼 iframe 1개가 렌더링되고 loading skeleton이 사라진 상태를 확인했다. 실제 Google 계정 선택과 consent 완료는 사용자의 계정 상호작용으로 한 번 더 확인해야 한다.
 
 ## 근거
 

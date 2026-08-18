@@ -1,7 +1,7 @@
 {
   "scope": "CareerGround Sites Google authentication migration",
   "checkedAt": "2026-08-18T09:52:00+09:00",
-  "status": "pre-deployment-pass",
+  "status": "deployed-pass-real-account-smoke-pending",
   "baseline": {
     "browserLoginPath": "/signin-with-chatgpt",
     "serverIdentitySource": ["oai-authenticated-user-id", "oai-authenticated-user-email"],
@@ -26,7 +26,7 @@
     "formatCheck": "pass",
     "lint": "pass",
     "typecheck": "pass",
-    "unitAndComponentTests": { "passed": 109, "failed": 0 },
+    "unitAndComponentTests": { "passed": 110, "failed": 0 },
     "e2e": {
       "passed": 48,
       "failed": 0,
@@ -66,6 +66,25 @@
         "missingTables": ["notes", "note_revisions"]
       },
       "remediation": "Reconstruct the empty personal notes schema idempotently before search trigger and backfill initialization."
+    },
+    {
+      "version": 48,
+      "status": "succeeded",
+      "productionChecks": {
+        "rootStatus": 200,
+        "healthStatus": 200,
+        "schemaReady": true,
+        "searchTriggerCount": 18,
+        "authTableCount": 2,
+        "legacyIdentityColumnCount": 0,
+        "anonymousJobsStatus": 401,
+        "anonymousLearningStatus": 401,
+        "anonymousCodingStatus": 401,
+        "productionTestAuthStatus": 401,
+        "legacyOpenAiHeadersStatus": 401,
+        "googleButtonIframeCount": 1,
+        "loginSkeletonVisible": false
+      }
     }
   ],
   "limitations": [
