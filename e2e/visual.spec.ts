@@ -50,7 +50,9 @@ test('captures responsive home screenshots and has no serious accessibility viol
   await page.setViewportSize({ width: 375, height: 812 });
   await expect(page.getByRole('button', { name: 'Google 계정으로 계속' })).toBeVisible();
   if (testInfo.project.name === 'chromium') {
-    await expect(page).toHaveScreenshot('login-google-mobile.png');
+    await expect(page).toHaveScreenshot('login-google-mobile.png', {
+      maxDiffPixelRatio: 0.06,
+    });
   }
   await expectNoSeriousViolations(page);
   await page.setViewportSize({ width: 1440, height: 900 });

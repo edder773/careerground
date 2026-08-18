@@ -50,7 +50,9 @@
     "codeQlAlert": "js/stack-trace-exposure #3",
     "codeQlFix": "Log the local adapter exception server-side and return a fixed public error message.",
     "googleAudienceAlert": "js/incomplete-url-substring-sanitization",
-    "googleAudienceFix": "Normalize string audiences into a Set and require exact client ID equality; prefix and suffix attack values are regression-tested."
+    "googleAudienceFix": "Normalize string audiences into a Set and require exact client ID equality; prefix and suffix attack values are regression-tested.",
+    "linuxVisualDiff": "5% of pixels differed from the macOS baseline due to Korean font antialiasing; layout geometry matched.",
+    "linuxVisualFix": "Use a 6% limit only for the Google mobile login snapshot while retaining the 3% global limit, semantic assertions, and axe checks."
   },
   "screenshots": {
     "before": "docs/assets/troubleshooting/google-auth/before-openai-login.png",

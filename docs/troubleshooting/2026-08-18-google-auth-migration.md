@@ -116,6 +116,8 @@ CodeQL은 로컬 D1 HTTP adapter가 `String(error)`를 응답 본문에 넣어 �
 
 Google 토큰의 `aud` 배열 검사에는 정확 일치 연산을 사용하고 있었지만, CodeQL은 배열의 `includes` 호출을 URL 부분 문자열 검사로 해석해 `js/incomplete-url-substring-sanitization`을 보고했다. 검증 의도를 정적 분석에도 명확히 전달하기 위해 문자열 audience만 `Set`으로 정규화한 뒤 `Set.has(expectedClientId)`로 비교했다. 실제 Client ID 앞뒤에 공격자 문자열을 붙인 audience 두 개가 배열에 함께 들어와도 `GOOGLE_TOKEN_AUDIENCE_INVALID`로 거부되는 회귀 테스트를 추가했다.
 
+원격 Playwright에서는 macOS에서 생성한 Google 로그인 모바일 기준 이미지와 Linux의 한글 글꼴 안티앨리어싱이 달라 픽셀 5%가 변경된 것으로 판정됐다. 실제·기준·diff 산출물을 비교했을 때 요소 위치와 크기는 같고 글자 가장자리만 달랐다. 다른 스냅샷의 전역 3% 기준은 유지하고 이 한 장에만 6% 허용치를 적용해 레이아웃 회귀 감도는 보존했다. 기능 assertion과 axe 접근성 검사는 별도로 계속 실행한다.
+
 ## 근거
 
 - `docs/evidence/google-auth-2026-08-18.json`
