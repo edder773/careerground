@@ -94,6 +94,7 @@ export function parseJobImportBuffer(buffer: Buffer, fileName: string): JobImpor
           .filter(Boolean)
       : [],
     publishedAt: row.publishedAt || undefined,
+    applicationStartAt: row.applicationStartAt || undefined,
     deadlineAt: row.deadlineAt || undefined,
   }));
   return jobImportSchema.parse({

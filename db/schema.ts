@@ -133,45 +133,9 @@ export const collectionItems = sqliteTable(
     index('idx_collection_items_position').on(table.collectionId, table.position),
     check(
       'chk_collection_items_type',
-      sql`${table.itemType} IN ('JOB_POSTING', 'CODING_PROBLEM', 'SOLUTION', 'LEARNING_UNIT', 'NOTE', 'EXTERNAL_LINK')`,
+      sql`${table.itemType} IN ('JOB_POSTING', 'CODING_PROBLEM', 'SOLUTION', 'LEARNING_UNIT', 'EXTERNAL_LINK')`,
     ),
   ],
-);
-
-export const notes = sqliteTable(
-  'notes',
-  {
-    id: text('id').primaryKey(),
-    userId: text('user_id')
-      .notNull()
-      .references(() => users.id, { onDelete: 'cascade' }),
-    title: text('title').notNull(),
-    markdown: text('markdown').notNull(),
-    visibility: text('visibility').notNull().default('PRIVATE'),
-    linkedType: text('linked_type'),
-    linkedId: text('linked_id'),
-    currentRev: integer('current_rev').notNull().default(1),
-    deletedAt: text('deleted_at'),
-    ...timestamps,
-  },
-  (table) => [
-    index('idx_notes_user_updated').on(table.userId, table.updatedAt),
-    check('chk_notes_visibility', sql`${table.visibility} IN ('PRIVATE', 'MEMBERS')`),
-  ],
-);
-
-export const noteRevisions = sqliteTable(
-  'note_revisions',
-  {
-    id: text('id').primaryKey(),
-    noteId: text('note_id')
-      .notNull()
-      .references(() => notes.id, { onDelete: 'cascade' }),
-    revision: integer('revision').notNull(),
-    markdown: text('markdown').notNull(),
-    createdAt: text('created_at').notNull(),
-  },
-  (table) => [uniqueIndex('idx_note_revisions_note_revision').on(table.noteId, table.revision)],
 );
 
 export const codingProblems = sqliteTable(
@@ -385,6 +349,7 @@ export const jobs = sqliteTable(
     remote: integer('remote', { mode: 'boolean' }).notNull().default(false),
     techStack: text('tech_stack').notNull().default('[]'),
     publishedAt: text('published_at'),
+    applicationStartAt: text('application_start_at'),
     deadlineAt: text('deadline_at'),
     rolling: integer('rolling', { mode: 'boolean' }).notNull().default(false),
     summary: text('summary').notNull(),
@@ -408,15 +373,25 @@ export const jobs = sqliteTable(
       .where(
         sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
       ),
-    index('idx_jobs_calendar_collected')
-      .on(table.collectedAt)
+    index('idx_jobs_calendar_published')
+      .on(table.publishedAt)
       .where(
         sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
       ),
-    index('idx_jobs_calendar_created')
-      .on(table.createdAt)
+    index('idx_jobs_calendar_application_start')
+      .on(table.applicationStartAt)
       .where(
-        sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE') AND ${table.collectedAt} IS NULL`,
+        sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
+      ),
+    index('idx_jobs_feed_collected_id')
+      .on(table.collectedAt, table.id)
+      .where(
+        sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
+      ),
+    index('idx_jobs_active_category')
+      .on(table.category)
+      .where(
+        sql`${table.status} IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND ${table.careerScope} IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
       ),
     index('idx_jobs_calendar_rolling')
       .on(table.id)

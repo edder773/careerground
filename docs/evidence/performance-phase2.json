@@ -1,0 +1,35 @@
+{
+  "baseline": {
+    "environment": {
+      "runtime": "v24.19.0",
+      "database": "fresh node:sqlite D1 compatibility adapter per sample",
+      "scope": "first authenticated home Worker request; excludes network and production D1 latency"
+    },
+    "samples": 9,
+    "p50Ms": 1.58,
+    "p95Ms": 18.11,
+    "maxPreparedStatementCount": 20
+  },
+  "after": {
+    "generatedAt": "2026-08-15T02:52:17.544Z",
+    "environment": {
+      "runtime": "v24.19.0",
+      "database": "fresh node:sqlite D1 compatibility adapter per sample",
+      "scope": "first authenticated home Worker request; excludes network and production D1 latency"
+    },
+    "samples": 9,
+    "p50Ms": 1.46,
+    "p95Ms": 17.53,
+    "maxPreparedStatementCount": 18
+  },
+  "comparison": {
+    "preparedStatementCount": { "before": 20, "after": 18, "reductionPercent": 10 },
+    "localP50Ms": { "before": 1.58, "after": 1.46, "reductionPercent": 7.59 },
+    "localP95Ms": { "before": 18.11, "after": 17.53, "reductionPercent": 3.2 }
+  },
+  "notes": [
+    "Baseline and after use the same command, runtime, fresh database fixture, sample count, and request shape.",
+    "The two removed prepared statements are the standalone runtime schema preflight; schema checksum verification now shares the first workspace D1 batch.",
+    "Local timing excludes production network and D1 latency; production latency is measured separately after deployment."
+  ]
+}

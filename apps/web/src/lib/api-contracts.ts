@@ -39,14 +39,6 @@ const collectionItem = z
 const collection = z
   .object({ id: identifier, name: z.string(), items: z.array(collectionItem) })
   .passthrough();
-const note = z
-  .object({
-    id: identifier,
-    title: z.string(),
-    markdown: z.string().optional(),
-    currentRev: z.number().optional(),
-  })
-  .passthrough();
 const job = z
   .object({
     id: identifier,
@@ -127,13 +119,29 @@ export function responseSchemaFor(path: string, method = 'GET'): z.ZodType {
   if (endpoint === '/auth/me') return z.object({ user }).passthrough();
   if (endpoint === '/auth/profile') return profile;
   if (endpoint === '/collections' || endpoint === '/collections/trash') return z.array(collection);
-  if (endpoint === '/notes' || endpoint === '/notes/trash') return z.array(note);
   if (endpoint === '/dashboard') {
-    return z
-      .object({ recentJobs: z.number(), expiringJobs: z.number(), dueReviews: z.number() })
-      .passthrough();
+    return z.object({ recentJobs: z.number(), expiringJobs: z.number() }).passthrough();
   }
   if (endpoint === '/jobs/categories') return z.array(z.string());
+  if (endpoint === '/jobs/bootstrap') {
+    return z
+      .object({
+        user,
+        unreadCount: z.number().nonnegative(),
+        categories: z.array(z.string()),
+        data: arrayOrCursor(job),
+      })
+      .passthrough();
+  }
+  if (endpoint === '/learning/bootstrap') {
+    return z
+      .object({
+        user,
+        unreadCount: z.number().nonnegative(),
+        data: z.array(learningSource),
+      })
+      .passthrough();
+  }
   if (endpoint === '/jobs') return arrayOrCursor(job);
   if (/^\/jobs\/[^/]+$/.test(endpoint)) return job;
   if (endpoint === '/coding/problems') return arrayOrCursor(problem);

@@ -100,7 +100,7 @@ export function NotificationsPage() {
             <Bell size={15} /> 인앱 알림
           </span>
           <h1>알림</h1>
-          <p>댓글, 공고 마감, 오늘의 문제, 복습 일정을 모아봅니다.</p>
+          <p>댓글, 공고 마감, 오늘의 문제 알림을 모아봅니다.</p>
         </div>
         <button
           className="ghost-button"

@@ -2,6 +2,34 @@ import { createContext, useContext, useMemo, type PropsWithChildren } from 'reac
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ApiError, type User } from './lib/api';
 
+type BootstrapPayload = {
+  user: User;
+  unreadCount: number;
+  home?: null | {
+    collections: unknown[];
+    dashboard: {
+      recentJobs: number;
+      expiringJobs: number;
+      recentActivity: unknown[];
+    };
+    dailyChallenges: unknown[];
+  };
+  categories?: string[];
+  data?: unknown[] | { items: unknown[]; nextCursor: string | null; total: number };
+};
+
+const initialJobsBootstrap = () => {
+  return {
+    path: '/jobs/bootstrap?catalog=true',
+    queryKey: ['jobs', 'catalog'],
+  };
+};
+
+const initialLearningBootstrap = () => ({
+  path: '/learning/bootstrap',
+  queryKey: ['learning'] as const,
+});
+
 type AuthContextValue = {
   user: User | null;
   loading: boolean;
@@ -16,7 +44,35 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const client = useQueryClient();
   const me = useQuery({
     queryKey: ['me'],
-    queryFn: () => api<{ user: User | null }>('/auth/me'),
+    queryFn: async () => {
+      const includeHome = window.location.pathname === '/';
+      const includeJobs = window.location.pathname === '/jobs';
+      const includeLearning = window.location.pathname === '/learning';
+      const jobsBootstrap = includeJobs ? initialJobsBootstrap() : undefined;
+      const learningBootstrap = includeLearning ? initialLearningBootstrap() : undefined;
+      const payload = await api<BootstrapPayload>(
+        jobsBootstrap?.path ||
+          learningBootstrap?.path ||
+          `/bootstrap${includeHome ? '?home=1' : ''}`,
+      );
+      client.setQueryData(['notification-unread-count'], { count: payload.unreadCount });
+      if (payload.home) {
+        client.setQueryData(['collections'], payload.home.collections);
+        client.setQueryData(['dashboard'], payload.home.dashboard);
+        client.setQueryData(['daily-challenges'], payload.home.dailyChallenges);
+      }
+      if (jobsBootstrap && payload.categories && payload.data && !Array.isArray(payload.data)) {
+        client.setQueryData(['jobs', 'categories'], payload.categories);
+        client.setQueryData(jobsBootstrap.queryKey, payload.data.items);
+      } else if (jobsBootstrap && payload.categories && Array.isArray(payload.data)) {
+        client.setQueryData(['jobs', 'categories'], payload.categories);
+        client.setQueryData(jobsBootstrap.queryKey, payload.data);
+      }
+      if (learningBootstrap && Array.isArray(payload.data)) {
+        client.setQueryData(learningBootstrap.queryKey, payload.data);
+      }
+      return { user: payload.user };
+    },
     retry: (failureCount, error) =>
       failureCount < 2 && error instanceof ApiError && (error.status === 0 || error.status >= 500),
     retryDelay: (attempt) => Math.min(500 * 2 ** attempt, 2_000),

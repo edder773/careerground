@@ -23,7 +23,7 @@ await writeFile('dist/.openai/hosting.json', `${JSON.stringify(hosting, null, 2)
 // provider-managed migrations were available. Replaying 0000-0015 would try to
 // create those live tables again. Keep the complete immutable history in the
 // repository, but publish only forward migrations after that production baseline.
-const deployMigrationFloor = 16;
+const deployMigrationFloor = 17;
 const deployMigrations = (await readdir('drizzle'))
   .filter((file) => /^\d{4}_.+\.sql$/.test(file))
   .filter((file) => Number(file.slice(0, 4)) >= deployMigrationFloor)

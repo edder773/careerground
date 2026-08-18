@@ -8,9 +8,10 @@ type SitesEnv = {
   ASSETS: Fetcher;
   DB?: D1Database;
   ADMIN_EMAILS?: string;
+  AUTH_TEST_MODE?: string;
   GOOGLE_CLIENT_ID?: string;
-  OPENAI_ADMIN_EMAILS?: string;
   MAX_ACTIVE_USERS?: string;
+  REQUEST_LOGGING?: string;
 };
 
 type SitesExecutionContext = {

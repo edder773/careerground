@@ -15,7 +15,7 @@
 - 사용자·정규화 경로별 D1 rate limit을 적용한다. 기본값은 읽기 240회/분, 쓰기 60회/분이며 초과 시 `429`와 `Retry-After`를 반환한다.
 - 오류 응답은 `code`, `message`, `details`, `requestId` 형식이다.
 - 모든 API 응답은 `x-request-id`, `server-timing`, `x-response-time-ms`를 제공하고 구조화 로그에는 경로 template·상태·처리 시간만 남긴다.
-- 댓글·노트·풀이 Markdown에서 raw HTML을 제거하고 브라우저에서도 `rehype-sanitize`를 적용한다.
+- 댓글·풀이 Markdown에서 raw HTML을 제거하고 브라우저에서도 `rehype-sanitize`를 적용한다.
 - 프로그래머스 URL은 HTTPS host/path allowlist를 확인한다.
 - 파일은 MIME/확장자/크기/SHA-256을 함께 검사한다.
 
@@ -25,7 +25,7 @@
 - 채용 원문을 크롤링하지 않으며 자체 짧은 요약과 원본 URL만 import한다.
 - 구조화 로그와 evidence에서 인증 헤더, secret, 사용자 code 전문, 업로드 원문을 제외한다.
 - `robots.txt`와 `noindex` meta로 내부 웹 색인을 차단한다.
-- 개인 노트·폴더·지원 상태는 소유 사용자 조건을 모든 쿼리에 포함하고, 채용·학습·코딩 카탈로그만 멤버 공통으로 읽는다.
+- 개인 폴더·지원 상태는 소유 사용자 조건을 모든 쿼리에 포함하고, 채용·학습·코딩 카탈로그만 멤버 공통으로 읽는다.
 
 ## 위협과 남은 조치
 

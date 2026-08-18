@@ -44,7 +44,7 @@ Google ID token
 
 ## 핵심 이론 3: provider 교체 migration은 개인 데이터와 공통 카탈로그를 분리한다
 
-`0017_google_auth`는 사용자의 요구에 따라 기존 개인 테스트 데이터를 삭제한 뒤 OpenAI 전용 unique index와 `site_user_id` 컬럼을 제거한다. FK cascade로 폴더, 노트, 지원 상태, 진도, 풀이, 댓글, 알림과 세션성 데이터가 함께 제거된다. 채용공고, 학습자료, 코딩문제와 같은 사용자 비소유 공통 카탈로그는 보존한다.
+`0022_google_auth`는 사용자의 요구에 따라 기존 개인 테스트 데이터를 삭제한 뒤 OpenAI 전용 unique index와 `site_user_id` 컬럼을 제거한다. FK cascade로 폴더, 지원 상태, 진도, 풀이, 댓글, 알림과 세션성 데이터가 함께 제거된다. 채용공고, 학습자료, 코딩문제와 같은 사용자 비소유 공통 카탈로그는 보존한다.
 
 ```diff
 + DELETE FROM audit_logs;
@@ -55,7 +55,7 @@ Google ID token
 + CREATE TABLE auth_sessions (...);
 ```
 
-운영 migration이 누락되는 상황에 대비해 runtime schema 검사도 `auth_identities`, `auth_sessions`, legacy column 부재, `0017_google_auth` ledger를 확인한다. migration 회귀 테스트는 0015 기준 DB에 0016과 0017을 순서대로 적용해 사용자 수 0, auth table 2개, legacy column 0개와 기존 학습 문항 수 보존을 확인한다.
+운영 migration이 누락되는 상황에 대비해 runtime schema 검사도 `auth_identities`, `auth_sessions`, legacy column 부재, `0022_google_auth` ledger를 확인한다. migration 회귀 테스트는 0016 기준 DB에 0017~0022를 순서대로 적용해 사용자 수 0, auth table 2개, legacy column 0개와 기존 학습 문항 수 보존을 확인한다.
 
 ## 화면 전후
 
@@ -80,10 +80,10 @@ Google 이름은 최초 가입 화면의 입력 초깃값으로 전달된다. �
 | `pnpm format:check` | 통과                                             |
 | `pnpm lint`         | 통과                                             |
 | `pnpm typecheck`    | 통과                                             |
-| `pnpm test`         | 110/110 통과                                     |
-| `pnpm test:e2e`     | 48/48 통과, Chromium·Firefox·WebKit·375px 모바일 |
+| `pnpm test`         | 129/129 통과                                     |
+| `pnpm test:e2e`     | 56/56 통과, Chromium·Firefox·WebKit·375px 모바일 |
 | `pnpm build`        | 통과                                             |
-| `pnpm sites:build`  | 통과, `0016`·`0017` 순방향 migration 포함        |
+| `pnpm sites:build`  | 통과, 운영 기준선 이후 순방향 migration만 포함   |
 | axe                 | 1440×900·375×812 serious 이상 위반 0             |
 
 인증 지연 시간은 이전 provider와 Google provider를 같은 운영 조건에서 측정하지 않았으므로 정량 개선을 주장하지 않는다. 실제 Google 계정 팝업 완료는 자동화가 대신할 수 없으며 운영 배포 후 사용자가 한 번 상호작용해 확인해야 한다.
@@ -104,7 +104,7 @@ version 47은 publish됐지만 첫 운영 health check에서 `DB_SCHEMA_INITIALI
 
 runtime schema가 검색 backfill보다 먼저 두 테이블과 인덱스를 `IF NOT EXISTS`로 복구하도록 보정했다. 기존 개인 데이터는 이미 폐기됐기 때문에 빈 테이블만 생성하며 공통 카탈로그 행은 변경하지 않는다. 누락 상태를 재현해 notes 테이블 2개와 인덱스 2개가 복구되고 D1 API 회귀 테스트까지 포함한 30개 검증이 통과하는 테스트를 추가했다.
 
-version 48 재배포 후 운영 health는 200과 `ready: true`를 반환했다. 검색 트리거 18개, 인증 테이블 2개, legacy identity 컬럼 0개를 확인했고, 비로그인 채용·학습·코딩 API, 운영 테스트 로그인 endpoint, 구 OpenAI 헤더 인증은 모두 401이었다. 운영 로그인 화면은 Google 버튼 iframe 1개가 렌더링되고 loading skeleton이 사라진 상태를 확인했다. 실제 Google 계정 선택과 consent 완료는 사용자의 계정 상호작용으로 한 번 더 확인해야 한다.
+version 49 재배포 후 운영 health는 200과 `ready: true`를 반환했다. 검색 트리거 18개, 인증 테이블 2개, legacy identity 컬럼 0개를 확인했고, 비로그인 채용·학습·코딩 API, 운영 테스트 로그인 endpoint, 구 OpenAI 헤더 인증은 모두 401이었다. 운영 로그인 화면은 Google 버튼 iframe 1개가 렌더링되고 loading skeleton이 사라진 상태를 확인했다. 이후 최신 `main`의 노트 기능 제거와 채용·학습 성능 개선을 병합하면서 Google migration 번호를 `0022`로 이동하고 검색 트리거 기대값을 15개로 갱신했다. 실제 Google 계정 선택과 consent 완료는 사용자의 계정 상호작용으로 한 번 더 확인해야 한다.
 
 ## 근거
 
@@ -113,7 +113,7 @@ version 48 재배포 후 운영 health는 200과 `ready: true`를 반환했다. 
 - `deployment/sites/google-auth.test.ts`
 - `deployment/sites/d1-api.test.ts`
 - `deployment/sites/runtime-schema.test.ts`
-- `drizzle/0017_google_auth.sql`
+- `drizzle/0022_google_auth.sql`
 - `apps/web/src/pages/LoginPage.test.tsx`
 - `e2e/mvp.spec.ts`
 - `e2e/visual.spec.ts`

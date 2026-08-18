@@ -2,7 +2,7 @@
 
 ## 원칙
 
-운영 기준 DB는 Sites가 `DB`로 바인딩한 D1이다. PostgreSQL `pg_dump`/`pg_restore` 절차는 사용하지 않는다. export에는 개인 노트·풀이·지원 상태가 포함될 수 있으므로 저장소나 CI artifact에 넣지 않고, 접근이 통제된 암호화 위치에서만 다룬다.
+운영 기준 DB는 Sites가 `DB`로 바인딩한 D1이다. PostgreSQL `pg_dump`/`pg_restore` 절차는 사용하지 않는다. export에는 개인 풀이·지원 상태가 포함될 수 있으므로 저장소나 CI artifact에 넣지 않고, 접근이 통제된 암호화 위치에서만 다룬다.
 
 ## 배포 전 export
 
@@ -24,8 +24,8 @@ node scripts/data-integrity/check-d1.mjs /secure-temporary-path/careerground-exp
 2. 운영 export를 복원한다.
 3. 대상 배포의 `drizzle/*.sql`을 journal 순서대로 적용한다.
 4. 무결성 검사, `/api/v1/health/ready`, 테이블별 행 수, import checksum을 비교한다.
-5. 비식별 테스트 계정으로 폴더·노트 격리와 공통 카탈로그 조회를 확인한다.
-6. 증거에는 건수와 checksum만 남기고 이메일·노트·코드 원문은 남기지 않는다.
+5. 비식별 테스트 계정으로 폴더 격리와 공통 카탈로그 조회를 확인한다.
+6. 증거에는 건수와 checksum만 남기고 이메일·코드 원문은 남기지 않는다.
 7. 훈련 DB와 임시 export는 조직의 보존 정책에 따라 폐기한다.
 
 저장소의 D1 호환 스키마는 다음 명령으로 매 CI 및 배포 전에 격리 복구를 실제 수행한다.
@@ -34,7 +34,7 @@ node scripts/data-integrity/check-d1.mjs /secure-temporary-path/careerground-exp
 pnpm recovery:drill
 ```
 
-이 명령은 전체 migration/seed를 적용한 원본에 비식별 사용자·노트 revision을 추가한 뒤,
+이 명령은 전체 migration/seed를 적용한 원본에 비식별 사용자·폴더 fixture를 추가한 뒤,
 Node SQLite backup API로 snapshot을 만들고 다시 별도 DB로 복원한다. 복원 전후 테이블 건수,
 민감 원문 대신 SHA-256, `integrity_check`, `foreign_key_check`를 비교하고 임시 파일은 즉시
 삭제한다. 최신 2026-08-14 실행은 316 pages/1,294,336 bytes를 1.60 ms에 snapshot하고 1.32 ms에 복원했으며,

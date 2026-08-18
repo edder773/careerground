@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "b464b1b3-ba97-4f11-bbe0-ed5cd944d664",
+  "id": "eedaa35e-3e4f-4da2-8d12-1be6f53a8381",
   "prevId": "51ed0994-ba59-41b7-a646-96f57e9673a2",
   "tables": {
     "audit_logs": {
@@ -88,188 +88,6 @@
             "id"
           ],
           "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "auth_identities": {
-      "name": "auth_identities",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "provider": {
-          "name": "provider",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "provider_subject": {
-          "name": "provider_subject",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "email": {
-          "name": "email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "idx_auth_identities_provider_subject": {
-          "name": "idx_auth_identities_provider_subject",
-          "columns": [
-            "provider",
-            "provider_subject"
-          ],
-          "isUnique": true
-        },
-        "idx_auth_identities_user": {
-          "name": "idx_auth_identities_user",
-          "columns": [
-            "user_id"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "auth_identities_user_id_users_id_fk": {
-          "name": "auth_identities_user_id_users_id_fk",
-          "tableFrom": "auth_identities",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {
-        "chk_auth_identities_provider": {
-          "name": "chk_auth_identities_provider",
-          "value": "\"auth_identities\".\"provider\" IN ('GOOGLE')"
-        }
-      }
-    },
-    "auth_sessions": {
-      "name": "auth_sessions",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "token_hash": {
-          "name": "token_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "last_seen_at": {
-          "name": "last_seen_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "idx_auth_sessions_token_hash": {
-          "name": "idx_auth_sessions_token_hash",
-          "columns": [
-            "token_hash"
-          ],
-          "isUnique": true
-        },
-        "idx_auth_sessions_user": {
-          "name": "idx_auth_sessions_user",
-          "columns": [
-            "user_id"
-          ],
-          "isUnique": false
-        },
-        "idx_auth_sessions_expires": {
-          "name": "idx_auth_sessions_expires",
-          "columns": [
-            "expires_at"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "auth_sessions_user_id_users_id_fk": {
-          "name": "auth_sessions_user_id_users_id_fk",
-          "tableFrom": "auth_sessions",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -492,7 +310,7 @@
       "checkConstraints": {
         "chk_collection_items_type": {
           "name": "chk_collection_items_type",
-          "value": "\"collection_items\".\"item_type\" IN ('JOB_POSTING', 'CODING_PROBLEM', 'SOLUTION', 'LEARNING_UNIT', 'NOTE', 'EXTERNAL_LINK')"
+          "value": "\"collection_items\".\"item_type\" IN ('JOB_POSTING', 'CODING_PROBLEM', 'SOLUTION', 'LEARNING_UNIT', 'EXTERNAL_LINK')"
         }
       }
     },
@@ -2325,191 +2143,6 @@
         }
       }
     },
-    "note_revisions": {
-      "name": "note_revisions",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "note_id": {
-          "name": "note_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "revision": {
-          "name": "revision",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "markdown": {
-          "name": "markdown",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "idx_note_revisions_note_revision": {
-          "name": "idx_note_revisions_note_revision",
-          "columns": [
-            "note_id",
-            "revision"
-          ],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {
-        "note_revisions_note_id_notes_id_fk": {
-          "name": "note_revisions_note_id_notes_id_fk",
-          "tableFrom": "note_revisions",
-          "tableTo": "notes",
-          "columnsFrom": [
-            "note_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "notes": {
-      "name": "notes",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "markdown": {
-          "name": "markdown",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "visibility": {
-          "name": "visibility",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'PRIVATE'"
-        },
-        "linked_type": {
-          "name": "linked_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "linked_id": {
-          "name": "linked_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "current_rev": {
-          "name": "current_rev",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 1
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "idx_notes_user_updated": {
-          "name": "idx_notes_user_updated",
-          "columns": [
-            "user_id",
-            "updated_at"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "notes_user_id_users_id_fk": {
-          "name": "notes_user_id_users_id_fk",
-          "tableFrom": "notes",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {
-        "chk_notes_visibility": {
-          "name": "chk_notes_visibility",
-          "value": "\"notes\".\"visibility\" IN ('PRIVATE', 'MEMBERS')"
-        }
-      }
-    },
     "notifications": {
       "name": "notifications",
       "columns": {
@@ -3482,6 +3115,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "site_user_id": {
+          "name": "site_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "email": {
           "name": "email",
           "type": "text",
@@ -3596,6 +3236,13 @@
         }
       },
       "indexes": {
+        "idx_users_site_user_id": {
+          "name": "idx_users_site_user_id",
+          "columns": [
+            "site_user_id"
+          ],
+          "isUnique": true
+        },
         "idx_users_email": {
           "name": "idx_users_email",
           "columns": [

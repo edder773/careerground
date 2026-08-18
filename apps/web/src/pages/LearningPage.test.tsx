@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { LearningPage } from './LearningPage';
@@ -57,7 +57,6 @@ describe('learning library', () => {
       'fetch',
       vi.fn((input: RequestInfo | URL) => {
         const url = String(input);
-        if (url.endsWith('/learning/due')) return response([]);
         if (url.endsWith('/learning/units/unit-one')) return response(units[0]);
         if (url.endsWith('/learning/units/unit-two')) return response(units[1]);
         return response(sources);
@@ -88,5 +87,71 @@ describe('learning library', () => {
 
     expect(modal.queryByText('이 단원을 얼마나 이해했나요?')).not.toBeInTheDocument();
     expect(modal.queryByRole('button', { name: /이해도/ })).not.toBeInTheDocument();
+  });
+
+  it('omits review scheduling content and does not request the due-review endpoint', async () => {
+    const first = unit('unit-one', '좋은 대화를 넘어 좋은 작업 환경을 설계한다', '/one.webp');
+    const second = unit('unit-two', 'Markdown과 메타 프롬프트로 결과물 다듬기', '/two.webp');
+    const requestedUrls: string[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input);
+        requestedUrls.push(url);
+        if (url.endsWith('/learning/units/unit-one')) return response(first);
+        return response([
+          {
+            id: 'source-one',
+            title: '생성형 AI 실전',
+            subject: 'AI',
+            category: '실전',
+            units: [unitSummary(first), unitSummary(second)],
+          },
+        ]);
+      }),
+    );
+    renderPage(<LearningPage />);
+
+    expect(await screen.findByRole('heading', { name: '생성형 AI 실전' })).toBeInTheDocument();
+    expect(screen.queryByText('복습 예정')).not.toBeInTheDocument();
+    expect(screen.queryByText('오늘 다시 볼 내용')).not.toBeInTheDocument();
+    expect(requestedUrls.some((url) => url.endsWith('/learning/due'))).toBe(false);
+  });
+
+  it('prefetches unit detail when a user shows intent to open a card', async () => {
+    const first = unit('unit-one', '통계적 사고', '/one.webp');
+    const sources = [
+      {
+        id: 'source-one',
+        title: '데이터 분석',
+        subject: '통계',
+        category: '기초',
+        units: [unitSummary(first)],
+      },
+    ];
+    const requestedUrls: string[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input);
+        requestedUrls.push(url);
+        if (url.endsWith('/learning/units/unit-one')) return response(first);
+        return response(sources);
+      }),
+    );
+    const user = userEvent.setup();
+    renderPage(<LearningPage />);
+
+    const trigger = await screen.findByRole('button', { name: '통계적 사고 내용 보기' });
+    await user.hover(trigger);
+    await waitFor(() =>
+      expect(requestedUrls.filter((url) => url.endsWith('/learning/units/unit-one'))).toHaveLength(
+        1,
+      ),
+    );
+
+    await user.click(trigger);
+    expect(await screen.findByRole('dialog', { name: '통계적 사고' })).toBeInTheDocument();
+    expect(requestedUrls.filter((url) => url.endsWith('/learning/units/unit-one'))).toHaveLength(1);
   });
 });

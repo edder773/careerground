@@ -16,7 +16,7 @@ export function FolderSaveButton({
   targetId,
   label,
 }: {
-  itemType: 'JOB_POSTING' | 'CODING_PROBLEM' | 'SOLUTION' | 'LEARNING_UNIT' | 'NOTE';
+  itemType: 'JOB_POSTING' | 'CODING_PROBLEM' | 'SOLUTION' | 'LEARNING_UNIT';
   targetId: string;
   label: string;
 }) {
@@ -101,7 +101,7 @@ export function FolderSaveButton({
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <div className="folder-save">
         <Dialog.Trigger asChild>
-          <button type="button" aria-expanded={open}>
+          <button type="button" className="folder-save-trigger" aria-expanded={open}>
             {savedFolders.length ? <Check /> : <FolderInput />}
             {savedFolders.length ? `${savedFolders.length}개 폴더에 저장됨` : '폴더에 저장'}
           </button>

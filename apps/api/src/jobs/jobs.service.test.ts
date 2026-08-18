@@ -49,7 +49,7 @@ describe('JobsService list', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
-  it('includes starts, deadlines, and rolling jobs in calendar queries', async () => {
+  it('keeps registration and application starts separate in calendar queries', async () => {
     const { jobs, findMany } = service();
     await jobs.list('user-id', {
       calendar: true,
@@ -74,7 +74,7 @@ describe('JobsService list', () => {
               },
             },
             {
-              collectedAt: {
+              applicationStartAt: {
                 gte: new Date('2026-08-31T15:00:00.000Z'),
                 lt: new Date('2026-09-30T15:00:00.000Z'),
               },

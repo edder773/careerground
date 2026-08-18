@@ -31,6 +31,7 @@ type Problem = {
 };
 type Challenge = { id: string; problemId: string; problem: Problem };
 type CodeLanguage = 'python' | 'java' | 'javascript' | 'cpp' | 'sql';
+type ProblemScope = 'solved' | 'all';
 type CursorPage<T> = { items: T[]; nextCursor: string | null; total: number };
 type SolutionDraft = {
   code: string;
@@ -86,6 +87,9 @@ export function CodingPage() {
   const [track, setTrack] = useState<'ALGORITHM' | 'SQL'>(
     searchParams.get('track') === 'SQL' ? 'SQL' : 'ALGORITHM',
   );
+  const [scope, setScope] = useState<ProblemScope>(
+    searchParams.get('view') === 'all' || searchParams.has('problem') ? 'all' : 'solved',
+  );
   const [selected, setSelected] = useState<Problem>();
   const [language, setLanguage] = useState<CodeLanguage>(user?.preferredLanguage || 'python');
   const [code, setCode] = useState('');
@@ -110,14 +114,17 @@ export function CodingPage() {
     else next.delete('track');
     if (level) next.set('level', level);
     else next.delete('level');
+    if (scope === 'all') next.set('view', 'all');
+    else next.delete('view');
     if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true });
-  }, [level, searchParams, setSearchParams, track]);
+  }, [level, scope, searchParams, setSearchParams, track]);
   const problems = useInfiniteQuery({
-    queryKey: ['problems', track, level],
+    queryKey: ['problems', scope, track, level],
     initialPageParam: null as string | null,
     queryFn: ({ pageParam }) => {
       const query = new URLSearchParams({ track, page: 'cursor', limit: '60' });
       if (level) query.set('level', level);
+      if (scope === 'solved') query.set('scope', 'solved');
       if (pageParam) query.set('cursor', pageParam);
       return api<CursorPage<Problem>>(`/coding/problems?${query.toString()}`);
     },
@@ -338,6 +345,24 @@ export function CodingPage() {
           </button>
         </div>
       )}
+      <div className="problem-scope-tabs" role="group" aria-label="문제 목록">
+        <button
+          type="button"
+          aria-pressed={scope === 'solved'}
+          className={scope === 'solved' ? 'active' : ''}
+          onClick={() => setScope('solved')}
+        >
+          내가 푼 문제
+        </button>
+        <button
+          type="button"
+          aria-pressed={scope === 'all'}
+          className={scope === 'all' ? 'active' : ''}
+          onClick={() => setScope('all')}
+        >
+          전체 문제
+        </button>
+      </div>
       <div className="filter-bar">
         <Filter />
         <div className="problem-track-tabs" role="group" aria-label="문제 유형">
@@ -376,11 +401,34 @@ export function CodingPage() {
           </select>
         </label>
         <span>
-          {problemTotal.toLocaleString()}개 문제 · 문제를 선택해 코드와 풀이 과정을 기록하세요.
+          {scope === 'solved'
+            ? `${problemTotal.toLocaleString()}개 해결 기록 · 내가 해결한 문제만 모아봅니다.`
+            : `${problemTotal.toLocaleString()}개 문제 · 문제를 선택해 코드와 풀이 과정을 기록하세요.`}
         </span>
       </div>
       {problems.isLoading && <div className="loading-panel">문제 목록을 불러오는 중…</div>}
       {problems.isError && <div className="error-panel">문제 목록을 불러오지 못했습니다.</div>}
+      {!problems.isLoading && !problems.isError && displayList.length === 0 && (
+        <div className="empty-panel coding-problem-empty">
+          <h2>
+            {scope === 'solved' ? '아직 해결한 문제가 없습니다' : '조건에 맞는 문제가 없습니다'}
+          </h2>
+          <p>
+            {scope === 'solved'
+              ? '전체 문제에서 첫 문제를 골라 풀이를 기록해보세요.'
+              : '문제 유형이나 레벨 조건을 바꿔보세요.'}
+          </p>
+          {scope === 'solved' && (
+            <button
+              type="button"
+              className="primary-button compact"
+              onClick={() => setScope('all')}
+            >
+              전체 문제 둘러보기
+            </button>
+          )}
+        </div>
+      )}
       <div className="problem-grid">
         {displayList.map((problem) => (
           <article

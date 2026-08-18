@@ -9,6 +9,7 @@ import {
   parseObject,
   run,
   type D1Database,
+  type D1PreparedStatement,
 } from './d1.js';
 import {
   canonicalJobUrl,
@@ -41,7 +42,6 @@ type D1Env = {
   ADMIN_EMAILS?: string;
   AUTH_TEST_MODE?: string;
   GOOGLE_CLIENT_ID?: string;
-  OPENAI_ADMIN_EMAILS?: string;
   MAX_ACTIVE_USERS?: string;
   RATE_LIMIT_READS_PER_MINUTE?: string;
   RATE_LIMIT_WRITES_PER_MINUTE?: string;
@@ -180,6 +180,14 @@ const apiUser = (row: UserRow): ApiUser => ({
   onboardingCompleted: Boolean(row.onboardingCompletedAt),
 });
 
+const adminEmails = (env: D1Env) =>
+  new Set(
+    (env.ADMIN_EMAILS || '')
+      .split(',')
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean),
+  );
+
 async function audit(
   db: D1Database,
   actorId: string | null,
@@ -201,14 +209,6 @@ async function audit(
     nowIso(),
   );
 }
-
-const adminEmails = (env: D1Env) =>
-  new Set(
-    (env.ADMIN_EMAILS || env.OPENAI_ADMIN_EMAILS || '')
-      .split(',')
-      .map((value) => value.trim().toLowerCase())
-      .filter(Boolean),
-  );
 
 async function resolveGoogleUser(identity: GoogleIdentity, env: D1Env): Promise<UserRow> {
   const db = env.DB;
@@ -363,12 +363,13 @@ async function createSession(db: D1Database, userId: string, secure: boolean) {
 
 async function logoutSession(request: Request, env: D1Env) {
   const token = sessionTokenFrom(request);
-  if (token)
+  if (token) {
     await run(
       env.DB,
       'DELETE FROM auth_sessions WHERE token_hash = ?',
       await hashSessionToken(token),
     );
+  }
   return responseJson({ ok: true }, 200, undefined, {
     'set-cookie': clearSessionCookie(env.AUTH_TEST_MODE !== 'true'),
   });
@@ -384,18 +385,45 @@ const routeRateKey = (method: string, pathname: string) =>
     '/:id',
   )}`;
 
-async function enforceRateLimit(request: Request, env: D1Env, userId: string, path: string) {
-  const method = request.method.toUpperCase();
+type RateLimitWindow = {
+  limit: number;
+  now: number;
+  routeKey: string;
+  windowStart: number;
+};
+
+const rateLimitWindow = (method: string, env: D1Env, path: string): RateLimitWindow => {
+  const now = Date.now();
   const configured =
     method === 'GET'
       ? int(env.RATE_LIMIT_READS_PER_MINUTE, 240)
       : int(env.RATE_LIMIT_WRITES_PER_MINUTE, 60);
-  const limit = Math.max(
-    1,
-    Math.min(10_000, path.includes('/import/') ? Math.min(10, configured) : configured),
+  return {
+    limit: Math.max(
+      1,
+      Math.min(10_000, path.includes('/import/') ? Math.min(10, configured) : configured),
+    ),
+    now,
+    routeKey: routeRateKey(method, path),
+    windowStart: Math.floor(now / 60_000),
+  };
+};
+
+const assertRateLimit = (count: number, window: RateLimitWindow) => {
+  if (count <= window.limit) return;
+  const retryAfter = Math.max(1, 60 - Math.floor((window.now % 60_000) / 1000));
+  throw new RouteError(
+    429,
+    '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
+    'RATE_LIMITED',
+    { limit: window.limit, windowSeconds: 60, retryAfter },
+    { 'retry-after': String(retryAfter) },
   );
-  const now = Date.now();
-  const windowStart = Math.floor(now / 60_000);
+};
+
+async function enforceRateLimit(request: Request, env: D1Env, userId: string, path: string) {
+  const method = request.method.toUpperCase();
+  const window = rateLimitWindow(method, env, path);
   const row = await first<{ count: number }>(
     env.DB,
     `INSERT INTO request_rate_limits (user_id, route_key, window_start, count, updated_at)
@@ -404,46 +432,48 @@ async function enforceRateLimit(request: Request, env: D1Env, userId: string, pa
      DO UPDATE SET count = request_rate_limits.count + 1, updated_at = excluded.updated_at
      RETURNING count`,
     userId,
-    routeRateKey(method, path),
-    windowStart,
-    new Date(now).toISOString(),
+    window.routeKey,
+    window.windowStart,
+    new Date(window.now).toISOString(),
   );
   const count = Number(row?.count || 1);
   if (count === 1) {
-    await run(env.DB, 'DELETE FROM request_rate_limits WHERE window_start < ?', windowStart - 2);
-  }
-  if (count > limit) {
-    const retryAfter = Math.max(1, 60 - Math.floor((now % 60_000) / 1000));
-    throw new RouteError(
-      429,
-      '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
-      'RATE_LIMITED',
-      { limit, windowSeconds: 60, retryAfter },
-      { 'retry-after': String(retryAfter) },
+    await run(
+      env.DB,
+      'DELETE FROM request_rate_limits WHERE window_start < ?',
+      window.windowStart - 2,
     );
   }
+  assertRateLimit(count, window);
 }
 
-async function collections(db: D1Database, userId: string) {
-  const folders = await all<Record<string, unknown>>(
-    db,
-    `SELECT id, parent_id AS parentId, name, icon, color, position,
-            created_at AS createdAt, updated_at AS updatedAt
-       FROM collections
-      WHERE user_id = ? AND deleted_at IS NULL
-      ORDER BY CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END, position, updated_at DESC`,
-    userId,
-  );
-  const items = await all<Record<string, unknown>>(
-    db,
-    `SELECT ci.id, ci.collection_id AS collectionId, ci.item_type AS itemType,
-            ci.target_id AS targetId, ci.label, ci.position, ci.created_at AS createdAt
-       FROM collection_items ci
-       JOIN collections c ON c.id = ci.collection_id
-      WHERE c.user_id = ? AND c.deleted_at IS NULL
-      ORDER BY ci.position`,
-    userId,
-  );
+const rateLimitStatement = (db: D1Database, userId: string, window: RateLimitWindow) =>
+  db
+    .prepare(
+      `INSERT INTO request_rate_limits (user_id, route_key, window_start, count, updated_at)
+       VALUES (?, ?, ?, 1, ?)
+       ON CONFLICT(user_id, route_key, window_start)
+       DO UPDATE SET count = request_rate_limits.count + 1, updated_at = excluded.updated_at
+       RETURNING count`,
+    )
+    .bind(userId, window.routeKey, window.windowStart, new Date(window.now).toISOString());
+
+const collectionFoldersSql = `SELECT id, parent_id AS parentId, name, icon, color, position,
+                                      created_at AS createdAt, updated_at AS updatedAt
+                                 FROM collections
+                                WHERE user_id = ? AND deleted_at IS NULL
+                                ORDER BY CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END,
+                                         position, updated_at DESC`;
+
+const collectionItemsSql = `SELECT ci.id, ci.collection_id AS collectionId,
+                                    ci.item_type AS itemType, ci.target_id AS targetId,
+                                    ci.label, ci.position, ci.created_at AS createdAt
+                               FROM collection_items ci
+                               JOIN collections c ON c.id = ci.collection_id
+                              WHERE c.user_id = ? AND c.deleted_at IS NULL
+                              ORDER BY ci.position`;
+
+const collectionValue = (folders: Record<string, unknown>[], items: Record<string, unknown>[]) => {
   const itemsByCollection = new Map<string, Record<string, unknown>[]>();
   for (const item of items) {
     const collectionId = String(item.collectionId);
@@ -455,6 +485,102 @@ async function collections(db: D1Database, userId: string) {
     ...folder,
     items: itemsByCollection.get(String(folder.id)) || [],
   }));
+};
+
+const collectionTreeStatement = (db: D1Database, ownerSql: string, ownerValue: string) =>
+  db
+    .prepare(
+      `SELECT c.id, c.parent_id AS parentId, c.name, c.icon, c.color, c.position,
+              c.created_at AS createdAt, c.updated_at AS updatedAt,
+              COALESCE((
+                SELECT json_group_array(json_object(
+                  'id', item.id,
+                  'collectionId', item.collectionId,
+                  'itemType', item.itemType,
+                  'targetId', item.targetId,
+                  'label', item.label,
+                  'position', item.position,
+                  'createdAt', item.createdAt
+                ))
+                  FROM (
+                    SELECT ci.id, ci.collection_id AS collectionId,
+                           ci.item_type AS itemType, ci.target_id AS targetId,
+                           ci.label, ci.position, ci.created_at AS createdAt
+                      FROM collection_items ci
+                     WHERE ci.collection_id = c.id
+                     ORDER BY ci.position
+                  ) AS item
+              ), '[]') AS itemsJson
+         FROM collections c
+        WHERE c.user_id = ${ownerSql} AND c.deleted_at IS NULL
+        ORDER BY CASE WHEN c.parent_id IS NULL THEN 0 ELSE 1 END,
+                 c.position, c.updated_at DESC`,
+    )
+    .bind(ownerValue);
+
+const collectionTreeValue = (result: BatchResult | undefined) =>
+  batchRows<Record<string, unknown> & { itemsJson: string }>(result).map(
+    ({ itemsJson, ...folder }) => ({
+      ...folder,
+      items: parseJsonArray<Record<string, unknown>>(itemsJson),
+    }),
+  );
+
+async function collections(db: D1Database, userId: string) {
+  const [folderResult, itemResult] = await db.batch<Record<string, unknown>>([
+    db.prepare(collectionFoldersSql).bind(userId),
+    db.prepare(collectionItemsSql).bind(userId),
+  ]);
+  return collectionValue(folderResult?.results || [], itemResult?.results || []);
+}
+
+type CountRow = { count: number };
+
+const unreadCountSql = `SELECT COUNT(*) AS count FROM notifications
+                         WHERE user_id = ? AND read_at IS NULL
+                           AND type <> 'LEARNING_REVIEW'
+                           AND (expires_at IS NULL OR expires_at > ?)`;
+
+const dashboardRange = () => {
+  const now = nowIso();
+  return {
+    now,
+    weekAgo: new Date(Date.now() - 7 * 86_400_000).toISOString(),
+    weekAhead: new Date(Date.now() + 7 * 86_400_000).toISOString(),
+  };
+};
+
+type DashboardRow = { recentJobs: number; expiringJobs: number };
+
+const dashboardStatement = (
+  db: D1Database,
+  ownerSql: string,
+  ownerValue: string,
+  range = dashboardRange(),
+) =>
+  db
+    .prepare(
+      `SELECT
+         (SELECT COUNT(*) FROM jobs
+           WHERE status = 'ACTIVE' AND created_at >= ?) AS recentJobs,
+         (SELECT COUNT(*) FROM saved_jobs sj JOIN jobs j ON j.id = sj.job_id
+           WHERE sj.user_id = ${ownerSql} AND j.status = 'ACTIVE'
+             AND j.deadline_at BETWEEN ? AND ?) AS expiringJobs`,
+    )
+    .bind(range.weekAgo, ownerValue, range.now, range.weekAhead);
+
+const dashboardValue = (result: BatchResult | undefined) => {
+  const row = batchRows<DashboardRow>(result)[0];
+  return {
+    recentJobs: Number(row?.recentJobs || 0),
+    expiringJobs: Number(row?.expiringJobs || 0),
+    recentActivity: [],
+  };
+};
+
+async function dashboard(db: D1Database, userId: string) {
+  const [result] = await db.batch([dashboardStatement(db, '?', userId)]);
+  return dashboardValue(result);
 }
 
 async function ensureDeadlineNotifications(db: D1Database) {
@@ -514,34 +640,20 @@ export async function runScheduledMaintenance(env: D1Env) {
   if (lease?.ownerId !== ownerId) return { acquired: false, expiredJobs: 0, notifications: 0 };
   let notifications = 0;
   try {
-    const expired = await run(
-      db,
-      `UPDATE jobs SET status = 'EXPIRED', updated_at = ?
-        WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND rolling = 0
-          AND deadline_at IS NOT NULL AND deadline_at < ?`,
-      startedAt,
-      startedAt,
-    );
+    const [expired] = await db.batch([
+      db
+        .prepare(
+          `UPDATE jobs SET status = 'EXPIRED', updated_at = ?
+            WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND rolling = 0
+              AND deadline_at IS NOT NULL AND deadline_at < ?`,
+        )
+        .bind(startedAt, startedAt),
+      db
+        .prepare('DELETE FROM request_rate_limits WHERE window_start < ?')
+        .bind(Math.floor(Date.now() / 60_000) - 2),
+      db.prepare('DELETE FROM auth_sessions WHERE expires_at <= ?').bind(startedAt),
+    ]);
     notifications += await ensureDeadlineNotifications(db);
-    const reviewNotifications = await run(
-      db,
-      `INSERT INTO notifications
-         (id, user_id, type, title, message, href, dedupe_key, created_at)
-       SELECT lower(hex(randomblob(16))), lp.user_id, 'LEARNING_REVIEW',
-              '복습할 단원이 있습니다', u.title, '/learning?unit=' || lp.unit_id,
-              'learning-review:' || lp.unit_id || ':' || substr(lp.next_review_at, 1, 10), ?
-         FROM learning_progress lp
-         JOIN learning_units u ON u.id = lp.unit_id
-         JOIN users member ON member.id = lp.user_id
-        WHERE lp.completed = 1 AND lp.mastered_at IS NULL
-          AND lp.next_review_at IS NOT NULL AND lp.next_review_at <= ?
-          AND member.is_active = 1 AND member.review_notifications = 1
-       ON CONFLICT(user_id, dedupe_key) DO NOTHING`,
-      startedAt,
-      startedAt,
-    );
-    notifications += Number(reviewNotifications.meta?.changes || 0);
-    await run(db, 'DELETE FROM auth_sessions WHERE expires_at <= ?', startedAt);
     return {
       acquired: true,
       expiredJobs: Number(expired.meta?.changes || 0),
@@ -588,27 +700,58 @@ type ProblemRow = {
   favorite: number | boolean | null;
   solutionCount: number;
   position: number;
+  totalCount?: number;
 };
 
-async function problems(db: D1Database, userId: string, search: URLSearchParams) {
+type ReadOwner = { kind: 'userId'; value: string };
+
+const readOwnerSql = (_owner: ReadOwner) => '?';
+
+type ProblemReadPlan = {
+  statements: D1PreparedStatement[];
+  value(results: BatchResult[]): unknown;
+};
+
+function problemListPlan(
+  db: D1Database,
+  owner: ReadOwner,
+  search: URLSearchParams,
+): ProblemReadPlan {
   const clauses = ['p.active = 1'];
   const filterValues: unknown[] = [];
+  const countClauses = ['counted.active = 1'];
+  const countValues: unknown[] = [];
   const level = search.get('level');
   const track = search.get('track');
+  const scope = search.get('scope');
   if (level) {
     clauses.push('p.level = ?');
     filterValues.push(Number(level));
+    countClauses.push('counted.level = ?');
+    countValues.push(Number(level));
   }
   if (track === 'ALGORITHM' || track === 'SQL') {
     clauses.push('p.track = ?');
     filterValues.push(track);
+    countClauses.push('counted.track = ?');
+    countValues.push(track);
+  }
+  if (scope === 'solved') {
+    clauses.push("pp.status = 'SOLVED'");
+    countClauses.push(
+      `EXISTS (SELECT 1 FROM problem_progress counted_progress
+                WHERE counted_progress.problem_id = counted.id
+                  AND counted_progress.user_id = ${readOwnerSql(owner)}
+                  AND counted_progress.status = 'SOLVED')`,
+    );
+    countValues.push(owner.value);
   }
   const paged = cursorPageRequested(search);
   const limit = paged ? cursorLimit(search, 60, 100) : 500;
   const cursor = paged
     ? decodeCursor<{ position?: unknown; id?: unknown }>(search.get('cursor'))
     : null;
-  const values: unknown[] = [userId, ...filterValues];
+  const values: unknown[] = [owner.value, ...filterValues];
   if (cursor) {
     const position = int(cursor.position, -1);
     const id = cleanText(cursor.id);
@@ -617,52 +760,64 @@ async function problems(db: D1Database, userId: string, search: URLSearchParams)
     clauses.push('(p.position > ? OR (p.position = ? AND p.id > ?))');
     values.push(position, position, id);
   }
-  const rows = await all<ProblemRow>(
-    db,
-    `SELECT p.id, p.source_url AS sourceUrl, p.display_title AS displayTitle, p.level, p.track, p.tags,
-            p.position,
-            pp.status, pp.favorite,
-            (SELECT COUNT(*) FROM solutions s WHERE s.problem_id = p.id AND s.deleted_at IS NULL) AS solutionCount
-       FROM coding_problems p
-       LEFT JOIN problem_progress pp ON pp.problem_id = p.id AND pp.user_id = ?
-      WHERE ${clauses.join(' AND ')}
-      ORDER BY p.position, p.id
-      LIMIT ?`,
-    ...values,
-    limit + (paged ? 1 : 0),
-  );
-  const hasMore = paged && rows.length > limit;
-  const pageRows = hasMore ? rows.slice(0, limit) : rows;
-  const items = pageRows.map((row) => ({
-    id: row.id,
-    sourceUrl: row.sourceUrl,
-    displayTitle: row.displayTitle,
-    level: row.level,
-    track: row.track,
-    tags: parseArray(row.tags),
-    progress: row.status ? [{ status: row.status, favorite: asBoolean(row.favorite) }] : [],
-    _count: { solutions: Number(row.solutionCount || 0) },
-  }));
-  if (!paged) return items;
-  const total = await first<{ count: number }>(
-    db,
-    `SELECT COUNT(*) AS count FROM coding_problems p WHERE ${clauses
-      .filter((clause) => !clause.startsWith('(p.position >'))
-      .join(' AND ')}`,
-    ...filterValues,
-  );
-  const last = pageRows.at(-1);
+  const statements = [
+    db
+      .prepare(
+        `SELECT p.id, p.source_url AS sourceUrl, p.display_title AS displayTitle, p.level, p.track, p.tags,
+                p.position,
+                ${
+                  paged
+                    ? `(SELECT COUNT(*) FROM coding_problems counted
+                         WHERE ${countClauses.join(' AND ')})`
+                    : '0'
+                } AS totalCount,
+                pp.status, pp.favorite,
+                (SELECT COUNT(*) FROM solutions s WHERE s.problem_id = p.id AND s.deleted_at IS NULL) AS solutionCount
+           FROM coding_problems p
+           LEFT JOIN problem_progress pp ON pp.problem_id = p.id
+            AND pp.user_id = ${readOwnerSql(owner)}
+          WHERE ${clauses.join(' AND ')}
+          ORDER BY p.position, p.id
+          LIMIT ?`,
+      )
+      .bind(...(paged ? countValues : []), ...values, limit + (paged ? 1 : 0)),
+  ];
   return {
-    items,
-    nextCursor:
-      hasMore && last
-        ? encodeCursor({
-            position: last.position,
-            id: last.id,
-          })
-        : null,
-    total: Number(total?.count || 0),
-  } satisfies CursorPage<(typeof items)[number]>;
+    statements,
+    value(results) {
+      const rows = batchRows<ProblemRow>(results[0]);
+      const hasMore = paged && rows.length > limit;
+      const pageRows = hasMore ? rows.slice(0, limit) : rows;
+      const items = pageRows.map((row) => ({
+        id: row.id,
+        sourceUrl: row.sourceUrl,
+        displayTitle: row.displayTitle,
+        level: row.level,
+        track: row.track,
+        tags: parseArray(row.tags),
+        progress: row.status ? [{ status: row.status, favorite: asBoolean(row.favorite) }] : [],
+        _count: { solutions: Number(row.solutionCount || 0) },
+      }));
+      if (!paged) return items;
+      const last = pageRows.at(-1);
+      return {
+        items,
+        nextCursor:
+          hasMore && last
+            ? encodeCursor({
+                position: last.position,
+                id: last.id,
+              })
+            : null,
+        total: Number(pageRows[0]?.totalCount || 0),
+      } satisfies CursorPage<(typeof items)[number]>;
+    },
+  };
+}
+
+async function problems(db: D1Database, userId: string, search: URLSearchParams) {
+  const plan = problemListPlan(db, { kind: 'userId', value: userId }, search);
+  return plan.value((await db.batch(plan.statements)) as BatchResult[]);
 }
 
 async function problemDetail(db: D1Database, userId: string, problemId: string) {
@@ -699,153 +854,269 @@ const kstDate = () =>
     day: '2-digit',
   }).format(new Date());
 
-async function dailyChallenge(
-  db: D1Database,
-  userId: string,
-  levelSlot = 1,
-  track: 'ALGORITHM' | 'SQL' = 'ALGORITHM',
-  levels: number[] = [levelSlot],
-  repeatExclusionDays = 60,
-  allowRepeatRelaxation = false,
-) {
-  const today = kstDate();
-  let challenge = await first<{
-    id: string;
-    problemId: string;
-    levelSlot: number;
-    createdAt: string;
-  }>(
-    db,
-    `SELECT id, problem_id AS problemId, level_slot AS levelSlot, created_at AS createdAt
-       FROM daily_challenges WHERE kst_date = ? AND level_slot = ?`,
-    today,
-    levelSlot,
-  );
-  if (!challenge) {
-    const levelPlaceholders = levels.map(() => '?').join(', ');
-    const cutoff = new Date(`${today}T00:00:00.000Z`);
-    cutoff.setUTCDate(cutoff.getUTCDate() - Math.max(0, repeatExclusionDays));
-    const candidateRows = (relaxed: boolean) =>
-      all<{ id: string }>(
-        db,
-        `SELECT id FROM coding_problems
-          WHERE active = 1 AND track = ? AND level IN (${levelPlaceholders})
-            AND id NOT IN (
-              SELECT problem_id FROM daily_challenges WHERE kst_date >= ?
-            )
-          ORDER BY position, id`,
-        track,
-        ...levels,
-        relaxed ? today : cutoff.toISOString().slice(0, 10),
-      );
-    let candidates = await candidateRows(false);
-    if (!candidates.length && allowRepeatRelaxation) candidates = await candidateRows(true);
-    if (!candidates.length)
-      throw new RouteError(
-        404,
-        `오늘의 ${track === 'SQL' ? 'SQL Lv. 3~4' : `Lv. ${levelSlot}`} 문제 후보가 없습니다.`,
-      );
-    let seed = 0x811c9dc5;
-    for (const character of `${today}:${track}:${levelSlot}:${levels.join('-')}`) {
-      seed ^= character.charCodeAt(0);
-      seed = Math.imul(seed, 0x01000193) >>> 0;
-    }
-    const selected = candidates[seed % candidates.length];
-    const timestamp = nowIso();
-    const id = newId();
-    await run(
-      db,
-      'INSERT OR IGNORE INTO daily_challenges (id, kst_date, level_slot, problem_id, created_at) VALUES (?, ?, ?, ?, ?)',
-      id,
-      today,
-      levelSlot,
-      selected.id,
-      timestamp,
-    );
-    challenge = await first<{
-      id: string;
-      problemId: string;
-      levelSlot: number;
-      createdAt: string;
-    }>(
-      db,
-      `SELECT id, problem_id AS problemId, level_slot AS levelSlot, created_at AS createdAt
-         FROM daily_challenges WHERE kst_date = ? AND level_slot = ?`,
-      today,
-      levelSlot,
-    );
-  }
-  if (!challenge) throw new RouteError(500, '오늘의 문제를 준비하지 못했습니다.');
-  const exact = await first<ProblemRow>(
-    db,
-    `SELECT p.id, p.source_url AS sourceUrl, p.display_title AS displayTitle, p.level, p.track, p.tags,
-            pp.status, pp.favorite,
-            (SELECT COUNT(*) FROM solutions s WHERE s.problem_id = p.id AND s.deleted_at IS NULL) AS solutionCount
-       FROM coding_problems p
-       LEFT JOIN problem_progress pp ON pp.problem_id = p.id AND pp.user_id = ?
-      WHERE p.id = ?`,
-    userId,
-    challenge.problemId,
-  );
-  if (!exact) throw new RouteError(500, '오늘의 문제 정보를 찾지 못했습니다.');
-  const problemValue = {
-    id: exact.id,
-    sourceUrl: exact.sourceUrl,
-    displayTitle: exact.displayTitle,
-    level: exact.level,
-    track: exact.track,
-    tags: parseArray(exact.tags),
-    progress: exact.status ? [{ status: exact.status, favorite: asBoolean(exact.favorite) }] : [],
-    _count: { solutions: Number(exact.solutionCount || 0) },
-  };
-  return { ...challenge, problem: problemValue };
-}
+type DailyChallengeRow = {
+  id: string;
+  problemId: string;
+  levelSlot: number;
+  createdAt: string;
+  sourceUrl: string;
+  displayTitle: string;
+  level: number;
+  track: 'ALGORITHM' | 'SQL';
+  tags: string;
+  status: string | null;
+  favorite: number | boolean | null;
+  solutionCount: number;
+};
 
-async function dailyChallenges(db: D1Database, userId: string) {
-  const setting = await first<{
-    allowedLevels: string;
-    repeatExclusionDays: number;
-    allowRepeatRelaxation: number | boolean;
-  }>(
-    db,
-    `SELECT allowed_levels AS allowedLevels,
-            repeat_exclusion_days AS repeatExclusionDays,
-            allow_repeat_relaxation AS allowRepeatRelaxation
-       FROM daily_challenge_settings WHERE id = 1`,
-  );
+const dailyChallengeRowsSql = `SELECT dc.id, dc.problem_id AS problemId,
+                                      dc.level_slot AS levelSlot, dc.created_at AS createdAt,
+                                      p.source_url AS sourceUrl,
+                                      p.display_title AS displayTitle, p.level, p.track, p.tags,
+                                      pp.status, pp.favorite,
+                                      (SELECT COUNT(*) FROM solutions s
+                                        WHERE s.problem_id = p.id AND s.deleted_at IS NULL)
+                                        AS solutionCount
+                                 FROM daily_challenges dc
+                                 JOIN coding_problems p ON p.id = dc.problem_id AND p.active = 1
+                                 LEFT JOIN problem_progress pp
+                                   ON pp.problem_id = p.id AND pp.user_id = ?
+                                WHERE dc.kst_date = ? AND dc.level_slot IN (1, 2, 34)
+                                ORDER BY CASE dc.level_slot
+                                           WHEN 1 THEN 1 WHEN 2 THEN 2 ELSE 3 END`;
+
+type DailyChallengeSettingRow = {
+  allowedLevels: string;
+  repeatExclusionDays: number;
+  allowRepeatRelaxation: number | boolean;
+};
+
+const dailyChallengeSettingSql = `SELECT allowed_levels AS allowedLevels,
+                                          repeat_exclusion_days AS repeatExclusionDays,
+                                          allow_repeat_relaxation AS allowRepeatRelaxation
+                                     FROM daily_challenge_settings WHERE id = 1`;
+
+const dailyChallengeConfiguration = (setting?: DailyChallengeSettingRow) => {
   const configuredLevels = parseArray(setting?.allowedLevels || '[1,2]')
     .map(Number)
     .filter((level) => Number.isInteger(level) && level >= 0 && level <= 5);
   const algorithmLevels = configuredLevels.length ? configuredLevels : [1, 2];
-  const repeatExclusionDays = Math.max(0, Number(setting?.repeatExclusionDays ?? 60));
-  const allowRepeatRelaxation = asBoolean(setting?.allowRepeatRelaxation);
-  const result = [];
-  result.push(
-    await dailyChallenge(
-      db,
-      userId,
-      1,
-      'ALGORITHM',
-      [algorithmLevels[0] ?? 1],
-      repeatExclusionDays,
-      allowRepeatRelaxation,
+  return {
+    specs: [
+      { levelSlot: 1, track: 'ALGORITHM' as const, levels: [algorithmLevels[0] ?? 1] },
+      {
+        levelSlot: 2,
+        track: 'ALGORITHM' as const,
+        levels: [algorithmLevels[1] ?? algorithmLevels[0] ?? 2],
+      },
+      { levelSlot: 34, track: 'SQL' as const, levels: [3, 4] },
+    ],
+    repeatExclusionDays: Math.max(0, Number(setting?.repeatExclusionDays ?? 60)),
+    allowRepeatRelaxation: asBoolean(setting?.allowRepeatRelaxation),
+  };
+};
+
+const dailyChallengeValue = (row: DailyChallengeRow) => ({
+  id: row.id,
+  problemId: row.problemId,
+  levelSlot: row.levelSlot,
+  createdAt: row.createdAt,
+  problem: {
+    id: row.problemId,
+    sourceUrl: row.sourceUrl,
+    displayTitle: row.displayTitle,
+    level: row.level,
+    track: row.track,
+    tags: parseArray(row.tags),
+    progress: row.status ? [{ status: row.status, favorite: asBoolean(row.favorite) }] : [],
+    _count: { solutions: Number(row.solutionCount || 0) },
+  },
+});
+
+const hasEveryDailyChallenge = (rows: DailyChallengeRow[]) => {
+  const slots = new Set(rows.map((row) => Number(row.levelSlot)));
+  return [1, 2, 34].every((levelSlot) => slots.has(levelSlot));
+};
+
+async function selectMissingDailyChallenges(
+  db: D1Database,
+  today: string,
+  existingRows: DailyChallengeRow[],
+  setting?: DailyChallengeSettingRow,
+) {
+  const existingSlots = new Set(existingRows.map((row) => Number(row.levelSlot)));
+  const configuration = dailyChallengeConfiguration(setting);
+  const missing = configuration.specs.filter((spec) => !existingSlots.has(spec.levelSlot));
+  if (!missing.length) return;
+  const cutoff = new Date(`${today}T00:00:00.000Z`);
+  cutoff.setUTCDate(cutoff.getUTCDate() - configuration.repeatExclusionDays);
+  const candidateIndexes: Array<{ strict: number; relaxed?: number }> = [];
+  const candidateStatements = [];
+  for (const spec of missing) {
+    const placeholders = spec.levels.map(() => '?').join(', ');
+    const sql = `SELECT id FROM coding_problems
+                  WHERE active = 1 AND track = ? AND level IN (${placeholders})
+                    AND id NOT IN (
+                      SELECT problem_id FROM daily_challenges WHERE kst_date >= ?
+                    )
+                  ORDER BY position, id`;
+    const strict = candidateStatements.length;
+    candidateStatements.push(
+      db.prepare(sql).bind(spec.track, ...spec.levels, cutoff.toISOString().slice(0, 10)),
+    );
+    let relaxed: number | undefined;
+    if (configuration.allowRepeatRelaxation) {
+      relaxed = candidateStatements.length;
+      candidateStatements.push(db.prepare(sql).bind(spec.track, ...spec.levels, today));
+    }
+    candidateIndexes.push({ strict, relaxed });
+  }
+  const candidateResults = await db.batch<{ id: string }>(candidateStatements);
+  const timestamp = nowIso();
+  const inserts = missing.map((spec, index) => {
+    const resultIndexes = candidateIndexes[index]!;
+    let candidates = candidateResults[resultIndexes.strict]?.results || [];
+    if (!candidates.length && resultIndexes.relaxed !== undefined) {
+      candidates = candidateResults[resultIndexes.relaxed]?.results || [];
+    }
+    if (!candidates.length) {
+      throw new RouteError(
+        404,
+        `오늘의 ${spec.track === 'SQL' ? 'SQL Lv. 3~4' : `Lv. ${spec.levelSlot}`} 문제 후보가 없습니다.`,
+      );
+    }
+    let seed = 0x811c9dc5;
+    for (const character of `${today}:${spec.track}:${spec.levelSlot}:${spec.levels.join('-')}`) {
+      seed ^= character.charCodeAt(0);
+      seed = Math.imul(seed, 0x01000193) >>> 0;
+    }
+    const selected = candidates[seed % candidates.length]!;
+    return db
+      .prepare(
+        `INSERT OR IGNORE INTO daily_challenges
+           (id, kst_date, level_slot, problem_id, created_at) VALUES (?, ?, ?, ?, ?)`,
+      )
+      .bind(newId(), today, spec.levelSlot, selected.id, timestamp);
+  });
+  await db.batch(inserts);
+}
+
+async function dailyChallengeRows(db: D1Database, userId: string, today: string) {
+  return all<DailyChallengeRow>(db, dailyChallengeRowsSql, userId, today);
+}
+
+async function completeDailyChallenges(
+  db: D1Database,
+  userId: string,
+  today: string,
+  rows: DailyChallengeRow[],
+  setting?: DailyChallengeSettingRow,
+) {
+  if (!hasEveryDailyChallenge(rows)) {
+    setting ??= (await first<DailyChallengeSettingRow>(db, dailyChallengeSettingSql)) || undefined;
+    await selectMissingDailyChallenges(db, today, rows, setting);
+    rows = await dailyChallengeRows(db, userId, today);
+  }
+  if (!hasEveryDailyChallenge(rows)) {
+    throw new RouteError(500, '오늘의 문제를 준비하지 못했습니다.');
+  }
+  return rows.map(dailyChallengeValue);
+}
+
+async function dailyChallenges(db: D1Database, userId: string) {
+  const today = kstDate();
+  const rows = await dailyChallengeRows(db, userId, today);
+  return completeDailyChallenges(db, userId, today, rows);
+}
+
+async function dailyChallenge(db: D1Database, userId: string) {
+  const challenges = await dailyChallenges(db, userId);
+  const challenge = challenges.find((value) => value.levelSlot === 1);
+  if (!challenge) throw new RouteError(500, '오늘의 문제를 준비하지 못했습니다.');
+  return challenge;
+}
+
+type BatchResult = { results?: Record<string, unknown>[] };
+
+const batchRows = <T>(result: BatchResult | undefined) => (result?.results || []) as T[];
+
+const bootstrapStatementsForUser = (
+  db: D1Database,
+  userId: string,
+  includeHome: boolean,
+  today: string,
+  rateWindow: RateLimitWindow,
+) => {
+  const statements = [
+    db
+      .prepare(
+        `INSERT INTO request_rate_limits (user_id, route_key, window_start, count, updated_at)
+         VALUES (?, ?, ?, 1, ?)
+         ON CONFLICT(user_id, route_key, window_start)
+         DO UPDATE SET count = request_rate_limits.count + 1, updated_at = excluded.updated_at
+         RETURNING count`,
+      )
+      .bind(
+        userId,
+        rateWindow.routeKey,
+        rateWindow.windowStart,
+        new Date(rateWindow.now).toISOString(),
+      ),
+    db.prepare(unreadCountSql).bind(userId, nowIso()),
+  ];
+  if (!includeHome) return statements;
+  statements.push(
+    collectionTreeStatement(db, '?', userId),
+    dashboardStatement(db, '?', userId),
+    db.prepare(dailyChallengeRowsSql).bind(userId, today),
+  );
+  return statements;
+};
+
+async function bootstrapPayload(
+  db: D1Database,
+  user: UserRow,
+  includeHome: boolean,
+  today: string,
+  rateWindow: RateLimitWindow,
+  results: BatchResult[],
+  embeddedUnreadCount?: number,
+) {
+  assertRateLimit(Number(batchRows<CountRow>(results[0])[0]?.count || 1), rateWindow);
+  let resultIndex = 1;
+  const unreadCount =
+    embeddedUnreadCount === undefined
+      ? Number(batchRows<CountRow>(results[resultIndex++])[0]?.count || 0)
+      : embeddedUnreadCount;
+  const shouldIncludeHome = includeHome && Boolean(user.onboardingCompletedAt);
+  if (!shouldIncludeHome) return { user: apiUser(user), unreadCount, home: null };
+  const collectionResult = results[resultIndex++];
+  const dashboardResult = results[resultIndex++];
+  const dailyRows = batchRows<DailyChallengeRow>(results[resultIndex]);
+  return {
+    user: apiUser(user),
+    unreadCount,
+    home: {
+      collections: collectionTreeValue(collectionResult),
+      dashboard: dashboardValue(dashboardResult),
+      dailyChallenges: await completeDailyChallenges(db, user.id, today, dailyRows),
+    },
+  };
+}
+
+async function bootstrap(user: UserRow, env: D1Env, includeHome: boolean) {
+  const today = kstDate();
+  const rateWindow = rateLimitWindow('GET', env, '/api/v1/bootstrap');
+  const results = (await env.DB.batch<Record<string, unknown>>(
+    bootstrapStatementsForUser(
+      env.DB,
+      user.id,
+      includeHome && Boolean(user.onboardingCompletedAt),
+      today,
+      rateWindow,
     ),
-  );
-  result.push(
-    await dailyChallenge(
-      db,
-      userId,
-      2,
-      'ALGORITHM',
-      [algorithmLevels[1] ?? algorithmLevels[0] ?? 2],
-      repeatExclusionDays,
-      allowRepeatRelaxation,
-    ),
-  );
-  result.push(
-    await dailyChallenge(db, userId, 34, 'SQL', [3, 4], repeatExclusionDays, allowRepeatRelaxation),
-  );
-  return result;
+  )) as BatchResult[];
+  return bootstrapPayload(env.DB, user, includeHome, today, rateWindow, results);
 }
 
 type SolutionRow = {
@@ -1057,6 +1328,7 @@ function serializeJobRows(rows: Record<string, unknown>[]) {
     remote: asBoolean(row.remote),
     techStack: parseArray(row.tech_stack),
     publishedAt: row.published_at || null,
+    applicationStartAt: row.application_start_at || null,
     collectedAt: row.collected_at,
     deadlineAt: row.deadline_at,
     rolling: asBoolean(row.rolling),
@@ -1077,16 +1349,21 @@ function serializeJobRows(rows: Record<string, unknown>[]) {
   }));
 }
 
-async function calendarJobList(
+type JobReadPlan = {
+  statements: D1PreparedStatement[];
+  value(results: BatchResult[]): unknown;
+};
+
+function calendarJobPlan(
   db: D1Database,
-  userId: string,
+  owner: ReadOwner,
   from: string,
   to: string,
   companySizes: string[],
   categories: string[],
   query: string,
   savedOnly: boolean,
-) {
+): JobReadPlan {
   const filters: string[] = [];
   const filterValues: unknown[] = [];
   if (companySizes.length) {
@@ -1109,55 +1386,63 @@ async function calendarJobList(
   if (savedOnly) filters.push('sj.bookmarked = 1');
   const select = (indexName: string, scheduleClause: string) => `
     SELECT j.id, j.title, j.category, j.region, j.remote, j.tech_stack,
-           j.published_at, j.collected_at, j.deadline_at, j.rolling, substr(j.summary, 1, 320) AS summary,
+           j.published_at, j.application_start_at, j.collected_at, j.deadline_at, j.rolling,
+           substr(j.summary, 1, 320) AS summary,
            j.source_url, j.company_name,
            j.company_size, j.source_name, j.last_verified_at,
            sj.status AS savedStatus, sj.memo AS savedMemo, sj.bookmarked AS savedBookmarked
       FROM jobs j INDEXED BY ${indexName}
-      LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ?
+      LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ${readOwnerSql(owner)}
      WHERE j.status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
        AND j.career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
        AND ${scheduleClause}
        ${filters.length ? `AND ${filters.join(' AND ')}` : ''}
      LIMIT 1001`;
   const statement = (indexName: string, scheduleClause: string, ...scheduleValues: unknown[]) =>
-    db.prepare(select(indexName, scheduleClause)).bind(userId, ...scheduleValues, ...filterValues);
-  const resultSets = await db.batch<Record<string, unknown>>([
+    db
+      .prepare(select(indexName, scheduleClause))
+      .bind(owner.value, ...scheduleValues, ...filterValues);
+  const statements = [
     statement('idx_jobs_calendar_deadline', 'j.deadline_at >= ? AND j.deadline_at < ?', from, to),
     statement(
-      'idx_jobs_calendar_collected',
-      'j.collected_at >= ? AND j.collected_at < ?',
+      'idx_jobs_calendar_published',
+      'j.published_at >= ? AND j.published_at < ?',
       from,
       to,
     ),
     statement(
-      'idx_jobs_calendar_created',
-      'j.collected_at IS NULL AND j.created_at >= ? AND j.created_at < ?',
+      'idx_jobs_calendar_application_start',
+      'j.application_start_at >= ? AND j.application_start_at < ?',
       from,
       to,
     ),
     statement('idx_jobs_calendar_rolling', 'j.rolling = 1'),
-  ]);
-  const unique = new Map<string, Record<string, unknown>>();
-  for (const result of resultSets) {
-    if ((result.results || []).length > 1000) {
-      throw new RouteError(
-        422,
-        '달력 일정이 너무 많습니다. 검색어나 필터로 범위를 좁혀주세요.',
-        'CALENDAR_RESULT_LIMIT',
-      );
-    }
-    for (const row of result.results || []) unique.set(String(row.id), row);
-  }
-  return serializeJobRows([...unique.values()]);
+  ];
+  return {
+    statements,
+    value(results) {
+      const unique = new Map<string, Record<string, unknown>>();
+      for (const result of results) {
+        if ((result.results || []).length > 1000) {
+          throw new RouteError(
+            422,
+            '달력 일정이 너무 많습니다. 검색어나 필터로 범위를 좁혀주세요.',
+            'CALENDAR_RESULT_LIMIT',
+          );
+        }
+        for (const row of result.results || []) unique.set(String(row.id), row);
+      }
+      return serializeJobRows([...unique.values()]);
+    },
+  };
 }
 
-async function jobList(db: D1Database, userId: string, url: URL) {
+function jobListPlan(db: D1Database, owner: ReadOwner, url: URL): JobReadPlan {
   const clauses = [
     "j.status IN ('ACTIVE', 'DEADLINE_UNKNOWN')",
     "j.career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')",
   ];
-  const values: unknown[] = [userId];
+  const values: unknown[] = [];
   const companySizes = [...new Set(url.searchParams.getAll('companySize').filter(Boolean))].slice(
     0,
     100,
@@ -1184,7 +1469,8 @@ async function jobList(db: D1Database, userId: string, url: URL) {
       values.push(match);
     }
   }
-  if (url.searchParams.get('saved') === '1') clauses.push('sj.bookmarked = 1');
+  const savedOnly = url.searchParams.get('saved') === '1';
+  if (savedOnly) clauses.push('sj.bookmarked = 1');
   const deadlineFrom = url.searchParams.get('deadlineFrom');
   const deadlineTo = url.searchParams.get('deadlineTo');
   const calendar = url.searchParams.get('calendar') === 'true';
@@ -1202,16 +1488,7 @@ async function jobList(db: D1Database, userId: string, url: URL) {
   if (calendar && deadlineFrom && deadlineTo) {
     const from = new Date(deadlineFrom).toISOString();
     const to = new Date(deadlineTo).toISOString();
-    return calendarJobList(
-      db,
-      userId,
-      from,
-      to,
-      companySizes,
-      categories,
-      query,
-      url.searchParams.get('saved') === '1',
-    );
+    return calendarJobPlan(db, owner, from, to, companySizes, categories, query, savedOnly);
   } else {
     if (deadlineFrom) {
       clauses.push('j.deadline_at >= ?');
@@ -1228,7 +1505,7 @@ async function jobList(db: D1Database, userId: string, url: URL) {
       ? "COALESCE(j.deadline_at, '9999') ASC, j.id ASC"
       : sortMode === 'company'
         ? 'j.company_name ASC, j.id ASC'
-        : "COALESCE(j.collected_at, '') DESC, j.id DESC";
+        : 'j.collected_at DESC, j.id DESC';
   const indexName =
     sortMode === 'deadline'
       ? 'idx_jobs_deadline_status'
@@ -1238,9 +1515,10 @@ async function jobList(db: D1Database, userId: string, url: URL) {
           ? 'idx_jobs_category_created_status'
           : companySizes.length
             ? 'idx_jobs_size_created_status'
-            : 'idx_jobs_calendar_collected';
-  const paged = cursorPageRequested(url.searchParams);
-  const limit = paged ? cursorLimit(url.searchParams, 40, 100) : 200;
+            : 'idx_jobs_feed_collected_id';
+  const catalog = url.searchParams.get('catalog') === 'true';
+  const paged = !catalog && cursorPageRequested(url.searchParams);
+  const limit = catalog ? 1_000 : paged ? cursorLimit(url.searchParams, 40, 100) : 200;
   const baseClauses = [...clauses];
   const baseValues = [...values];
   const cursor = paged
@@ -1263,45 +1541,71 @@ async function jobList(db: D1Database, userId: string, url: URL) {
     }
     values.push(cursorValue, cursorValue, cursorId);
   }
-  const rows = await all<Record<string, unknown>>(
-    db,
-    `SELECT j.id, j.title, j.category, j.region, j.remote, j.tech_stack,
-            j.published_at, j.collected_at, j.deadline_at, j.rolling, substr(j.summary, 1, 320) AS summary,
+  const statements = [
+    db
+      .prepare(
+        `SELECT j.id, j.title, j.category, j.region, j.remote, j.tech_stack,
+            j.published_at, j.application_start_at, j.collected_at, j.deadline_at, j.rolling,
+            substr(j.summary, 1, 320) AS summary,
             j.source_url, j.company_name,
             j.company_size, j.source_name, j.last_verified_at,
             sj.status AS savedStatus, sj.memo AS savedMemo, sj.bookmarked AS savedBookmarked
        FROM jobs j ${calendar ? '' : `INDEXED BY ${indexName}`}
-       LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ?
+       LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ${readOwnerSql(owner)}
       WHERE ${clauses.join(' AND ')}
       ORDER BY ${order} LIMIT ?`,
-    ...values,
-    limit + (paged ? 1 : 0),
-  );
-  const hasMore = paged && rows.length > limit;
-  const pageRows = hasMore ? rows.slice(0, limit) : rows;
-  const items = serializeJobRows(pageRows);
-  if (!paged) return items;
-  const total = await first<{ count: number }>(
-    db,
-    `SELECT COUNT(*) AS count
-       FROM jobs j
-       LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ?
-      WHERE ${baseClauses.join(' AND ')}`,
-    ...baseValues,
-  );
-  const last = pageRows.at(-1);
-  const cursorValue = last
-    ? sortMode === 'deadline'
-      ? String(last.deadline_at || '9999')
-      : sortMode === 'company'
-        ? String(last.company_name || '')
-        : String(last.collected_at || '')
-    : '';
+      )
+      .bind(owner.value, ...values, limit + (paged || catalog ? 1 : 0)),
+  ];
+  if (paged) {
+    statements.push(
+      db
+        .prepare(
+          `SELECT COUNT(*) AS count
+             FROM jobs j
+             ${savedOnly ? `LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ${readOwnerSql(owner)}` : ''}
+            WHERE ${baseClauses.join(' AND ')}`,
+        )
+        .bind(...(savedOnly ? [owner.value, ...baseValues] : baseValues)),
+    );
+  }
   return {
-    items,
-    nextCursor: hasMore && last ? encodeCursor({ value: cursorValue, id: last.id }) : null,
-    total: Number(total?.count || 0),
-  } satisfies CursorPage<(typeof items)[number]>;
+    statements,
+    value(results) {
+      const rows = batchRows<Record<string, unknown>>(results[0]);
+      if (catalog && rows.length > limit) {
+        throw new RouteError(
+          422,
+          '채용공고가 너무 많아 전체 카탈로그를 한 번에 표시할 수 없습니다.',
+          'JOB_CATALOG_RESULT_LIMIT',
+        );
+      }
+      const hasMore = paged && rows.length > limit;
+      const pageRows = hasMore ? rows.slice(0, limit) : rows;
+      const items = serializeJobRows(pageRows);
+      if (!paged) return items;
+      const total = batchRows<{ count: number }>(results[1])[0];
+      const last = pageRows.at(-1);
+      const cursorValue = last
+        ? sortMode === 'deadline'
+          ? String(last.deadline_at || '9999')
+          : sortMode === 'company'
+            ? String(last.company_name || '')
+            : String(last.collected_at || '')
+        : '';
+      return {
+        items,
+        nextCursor: hasMore && last ? encodeCursor({ value: cursorValue, id: last.id }) : null,
+        total: Number(total?.count || 0),
+      } satisfies CursorPage<(typeof items)[number]>;
+    },
+  };
+}
+
+async function jobList(db: D1Database, userId: string, url: URL) {
+  const plan = jobListPlan(db, { kind: 'userId', value: userId }, url);
+  const results = (await db.batch(plan.statements)) as BatchResult[];
+  return plan.value(results);
 }
 
 async function jobDetail(db: D1Database, userId: string, jobId: string) {
@@ -1309,7 +1613,8 @@ async function jobDetail(db: D1Database, userId: string, jobId: string) {
     db,
     `SELECT j.id, j.title, j.category, j.region, j.remote,
             COALESCE((SELECT json_group_array(jts.name) FROM job_tech_stacks jts WHERE jts.job_id = j.id), j.tech_stack) AS tech_stack,
-            j.published_at, j.collected_at, j.deadline_at, j.rolling, j.summary, j.source_url,
+            j.published_at, j.application_start_at, j.collected_at, j.deadline_at, j.rolling,
+            j.summary, j.source_url,
             j.company_name, j.company_size, j.source_name, j.last_verified_at,
             sj.status AS savedStatus, sj.memo AS savedMemo, sj.bookmarked AS savedBookmarked
        FROM jobs j
@@ -1323,134 +1628,327 @@ async function jobDetail(db: D1Database, userId: string, jobId: string) {
   return serializeJobRows([row])[0];
 }
 
-async function jobCategories(db: D1Database) {
-  const rows = await all<{ category: string }>(
-    db,
+const jobCategoriesStatement = (db: D1Database) =>
+  db.prepare(
     `SELECT DISTINCT category
-       FROM jobs INDEXED BY idx_jobs_category_created_status
+       FROM jobs INDEXED BY idx_jobs_active_category
       WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
         AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
       ORDER BY category LIMIT 100`,
   );
-  return rows.map((row) => row.category);
+
+const jobCategoryValues = (result: BatchResult | undefined) =>
+  batchRows<{ category: string }>(result).map((row) => row.category);
+
+async function jobCategories(db: D1Database) {
+  const [result] = (await db.batch([jobCategoriesStatement(db)])) as BatchResult[];
+  return jobCategoryValues(result);
+}
+
+type JobReadMode = 'data' | 'categories' | 'bootstrap';
+
+async function fastJobRead(
+  user: UserRow,
+  request: Request,
+  env: D1Env,
+  url: URL,
+  mode: JobReadMode,
+) {
+  const includeData = mode !== 'categories';
+  const includeCategories = mode !== 'data';
+  const includeUnread = mode === 'bootstrap';
+  const catalogBootstrap = mode === 'bootstrap' && url.searchParams.get('catalog') === 'true';
+  const window = rateLimitWindow(request.method.toUpperCase(), env, url.pathname);
+  const statements = [rateLimitStatement(env.DB, user.id, window)];
+  const unreadIndex = includeUnread ? statements.length : -1;
+  if (includeUnread) statements.push(env.DB.prepare(unreadCountSql).bind(user.id, nowIso()));
+  const fetchCategories = includeCategories && !catalogBootstrap;
+  const categoriesIndex = fetchCategories ? statements.length : -1;
+  if (fetchCategories) statements.push(jobCategoriesStatement(env.DB));
+  const planUrl = catalogBootstrap ? new URL(url) : url;
+  if (catalogBootstrap) {
+    planUrl.search = '';
+    planUrl.searchParams.set('catalog', 'true');
+  }
+  const plan = includeData
+    ? jobListPlan(env.DB, { kind: 'userId', value: user.id }, planUrl)
+    : undefined;
+  const dataIndex = statements.length;
+  if (plan) statements.push(...plan.statements);
+  const results = (await env.DB.batch(statements)) as BatchResult[];
+  assertRateLimit(Number(batchRows<CountRow>(results[0])[0]?.count || 1), window);
+  const unreadCount =
+    unreadIndex >= 0 ? Number(batchRows<CountRow>(results[unreadIndex])[0]?.count || 0) : 0;
+  const data = plan ? plan.value(results.slice(dataIndex)) : undefined;
+  const categories = catalogBootstrap
+    ? [
+        ...new Set(
+          ((Array.isArray(data) ? data : []) as Array<{ category?: unknown }>)
+            .map((job) => String(job.category || ''))
+            .filter(Boolean),
+        ),
+      ].sort((left, right) => left.localeCompare(right, 'ko'))
+    : fetchCategories
+      ? jobCategoryValues(results[categoriesIndex])
+      : undefined;
+  if (mode === 'categories') return categories || [];
+  if (mode === 'data') return data;
+  return {
+    user: apiUser(user),
+    unreadCount,
+    categories: categories || [],
+    data,
+  };
+}
+
+type FastReadPlan = {
+  statements: D1PreparedStatement[];
+  value(results: BatchResult[]): unknown;
+};
+
+const learningDueStatement = (db: D1Database, owner: ReadOwner) =>
+  db
+    .prepare(
+      `SELECT lp.*, u.title, s.title AS sourceTitle
+         FROM learning_progress lp
+         JOIN learning_units u ON u.id = lp.unit_id
+         JOIN learning_sources s ON s.id = u.source_id
+        WHERE lp.user_id = ${readOwnerSql(owner)} AND lp.completed = 1
+          AND lp.mastered_at IS NULL AND lp.next_review_at IS NOT NULL
+          AND lp.next_review_at <= ?
+        ORDER BY lp.next_review_at LIMIT 100`,
+    )
+    .bind(owner.value, nowIso());
+
+function collectionsReadPlan(db: D1Database, owner: ReadOwner): FastReadPlan {
+  return {
+    statements: [collectionTreeStatement(db, readOwnerSql(owner), owner.value)],
+    value: (results) => collectionTreeValue(results[0]),
+  };
+}
+
+function collectionTrashReadPlan(db: D1Database, owner: ReadOwner): FastReadPlan {
+  return {
+    statements: [
+      db
+        .prepare(
+          `SELECT c.id, c.parent_id AS parentId, c.name, c.icon, c.color,
+                  c.deleted_at AS deletedAt
+             FROM collections c
+            WHERE c.user_id = ${readOwnerSql(owner)} AND c.deleted_at IS NOT NULL
+              AND (c.parent_id IS NULL OR NOT EXISTS (
+                SELECT 1 FROM collections parent
+                 WHERE parent.id = c.parent_id AND parent.deleted_at IS NOT NULL
+              ))
+            ORDER BY c.deleted_at DESC LIMIT 50`,
+        )
+        .bind(owner.value),
+    ],
+    value: (results) =>
+      batchRows<Record<string, unknown>>(results[0]).map((folder) => ({
+        ...folder,
+        items: [],
+      })),
+  };
+}
+
+function fastReadPlanFor(db: D1Database, owner: ReadOwner, url: URL): FastReadPlan | undefined {
+  if (url.pathname === '/api/v1/coding/problems') {
+    return problemListPlan(db, owner, url.searchParams);
+  }
+  if (url.pathname === '/api/v1/learning') return learningListPlan(db, owner);
+  const learningUnitMatch = url.pathname.match(/^\/api\/v1\/learning\/units\/([^/]+)$/);
+  if (learningUnitMatch) return learningUnitDetailPlan(db, owner, learningUnitMatch[1]);
+  if (url.pathname === '/api/v1/learning/due') {
+    return {
+      statements: [learningDueStatement(db, owner)],
+      value: (results) => batchRows<Record<string, unknown>>(results[0]),
+    };
+  }
+  if (url.pathname === '/api/v1/collections') return collectionsReadPlan(db, owner);
+  if (url.pathname === '/api/v1/collections/trash') return collectionTrashReadPlan(db, owner);
+  return undefined;
+}
+
+async function fastRead(user: UserRow, request: Request, env: D1Env, url: URL, plan: FastReadPlan) {
+  const window = rateLimitWindow(request.method.toUpperCase(), env, url.pathname);
+  const results = (await env.DB.batch([
+    rateLimitStatement(env.DB, user.id, window),
+    ...plan.statements,
+  ])) as BatchResult[];
+  assertRateLimit(Number(batchRows<CountRow>(results[0])[0]?.count || 1), window);
+  return plan.value(results.slice(1));
+}
+
+type LearningListPlan = {
+  statements: D1PreparedStatement[];
+  value(results: BatchResult[]): unknown;
+};
+
+function learningListPlan(db: D1Database, owner: ReadOwner): LearningListPlan {
+  const statements = [
+    db
+      .prepare(
+        `SELECT s.id, s.title, s.subject, s.category, s.status,
+                s.created_at AS createdAt, s.updated_at AS updatedAt,
+                COALESCE((
+                  SELECT json_group_array(json_object(
+                    'id', unit.id,
+                    'title', unit.title,
+                    'summaryPreview', unit.summaryPreview,
+                    'flashcardCount', unit.flashcardCount,
+                    'questionCount', unit.questionCount,
+                    'completed', unit.completed,
+                    'nextReviewAt', unit.nextReviewAt
+                  ))
+                    FROM (
+                      SELECT u.id, u.title, substr(u.summary, 1, 320) AS summaryPreview,
+                             (SELECT COUNT(*) FROM flashcards f
+                               WHERE f.unit_id = u.id) AS flashcardCount,
+                             (SELECT COUNT(*) FROM learning_questions q
+                               WHERE q.unit_id = u.id) AS questionCount,
+                             lp.completed, lp.next_review_at AS nextReviewAt
+                        FROM learning_units u
+                        LEFT JOIN learning_progress lp ON lp.unit_id = u.id
+                         AND lp.user_id = ${readOwnerSql(owner)}
+                       WHERE u.source_id = s.id AND u.published = 1
+                       ORDER BY u.position
+                    ) AS unit
+                ), '[]') AS unitsJson
+           FROM learning_sources s
+          WHERE s.status IN ('READY', 'UPLOADED', 'REQUIRES_MANUAL_PROCESSING')
+          ORDER BY s.updated_at DESC`,
+      )
+      .bind(owner.value),
+  ];
+  return {
+    statements,
+    value(results) {
+      return batchRows<Record<string, unknown> & { unitsJson: string }>(results[0]).map(
+        ({ unitsJson, ...source }) => ({
+          ...source,
+          units: parseJsonArray<Record<string, unknown>>(unitsJson).map((unit) => ({
+            id: unit.id,
+            title: unit.title,
+            summaryPreview: unit.summaryPreview,
+            flashcardCount: Number(unit.flashcardCount || 0),
+            questionCount: Number(unit.questionCount || 0),
+            progress:
+              unit.completed === null || unit.completed === undefined
+                ? []
+                : [
+                    {
+                      completed: asBoolean(unit.completed),
+                      nextReviewAt: unit.nextReviewAt,
+                    },
+                  ],
+          })),
+        }),
+      );
+    },
+  };
 }
 
 async function learningList(db: D1Database, userId: string) {
-  const [sources, units] = await Promise.all([
-    all<Record<string, unknown>>(
-      db,
-      `SELECT id, title, subject, category, status, created_at AS createdAt, updated_at AS updatedAt
-         FROM learning_sources
-        WHERE status IN ('READY', 'UPLOADED', 'REQUIRES_MANUAL_PROCESSING')
-        ORDER BY updated_at DESC`,
-    ),
-    all<Record<string, unknown>>(
-      db,
-      `SELECT u.id, u.source_id AS sourceId, u.title,
-              substr(u.summary, 1, 320) AS summaryPreview, u.position,
-              (SELECT COUNT(*) FROM flashcards f WHERE f.unit_id = u.id) AS flashcardCount,
-              (SELECT COUNT(*) FROM learning_questions q WHERE q.unit_id = u.id) AS questionCount,
-              lp.completed, lp.next_review_at AS nextReviewAt
-         FROM learning_units u INDEXED BY idx_learning_units_published_source_position
-         JOIN learning_sources s ON s.id = u.source_id
-         LEFT JOIN learning_progress lp ON lp.unit_id = u.id AND lp.user_id = ?
-        WHERE u.published = 1
-          AND s.status IN ('READY', 'UPLOADED', 'REQUIRES_MANUAL_PROCESSING')
-        ORDER BY u.source_id, u.position`,
-      userId,
-    ),
-  ]);
-  const unitsBySource = new Map<string, Record<string, unknown>[]>();
-  for (const unit of units) {
-    const sourceId = String(unit.sourceId);
-    const summary = {
-      id: unit.id,
-      title: unit.title,
-      summaryPreview: unit.summaryPreview,
-      flashcardCount: Number(unit.flashcardCount || 0),
-      questionCount: Number(unit.questionCount || 0),
-      progress:
-        unit.completed === null || unit.completed === undefined
-          ? []
-          : [
-              {
-                completed: asBoolean(unit.completed),
-                nextReviewAt: unit.nextReviewAt,
-              },
-            ],
-    };
-    unitsBySource.set(sourceId, [...(unitsBySource.get(sourceId) || []), summary]);
-  }
+  const plan = learningListPlan(db, { kind: 'userId', value: userId });
+  return plan.value((await db.batch(plan.statements)) as BatchResult[]);
+}
 
-  return sources.map((source) => ({
-    ...source,
-    units: unitsBySource.get(String(source.id)) || [],
-  }));
+async function fastLearningBootstrap(user: UserRow, request: Request, env: D1Env, url: URL) {
+  const window = rateLimitWindow(request.method.toUpperCase(), env, url.pathname);
+  const statements = [
+    rateLimitStatement(env.DB, user.id, window),
+    env.DB.prepare(unreadCountSql).bind(user.id, nowIso()),
+  ];
+  const plan = learningListPlan(env.DB, { kind: 'userId', value: user.id });
+  const dataIndex = statements.length;
+  statements.push(...plan.statements);
+  const results = (await env.DB.batch(statements)) as BatchResult[];
+  assertRateLimit(Number(batchRows<CountRow>(results[0])[0]?.count || 1), window);
+  const unreadCount = Number(batchRows<CountRow>(results[1])[0]?.count || 0);
+  return {
+    user: apiUser(user),
+    unreadCount,
+    data: plan.value(results.slice(dataIndex)),
+  };
+}
+
+function learningUnitDetailPlan(db: D1Database, owner: ReadOwner, unitId: string): FastReadPlan {
+  return {
+    statements: [
+      db
+        .prepare(
+          `SELECT u.id, u.source_id AS sourceId, u.title, u.summary, u.concepts, u.visuals,
+                  s.title AS sourceTitle, s.subject, s.category,
+                  lp.completed, lp.next_review_at AS nextReviewAt
+             FROM learning_units u
+             JOIN learning_sources s ON s.id = u.source_id
+             LEFT JOIN learning_progress lp ON lp.unit_id = u.id
+              AND lp.user_id = ${readOwnerSql(owner)}
+            WHERE u.id = ? AND u.published = 1
+              AND s.status IN ('READY', 'UPLOADED', 'REQUIRES_MANUAL_PROCESSING')`,
+        )
+        .bind(owner.value, unitId),
+      db
+        .prepare(
+          `SELECT id, front, back FROM flashcards
+            WHERE unit_id = ? ORDER BY created_at`,
+        )
+        .bind(unitId),
+      db
+        .prepare(
+          `SELECT id, prompt, type, choices FROM learning_questions
+            WHERE unit_id = ? ORDER BY created_at`,
+        )
+        .bind(unitId),
+      db
+        .prepare(
+          `SELECT a.id, a.question_id AS questionId, a.response, a.correct,
+                  a.attempted_at AS attemptedAt
+             FROM learning_questions q
+             JOIN learning_question_attempts a ON a.question_id = q.id
+              AND a.user_id = ${readOwnerSql(owner)}
+            WHERE q.unit_id = ?
+            ORDER BY a.attempted_at DESC LIMIT 100`,
+        )
+        .bind(owner.value, unitId),
+    ],
+    value(results) {
+      const unit = batchRows<Record<string, unknown>>(results[0])[0];
+      if (!unit) throw new RouteError(404, '학습 단원을 찾을 수 없습니다.');
+      const flashcards = batchRows<Record<string, unknown>>(results[1]);
+      const questions = batchRows<Record<string, unknown>>(results[2]);
+      const attempts = batchRows<Record<string, unknown>>(results[3]);
+      const attemptsByQuestion = new Map<string, Record<string, unknown>[]>();
+      for (const attempt of attempts) {
+        const questionId = String(attempt.questionId);
+        attemptsByQuestion.set(questionId, [
+          ...(attemptsByQuestion.get(questionId) || []),
+          { ...attempt, correct: asBoolean(attempt.correct) },
+        ]);
+      }
+      return {
+        ...unit,
+        concepts: parseArray(unit.concepts),
+        visuals: parseJsonArray(unit.visuals),
+        flashcards,
+        questions: questions.map((question) => ({
+          ...question,
+          choices: parseArray(question.choices),
+          attempts: attemptsByQuestion.get(String(question.id)) || [],
+        })),
+        progress:
+          unit.completed === null || unit.completed === undefined
+            ? []
+            : [{ completed: asBoolean(unit.completed), nextReviewAt: unit.nextReviewAt }],
+      };
+    },
+  };
 }
 
 async function learningUnitDetail(db: D1Database, userId: string, unitId: string) {
-  const unit = await first<Record<string, unknown>>(
-    db,
-    `SELECT u.id, u.source_id AS sourceId, u.title, u.summary, u.concepts, u.visuals,
-            s.title AS sourceTitle, s.subject, s.category,
-            lp.completed, lp.next_review_at AS nextReviewAt
-       FROM learning_units u
-       JOIN learning_sources s ON s.id = u.source_id
-       LEFT JOIN learning_progress lp ON lp.unit_id = u.id AND lp.user_id = ?
-      WHERE u.id = ? AND u.published = 1
-        AND s.status IN ('READY', 'UPLOADED', 'REQUIRES_MANUAL_PROCESSING')`,
-    userId,
-    unitId,
-  );
-  if (!unit) throw new RouteError(404, '학습 단원을 찾을 수 없습니다.');
-  const [flashcards, questions, attempts] = await Promise.all([
-    all<Record<string, unknown>>(
-      db,
-      `SELECT id, front, back FROM flashcards
-        WHERE unit_id = ? ORDER BY created_at`,
-      unitId,
-    ),
-    all<Record<string, unknown>>(
-      db,
-      `SELECT id, prompt, type, choices FROM learning_questions
-        WHERE unit_id = ? ORDER BY created_at`,
-      unitId,
-    ),
-    all<Record<string, unknown>>(
-      db,
-      `SELECT a.id, a.question_id AS questionId, a.response, a.correct,
-              a.attempted_at AS attemptedAt
-         FROM learning_question_attempts a
-         JOIN learning_questions q ON q.id = a.question_id
-        WHERE a.user_id = ? AND q.unit_id = ?
-        ORDER BY a.attempted_at DESC LIMIT 100`,
-      userId,
-      unitId,
-    ),
-  ]);
-  const attemptsByQuestion = new Map<string, Record<string, unknown>[]>();
-  for (const attempt of attempts) {
-    const questionId = String(attempt.questionId);
-    attemptsByQuestion.set(questionId, [
-      ...(attemptsByQuestion.get(questionId) || []),
-      { ...attempt, correct: asBoolean(attempt.correct) },
-    ]);
-  }
-  return {
-    ...unit,
-    concepts: parseArray(unit.concepts),
-    visuals: parseJsonArray(unit.visuals),
-    flashcards,
-    questions: questions.map((question) => ({
-      ...question,
-      choices: parseArray(question.choices),
-      attempts: attemptsByQuestion.get(String(question.id)) || [],
-    })),
-    progress:
-      unit.completed === null || unit.completed === undefined
-        ? []
-        : [{ completed: asBoolean(unit.completed), nextReviewAt: unit.nextReviewAt }],
-  };
+  const plan = learningUnitDetailPlan(db, { kind: 'userId', value: userId }, unitId);
+  return plan.value((await db.batch(plan.statements)) as BatchResult[]);
 }
 
 async function recordLearningReview(
@@ -1568,41 +2066,6 @@ async function recordLearningReview(
     '동시에 복습 기록이 변경되었습니다. 다시 시도해주세요.',
     'REVIEW_CONFLICT',
   );
-}
-
-async function noteList(db: D1Database, userId: string) {
-  const rows = await all<Record<string, unknown>>(
-    db,
-    `SELECT n.id, n.user_id AS userId, n.title, n.markdown, n.visibility,
-            n.linked_type AS linkedType, n.linked_id AS linkedId,
-            n.current_rev AS currentRev, n.created_at AS createdAt, n.updated_at AS updatedAt,
-            u.display_name AS authorDisplayName
-       FROM notes n JOIN users u ON u.id = n.user_id
-      WHERE n.deleted_at IS NULL AND n.user_id = ?
-      ORDER BY n.updated_at DESC LIMIT 100`,
-    userId,
-  );
-  if (!rows.length) return [];
-  const noteIds = rows.map((row) => String(row.id));
-  const revisions = await all<Record<string, unknown>>(
-    db,
-    `SELECT id, note_id AS noteId, revision, markdown, created_at AS createdAt
-       FROM note_revisions
-      WHERE note_id IN (${noteIds.map(() => '?').join(',')})
-      ORDER BY note_id, revision DESC`,
-    ...noteIds,
-  );
-  const revisionsByNote = new Map<string, Record<string, unknown>[]>();
-  for (const revision of revisions) {
-    const noteId = String(revision.noteId);
-    revisionsByNote.set(noteId, [...(revisionsByNote.get(noteId) || []), revision]);
-  }
-  return rows.map((row) => ({
-    ...row,
-    user: { id: row.userId, displayName: row.authorDisplayName },
-    canEdit: row.userId === userId,
-    revisions: (revisionsByNote.get(String(row.id)) || []).slice(0, 10),
-  }));
 }
 
 type ImportPreviewRow = {
@@ -1861,9 +2324,10 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
         `INSERT INTO jobs
              (id, company_name, company_size, company_size_evidence, source_name,
               source_posting_id, source_url, title, category, career_scope, career_evidence,
-              employment_type, region, remote, tech_stack, published_at, deadline_at, rolling, summary,
-              status, fingerprint, collected_at, last_verified_at, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              employment_type, region, remote, tech_stack, published_at, application_start_at,
+              deadline_at, rolling, summary, status, fingerprint, collected_at, last_verified_at,
+              created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT(source_url) DO UPDATE SET
              company_name = excluded.company_name, company_size = excluded.company_size,
              company_size_evidence = excluded.company_size_evidence,
@@ -1873,6 +2337,7 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
              employment_type = excluded.employment_type, region = excluded.region,
              remote = excluded.remote, tech_stack = excluded.tech_stack,
              published_at = excluded.published_at,
+             application_start_at = excluded.application_start_at,
              deadline_at = excluded.deadline_at, rolling = excluded.rolling,
              summary = excluded.summary, status = excluded.status,
              fingerprint = excluded.fingerprint, collected_at = excluded.collected_at,
@@ -1895,6 +2360,7 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
         item.remote ? 1 : 0,
         JSON.stringify(item.techStack),
         item.publishedAt || null,
+        item.applicationStartAt || null,
         item.deadlineAt || null,
         item.rolling ? 1 : 0,
         item.summary,
@@ -2521,7 +2987,6 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     if (!itemType || !targetId) throw new RouteError(400, '저장할 항목 정보가 필요합니다.');
     const allowedItemTypes = new Set([
       'EXTERNAL_LINK',
-      'NOTE',
       'JOB_POSTING',
       'CODING_PROBLEM',
       'SOLUTION',
@@ -2539,14 +3004,13 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       }
     } else {
       const targetQueries: Record<string, string> = {
-        NOTE: 'SELECT id FROM notes WHERE id = ? AND user_id = ? AND deleted_at IS NULL',
         JOB_POSTING: 'SELECT id FROM jobs WHERE id = ?',
         CODING_PROBLEM: 'SELECT id FROM coding_problems WHERE id = ? AND active = 1',
         SOLUTION:
           "SELECT id FROM solutions WHERE id = ? AND deleted_at IS NULL AND (visibility = 'MEMBERS' OR author_id = ?)",
         LEARNING_UNIT: 'SELECT id FROM learning_units WHERE id = ? AND published = 1',
       };
-      const ownerScoped = ['NOTE', 'SOLUTION'].includes(itemType);
+      const ownerScoped = itemType === 'SOLUTION';
       targetExists = Boolean(
         await first(db, targetQueries[itemType]!, targetId, ...(ownerScoped ? [user.id] : [])),
       );
@@ -2664,35 +3128,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
   }
 
   if (method === 'GET' && path === '/dashboard') {
-    const now = nowIso();
-    const weekAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
-    const weekAhead = new Date(Date.now() + 7 * 86_400_000).toISOString();
-    const [recent, expiring, due] = await Promise.all([
-      first<{ count: number }>(
-        db,
-        "SELECT COUNT(*) AS count FROM jobs WHERE status = 'ACTIVE' AND created_at >= ?",
-        weekAgo,
-      ),
-      first<{ count: number }>(
-        db,
-        `SELECT COUNT(*) AS count FROM saved_jobs sj JOIN jobs j ON j.id = sj.job_id WHERE sj.user_id = ? AND j.status = 'ACTIVE' AND j.deadline_at BETWEEN ? AND ?`,
-        user.id,
-        now,
-        weekAhead,
-      ),
-      first<{ count: number }>(
-        db,
-        'SELECT COUNT(*) AS count FROM learning_progress WHERE user_id = ? AND next_review_at <= ?',
-        user.id,
-        now,
-      ),
-    ]);
-    return {
-      recentJobs: Number(recent?.count || 0),
-      expiringJobs: Number(expiring?.count || 0),
-      dueReviews: Number(due?.count || 0),
-      recentActivity: [],
-    };
+    return dashboard(db, user.id);
   }
   if (method === 'GET' && path === '/search') {
     const query = cleanText(url.searchParams.get('q'));
@@ -2733,7 +3169,6 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     const pageRows = hasMore ? rows.slice(0, limit) : rows;
     const grouped: Record<string, Array<Record<string, unknown>>> = {
       folders: [],
-      notes: [],
       jobs: [],
       problems: [],
       solutions: [],
@@ -2743,15 +3178,13 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     const href = (kind: string, id: string) =>
       kind === 'folders'
         ? `/?folder=${id}`
-        : kind === 'notes'
-          ? `/notes?note=${id}`
-          : kind === 'jobs'
-            ? `/jobs?job=${id}`
-            : kind === 'codingProblems'
-              ? `/coding?problem=${id}`
-              : kind === 'solutions'
-                ? `/solutions?solution=${id}`
-                : `/learning?unit=${id}`;
+        : kind === 'jobs'
+          ? `/jobs?job=${id}`
+          : kind === 'codingProblems'
+            ? `/coding?problem=${id}`
+            : kind === 'solutions'
+              ? `/solutions?solution=${id}`
+              : `/learning?unit=${id}`;
     for (const row of pageRows) {
       const group = groupName(row.kind);
       grouped[group]?.push({
@@ -2772,17 +3205,11 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
   }
 
   if (method === 'GET' && path === '/notifications/unread-count') {
-    const row = await first<{ count: number }>(
-      db,
-      `SELECT COUNT(*) AS count FROM notifications
-        WHERE user_id = ? AND read_at IS NULL AND (expires_at IS NULL OR expires_at > ?)`,
-      user.id,
-      nowIso(),
-    );
+    const row = await first<CountRow>(db, unreadCountSql, user.id, nowIso());
     return { count: Number(row?.count || 0) };
   }
   if (method === 'GET' && path === '/notifications') {
-    const allowedTypes = new Set(['COMMENT', 'REPLY', 'JOB_DEADLINE', 'LEARNING_REVIEW', 'SYSTEM']);
+    const allowedTypes = new Set(['COMMENT', 'REPLY', 'JOB_DEADLINE', 'SYSTEM']);
     const type = cleanText(url.searchParams.get('type'));
     if (type && !allowedTypes.has(type)) {
       throw new RouteError(400, '지원하지 않는 알림 유형입니다.');
@@ -2792,7 +3219,11 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     const cursor = paged
       ? decodeCursor<{ createdAt?: unknown; id?: unknown }>(url.searchParams.get('cursor'))
       : null;
-    const clauses = ['user_id = ?', '(expires_at IS NULL OR expires_at > ?)'];
+    const clauses = [
+      'user_id = ?',
+      "type <> 'LEARNING_REVIEW'",
+      '(expires_at IS NULL OR expires_at > ?)',
+    ];
     const values: unknown[] = [user.id, nowIso()];
     if (type) {
       clauses.push('type = ?');
@@ -2844,130 +3275,6 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       user.id,
     );
     return { count: result.meta?.changes || 0 };
-  }
-
-  if (method === 'GET' && path === '/notes') return noteList(db, user.id);
-  if (method === 'GET' && path === '/notes/trash') {
-    return all(
-      db,
-      `SELECT id, title, deleted_at AS deletedAt
-         FROM notes WHERE user_id = ? AND deleted_at IS NOT NULL
-        ORDER BY deleted_at DESC LIMIT 50`,
-      user.id,
-    );
-  }
-  if (method === 'POST' && path === '/notes') {
-    const body = await readJson(request);
-    const title = cleanText(body.title);
-    const markdown = sourceText(body.markdown);
-    const visibility = 'PRIVATE';
-    if (!title) throw new RouteError(400, '노트 제목이 필요합니다.');
-    const timestamp = nowIso();
-    if (typeof body.id === 'string' && body.id) {
-      const current = await first<{ id: string; userId: string; currentRev: number }>(
-        db,
-        'SELECT id, user_id AS userId, current_rev AS currentRev FROM notes WHERE id = ? AND deleted_at IS NULL',
-        body.id,
-      );
-      if (!current) throw new RouteError(404, '노트를 찾을 수 없습니다.');
-      if (current.userId !== user.id)
-        throw new RouteError(403, '다른 사용자의 노트는 수정할 수 없습니다.');
-      const baseRevision = int(body.baseRevision, -1);
-      if (baseRevision !== Number(current.currentRev)) {
-        const latest = await first<{ title: string; markdown: string; currentRev: number }>(
-          db,
-          'SELECT title, markdown, current_rev AS currentRev FROM notes WHERE id = ?',
-          body.id,
-        );
-        throw new RouteError(409, '다른 곳에서 노트가 먼저 수정되었습니다.', 'REVISION_CONFLICT', {
-          current: latest,
-        });
-      }
-      const revision = Number(current.currentRev) + 1;
-      await db.batch([
-        db
-          .prepare(
-            `UPDATE notes SET title = ?, markdown = ?, visibility = ?, linked_type = ?, linked_id = ?, current_rev = ?, updated_at = ? WHERE id = ?`,
-          )
-          .bind(
-            title,
-            markdown,
-            visibility,
-            cleanText(body.linkedType) || null,
-            cleanText(body.linkedId) || null,
-            revision,
-            timestamp,
-            body.id,
-          ),
-        db
-          .prepare(
-            'INSERT INTO note_revisions (id, note_id, revision, markdown, created_at) VALUES (?, ?, ?, ?, ?)',
-          )
-          .bind(newId(), body.id, revision, markdown, timestamp),
-      ]);
-      return first(db, 'SELECT * FROM notes WHERE id = ?', body.id);
-    }
-    const id = newId();
-    await db.batch([
-      db
-        .prepare(
-          `INSERT INTO notes (id, user_id, title, markdown, visibility, linked_type, linked_id, current_rev, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
-        )
-        .bind(
-          id,
-          user.id,
-          title,
-          markdown,
-          visibility,
-          cleanText(body.linkedType) || null,
-          cleanText(body.linkedId) || null,
-          timestamp,
-          timestamp,
-        ),
-      db
-        .prepare(
-          'INSERT INTO note_revisions (id, note_id, revision, markdown, created_at) VALUES (?, ?, 1, ?, ?)',
-        )
-        .bind(newId(), id, markdown, timestamp),
-    ]);
-    return {
-      id,
-      userId: user.id,
-      title,
-      markdown,
-      visibility,
-      currentRev: 1,
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    };
-  }
-
-  const deleteNoteMatch = path.match(/^\/notes\/([^/]+)$/);
-  if (deleteNoteMatch && method === 'DELETE') {
-    const result = await run(
-      db,
-      'UPDATE notes SET deleted_at = ?, updated_at = ? WHERE id = ? AND user_id = ? AND deleted_at IS NULL',
-      nowIso(),
-      nowIso(),
-      deleteNoteMatch[1],
-      user.id,
-    );
-    if (!Number(result.meta?.changes || 0)) throw new RouteError(404, '노트를 찾을 수 없습니다.');
-    return { id: deleteNoteMatch[1], deleted: true };
-  }
-  const restoreNoteMatch = path.match(/^\/notes\/([^/]+)\/restore$/);
-  if (restoreNoteMatch && method === 'POST') {
-    const result = await run(
-      db,
-      `UPDATE notes SET deleted_at = NULL, updated_at = ?
-        WHERE id = ? AND user_id = ? AND deleted_at IS NOT NULL`,
-      nowIso(),
-      restoreNoteMatch[1],
-      user.id,
-    );
-    if (!Number(result.meta?.changes || 0))
-      throw new RouteError(404, '삭제된 노트를 찾을 수 없습니다.');
-    return { id: restoreNoteMatch[1], restored: true };
   }
 
   if (method === 'GET' && path === '/coding/problems')
@@ -3940,6 +4247,41 @@ export async function handleD1Api(request: Request, env: D1Env) {
       return finish(await logoutSession(request, env));
     }
     const user = await resolveSessionUser(request, env);
+    if (request.method.toUpperCase() === 'GET' && url.pathname === '/api/v1/bootstrap') {
+      return finish(
+        responseJson(
+          await bootstrap(user, env, url.searchParams.get('home') === '1'),
+          200,
+          requestId,
+        ),
+      );
+    }
+    if (request.method.toUpperCase() === 'GET') {
+      const fastJobMode =
+        url.pathname === '/api/v1/jobs'
+          ? 'data'
+          : url.pathname === '/api/v1/jobs/categories'
+            ? 'categories'
+            : url.pathname === '/api/v1/jobs/bootstrap'
+              ? 'bootstrap'
+              : undefined;
+      if (fastJobMode) {
+        return finish(
+          responseJson(await fastJobRead(user, request, env, url, fastJobMode), 200, requestId),
+        );
+      }
+      if (url.pathname === '/api/v1/learning/bootstrap') {
+        return finish(
+          responseJson(await fastLearningBootstrap(user, request, env, url), 200, requestId),
+        );
+      }
+      const readPlan = fastReadPlanFor(env.DB, { kind: 'userId', value: user.id }, url);
+      if (readPlan) {
+        return finish(
+          responseJson(await fastRead(user, request, env, url, readPlan), 200, requestId),
+        );
+      }
+    }
     await enforceRateLimit(request, env, user.id, url.pathname);
     const result = await handleRoute(request, env, user, url);
     return finish(result instanceof Response ? result : responseJson(result, 200, requestId));

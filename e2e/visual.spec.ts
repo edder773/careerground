@@ -88,24 +88,11 @@ test('captures core domain screens', async ({ page }) => {
     { href: '/jobs', heading: '신입 IT 채용공고', name: 'jobs' },
     { href: '/learning', heading: '학습 라이브러리', name: 'learning' },
     { href: '/solutions', heading: '풀이 기록', name: 'solutions' },
-    { href: '/notes', heading: '개인 노트', name: 'notes' },
     { href: '/settings', heading: '설정', name: 'settings' },
   ];
   for (const screen of screens) {
     await page.goto(screen.href);
     await expect(page.getByRole('heading', { name: screen.heading, exact: true })).toBeVisible();
-    if (screen.name === 'notes') {
-      await page.getByRole('button', { name: '새 노트' }).first().click();
-      await page.getByRole('textbox', { name: '노트 제목' }).fill('이번 주 준비 기록');
-      await page
-        .getByRole('textbox', { name: '노트 내용' })
-        .fill('# 이번 주 준비\n\n- 코딩테스트 복습\n- 지원 공고 정리');
-      await page.getByRole('button', { name: /^저장$/ }).click();
-      await expect(page.getByRole('button', { name: /^저장$/ })).toBeDisabled();
-      await expect(page.getByRole('textbox', { name: '노트 제목' })).toHaveValue(
-        '이번 주 준비 기록',
-      );
-    }
     if (screen.name === 'jobs') {
       await expect(page.locator('.job-card').first()).toBeVisible();
       await page.getByRole('button', { name: /^채용공고 필터/ }).click();
@@ -120,7 +107,7 @@ test('captures core domain screens', async ({ page }) => {
       await filterDialog.getByRole('button', { name: '필터 닫기' }).click();
     }
     if (screen.name === 'settings') {
-      await expect(page.getByLabel('표시 이름')).toBeDisabled();
+      await expect(page.getByLabel('표시 이름')).toHaveCount(0);
       await expect(page.getByRole('button', { name: '변경', exact: true })).toBeVisible();
     }
     await page.screenshot({
@@ -161,6 +148,9 @@ test('captures core domain screens', async ({ page }) => {
       await page.getByRole('button', { name: '달력' }).click();
       await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
       await expect(page.locator('.calendar-job').first()).toBeVisible();
+      await expect(page.locator('.job-calendar-legend')).toContainText('등록일');
+      await expect(page.locator('.job-calendar-legend')).toContainText('접수 시작일');
+      await expect(page.getByText('시작·확인일', { exact: true })).toHaveCount(0);
       await page.screenshot({
         path: 'test-results/visual/jobs-calendar-desktop-1440.png',
         fullPage: true,
@@ -188,19 +178,17 @@ test('captures core domain screens', async ({ page }) => {
     await expectNoSeriousViolations(page);
   }
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto('/notes');
-  await expect(page.getByRole('heading', { name: '개인 노트' })).toBeVisible();
-  await expect(page.getByRole('textbox', { name: '노트 제목' })).toHaveValue('이번 주 준비 기록');
-  await page.screenshot({ path: 'test-results/visual/notes-mobile-375.png', fullPage: false });
-
   await page.goto('/settings');
   await expect(page.getByRole('button', { name: '변경', exact: true })).toBeVisible();
-  await expect(page.getByLabel('표시 이름')).toBeDisabled();
+  await expect(page.getByLabel('표시 이름')).toHaveCount(0);
   await page.screenshot({ path: 'test-results/visual/settings-mobile-375.png', fullPage: false });
 
   await page.goto('/jobs');
   await page.getByRole('button', { name: '달력' }).click();
   await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
+  await expect(page.locator('.job-calendar-legend')).toContainText('등록일');
+  await expect(page.locator('.job-calendar-legend')).toContainText('접수 시작일');
+  await expect(page.getByText('시작·확인일', { exact: true })).toHaveCount(0);
   await page.screenshot({
     path: 'test-results/visual/jobs-calendar-mobile-375.png',
     fullPage: false,
@@ -256,6 +244,64 @@ test('captures core domain screens', async ({ page }) => {
     path: 'test-results/visual/coding-editor-mobile-375.png',
     fullPage: false,
   });
+});
+
+test('keeps registration and application start labels separate on desktop and mobile', async ({
+  page,
+}) => {
+  await mkdir('test-results/visual', { recursive: true });
+  await login(page, 'calendar-label@careerground.local');
+
+  for (const viewport of [
+    { name: 'desktop-1440', width: 1440, height: 900 },
+    { name: 'mobile-375', width: 375, height: 812 },
+  ]) {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto('/jobs');
+    await page.getByRole('button', { name: '달력' }).click();
+    await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
+    await expect(page.locator('.job-calendar-legend')).toContainText('등록일');
+    await expect(page.locator('.job-calendar-legend')).toContainText('접수 시작일');
+    await expect(page.getByText('시작·확인일', { exact: true })).toHaveCount(0);
+    await page.screenshot({
+      path: `test-results/visual/jobs-calendar-label-${viewport.name}.png`,
+      fullPage: false,
+    });
+  }
+});
+
+test('stacks the three daily recommendations without wrapping their titles', async ({ page }) => {
+  await mkdir('test-results/visual', { recursive: true });
+  await login(page, 'daily-layout@careerground.local');
+
+  for (const viewport of [
+    { name: 'desktop-1440', width: 1440, height: 900 },
+    { name: 'mobile-375', width: 375, height: 812 },
+  ]) {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto('/');
+    const rows = page.locator('.today-problem-list a');
+    await expect(rows).toHaveCount(3);
+    const layout = await rows.evaluateAll((elements) =>
+      elements.map((element) => {
+        const row = element.getBoundingClientRect();
+        const title = element.querySelector('strong');
+        return {
+          left: Math.round(row.left),
+          top: Math.round(row.top),
+          whiteSpace: title ? getComputedStyle(title).whiteSpace : '',
+        };
+      }),
+    );
+    expect(new Set(layout.map((item) => item.left)).size).toBe(1);
+    expect(layout[0]!.top).toBeLessThan(layout[1]!.top);
+    expect(layout[1]!.top).toBeLessThan(layout[2]!.top);
+    expect(layout.every((item) => item.whiteSpace === 'nowrap')).toBe(true);
+    await page.screenshot({
+      path: `test-results/visual/home-daily-vertical-${viewport.name}.png`,
+      fullPage: false,
+    });
+  }
 });
 
 test('reflows at 200% equivalent width and keeps the editor usable above a mobile keyboard', async ({

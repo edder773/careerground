@@ -17,7 +17,7 @@ describe('settings page', () => {
           method: init?.method || 'GET',
           body: init?.body ? JSON.parse(String(init.body)) : undefined,
         });
-        if (url.endsWith('/auth/me')) {
+        if (url.includes('/bootstrap')) {
           return response({
             user: {
               id: 'member',
@@ -27,6 +27,8 @@ describe('settings page', () => {
               preferredLanguage: 'python',
               onboardingCompleted: true,
             },
+            unreadCount: 0,
+            home: null,
           });
         }
         return response({
@@ -49,13 +51,16 @@ describe('settings page', () => {
       </AuthProvider>,
     );
 
-    const displayName = await screen.findByRole('textbox', { name: '표시 이름' });
-    expect(displayName).toBeDisabled();
+    expect(await screen.findByText('기존 이름')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: '표시 이름' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '변경' })).toBeInTheDocument();
+    expect(screen.getAllByText('받기')).toHaveLength(2);
+    expect(screen.queryByText('학습 복습 예정')).not.toBeInTheDocument();
     expect(screen.queryByText(/랭킹에 참여/)).not.toBeInTheDocument();
     expect(screen.queryByText(/데이터 JSON 내보내기|데이터 삭제 요청/)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '변경' }));
+    const displayName = screen.getByRole('textbox', { name: '표시 이름' });
     expect(displayName).toBeEnabled();
     await user.clear(displayName);
     await user.type(displayName, '변경 이름');

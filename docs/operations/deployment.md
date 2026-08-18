@@ -6,8 +6,8 @@
 
 ```mermaid
 flowchart LR
-  User["Google 로그인 사용자"] --> Google["Google Identity Services"]
-  Google --> Worker["정적 자산 + 토큰 검증 Worker"]
+  User["Google 로그인 사용자"] --> GIS["Google Identity Services"]
+  GIS --> Worker["Sites 정적 자산 + Worker"]
   Worker --> D1["DB binding: D1"]
 ```
 
@@ -42,20 +42,20 @@ E2E는 `deployment/sites/local-d1-server.ts`가 메모리 D1 fixture를 직접 �
    - `dist/server/index.js`
    - `dist/.openai/hosting.json`
    - `dist/.openai/drizzle/*.sql`
-   - 이 기존 프로젝트에서는 `0016_full_audit_hardening.sql` 이후의 순방향 migration만 존재
+   - 이 기존 프로젝트에서는 운영 기준선 이후인 `0017`~`0022` migration만 존재
 6. **같은 commit SHA와 archive**를 새 Sites version으로 저장한다.
 7. visibility를 `public`으로 지정해 운영 배포한다.
 8. 배포 상태가 완료될 때까지 확인하고 `/api/v1/health/ready`가 `200`, `database: d1`을 반환하는지 검사한다.
-9. 로그인 사용자로 홈·채용·코딩·학습의 공통 데이터와 폴더·노트의 사용자별 격리를 smoke test한다.
+9. 로그인 사용자로 홈·채용·코딩·학습의 공통 데이터와 폴더의 사용자별 격리를 smoke test한다.
 
-소스 commit만 저장하고 archive를 생략하면 플랫폼이 모노레포의 일반 `build`를 다시 선택하여 Worker와 migration을 누락할 수 있다. 따라서 소스와 archive의 SHA 일치와 archive migration 목록 검사는 배포 불변식이다. 새 Sites 프로젝트는 기존 runtime baseline이 없으므로 이 0016-only staging 규칙 대신 0000부터 전체 migration을 적용하는 별도 bootstrap이 필요하다.
+소스 commit만 저장하고 archive를 생략하면 플랫폼이 모노레포의 일반 `build`를 다시 선택하여 Worker와 migration을 누락할 수 있다. 따라서 소스와 archive의 SHA 일치와 archive migration 목록 검사는 배포 불변식이다. 새 Sites 프로젝트는 기존 runtime baseline이 없으므로 이 0017 이후 staging 규칙 대신 0000부터 전체 migration을 적용하는 별도 bootstrap이 필요하다.
 
 ## 설정과 비밀
 
 - `.openai/hosting.json`의 `d1: "DB"`가 운영 데이터 바인딩이다.
-- `GOOGLE_CLIENT_ID`는 Google ID 토큰의 `aud` 검증값이다. 현재 웹 클라이언트 ID가 코드 기본값으로 고정돼 있으며 운영 설정으로 같은 값을 명시할 수 있다.
-- `ADMIN_EMAILS`는 명시적 관리자 allowlist다. 최초 가입자를 자동 관리자로 승격하지 않는다.
-- `AUTH_TEST_MODE`는 운영에서 설정하지 않는다.
+- `GOOGLE_CLIENT_ID`는 Google 웹 OAuth 클라이언트 ID다. 브라우저와 Worker가 같은 값을 사용한다.
+- `ADMIN_EMAILS`는 검증된 Google 이메일의 명시적 관리자 allowlist다. 최초 가입자를 자동 관리자로 승격하지 않는다.
+- `AUTH_TEST_MODE`는 로컬 D1 회귀 테스트 전용이며 운영 환경에 설정하지 않는다.
 - `RATE_LIMIT_READS_PER_MINUTE`, `RATE_LIMIT_WRITES_PER_MINUTE`는 선택 설정이며 기본값은 각각 240/60이다.
 - `MAX_ACTIVE_USERS`는 활성 사용자 상한이다.
 - `OPENAI_API_KEY`는 앱 런타임과 트러블슈팅 기록에 필수가 아니다. 선택적 AI 문서 재작성 workflow에서만 사용한다.

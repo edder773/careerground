@@ -15,12 +15,29 @@ const CodingPage = lazy(() =>
 const SolutionsPage = lazy(() =>
   import('./pages/SolutionsPage').then((module) => ({ default: module.SolutionsPage })),
 );
-const JobsPage = lazy(() =>
-  import('./pages/JobsPage').then((module) => ({ default: module.JobsPage })),
-);
-const LearningPage = lazy(() =>
-  import('./pages/LearningPage').then((module) => ({ default: module.LearningPage })),
-);
+let jobsPagePromise: Promise<{ default: typeof import('./pages/JobsPage').JobsPage }> | undefined;
+export const preloadJobsPage = () => {
+  jobsPagePromise ??= import('./pages/JobsPage')
+    .then((module) => ({ default: module.JobsPage }))
+    .catch((error) => {
+      jobsPagePromise = undefined;
+      throw error;
+    });
+  return jobsPagePromise;
+};
+const JobsPage = lazy(preloadJobsPage);
+let learningPagePromise:
+  Promise<{ default: typeof import('./pages/LearningPage').LearningPage }> | undefined;
+export const preloadLearningPage = () => {
+  learningPagePromise ??= import('./pages/LearningPage')
+    .then((module) => ({ default: module.LearningPage }))
+    .catch((error) => {
+      learningPagePromise = undefined;
+      throw error;
+    });
+  return learningPagePromise;
+};
+const LearningPage = lazy(preloadLearningPage);
 const RankingPage = lazy(() =>
   import('./pages/RankingPage').then((module) => ({ default: module.RankingPage })),
 );
@@ -29,9 +46,6 @@ const NotificationsPage = lazy(() =>
 );
 const AdminPage = lazy(() =>
   import('./pages/AdminPage').then((module) => ({ default: module.AdminPage })),
-);
-const NotesPage = lazy(() =>
-  import('./pages/NotesPage').then((module) => ({ default: module.NotesPage })),
 );
 const SettingsPage = lazy(() =>
   import('./pages/SettingsPage').then((module) => ({ default: module.SettingsPage })),
@@ -68,7 +82,6 @@ export function App() {
           <Routes>
             <Route path="/" element={<HomePage viewMode={viewMode} />} />
             <Route path="/learning" element={<LearningPage />} />
-            <Route path="/notes" element={<NotesPage />} />
             <Route path="/jobs" element={<JobsPage />} />
             <Route path="/coding" element={<CodingPage />} />
             <Route path="/solutions" element={<SolutionsPage />} />

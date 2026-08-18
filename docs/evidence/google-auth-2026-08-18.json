@@ -16,7 +16,7 @@
       "ttlSeconds": 604800
     },
     "migration": {
-      "version": "0017_google_auth",
+      "version": "0022_google_auth",
       "personalTestDataPurged": true,
       "legacyIdentityColumnRemoved": true,
       "commonCatalogsPreservedByRegressionTest": true
@@ -26,9 +26,9 @@
     "formatCheck": "pass",
     "lint": "pass",
     "typecheck": "pass",
-    "unitAndComponentTests": { "passed": 110, "failed": 0 },
+    "unitAndComponentTests": { "passed": 129, "failed": 0 },
     "e2e": {
-      "passed": 48,
+      "passed": 56,
       "failed": 0,
       "duration": "1.1m",
       "projects": ["chromium", "chromium-mobile-375", "firefox", "webkit"]
@@ -68,7 +68,7 @@
       "remediation": "Reconstruct the empty personal notes schema idempotently before search trigger and backfill initialization."
     },
     {
-      "version": 48,
+      "version": 49,
       "status": "succeeded",
       "productionChecks": {
         "rootStatus": 200,

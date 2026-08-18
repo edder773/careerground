@@ -32,8 +32,6 @@ const checks = {
   crossSolutionReplies: `SELECT COUNT(*) AS count FROM solution_comments reply
     JOIN solution_comments parent ON parent.id = reply.parent_id
     WHERE reply.solution_id <> parent.solution_id`,
-  orphanNoteRevisions: `SELECT COUNT(*) AS count FROM note_revisions r
-    LEFT JOIN notes n ON n.id = r.note_id WHERE n.id IS NULL`,
   crossUserFolderParents: `SELECT COUNT(*) AS count FROM collections child
     JOIN collections parent ON parent.id = child.parent_id
     WHERE child.user_id <> parent.user_id`,
@@ -42,12 +40,10 @@ const checks = {
     LEFT JOIN jobs job ON item.item_type = 'JOB_POSTING' AND job.id = item.target_id
     LEFT JOIN coding_problems problem ON item.item_type = 'CODING_PROBLEM' AND problem.id = item.target_id
     LEFT JOIN learning_units unit ON item.item_type = 'LEARNING_UNIT' AND unit.id = item.target_id
-    LEFT JOIN notes note ON item.item_type = 'NOTE' AND note.id = item.target_id
     LEFT JOIN solutions solution ON item.item_type = 'SOLUTION' AND solution.id = item.target_id
     WHERE (item.item_type = 'JOB_POSTING' AND job.id IS NULL)
        OR (item.item_type = 'CODING_PROBLEM' AND problem.id IS NULL)
        OR (item.item_type = 'LEARNING_UNIT' AND unit.id IS NULL)
-       OR (item.item_type = 'NOTE' AND (note.id IS NULL OR note.user_id <> folder.user_id))
        OR (item.item_type = 'SOLUTION' AND solution.id IS NULL)
        OR (item.item_type = 'EXTERNAL_LINK' AND item.target_id NOT LIKE 'https://%')`,
   duplicateJobUrls: `SELECT COUNT(*) AS count FROM (
@@ -81,18 +77,12 @@ const results = Object.fromEntries(
 );
 const violations = Object.values(results).reduce((sum, value) => sum + value, 0);
 const tableCounts = Object.fromEntries(
-  [
-    'users',
-    'jobs',
-    'coding_problems',
-    'solutions',
-    'solution_comments',
-    'notes',
-    'notifications',
-  ].map((table) => [
-    table,
-    Number(database.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get().count),
-  ]),
+  ['users', 'jobs', 'coding_problems', 'solutions', 'solution_comments', 'notifications'].map(
+    (table) => [
+      table,
+      Number(database.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get().count),
+    ],
+  ),
 );
 
 console.log(

@@ -9,6 +9,20 @@ import { renderPage, response } from '../test/render';
 
 describe('domain pages', () => {
   const calls: Array<{ url: string; method: string; body?: unknown }> = [];
+  const jobBootstrap = (data: unknown, categories: string[]) =>
+    response({
+      user: {
+        id: 'member',
+        email: 'member@example.test',
+        displayName: '멤버',
+        role: 'MEMBER',
+        preferredLanguage: 'javascript',
+        onboardingCompleted: true,
+      },
+      unreadCount: 0,
+      categories,
+      data,
+    });
   beforeEach(() => {
     calls.length = 0;
   });
@@ -36,8 +50,7 @@ describe('domain pages', () => {
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
         calls.push({ url, method: init?.method || 'GET' });
-        if (url.endsWith('/jobs/categories')) return response(['AI 풀스택 개발']);
-        return response({ items: catalog, nextCursor: null, total: catalog.length });
+        return jobBootstrap(catalog, ['AI 풀스택 개발']);
       }),
     );
     const user = userEvent.setup();
@@ -54,21 +67,10 @@ describe('domain pages', () => {
       }),
     ).toBe(false);
     await user.click(within(filter).getByRole('button', { name: '3개 조건 적용' }));
-    await waitFor(() =>
-      expect(
-        calls.some((call) => {
-          const params = new URL(call.url, 'https://careerground.example').searchParams;
-          return (
-            params.getAll('companySize').join(',') === 'LARGE,MID' &&
-            params.getAll('category').join(',') === 'AI 풀스택 개발'
-          );
-        }),
-      ).toBe(true),
-    );
+    expect(await screen.findByText('0개 공고')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: '마감 임박순' }));
-    await waitFor(() =>
-      expect(calls.some((call) => call.url.includes('sort=deadline'))).toBe(true),
-    );
+    await waitFor(() => expect(calls).toHaveLength(1));
+    expect(calls[0]?.url).toContain('/jobs/bootstrap?catalog=true');
     await user.click(screen.getByRole('button', { name: '크게' }));
     expect(document.querySelector('.jobs-page')).toHaveAttribute('data-font-size', 'large');
   });
@@ -78,8 +80,14 @@ describe('domain pages', () => {
     const deadlineAt = new Date(
       Date.UTC(now.getFullYear(), now.getMonth(), 15, 6, 0, 0),
     ).toISOString();
-    const collectedAt = new Date(
+    const publishedAt = new Date(
+      Date.UTC(now.getFullYear(), now.getMonth(), 3, 6, 0, 0),
+    ).toISOString();
+    const applicationStartAt = new Date(
       Date.UTC(now.getFullYear(), now.getMonth(), 5, 6, 0, 0),
+    ).toISOString();
+    const collectedAt = new Date(
+      Date.UTC(now.getFullYear(), now.getMonth(), 10, 6, 0, 0),
     ).toISOString();
     const job = {
       id: '11111111-1111-4111-8111-111111111111',
@@ -88,6 +96,8 @@ describe('domain pages', () => {
       region: '서울',
       remote: false,
       techStack: ['TypeScript'],
+      publishedAt,
+      applicationStartAt,
       collectedAt,
       deadlineAt,
       rolling: false,
@@ -102,9 +112,7 @@ describe('domain pages', () => {
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
         calls.push({ url, method: init?.method || 'GET' });
-        if (url.endsWith('/jobs/categories')) return response(['백엔드']);
-        if (url.includes('calendar=true')) return response([job]);
-        return response({ items: [job], nextCursor: null, total: 1 });
+        return jobBootstrap([job], ['백엔드']);
       }),
     );
     const user = userEvent.setup();
@@ -112,30 +120,27 @@ describe('domain pages', () => {
 
     expect(await screen.findByText('Example Careers')).toBeInTheDocument();
     expect(screen.getByText('careers.example.com')).toBeInTheDocument();
-    expect(screen.getByText(/최신일/)).toBeInTheDocument();
+    expect(screen.getByText(/확인일/)).toBeInTheDocument();
     expect(screen.queryByText(/마지막 확인/)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '달력' }));
     const legend = await screen.findByLabelText('일정 색상 안내');
-    expect(within(legend).getByText('시작·확인일')).toBeInTheDocument();
+    expect(within(legend).getByText('등록일')).toBeInTheDocument();
+    expect(within(legend).getByText('접수 시작일')).toBeInTheDocument();
+    expect(screen.queryByText('시작·확인일')).not.toBeInTheDocument();
     expect(within(legend).getByText('마감일')).toBeInTheDocument();
     expect(within(legend).getByText('상시')).toBeInTheDocument();
     await user.click(
       await screen.findByRole('button', {
-        name: '캘린더테크 신입 플랫폼 엔지니어 마감일 상세 보기',
+        name: '캘린더테크 신입 플랫폼 엔지니어 등록일 상세 보기',
       }),
     );
     const dialog = screen.getByRole('dialog', { name: '캘린더테크' });
     expect(dialog).toBeInTheDocument();
     expect(dialog).toHaveTextContent('신입 플랫폼 엔지니어');
-    expect(
-      calls.some(
-        (call) =>
-          call.url.includes('calendar=true') &&
-          call.url.includes('deadlineFrom=') &&
-          call.url.includes('deadlineTo='),
-      ),
-    ).toBe(true);
+    expect(calls).toHaveLength(2);
+    expect(calls[0]?.url).toContain('/jobs/bootstrap?catalog=true');
+    expect(calls.some((call) => call.url.includes('calendar=true'))).toBe(false);
   });
 
   it('opens rolling jobs and hidden daily events in dedicated dialogs', async () => {
@@ -154,6 +159,7 @@ describe('domain pages', () => {
         region: '서울',
         remote: false,
         techStack: ['TypeScript'],
+        applicationStartAt: collectedAt,
         collectedAt,
         deadlineAt,
         rolling: false,
@@ -181,11 +187,8 @@ describe('domain pages', () => {
     ];
     vi.stubGlobal(
       'fetch',
-      vi.fn((input: RequestInfo | URL) => {
-        const url = String(input);
-        if (url.endsWith('/jobs/categories')) return response(['백엔드']);
-        if (url.includes('calendar=true')) return response(catalog);
-        return response({ items: catalog, nextCursor: null, total: catalog.length });
+      vi.fn((_input: RequestInfo | URL) => {
+        return jobBootstrap(catalog, ['백엔드', '프론트엔드']);
       }),
     );
     const user = userEvent.setup();

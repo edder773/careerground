@@ -1,9 +1,11 @@
 import { createServer } from 'node:http';
 import { handleD1Api } from './d1-api.js';
 import { LocalD1 } from './local-d1.js';
+import { ensureRuntimeSchema } from './runtime-schema.js';
 
 const port = Number(process.env.PORT || 4000);
 const db = new LocalD1();
+await ensureRuntimeSchema(db);
 const fixtureTime = '2026-08-13T00:00:00.000Z';
 
 await db.batch([

@@ -1,0 +1,53 @@
+{
+  "baseline": {
+    "generatedAt": "2026-08-15T01:35:46.149Z",
+    "environment": {
+      "runtime": "v24.19.0",
+      "database": "node:sqlite in-memory D1 compatibility adapter",
+      "scope": "local API control-flow benchmark; excludes network and production D1 latency"
+    },
+    "samplesPerScenario": 9,
+    "legacyHome": {
+      "label": "auth plus four home endpoint handlers (sequential local adapter)",
+      "p50Ms": 3,
+      "p95Ms": 5.99,
+      "preparedStatementCount": 33
+    },
+    "bootstrap": {
+      "available": false,
+      "status": 404
+    }
+  },
+  "after": {
+    "generatedAt": "2026-08-15T01:36:06.536Z",
+    "environment": {
+      "runtime": "v24.19.0",
+      "database": "node:sqlite in-memory D1 compatibility adapter",
+      "scope": "local API control-flow benchmark; excludes network and production D1 latency"
+    },
+    "samplesPerScenario": 9,
+    "legacyHome": {
+      "label": "auth plus four home endpoint handlers (sequential local adapter)",
+      "p50Ms": 1.81,
+      "p95Ms": 2.19,
+      "preparedStatementCount": 18
+    },
+    "bootstrap": {
+      "available": true,
+      "label": "single bootstrap request",
+      "p50Ms": 0.75,
+      "p95Ms": 0.89,
+      "preparedStatementCount": 11
+    }
+  },
+  "comparison": {
+    "initialApiRequestCount": { "before": 5, "after": 1, "reductionPercent": 80 },
+    "preparedStatementCount": { "before": 33, "after": 11, "reductionPercent": 66.67 },
+    "localP50Ms": { "before": 3, "after": 0.75, "reductionPercent": 75 },
+    "localP95Ms": { "before": 5.99, "after": 0.89, "reductionPercent": 85.14 }
+  },
+  "notes": [
+    "Baseline and after use the same command, runtime, in-memory dataset, sample count, and upstream source state.",
+    "Local timing excludes production network and D1 latency; production latency is measured separately after deployment."
+  ]
+}

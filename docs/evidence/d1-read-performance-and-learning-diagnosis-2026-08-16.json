@@ -1,0 +1,187 @@
+{
+  "schema": "careerground-d1-read-performance-learning-diagnosis/v1",
+  "generatedAt": "2026-08-16T05:28:14.119Z",
+  "scope": "D1 read-path remediation history and current learning-page latency diagnosis",
+  "priorRemediationEvidence": {
+    "sources": [
+      "docs/evidence/jobs-d1-roundtrip-2026-08-15.json",
+      "docs/evidence/read-path-fast-catalog-2026-08-15.json"
+    ],
+    "jobsBefore": {
+      "productionList": {
+        "applicationMs": 899,
+        "workerWallMs": 913,
+        "workerCpuMs": 6
+      },
+      "controlled": {
+        "samples": 9,
+        "artificialD1DispatchLatencyMs": 25,
+        "p50Ms": 124.21,
+        "p95Ms": 126.81,
+        "maxD1Dispatches": 4,
+        "returnedItems": 40,
+        "totalItems": 119
+      }
+    },
+    "jobsAfter": {
+      "controlled": {
+        "samples": 9,
+        "artificialD1DispatchLatencyMs": 25,
+        "p50Ms": 31.59,
+        "p95Ms": 32.0,
+        "maxD1Dispatches": 1,
+        "returnedItems": 40,
+        "totalItems": 119
+      },
+      "change": {
+        "d1DispatchReductionPercent": 75.0,
+        "p50ReductionPercent": 74.57,
+        "p95ReductionPercent": 74.77
+      },
+      "catalogHydration": {
+        "d1Dispatches": 1,
+        "preparedStatements": 3,
+        "readRequestsPerFilterSortCalendarChangeAfterHydration": 0
+      }
+    },
+    "structuralChanges": [
+      "User lookup, rate-limit update, unread count, and route data were grouped into D1 batches.",
+      "The first jobs route received a dedicated bootstrap payload for user, unread count, categories, and data.",
+      "Job rows and total count were executed in one D1 batch.",
+      "The full active catalog was hydrated once and filtering, sorting, searching, calendar movement, and paging became browser-memory operations.",
+      "The jobs route chunk was preloaded before route entry.",
+      "Feed and category indexes removed avoidable sorting and broad scans."
+    ]
+  },
+  "currentProductionLearningData": {
+    "source": "Sites live D1 bounded table reads",
+    "capturedAt": "2026-08-16T05:20:00.000Z",
+    "rows": {
+      "learningSources": 4,
+      "learningUnits": 23,
+      "flashcards": 46,
+      "learningQuestions": 23,
+      "learningQuestionAttempts": 0,
+      "learningProgress": 2
+    }
+  },
+  "currentProductionLearningLatency": {
+    "source": "Sites Worker logs, successful HTTP 200 requests only",
+    "capturedAt": "2026-08-16T05:24:00.000Z",
+    "lookbackMinutes": 180,
+    "routes": {
+      "bootstrap": {
+        "applicationMs": { "samples": 4, "min": 187, "p50": 195, "max": 719 },
+        "workerWallMs": { "samples": 4, "min": 191, "p50": 199, "max": 721 },
+        "workerCpuMs": { "samples": 4, "min": 1, "p50": 1, "max": 2 }
+      },
+      "learningLibrary": {
+        "applicationMs": { "samples": 1, "min": 192, "p50": 192, "max": 192 },
+        "workerWallMs": { "samples": 1, "min": 196, "p50": 196, "max": 196 },
+        "workerCpuMs": { "samples": 1, "min": 2, "p50": 2, "max": 2 }
+      },
+      "learningUnitDetail": {
+        "applicationMs": { "samples": 4, "min": 524, "p50": 530, "max": 536 },
+        "workerWallMs": { "samples": 4, "min": 536, "p50": 541, "max": 548 },
+        "workerCpuMs": { "samples": 4, "min": 3, "p50": 3, "max": 4 }
+      }
+    }
+  },
+  "controlledLearningBenchmark": {
+    "command": "node --import tsx scripts/performance/benchmark-learning-read-path.mjs",
+    "environment": {
+      "runtime": "Node.js v24.19.0",
+      "database": "node:sqlite in-memory D1 compatibility adapter",
+      "data": "repository migrations and learning seed",
+      "samples": 9,
+      "artificialD1DispatchLatencyMs": 25,
+      "networkIncluded": false
+    },
+    "dataShape": {
+      "sources": 4,
+      "units": 23,
+      "selectedUnit": { "flashcards": 2, "questions": 1, "attempts": 0 }
+    },
+    "initialDataSequence": {
+      "p50Ms": 62.38,
+      "p95Ms": 78.65,
+      "maxD1Dispatches": 2,
+      "maxPreparedStatements": 5,
+      "responseBytes": 21512
+    },
+    "learningLibrary": {
+      "p50Ms": 31.01,
+      "p95Ms": 32.19,
+      "maxD1Dispatches": 1,
+      "maxPreparedStatements": 3,
+      "responseBytes": 21272
+    },
+    "learningUnitDetail": {
+      "p50Ms": 93.85,
+      "p95Ms": 94.9,
+      "maxD1Dispatches": 5,
+      "maxPreparedStatements": 6,
+      "responseBytes": 2558
+    },
+    "interpretation": "The artificial delay exposes D1 dispatch waves only; it is not a production latency claim."
+  },
+  "currentLearningArchitecture": {
+    "directPageEntry": ["GET /bootstrap", "lazy LearningPage module load", "GET /learning"],
+    "inAppNavigation": ["lazy LearningPage module load when not already cached", "GET /learning"],
+    "libraryRead": {
+      "d1Dispatches": 1,
+      "preparedStatements": 3,
+      "note": "The context statements and one JSON-aggregating learning statement share a single D1 batch."
+    },
+    "unitDetailRead": {
+      "d1Dispatches": 5,
+      "preparedStatements": 6,
+      "sequentialDispatchWaves": 3,
+      "waves": [
+        "user and rate-limit context batch",
+        "unit, source, and progress SELECT",
+        "flashcards, questions, and attempts SELECTs in parallel"
+      ]
+    }
+  },
+  "diagnosis": {
+    "primary": [
+      "Unit detail performs five D1 dispatches across three sequential waves.",
+      "Learning direct entry has no dedicated bootstrap, so authentication and learning data are separate requests.",
+      "LearningPage remains a lazy-only route and is not proactively preloaded like JobsPage."
+    ],
+    "secondary": [
+      "The detail response is fetched only after a card is clicked; no hover, focus, or first-source prefetch is used.",
+      "The attempts query index begins with user_id and question_id while the query filters user_id plus the joined unit_id; this is a future scale risk, not the current bottleneck."
+    ],
+    "notCurrentRootCause": [
+      "Current row counts are small.",
+      "The selected detail response is 2558 bytes in the controlled benchmark.",
+      "Worker CPU is 3 to 4 ms for the observed 536 to 548 ms detail requests.",
+      "Current production has zero learning question attempts.",
+      "Learning images use lazy loading and do not explain the API wait before detail data arrives."
+    ]
+  },
+  "recommendedNextDesign": {
+    "priority": [
+      "Create a learning bootstrap that returns user, unread count, and the learning library in one request and one D1 batch for direct /learning entry.",
+      "Convert unit detail into one fast read plan that batches context, unit, flashcards, questions, and attempts in one D1 dispatch.",
+      "Preload LearningPage with the same resilient promise pattern used by JobsPage.",
+      "After dispatch consolidation, measure whether intent-based detail prefetch is still necessary.",
+      "Add or revise the attempts index only if EXPLAIN QUERY PLAN and larger attempt fixtures show a scan."
+    ],
+    "structuralTargetsNotYetImplemented": {
+      "directPageDataRequests": "2 to 1",
+      "unitDetailD1Dispatches": "5 to 1",
+      "unitDetailSequentialDispatchWaves": "3 to 1"
+    },
+    "latencyPromise": "No production latency reduction is claimed until the design is implemented and measured under the same conditions."
+  },
+  "limitations": [
+    "The production learning-library sample count is one in the selected log window.",
+    "The browser automation session was not authenticated, so no private page DOM or browser resource timing was captured.",
+    "Production logs establish Worker wall and CPU time but do not expose a per-statement D1 breakdown.",
+    "Controlled benchmark timings exclude internet, browser rendering, asset download, and production D1 latency.",
+    "No learning performance fix is included in this diagnosis-only change."
+  ]
+}
