@@ -112,6 +112,8 @@ version 49 재배포 후 운영 health는 200과 `ready: true`를 반환했다. 
 
 같은 CI의 `pnpm audit --audit-level high`는 Prisma 7.9.1이 고정한 `deepmerge-ts 7.1.5`의 recursive graph stack exhaustion 취약점 1개를 탐지했다. Prisma 최신 안정판도 같은 버전을 고정하고 있어 workspace override로 패치판 8.0.1을 사용했다. `prisma generate` 호환성을 확인했고 audit 결과는 고위험 1개에서 알려진 취약점 0개로 바뀌었다.
 
+CodeQL은 로컬 D1 HTTP adapter가 `String(error)`를 응답 본문에 넣어 내부 예외와 stack 정보가 노출될 수 있는 `js/stack-trace-exposure` 경고를 찾았다. 원본 예외는 서버 로그에만 남기고 클라이언트에는 고정된 한국어 오류 메시지만 반환하도록 경계를 분리했다.
+
 ## 근거
 
 - `docs/evidence/google-auth-2026-08-18.json`

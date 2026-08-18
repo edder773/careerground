@@ -96,9 +96,15 @@ const server = createServer(async (incoming, outgoing) => {
     response.headers.forEach((value, name) => outgoing.setHeader(name, value));
     outgoing.end(Buffer.from(await response.arrayBuffer()));
   } catch (error) {
+    console.error('Local D1 request failed', error);
     outgoing.statusCode = 500;
     outgoing.setHeader('content-type', 'application/json; charset=utf-8');
-    outgoing.end(JSON.stringify({ code: 'LOCAL_D1_ERROR', message: String(error) }));
+    outgoing.end(
+      JSON.stringify({
+        code: 'LOCAL_D1_ERROR',
+        message: '로컬 D1 요청을 처리하지 못했습니다. 서버 로그를 확인해주세요.',
+      }),
+    );
   }
 });
 
