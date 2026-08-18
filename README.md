@@ -7,44 +7,39 @@
 - Node.js 24.19.0 LTS (`.nvmrc`, `.node-version`)
 - pnpm 11.21.0 (`packageManager`, `pnpm-lock.yaml`)
 - React 19.2.8, Vite 8.2.1, TypeScript 6.0.3
-- NestJS 11.1.29, Prisma 7.9.1, PostgreSQL 17+
+- 운영: OpenAI Sites Worker + D1
+- Reference-only: NestJS 11.1.29, Prisma 7.9.1, PostgreSQL 17+
 - Vitest, Testing Library, Playwright, axe-core
 
 ## 빠른 시작
 
 ```bash
 cp .env.example .env
-# DB URL과 운영 secret을 변경한다.
 corepack enable
 corepack prepare pnpm@11.21.0 --activate
 pnpm install --frozen-lockfile
-docker compose up -d postgres
-pnpm db:migrate
-pnpm db:seed
 pnpm dev
 ```
 
 - 웹: <http://localhost:5173>
-- API: <http://localhost:4000/api/v1>
-- Swagger: <http://localhost:4000/api/docs>
-- OpenAPI JSON: <http://localhost:4000/api/openapi.json>
+- D1 API: <http://localhost:4000/api/v1>
 - 문서 사이트: `pnpm docs:dev` → <http://localhost:5174>
 
-로그인은 OpenAI Sites가 제공하는 OpenAI 계정 한 가지만 사용한다. private Site의 dispatcher가 안정적인 사용자 ID와 검증 이메일을 Worker에 전달하고, Worker는 shared secret을 더해 Nest API로 프록시한다. API는 이 두 경계를 모두 통과한 사용자만 DB 계정에 연결한다. `OPENAI_AUTH_MOCK=true`는 deterministic E2E에서만 허용되며 production에서는 항상 무시된다.
+운영 로그인은 Google Identity Services 한 가지만 사용한다. 브라우저가 받은 Google ID 토큰은 Sites Worker가 Google 공개키로 서명과 `iss`, `aud`, `exp`, `email_verified`를 검증한다. 검증 후 D1에 무작위 세션의 SHA-256 해시만 저장하고 브라우저에는 `HttpOnly`, `Secure`, `SameSite=Lax` 쿠키를 발급한다. 채용·학습·코딩 공통 데이터도 로그인한 사용자만 조회할 수 있다. `AUTH_TEST_MODE=true` 인증 우회는 로컬 D1 E2E에서만 주입하며 운영에는 설정하지 않는다.
 
 ## 필수 명령
 
 ```bash
-pnpm dev                 # web/api 동시 실행
+pnpm dev                 # web + 메모리 D1 API 동시 실행, Docker 불필요
 pnpm build               # contracts/ui/api/web/docs production build
 pnpm lint
 pnpm typecheck
 pnpm test                # unit/component/provider mock
-pnpm test:e2e            # PostgreSQL + seed가 필요한 Playwright
-pnpm db:migrate
-pnpm db:deploy
-pnpm db:seed
-pnpm db:reset
+pnpm test:e2e            # 격리된 메모리 D1 + 공통 seed Playwright
+pnpm db:migrate          # reference-only PostgreSQL 경로
+pnpm db:deploy           # reference-only PostgreSQL 경로
+pnpm db:seed             # reference-only PostgreSQL 경로
+pnpm db:reset            # reference-only PostgreSQL 경로
 pnpm jobs:import ./jobs.json           # dry-run
 pnpm jobs:import ./jobs.json --commit  # ADMIN으로 transaction 승인
 pnpm learning:import ./learning.json
@@ -61,9 +56,9 @@ DB를 reset하면 로컬 데이터가 삭제되므로 대상 DB URL을 확인한
 
 - `DATABASE_URL`: PostgreSQL 연결 문자열
 - `WEB_ORIGIN`: CORS 허용 웹 origin 하나
-- `SITES_AUTH_SHARED_SECRET`: Sites Worker와 Nest API에 동일하게 주입하는 긴 random secret
-- `OPENAI_ADMIN_EMAILS`: OpenAI 로그인 후 ADMIN으로 승격할 이메일 allowlist
-- `OPENAI_AUTH_MOCK`: 로컬/E2E 전용 인증 헤더 mock; production에서는 무시
+- `GOOGLE_CLIENT_ID`: Google 웹 OAuth 클라이언트 ID. 운영 Worker에는 코드 기본값과 동일한 값을 선택적으로 명시한다.
+- `ADMIN_EMAILS`: Google 로그인 후 ADMIN으로 승격할 이메일 allowlist
+- `AUTH_TEST_MODE`: 로컬 D1/E2E 전용 테스트 로그인 endpoint 활성화. 운영에는 설정하지 않는다.
 - `MAX_ACTIVE_USERS`: 기본 10
 - `INTERNAL_SERVICE_SECRET`: daily challenge ensure endpoint 보호
 - `OPENAI_API_KEY`, `OPENAI_TROUBLESHOOTING_MODEL`: 선택형 트러블슈팅 문서 보강에만 사용하며, 없어도 변경 파일·테스트 결과 기반 기록은 생성됨
@@ -106,7 +101,7 @@ pnpm troubleshoot:validate --file docs/troubleshooting/2026-08-12-pr-123-evidenc
 
 `apps/web/Dockerfile`, `apps/api/Dockerfile`은 multi-stage production image다. API readiness는 `/api/v1/health/ready`, 웹 health는 `/`로 확인한다. 상세 절차는 `docs/operations/deployment.md`를 따른다. 문서 앱은 GitHub Pages workflow가 배포한다.
 
-OpenAI Sites용 `pnpm sites:build`는 같은 React production build와 SPA fallback Worker를 `dist`에 만든다. 운영 Sites에서는 `DB` 논리 바인딩으로 전용 D1을 프로비저닝하고 `drizzle/` 마이그레이션을 적용한다. `/api/v1/*`는 OpenAI 사용자 헤더를 서버에서 확인한 뒤 D1에 사용자별 폴더, 노트, 지원 상태, 학습 진도, 풀이와 댓글을 영속 저장한다. 첫 번째 정상 OpenAI 사용자는 bootstrap 관리자이고 이후 사용자는 기본 `MEMBER`로 등록된다. 별도 Nest/PostgreSQL 운영을 선택하면 `API_ORIGIN`과 동일한 `SITES_AUTH_SHARED_SECRET`을 설정해 기존 프록시 경로를 사용할 수 있다.
+OpenAI Sites용 `pnpm sites:build`는 같은 React production build와 SPA fallback Worker를 `dist`에 만든다. 운영 Sites에서는 `DB` 논리 바인딩으로 전용 D1을 프로비저닝하고 `drizzle/` 마이그레이션을 적용한다. `/api/v1/auth/google`만 Google ID 토큰을 받아 세션을 만들며, health를 제외한 나머지 `/api/v1/*`는 유효한 D1 세션 쿠키가 있어야 접근할 수 있다. 최초 Google 사용자는 기본 `MEMBER`이고 `ADMIN_EMAILS`에 포함된 검증 이메일만 `ADMIN`이 된다.
 
 ## 저장소 운영
 

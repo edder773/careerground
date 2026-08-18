@@ -5,6 +5,11 @@ import { OnboardingPage } from './OnboardingPage';
 import { renderPage, response } from '../test/render';
 
 describe('first member setup', () => {
+  it('prefills the verified Google display name for confirmation', () => {
+    renderPage(<OnboardingPage initialDisplayName="Google Member" />);
+    expect(screen.getByRole('textbox', { name: '이름' })).toHaveValue('Google Member');
+  });
+
   it('requires a name and sends one of the four supported languages', async () => {
     const calls: unknown[] = [];
     vi.stubGlobal(

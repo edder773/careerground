@@ -246,7 +246,7 @@ export function SettingsPage() {
             <div className="admin-divider" />
             <h2>계정</h2>
             <button type="button" className="ghost-button" onClick={() => void logout()}>
-              <LogOut /> OpenAI 계정에서 로그아웃
+              <LogOut /> Google 계정에서 로그아웃
             </button>
           </section>
         </div>

@@ -1,7 +1,9 @@
 import { all, first, run, type D1Database } from './d1.js';
 
 const schemaPromises = new WeakMap<D1Database, Promise<void>>();
-export const EXPECTED_SCHEMA_VERSION = '0016_full_audit_hardening';
+export const EXPECTED_SCHEMA_VERSION = '0017_google_auth';
+const EXPECTED_SCHEMA_CHECKSUM =
+  'sha256:afec76f25cfd954b51857912fa78d1b29d7daff92497ab095e559e7aa2abaf60';
 
 const ledgerSchema = `CREATE TABLE IF NOT EXISTS app_schema_migrations (
   version text PRIMARY KEY NOT NULL,
@@ -66,6 +68,26 @@ const additiveSchema = [
     lease_until text NOT NULL,
     updated_at text NOT NULL
   )`,
+  `CREATE TABLE IF NOT EXISTS auth_identities (
+    id text PRIMARY KEY NOT NULL,
+    user_id text NOT NULL,
+    provider text NOT NULL,
+    provider_subject text NOT NULL,
+    email text NOT NULL,
+    created_at text NOT NULL,
+    updated_at text NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CHECK(provider IN ('GOOGLE'))
+  )`,
+  `CREATE TABLE IF NOT EXISTS auth_sessions (
+    id text PRIMARY KEY NOT NULL,
+    user_id text NOT NULL,
+    token_hash text NOT NULL,
+    expires_at text NOT NULL,
+    last_seen_at text NOT NULL,
+    created_at text NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`,
   'CREATE UNIQUE INDEX IF NOT EXISTS idx_job_source_snapshots_batch_source ON job_source_snapshots(import_batch_id, source_name)',
   'CREATE INDEX IF NOT EXISTS idx_job_source_snapshots_source_collected ON job_source_snapshots(source_name, collected_at)',
   'CREATE UNIQUE INDEX IF NOT EXISTS idx_job_source_snapshot_items_unique ON job_source_snapshot_items(snapshot_id, job_id)',
@@ -76,6 +98,11 @@ const additiveSchema = [
   'CREATE UNIQUE INDEX IF NOT EXISTS idx_learning_review_events_sequence ON learning_review_events(user_id, unit_id, sequence)',
   'CREATE INDEX IF NOT EXISTS idx_learning_review_events_user_reviewed ON learning_review_events(user_id, reviewed_at)',
   'CREATE INDEX IF NOT EXISTS idx_notifications_user_read_expiry_created ON notifications(user_id, read_at, expires_at, created_at)',
+  'CREATE UNIQUE INDEX IF NOT EXISTS idx_auth_identities_provider_subject ON auth_identities(provider, provider_subject)',
+  'CREATE INDEX IF NOT EXISTS idx_auth_identities_user ON auth_identities(user_id)',
+  'CREATE UNIQUE INDEX IF NOT EXISTS idx_auth_sessions_token_hash ON auth_sessions(token_hash)',
+  'CREATE INDEX IF NOT EXISTS idx_auth_sessions_user ON auth_sessions(user_id)',
+  'CREATE INDEX IF NOT EXISTS idx_auth_sessions_expires ON auth_sessions(expires_at)',
 ] as const;
 
 const searchTriggers = [
@@ -262,6 +289,8 @@ export type RuntimeSchemaState = {
   progressColumnCount: number;
   questionColumnCount: number;
   jobColumnCount: number;
+  authTableCount: number;
+  legacyIdentityColumnCount: number;
 };
 
 export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchemaState> {
@@ -271,6 +300,8 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
     progressColumnCount: number;
     questionColumnCount: number;
     jobColumnCount: number;
+    authTableCount: number;
+    legacyIdentityColumnCount: number;
   }>(
     db,
     `SELECT
@@ -287,13 +318,19 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
        (SELECT COUNT(*) FROM pragma_table_info('learning_questions')
          WHERE name IN ('type', 'choices')) AS questionColumnCount,
        (SELECT COUNT(*) FROM pragma_table_info('jobs')
-         WHERE name = 'published_at') AS jobColumnCount`,
+         WHERE name = 'published_at') AS jobColumnCount,
+       (SELECT COUNT(*) FROM sqlite_schema
+         WHERE type = 'table' AND name IN ('auth_identities', 'auth_sessions')) AS authTableCount,
+       (SELECT COUNT(*) FROM pragma_table_info('users')
+         WHERE name = 'site_user_id') AS legacyIdentityColumnCount`,
   );
   const tableCount = Number(state?.tableCount || 0);
   const triggerCount = Number(state?.triggerCount || 0);
   const progressColumnCount = Number(state?.progressColumnCount || 0);
   const questionColumnCount = Number(state?.questionColumnCount || 0);
   const jobColumnCount = Number(state?.jobColumnCount || 0);
+  const authTableCount = Number(state?.authTableCount || 0);
+  const legacyIdentityColumnCount = Number(state?.legacyIdentityColumnCount || 0);
   const ledger =
     tableCount === 8
       ? await first<{ version: string }>(
@@ -309,6 +346,8 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
       progressColumnCount === 3 &&
       questionColumnCount === 2 &&
       jobColumnCount === 1 &&
+      authTableCount === 2 &&
+      legacyIdentityColumnCount === 0 &&
       appliedVersion === EXPECTED_SCHEMA_VERSION,
     expectedVersion: EXPECTED_SCHEMA_VERSION,
     appliedVersion,
@@ -317,7 +356,18 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
     progressColumnCount,
     questionColumnCount,
     jobColumnCount,
+    authTableCount,
+    legacyIdentityColumnCount,
   };
+}
+
+async function removeLegacyIdentityData(db: D1Database) {
+  const userColumns = await all<{ name: string }>(db, 'PRAGMA table_info(users)');
+  if (!userColumns.some((column) => column.name === 'site_user_id')) return;
+  await run(db, 'DELETE FROM audit_logs');
+  await run(db, 'DELETE FROM users');
+  await run(db, 'DROP INDEX IF EXISTS idx_users_site_user_id');
+  await run(db, 'ALTER TABLE users DROP COLUMN site_user_id');
 }
 
 async function applyRuntimeSchema(db: D1Database) {
@@ -325,9 +375,10 @@ async function applyRuntimeSchema(db: D1Database) {
   if (state.ready) return;
 
   await run(db, ledgerSchema);
+  await removeLegacyIdentityData(db);
   // Parent tables must exist before SQLite can prepare child-table statements.
-  for (const sql of additiveSchema.slice(0, 6)) await run(db, sql);
-  await db.batch(additiveSchema.slice(6).map((sql) => db.prepare(sql)));
+  for (const sql of additiveSchema.slice(0, 8)) await run(db, sql);
+  await db.batch(additiveSchema.slice(8).map((sql) => db.prepare(sql)));
   await addLearningProgressColumns(db);
   await addLearningQuestionColumns(db);
   await addJobColumns(db);
@@ -356,7 +407,7 @@ async function applyRuntimeSchema(db: D1Database) {
     `INSERT OR REPLACE INTO app_schema_migrations (version, checksum, applied_at)
      VALUES (?, ?, ?)`,
     EXPECTED_SCHEMA_VERSION,
-    'sha256:69fa089214693f323703a327d853996d67129c136f80b8997cfc79a4a43b797d',
+    EXPECTED_SCHEMA_CHECKSUM,
     new Date().toISOString(),
   );
 }

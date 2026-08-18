@@ -7,6 +7,8 @@ type Fetcher = { fetch(request: Request): Promise<Response> };
 type SitesEnv = {
   ASSETS: Fetcher;
   DB?: D1Database;
+  ADMIN_EMAILS?: string;
+  GOOGLE_CLIENT_ID?: string;
   OPENAI_ADMIN_EMAILS?: string;
   MAX_ACTIVE_USERS?: string;
 };
@@ -36,9 +38,10 @@ const withSecurityHeaders = (response: Response) => {
   headers.set('x-frame-options', 'DENY');
   headers.set('referrer-policy', 'strict-origin-when-cross-origin');
   headers.set('permissions-policy', 'camera=(), microphone=(), geolocation=()');
+  headers.set('cross-origin-opener-policy', 'same-origin-allow-popups');
   headers.set(
     'content-security-policy',
-    "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self' data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'",
+    "default-src 'self'; base-uri 'self'; connect-src 'self' https://accounts.google.com/gsi/; font-src 'self' data:; form-action 'self'; frame-ancestors 'none'; frame-src https://accounts.google.com/gsi/; img-src 'self' data: blob: https://lh3.googleusercontent.com; object-src 'none'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style",
   );
   return new Response(response.body, {
     status: response.status,

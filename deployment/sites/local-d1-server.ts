@@ -85,8 +85,10 @@ const server = createServer(async (incoming, outgoing) => {
     });
     const response = await handleD1Api(request, {
       DB: db,
-      OPENAI_ADMIN_EMAILS: 'admin@careerground.local',
+      ADMIN_EMAILS: 'admin@careerground.local',
+      AUTH_TEST_MODE: 'true',
       MAX_ACTIVE_USERS: '100',
+      REQUEST_LOGGING: 'false',
     });
     outgoing.statusCode = response.status;
     response.headers.forEach((value, name) => outgoing.setHeader(name, value));

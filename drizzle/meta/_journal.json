@@ -120,6 +120,13 @@
       "when": 1786691728380,
       "tag": "0016_full_audit_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1787011200000,
+      "tag": "0017_google_auth",
+      "breakpoints": true
     }
   ]
 }

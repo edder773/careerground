@@ -6,7 +6,7 @@ const baseUrl = configuredApi.replace(/\/api\/v1\/?$/, '');
 
 /**
  * Generated-path client for new endpoint integrations. Authentication is supplied
- * by the same-origin OpenAI Sites proxy, never by client-managed tokens.
+ * by the same-origin Sites Worker using an HttpOnly Google session cookie.
  */
 export const openapiClient = createClient<paths>({
   baseUrl,

@@ -24,9 +24,23 @@ import {
   sourceText,
 } from './domain.js';
 import { inspectRuntimeSchema } from './runtime-schema.js';
+import {
+  clearSessionCookie,
+  GOOGLE_CLIENT_ID,
+  hashSessionToken,
+  newSessionToken,
+  SESSION_TTL_SECONDS,
+  sessionCookie,
+  sessionTokenFrom,
+  verifyGoogleCredential,
+  type GoogleIdentity,
+} from './google-auth.js';
 
 type D1Env = {
   DB: D1Database;
+  ADMIN_EMAILS?: string;
+  AUTH_TEST_MODE?: string;
+  GOOGLE_CLIENT_ID?: string;
   OPENAI_ADMIN_EMAILS?: string;
   MAX_ACTIVE_USERS?: string;
   RATE_LIMIT_READS_PER_MINUTE?: string;
@@ -34,10 +48,8 @@ type D1Env = {
   REQUEST_LOGGING?: string;
 };
 
-type Identity = { userId: string; email: string; displayName: string };
 type UserRow = {
   id: string;
-  siteUserId: string;
   email: string;
   displayName: string;
   role: 'ADMIN' | 'MEMBER';
@@ -80,15 +92,17 @@ class RouteError extends Error {
 }
 
 const userSelect = `
-  SELECT id, site_user_id AS siteUserId, email, display_name AS displayName, role,
-         is_active AS isActive, avatar_url AS avatarUrl, github_username AS githubUsername,
-         preferred_language AS preferredLanguage,
-         onboarding_completed_at AS onboardingCompletedAt, ranking_opt_in AS rankingOptIn,
-         comment_notifications AS commentNotifications,
-         deadline_notifications AS deadlineNotifications,
-         review_notifications AS reviewNotifications,
-         data_deletion_requested AS dataDeletionRequested,
-         created_at AS createdAt, updated_at AS updatedAt
+  SELECT users.id, users.email, users.display_name AS displayName, users.role,
+         users.is_active AS isActive, users.avatar_url AS avatarUrl,
+         users.github_username AS githubUsername,
+         users.preferred_language AS preferredLanguage,
+         users.onboarding_completed_at AS onboardingCompletedAt,
+         users.ranking_opt_in AS rankingOptIn,
+         users.comment_notifications AS commentNotifications,
+         users.deadline_notifications AS deadlineNotifications,
+         users.review_notifications AS reviewNotifications,
+         users.data_deletion_requested AS dataDeletionRequested,
+         users.created_at AS createdAt, users.updated_at AS updatedAt
   FROM users`;
 
 const responseJson = (
@@ -157,27 +171,6 @@ async function readJson(request: Request) {
   }
 }
 
-function identityFrom(request: Request): Identity {
-  const userId = request.headers.get('oai-authenticated-user-id')?.trim();
-  const email = request.headers.get('oai-authenticated-user-email')?.trim().toLowerCase();
-  if (!userId || !email) throw new RouteError(401, 'OpenAI 로그인이 필요합니다.', 'UNAUTHORIZED');
-  const encodedName = request.headers.get('oai-authenticated-user-full-name');
-  const encoding = request.headers.get('oai-authenticated-user-full-name-encoding');
-  let displayName = email.split('@')[0] || email;
-  if (encodedName && encoding === 'percent-encoded-utf-8') {
-    try {
-      displayName = decodeURIComponent(encodedName).trim() || displayName;
-    } catch {
-      // The optional name must not invalidate a valid Sites identity.
-    }
-  }
-  return {
-    userId: userId.slice(0, 255),
-    email: email.slice(0, 320),
-    displayName: displayName.slice(0, 80),
-  };
-}
-
 const apiUser = (row: UserRow): ApiUser => ({
   id: row.id,
   email: row.email,
@@ -209,86 +202,103 @@ async function audit(
   );
 }
 
-async function resolveUser(identity: Identity, env: D1Env): Promise<UserRow> {
-  const db = env.DB;
-  let row = await first<UserRow>(db, `${userSelect} WHERE site_user_id = ?`, identity.userId);
-  if (!row) {
-    const sameEmail = await first<UserRow>(db, `${userSelect} WHERE email = ?`, identity.email);
-    if (sameEmail && sameEmail.siteUserId !== identity.userId) {
-      throw new RouteError(401, '이 이메일은 다른 OpenAI 계정에 연결되어 있습니다.');
-    }
-    row = sameEmail;
-  }
-  const allowedAdmins = new Set(
-    (env.OPENAI_ADMIN_EMAILS || '')
+const adminEmails = (env: D1Env) =>
+  new Set(
+    (env.ADMIN_EMAILS || env.OPENAI_ADMIN_EMAILS || '')
       .split(',')
       .map((value) => value.trim().toLowerCase())
       .filter(Boolean),
   );
+
+async function resolveGoogleUser(identity: GoogleIdentity, env: D1Env): Promise<UserRow> {
+  const db = env.DB;
+  let row = await first<UserRow>(
+    db,
+    `${userSelect}
+       JOIN auth_identities identity ON identity.user_id = users.id
+      WHERE identity.provider = 'GOOGLE' AND identity.provider_subject = ?`,
+    identity.subject,
+  );
+  const allowedAdmins = adminEmails(env);
   const timestamp = nowIso();
   if (!row) {
+    const sameEmail = await first<UserRow>(
+      db,
+      `${userSelect} WHERE users.email = ?`,
+      identity.email,
+    );
+    if (sameEmail) {
+      throw new RouteError(
+        409,
+        '이 이메일은 다른 Google 계정에 연결되어 있습니다.',
+        'GOOGLE_IDENTITY_CONFLICT',
+      );
+    }
     const maxActiveUsers = Math.max(1, int(env.MAX_ACTIVE_USERS, 100_000));
     const role = allowedAdmins.has(identity.email) ? 'ADMIN' : 'MEMBER';
     const id = newId();
-    const inserted = await run(
+    const capacity = await first<{ allowed: number }>(
       db,
-      role === 'ADMIN'
-        ? `INSERT INTO users
-             (id, site_user_id, email, display_name, role, preferred_language, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, 'javascript', ?, ?)`
-        : `INSERT INTO users
-             (id, site_user_id, email, display_name, role, preferred_language, created_at, updated_at)
-           SELECT ?, ?, ?, ?, ?, 'javascript', ?, ?
-            WHERE (SELECT COUNT(*) FROM users WHERE is_active = 1) < ?`,
-      id,
-      identity.userId,
-      identity.email,
-      identity.displayName,
+      `SELECT CASE WHEN ? = 'ADMIN' OR
+             (SELECT COUNT(*) FROM users WHERE is_active = 1) < ?
+           THEN 1 ELSE 0 END AS allowed`,
       role,
-      timestamp,
-      timestamp,
-      ...(role === 'ADMIN' ? [] : [maxActiveUsers]),
+      maxActiveUsers,
     );
-    if (Number(inserted.meta?.changes || 0) !== 1) {
-      row = await first<UserRow>(db, `${userSelect} WHERE site_user_id = ?`, identity.userId);
-      if (!row) {
-        throw new RouteError(403, '현재 활성 사용자 한도에 도달했습니다.', 'USER_LIMIT_REACHED');
-      }
-    } else {
-      await env.DB.batch([
-        db
-          .prepare(
-            `INSERT INTO notifications
+    if (capacity?.allowed !== 1) {
+      throw new RouteError(403, '현재 활성 사용자 한도에 도달했습니다.', 'USER_LIMIT_REACHED');
+    }
+    await db.batch([
+      db
+        .prepare(
+          `INSERT INTO users
+             (id, email, display_name, role, preferred_language, created_at, updated_at)
+           VALUES (?, ?, ?, ?, 'javascript', ?, ?)`,
+        )
+        .bind(id, identity.email, identity.displayName, role, timestamp, timestamp),
+      db
+        .prepare(
+          `INSERT INTO auth_identities
+             (id, user_id, provider, provider_subject, email, created_at, updated_at)
+           VALUES (?, ?, 'GOOGLE', ?, ?, ?, ?)`,
+        )
+        .bind(newId(), id, identity.subject, identity.email, timestamp, timestamp),
+      db
+        .prepare(
+          `INSERT INTO notifications
              (id, user_id, type, title, message, href, dedupe_key, created_at)
            VALUES (?, ?, 'SYSTEM', ?, ?, '/', ?, ?)`,
-          )
-          .bind(
-            newId(),
-            id,
-            'CareerGround에 오신 것을 환영합니다',
-            'OpenAI 계정과 개인 워크스페이스가 연결되었습니다.',
-            `welcome:${id}`,
-            timestamp,
-          ),
-        db
-          .prepare(
-            `INSERT INTO audit_logs
+        )
+        .bind(
+          newId(),
+          id,
+          'CareerGround에 오신 것을 환영합니다',
+          'Google 계정으로 개인 워크스페이스가 준비되었습니다.',
+          `welcome:${id}`,
+          timestamp,
+        ),
+      db
+        .prepare(
+          `INSERT INTO audit_logs
              (id, actor_id, action, target_type, target_id, metadata, created_at)
-           VALUES (?, ?, 'OPENAI_ACCOUNT_CREATED', 'User', ?, ?, ?)`,
-          )
-          .bind(newId(), id, id, JSON.stringify({ provider: 'openai-sites', role }), timestamp),
-      ]);
-      row = await first<UserRow>(db, `${userSelect} WHERE id = ?`, id);
-    }
+           VALUES (?, ?, 'GOOGLE_ACCOUNT_CREATED', 'User', ?, ?, ?)`,
+        )
+        .bind(newId(), id, id, JSON.stringify({ provider: 'google', role }), timestamp),
+    ]);
+    row = await first<UserRow>(db, `${userSelect} WHERE users.id = ?`, id);
   } else {
     if (!asBoolean(row.isActive)) throw new RouteError(403, '비활성화된 계정입니다.');
     const role = row.role === 'ADMIN' || allowedAdmins.has(identity.email) ? 'ADMIN' : 'MEMBER';
     const statements = [
       db
+        .prepare('UPDATE users SET email = ?, role = ?, updated_at = ? WHERE id = ?')
+        .bind(identity.email, role, timestamp, row.id),
+      db
         .prepare(
-          'UPDATE users SET site_user_id = ?, email = ?, role = ?, updated_at = ? WHERE id = ?',
+          `UPDATE auth_identities SET email = ?, updated_at = ?
+            WHERE provider = 'GOOGLE' AND provider_subject = ?`,
         )
-        .bind(identity.userId, identity.email, role, timestamp, row.id),
+        .bind(identity.email, timestamp, identity.subject),
     ];
     if (row.role !== role) {
       statements.push(
@@ -302,16 +312,66 @@ async function resolveUser(identity: Identity, env: D1Env): Promise<UserRow> {
             newId(),
             row.id,
             row.id,
-            JSON.stringify({ from: row.role, to: role, source: 'OPENAI_ADMIN_EMAILS' }),
+            JSON.stringify({ from: row.role, to: role, source: 'ADMIN_EMAILS' }),
             timestamp,
           ),
       );
     }
     await db.batch(statements);
-    row = await first<UserRow>(db, `${userSelect} WHERE id = ?`, row.id);
+    row = await first<UserRow>(db, `${userSelect} WHERE users.id = ?`, row.id);
   }
   if (!row) throw new RouteError(500, '사용자 정보를 준비하지 못했습니다.');
   return row;
+}
+
+async function resolveSessionUser(request: Request, env: D1Env): Promise<UserRow> {
+  const token = sessionTokenFrom(request);
+  if (!token) throw new RouteError(401, 'Google 로그인이 필요합니다.', 'UNAUTHORIZED');
+  const tokenHash = await hashSessionToken(token);
+  const row = await first<UserRow>(
+    env.DB,
+    `${userSelect}
+       JOIN auth_sessions session ON session.user_id = users.id
+      WHERE session.token_hash = ? AND session.expires_at > ?`,
+    tokenHash,
+    nowIso(),
+  );
+  if (!row) throw new RouteError(401, '로그인 세션이 만료되었습니다.', 'UNAUTHORIZED');
+  if (!asBoolean(row.isActive)) throw new RouteError(403, '비활성화된 계정입니다.');
+  return row;
+}
+
+async function createSession(db: D1Database, userId: string, secure: boolean) {
+  const token = newSessionToken();
+  const tokenHash = await hashSessionToken(token);
+  const createdAt = nowIso();
+  const expiresAt = new Date(Date.now() + SESSION_TTL_SECONDS * 1000).toISOString();
+  await run(
+    db,
+    `INSERT INTO auth_sessions
+       (id, user_id, token_hash, expires_at, last_seen_at, created_at)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    newId(),
+    userId,
+    tokenHash,
+    expiresAt,
+    createdAt,
+    createdAt,
+  );
+  return sessionCookie(token, secure);
+}
+
+async function logoutSession(request: Request, env: D1Env) {
+  const token = sessionTokenFrom(request);
+  if (token)
+    await run(
+      env.DB,
+      'DELETE FROM auth_sessions WHERE token_hash = ?',
+      await hashSessionToken(token),
+    );
+  return responseJson({ ok: true }, 200, undefined, {
+    'set-cookie': clearSessionCookie(env.AUTH_TEST_MODE !== 'true'),
+  });
 }
 
 function requireAdmin(user: UserRow) {
@@ -481,6 +541,7 @@ export async function runScheduledMaintenance(env: D1Env) {
       startedAt,
     );
     notifications += Number(reviewNotifications.meta?.changes || 0);
+    await run(db, 'DELETE FROM auth_sessions WHERE expires_at <= ?', startedAt);
     return {
       acquired: true,
       expiredJobs: Number(expired.meta?.changes || 0),
@@ -3822,8 +3883,63 @@ export async function handleD1Api(request: Request, env: D1Env) {
         ),
       );
     }
-    const identity = identityFrom(request);
-    const user = await resolveUser(identity, env);
+    if (request.method === 'POST' && url.pathname === '/api/v1/auth/google') {
+      const body = await readJson(request);
+      const credential = cleanText(body.credential);
+      let identity: GoogleIdentity;
+      try {
+        identity = await verifyGoogleCredential(
+          credential,
+          env.GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID,
+        );
+      } catch (error) {
+        console.warn('Google credential verification failed', {
+          requestId,
+          reason: error instanceof Error ? error.message : 'UNKNOWN',
+        });
+        throw new RouteError(
+          401,
+          'Google 로그인 정보를 확인하지 못했습니다. 다시 시도해주세요.',
+          'GOOGLE_LOGIN_FAILED',
+        );
+      }
+      const user = await resolveGoogleUser(identity, env);
+      const cookie = await createSession(env.DB, user.id, env.AUTH_TEST_MODE !== 'true');
+      return finish(
+        responseJson({ user: apiUser(user) }, 200, requestId, { 'set-cookie': cookie }),
+      );
+    }
+    if (
+      request.method === 'POST' &&
+      url.pathname === '/api/v1/auth/test' &&
+      env.AUTH_TEST_MODE === 'true'
+    ) {
+      const body = await readJson(request);
+      const subject = cleanText(body.subject);
+      const email = cleanText(body.email).toLowerCase();
+      const displayName = cleanText(body.displayName);
+      if (
+        !subject ||
+        subject.length > 255 ||
+        !email ||
+        email.length > 320 ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+      ) {
+        throw new RouteError(400, '테스트 Google 사용자 정보가 올바르지 않습니다.');
+      }
+      const user = await resolveGoogleUser(
+        { subject, email, displayName: (displayName || email.split('@')[0] || email).slice(0, 80) },
+        env,
+      );
+      const cookie = await createSession(env.DB, user.id, false);
+      return finish(
+        responseJson({ user: apiUser(user) }, 200, requestId, { 'set-cookie': cookie }),
+      );
+    }
+    if (request.method === 'POST' && url.pathname === '/api/v1/auth/logout') {
+      return finish(await logoutSession(request, env));
+    }
+    const user = await resolveSessionUser(request, env);
     await enforceRateLimit(request, env, user.id, url.pathname);
     const result = await handleRoute(request, env, user, url);
     return finish(result instanceof Response ? result : responseJson(result, 200, requestId));

@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, type PropsWithChildren } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ApiError, type User } from './lib/api';
 
 type AuthContextValue = {
@@ -13,9 +13,10 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: PropsWithChildren) {
+  const client = useQueryClient();
   const me = useQuery({
     queryKey: ['me'],
-    queryFn: () => api<{ user: User }>('/auth/me'),
+    queryFn: () => api<{ user: User | null }>('/auth/me'),
     retry: (failureCount, error) =>
       failureCount < 2 && error instanceof ApiError && (error.status === 0 || error.status >= 500),
     retryDelay: (attempt) => Math.min(500 * 2 ** attempt, 2_000),
@@ -27,10 +28,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
       error: me.error instanceof ApiError && me.error.status !== 401 ? me.error : null,
       retry: () => void me.refetch(),
       logout: async () => {
-        window.location.assign('/signout-with-chatgpt?return_to=%2F');
+        await api('/auth/logout', { method: 'POST' });
+        client.removeQueries({ predicate: (query) => query.queryKey[0] !== 'me' });
+        client.setQueryData(['me'], { user: null });
       },
     }),
-    [me.data, me.error, me.isLoading, me.refetch],
+    [client, me.data, me.error, me.isLoading, me.refetch],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -10,9 +10,9 @@ const languages = [
   { value: 'cpp', label: 'C++' },
 ] as const;
 
-export function OnboardingPage() {
+export function OnboardingPage({ initialDisplayName = '' }: { initialDisplayName?: string }) {
   const client = useQueryClient();
-  const [displayName, setDisplayName] = useState('');
+  const [displayName, setDisplayName] = useState(initialDisplayName);
   const [preferredLanguage, setPreferredLanguage] = useState('python');
   const complete = useMutation({
     mutationFn: () =>
@@ -45,7 +45,7 @@ export function OnboardingPage() {
         >
           <span className="onboarding-step">첫 설정</span>
           <h1>어떻게 불러드릴까요?</h1>
-          <p>풀이 기록과 댓글에 표시할 이름을 직접 입력해주세요.</p>
+          <p>Google 이름을 확인하고, 풀이 기록과 댓글에 표시할 이름을 정해주세요.</p>
           <label className="onboarding-name">
             이름
             <input

@@ -60,7 +60,7 @@ export function App() {
       </div>
     );
   if (!user) return <LoginPage />;
-  if (!user.onboardingCompleted) return <OnboardingPage />;
+  if (!user.onboardingCompleted) return <OnboardingPage initialDisplayName={user.displayName} />;
   return (
     <AppErrorBoundary>
       <AppShell viewMode={viewMode} onViewMode={setViewMode}>

@@ -13,6 +13,8 @@ describe('Sites runtime schema', () => {
     db = new LocalD1();
     await run(db, 'DROP TABLE workspace_search');
     for (const table of [
+      'auth_sessions',
+      'auth_identities',
       'job_source_snapshot_items',
       'job_source_snapshots',
       'job_tech_stacks',
@@ -50,7 +52,7 @@ describe('Sites runtime schema', () => {
        WHERE type IN ('table', 'view') AND name IN (
          'workspace_search', 'job_source_snapshot_items', 'job_source_snapshots',
          'job_tech_stacks', 'learning_question_attempts', 'learning_review_events',
-         'scheduler_leases'
+         'scheduler_leases', 'auth_identities', 'auth_sessions'
        )`,
     );
     expect(new Set(tables.map((table) => table.name))).toEqual(
@@ -62,6 +64,8 @@ describe('Sites runtime schema', () => {
         'learning_question_attempts',
         'learning_review_events',
         'scheduler_leases',
+        'auth_identities',
+        'auth_sessions',
       ]),
     );
 
@@ -91,7 +95,7 @@ describe('Sites runtime schema', () => {
 });
 
 describe('Sites production migration baseline', () => {
-  it('applies the packaged 0016 migration after the existing 0015 schema without replaying history', async () => {
+  it('applies 0016-0017, purges personal test data, and preserves common catalogs', async () => {
     const root = mkdtempSync(join(tmpdir(), 'careerground-sites-migration-'));
     const baselineDirectory = join(root, 'baseline');
     const forwardDirectory = join(root, 'forward');
@@ -110,6 +114,10 @@ describe('Sites production migration baseline', () => {
         join('drizzle', '0016_full_audit_hardening.sql'),
         join(forwardDirectory, '0016_full_audit_hardening.sql'),
       );
+      copyFileSync(
+        join('drizzle', '0017_google_auth.sql'),
+        join(forwardDirectory, '0017_google_auth.sql'),
+      );
 
       const baseline = new LocalD1(databasePath, baselineDirectory);
       const countBefore = await first<{ count: number }>(
@@ -124,6 +132,9 @@ describe('Sites production migration baseline', () => {
         learningColumns: number;
         publishedColumn: number;
         notificationIndex: number;
+        authTables: number;
+        legacyIdentityColumns: number;
+        users: number;
         checksum: string;
       }>(
         upgraded,
@@ -134,8 +145,13 @@ describe('Sites production migration baseline', () => {
                   WHERE name = 'published_at') AS publishedColumn,
                 (SELECT COUNT(*) FROM pragma_index_list('notifications')
                   WHERE name = 'idx_notifications_user_read_expiry_created') AS notificationIndex,
+                (SELECT COUNT(*) FROM sqlite_schema
+                  WHERE type = 'table' AND name IN ('auth_identities', 'auth_sessions')) AS authTables,
+                (SELECT COUNT(*) FROM pragma_table_info('users')
+                  WHERE name = 'site_user_id') AS legacyIdentityColumns,
+                (SELECT COUNT(*) FROM users) AS users,
                 (SELECT checksum FROM app_schema_migrations
-                  WHERE version = '0016_full_audit_hardening') AS checksum`,
+                  WHERE version = '0017_google_auth') AS checksum`,
       );
 
       expect(schema).toEqual({
@@ -143,7 +159,10 @@ describe('Sites production migration baseline', () => {
         learningColumns: 2,
         publishedColumn: 1,
         notificationIndex: 1,
-        checksum: 'sha256:69fa089214693f323703a327d853996d67129c136f80b8997cfc79a4a43b797d',
+        authTables: 2,
+        legacyIdentityColumns: 0,
+        users: 0,
+        checksum: 'sha256:afec76f25cfd954b51857912fa78d1b29d7daff92497ab095e559e7aa2abaf60',
       });
       await expect(
         run(

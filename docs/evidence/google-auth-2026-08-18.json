@@ -1,0 +1,53 @@
+{
+  "scope": "CareerGround Sites Google authentication migration",
+  "checkedAt": "2026-08-18T09:52:00+09:00",
+  "status": "pre-deployment-pass",
+  "baseline": {
+    "browserLoginPath": "/signin-with-chatgpt",
+    "serverIdentitySource": ["oai-authenticated-user-id", "oai-authenticated-user-email"],
+    "databaseIdentityColumn": "users.site_user_id"
+  },
+  "implemented": {
+    "provider": "Google Identity Services",
+    "tokenVerificationClaims": ["signature", "iss", "aud", "exp", "iat", "email_verified", "sub"],
+    "session": {
+      "browserCookie": ["HttpOnly", "Secure", "SameSite=Lax", "Path=/"],
+      "databaseValue": "SHA-256 token hash",
+      "ttlSeconds": 604800
+    },
+    "migration": {
+      "version": "0017_google_auth",
+      "personalTestDataPurged": true,
+      "legacyIdentityColumnRemoved": true,
+      "commonCatalogsPreservedByRegressionTest": true
+    }
+  },
+  "verification": {
+    "formatCheck": "pass",
+    "lint": "pass",
+    "typecheck": "pass",
+    "unitAndComponentTests": { "passed": 109, "failed": 0 },
+    "e2e": {
+      "passed": 48,
+      "failed": 0,
+      "duration": "1.1m",
+      "projects": ["chromium", "chromium-mobile-375", "firefox", "webkit"]
+    },
+    "productionBuild": "pass",
+    "sitesBuild": "pass",
+    "protectedAnonymousEndpoints": ["/api/v1/jobs", "/api/v1/learning", "/api/v1/coding/problems"],
+    "protectedAnonymousStatus": 401,
+    "visualViewports": ["1440x900", "375x812"],
+    "accessibilitySeriousViolations": 0
+  },
+  "screenshots": {
+    "before": "docs/assets/troubleshooting/google-auth/before-openai-login.png",
+    "after": "docs/assets/troubleshooting/google-auth/after-google-login.png",
+    "afterMobile": "e2e/snapshots/login-google-mobile-chromium.png"
+  },
+  "limitations": [
+    "The Google client ID is public configuration; no client secret or Google access token is stored.",
+    "A real Google account popup cannot be completed by deterministic automation and requires a post-deployment user interaction smoke test.",
+    "No authentication latency improvement is claimed because the previous and new providers were not measured under the same production conditions."
+  ]
+}

@@ -19,5 +19,7 @@ docs/assets/troubleshooting/*/
 docs/evidence/*/
 !docs/assets/troubleshooting/current/
 !docs/assets/troubleshooting/current/*.webp
+!docs/assets/troubleshooting/google-auth/
+!docs/assets/troubleshooting/google-auth/*.png
 !docs/evidence/archive/
 !docs/evidence/archive/*.json

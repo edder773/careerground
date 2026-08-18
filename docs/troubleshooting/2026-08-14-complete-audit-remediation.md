@@ -173,7 +173,7 @@ CAS는 충돌을 없애는 기술이 아니라 충돌을 탐지 가능한 상태
 
 로그인과 모바일 shell은 OS별 동일 경로의 pixel baseline으로 커밋했다.
 
-![OpenAI 로그인 pixel baseline](../../e2e/snapshots/login-openai-chromium.png)
+![당시 OpenAI 로그인 pixel baseline](../assets/troubleshooting/google-auth/before-openai-login.png)
 
 ![375px 모바일 shell pixel baseline](../../e2e/snapshots/home-mobile-shell-chromium.png)
 

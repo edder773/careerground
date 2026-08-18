@@ -3,17 +3,15 @@ import { handleD1Api, runScheduledMaintenance } from './d1-api.js';
 import { LocalD1 } from './local-d1.js';
 
 const adminHeaders = {
-  'oai-authenticated-user-id': 'site-admin',
-  'oai-authenticated-user-email': 'admin@example.test',
-  'oai-authenticated-user-full-name': 'Admin%20User',
-  'oai-authenticated-user-full-name-encoding': 'percent-encoded-utf-8',
+  'x-test-google-sub': 'google-admin',
+  'x-test-google-email': 'admin@example.test',
+  'x-test-google-name': 'Admin User',
 };
 
 const memberHeaders = {
-  'oai-authenticated-user-id': 'site-member',
-  'oai-authenticated-user-email': 'member@example.test',
-  'oai-authenticated-user-full-name': 'Member%20User',
-  'oai-authenticated-user-full-name-encoding': 'percent-encoded-utf-8',
+  'x-test-google-sub': 'google-member',
+  'x-test-google-email': 'member@example.test',
+  'x-test-google-name': 'Member User',
 };
 
 const importApproval = (preview: Record<string, unknown>, reviewedRowCount: number) => {
@@ -32,9 +30,11 @@ const importApproval = (preview: Record<string, unknown>, reviewedRowCount: numb
 
 describe('Sites D1 API', () => {
   let db: LocalD1;
+  let sessionCookies: Map<string, string>;
 
   beforeEach(() => {
     db = new LocalD1();
+    sessionCookies = new Map();
   });
 
   afterEach(() => db.close());
@@ -45,23 +45,46 @@ describe('Sites D1 API', () => {
     headers: Record<string, string> = adminHeaders,
     env: Record<string, string> = {},
   ) {
-    const requestHeaders = new Headers(headers);
+    const environment = {
+      DB: db,
+      ADMIN_EMAILS: 'admin@example.test',
+      AUTH_TEST_MODE: 'true',
+      MAX_ACTIVE_USERS: '100',
+      REQUEST_LOGGING: 'false',
+      ...env,
+    };
+    const subject = headers['x-test-google-sub'];
+    let cookie = subject ? sessionCookies.get(subject) : undefined;
+    if (subject && !cookie) {
+      const login = await handleD1Api(
+        new Request('https://careerground.example/api/v1/auth/test', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            subject,
+            email: headers['x-test-google-email'],
+            displayName: headers['x-test-google-name'],
+          }),
+        }),
+        environment,
+      );
+      expect(login.status).toBe(200);
+      cookie = login.headers.get('set-cookie')?.split(';')[0];
+      if (!cookie) throw new Error('Test Google login did not issue a session cookie.');
+      sessionCookies.set(subject, cookie);
+    }
+    const requestHeaders = new Headers();
+    if (cookie) requestHeaders.set('cookie', cookie);
     if (init.body && !(init.body instanceof FormData))
       requestHeaders.set('content-type', 'application/json');
     const response = await handleD1Api(
       new Request(`https://careerground.example${path}`, { ...init, headers: requestHeaders }),
-      {
-        DB: db,
-        OPENAI_ADMIN_EMAILS: 'admin@example.test',
-        MAX_ACTIVE_USERS: '100',
-        REQUEST_LOGGING: 'false',
-        ...env,
-      },
+      environment,
     );
     return { response, body: (await response.json()) as Record<string, unknown> };
   }
 
-  it('provisions normal first users as MEMBER and only allowlisted users as ADMIN', async () => {
+  it('provisions Google users, requires a session, and ignores legacy OpenAI headers', async () => {
     const health = await call('/api/v1/health', {}, {});
     expect(health.response.status).toBe(200);
     expect(health.body).toMatchObject({ status: 'ok', database: 'd1' });
@@ -105,6 +128,20 @@ describe('Sites D1 API', () => {
     const unauthenticated = await call('/api/v1/auth/me', {}, {});
     expect(unauthenticated.response.status).toBe(401);
     expect(unauthenticated.body).toMatchObject({ code: 'UNAUTHORIZED' });
+    expect((await call('/api/v1/jobs', {}, {})).response.status).toBe(401);
+    expect((await call('/api/v1/learning', {}, {})).response.status).toBe(401);
+    expect((await call('/api/v1/coding/problems', {}, {})).response.status).toBe(401);
+
+    const legacyOnly = await handleD1Api(
+      new Request('https://careerground.example/api/v1/auth/me', {
+        headers: {
+          'oai-authenticated-user-id': 'legacy-openai-user',
+          'oai-authenticated-user-email': 'legacy@example.test',
+        },
+      }),
+      { DB: db, AUTH_TEST_MODE: 'true', REQUEST_LOGGING: 'false' },
+    );
+    expect(legacyOnly.status).toBe(401);
   });
 
   it('rate limits each user and normalized route with Retry-After', async () => {
@@ -120,6 +157,14 @@ describe('Sites D1 API', () => {
     });
 
     expect((await call('/api/v1/auth/me', {}, memberHeaders, env)).response.status).toBe(200);
+  });
+
+  it('revokes the opaque session on logout', async () => {
+    expect((await call('/api/v1/auth/me')).response.status).toBe(200);
+    const logout = await call('/api/v1/auth/logout', { method: 'POST' });
+    expect(logout.response.status).toBe(200);
+    expect(logout.response.headers.get('set-cookie')).toContain('Max-Age=0');
+    expect((await call('/api/v1/auth/me')).response.status).toBe(401);
   });
 
   it('persists a personal folder and external link', async () => {
@@ -760,7 +805,7 @@ describe('Sites D1 API', () => {
 
     const beforeMaintenance = await db
       .prepare(
-        "SELECT COUNT(*) AS count FROM notifications WHERE type = 'JOB_DEADLINE' AND user_id = (SELECT id FROM users WHERE site_user_id = 'site-admin')",
+        "SELECT COUNT(*) AS count FROM notifications WHERE type = 'JOB_DEADLINE' AND user_id = (SELECT user_id FROM auth_identities WHERE provider_subject = 'google-admin')",
       )
       .first<{ count: number }>();
     expect(beforeMaintenance?.count).toBe(0);
@@ -769,7 +814,7 @@ describe('Sites D1 API', () => {
     expect(maintenance).toMatchObject({ acquired: true, notifications: 1 });
     const afterMaintenance = await db
       .prepare(
-        "SELECT COUNT(*) AS count FROM notifications WHERE type = 'JOB_DEADLINE' AND user_id = (SELECT id FROM users WHERE site_user_id = 'site-admin')",
+        "SELECT COUNT(*) AS count FROM notifications WHERE type = 'JOB_DEADLINE' AND user_id = (SELECT user_id FROM auth_identities WHERE provider_subject = 'google-admin')",
       )
       .first<{ count: number }>();
     expect(afterMaintenance?.count).toBe(1);
@@ -778,7 +823,7 @@ describe('Sites D1 API', () => {
   it('runs scheduled expiry and review notifications under a single lease', async () => {
     await call('/api/v1/auth/me');
     const user = await db
-      .prepare("SELECT id FROM users WHERE site_user_id = 'site-admin'")
+      .prepare("SELECT user_id AS id FROM auth_identities WHERE provider_subject = 'google-admin'")
       .first<{ id: string }>();
     const unit = await db
       .prepare('SELECT id FROM learning_units WHERE published = 1 LIMIT 1')
@@ -821,7 +866,7 @@ describe('Sites D1 API', () => {
   it('filters notifications and traverses a stable cursor', async () => {
     await call('/api/v1/auth/me');
     const user = await db
-      .prepare("SELECT id FROM users WHERE site_user_id = 'site-admin'")
+      .prepare("SELECT user_id AS id FROM auth_identities WHERE provider_subject = 'google-admin'")
       .first<{ id: string }>();
     for (let index = 0; index < 3; index += 1) {
       await db
