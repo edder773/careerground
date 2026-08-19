@@ -99,6 +99,10 @@ function moveMonth(month: Date, amount: number) {
   return new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + amount, 1));
 }
 
+function dedupeOrdered(values: string[]) {
+  return [...new Set(values.filter(Boolean))];
+}
+
 function monthBounds(month: Date) {
   const dates = calendarDates(month);
   const first = dates[0]?.date || month;
@@ -613,7 +617,8 @@ export function JobsPage() {
   const [memoDrafts, setMemoDrafts] = useState<Record<string, string>>({});
   const search = searchParams.get('q') || '';
   const [searchInput, setSearchInput] = useState(search);
-  const savedOnly = searchParams.get('saved') === '1';
+  const rawSavedFilter = searchParams.get('saved');
+  const savedOnly = rawSavedFilter === '1' || rawSavedFilter === 'true';
   const requestedJob = searchParams.get('job');
   const [fontSize, setFontSize] = useState<JobFontSize>(initialJobFontSize);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -631,6 +636,27 @@ export function JobsPage() {
     else next.delete(key);
     setSearchParams(next, { replace: true });
   };
+
+  useEffect(() => {
+    const nextCompanySizes = dedupeOrdered(searchParams.getAll('companySize'));
+    const nextCategories = dedupeOrdered(searchParams.getAll('category'));
+    const nextSort = searchParams.get('sort');
+    const nextSortMode: SortMode =
+      nextSort === 'deadline' || nextSort === 'company' ? nextSort : 'new';
+
+    setCompanySizes((current) =>
+      current.length === nextCompanySizes.length && current.every((value, index) => value === nextCompanySizes[index])
+        ? current
+        : nextCompanySizes,
+    );
+    setSelectedCategories((current) =>
+      current.length === nextCategories.length &&
+      current.every((value, index) => value === nextCategories[index])
+        ? current
+        : nextCategories,
+    );
+    setSort((current) => (current === nextSortMode ? current : nextSortMode));
+  }, [searchParams]);
 
   useEffect(() => setSearchInput(search), [search]);
   useEffect(() => {
