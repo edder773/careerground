@@ -28,7 +28,7 @@ import {
   type EditorExtensions,
 } from '../lib/code-editor';
 import { myersDiff } from '../lib/myers-diff';
-import { FolderSaveButton } from '../components/FolderSaveButton';
+import { FavoriteSaveButton } from '../components/FavoriteSaveButton';
 import '../styles/solutions.css';
 
 type Comment = {
@@ -403,7 +403,7 @@ function SolutionFeedItem({
         <>
           <SolutionRevisionPanel solution={solution} />
           <div className="solution-owner-actions">
-            <FolderSaveButton itemType="SOLUTION" targetId={solution.id} label={solution.title} />
+            <FavoriteSaveButton itemType="SOLUTION" targetId={solution.id} label={solution.title} />
           </div>
           {(solution.timeComplexity || solution.spaceComplexity) && (
             <div className="complexity-row">

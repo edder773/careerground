@@ -1,41 +1,8 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link, useSearchParams } from 'react-router';
-import {
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  arrayMove,
-  rectSortingStrategy,
-  sortableKeyboardCoordinates,
-  useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import {
-  BellRing,
-  BriefcaseBusiness,
-  ChevronDown,
-  ChevronUp,
-  Code2,
-  ExternalLink,
-  Folder,
-  FolderPlus,
-  GripVertical,
-  Link2,
-  Pencil,
-  RotateCcw,
-  Sparkles,
-  Star,
-  Trash2,
-} from 'lucide-react';
-import { api, json } from '../lib/api';
+import { Link } from 'react-router';
+import { BriefcaseBusiness, Code2, ExternalLink, Sparkles, Star, Trash2 } from 'lucide-react';
+import { api } from '../lib/api';
 import type { ViewMode } from '../components/AppShell';
 import '../styles/home.css';
 
@@ -46,6 +13,7 @@ type CollectionItem = {
   label?: string;
   position?: number;
 };
+
 export type Collection = {
   id: string;
   name: string;
@@ -56,6 +24,7 @@ export type Collection = {
   items: CollectionItem[];
   deletedAt?: string;
 };
+
 type Challenge = {
   id: string;
   problem: {
@@ -66,258 +35,69 @@ type Challenge = {
   };
 };
 
+type FavoriteItem = CollectionItem & {
+  placements: Array<{ collectionId: string; itemId: string }>;
+};
+
+const itemTypeLabels: Record<string, string> = {
+  JOB_POSTING: '채용공고',
+  CODING_PROBLEM: '코딩 문제',
+  SOLUTION: '풀이',
+  LEARNING_UNIT: '학습자료',
+  EXTERNAL_LINK: '외부 링크',
+};
+
 function itemHref(item: CollectionItem) {
   const encoded = encodeURIComponent(item.targetId);
   if (item.itemType === 'EXTERNAL_LINK') return item.targetId;
   if (item.itemType === 'JOB_POSTING') return `/jobs?job=${encoded}`;
-  if (item.itemType === 'CODING_PROBLEM') return `/coding?problem=${encoded}`;
+  if (item.itemType === 'CODING_PROBLEM') return `/coding?problem=${encoded}&view=all`;
   if (item.itemType === 'SOLUTION') return `/solutions?solution=${encoded}`;
   if (item.itemType === 'LEARNING_UNIT') return `/learning?unit=${encoded}`;
   return undefined;
 }
 
-function SortableFolder({
-  folder,
-  selected,
-  onSelect,
-  viewMode,
-}: {
-  folder: Collection;
-  selected: boolean;
-  onSelect: () => void;
-  viewMode: ViewMode;
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: folder.id,
-  });
-  return (
-    <article
-      ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`folder-card folder-${folder.color} ${viewMode} ${selected ? 'selected' : ''} ${isDragging ? 'dragging' : ''}`}
-    >
-      <button
-        className="drag-handle"
-        {...attributes}
-        {...listeners}
-        aria-label={`${folder.name} 순서 이동`}
-      >
-        <GripVertical />
-      </button>
-      <button className="folder-open" type="button" onClick={onSelect} aria-current={selected}>
-        <span className="folder-shape">
-          <Folder aria-hidden="true" />
-        </span>
-        <span className="folder-copy">
-          <strong>{folder.name}</strong>
-          <span>{folder.items.length}개 항목</span>
-        </span>
-      </button>
-    </article>
-  );
-}
-
 export function HomePage({ viewMode }: { viewMode: ViewMode }) {
   const client = useQueryClient();
-  const [searchParams, setSearchParams] = useSearchParams();
   const collections = useQuery({
     queryKey: ['collections'],
     queryFn: () => api<Collection[]>('/collections'),
-  });
-  const trash = useQuery({
-    queryKey: ['collection-trash'],
-    queryFn: () => api<Collection[]>('/collections/trash'),
-  });
-  const dashboard = useQuery({
-    queryKey: ['dashboard'],
-    queryFn: () => api<{ recentJobs: number; expiringJobs: number }>('/dashboard'),
   });
   const challenge = useQuery({
     queryKey: ['daily-challenges'],
     queryFn: () => api<Challenge[]>('/coding/daily-challenges'),
   });
-  const [selected, setSelected] = useState<string>();
-  const requestedFolder = searchParams.get('folder');
-  const [creating, setCreating] = useState(false);
-  const [createParentId, setCreateParentId] = useState<string | null>(null);
-  const [name, setName] = useState('');
-  const [color, setColor] = useState('violet');
-  const [renaming, setRenaming] = useState(false);
-  const [renameValue, setRenameValue] = useState('');
-  const [addingLink, setAddingLink] = useState(false);
-  const [linkUrl, setLinkUrl] = useState('');
-  const [linkLabel, setLinkLabel] = useState('');
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
-  const folders = useMemo(
-    () => (collections.data || []).filter((folder) => !folder.parentId),
-    [collections.data],
-  );
-  const activeFolder = (collections.data || []).find((folder) => folder.id === selected);
-  const breadcrumbs = useMemo(() => {
-    if (!activeFolder) return [];
-    const result: Collection[] = [activeFolder];
-    const seen = new Set([activeFolder.id]);
-    let parentId = activeFolder.parentId;
-    while (parentId && !seen.has(parentId)) {
-      seen.add(parentId);
-      const parent = collections.data?.find((folder) => folder.id === parentId);
-      if (!parent) break;
-      result.unshift(parent);
-      parentId = parent.parentId;
+  const favorites = useMemo(() => {
+    const byTarget = new Map<string, FavoriteItem>();
+    for (const collection of collections.data || []) {
+      for (const item of collection.items) {
+        const key = `${item.itemType}:${item.targetId}`;
+        const current = byTarget.get(key);
+        if (current) {
+          current.placements.push({ collectionId: collection.id, itemId: item.id });
+        } else {
+          byTarget.set(key, {
+            ...item,
+            placements: [{ collectionId: collection.id, itemId: item.id }],
+          });
+        }
+      }
     }
-    return result;
-  }, [activeFolder, collections.data]);
-  useEffect(() => {
-    if (
-      requestedFolder &&
-      collections.data?.some((folder) => folder.id === requestedFolder) &&
-      selected !== requestedFolder
-    ) {
-      setSelected(requestedFolder);
-    }
-  }, [collections.data, requestedFolder, selected]);
-  const createFolder = useMutation({
-    mutationFn: () =>
-      api<Collection>('/collections', {
-        method: 'POST',
-        body: json({
-          name,
-          icon: 'folder',
-          color,
-          parentId: createParentId,
-        }),
-      }),
-    onSuccess: async (folder) => {
-      setName('');
-      setCreating(false);
-      setCreateParentId(null);
-      selectFolder(folder.id);
-      await client.invalidateQueries({ queryKey: ['collections'] });
-    },
-  });
-  const reorder = useMutation({
-    mutationFn: (ids: string[]) =>
-      api('/collections/reorder', { method: 'PATCH', body: json({ ids }) }),
-    onMutate: async (ids) => {
-      await client.cancelQueries({ queryKey: ['collections'] });
-      const previous = client.getQueryData<Collection[]>(['collections']);
-      client.setQueryData<Collection[]>(['collections'], (current) =>
-        current
-          ? [
-              ...ids.map((id) => current.find((item) => item.id === id)!).filter(Boolean),
-              ...current.filter((item) => item.parentId),
-            ]
-          : current,
-      );
-      return { previous };
-    },
-    onError: (_error, _ids, context) => client.setQueryData(['collections'], context?.previous),
-    onSettled: () => client.invalidateQueries({ queryKey: ['collections'] }),
-  });
-  const renameFolder = useMutation({
-    mutationFn: () =>
-      api(`/collections/${activeFolder!.id}`, {
-        method: 'PATCH',
-        body: json({ name: renameValue }),
-      }),
-    onSuccess: async () => {
-      setRenaming(false);
-      await client.invalidateQueries({ queryKey: ['collections'] });
-    },
-  });
-  const moveFolder = useMutation({
-    mutationFn: (parentId: string | null) =>
-      api(`/collections/${activeFolder!.id}`, {
-        method: 'PATCH',
-        body: json({ parentId }),
-      }),
+    return [...byTarget.values()];
+  }, [collections.data]);
+  const removeFavorite = useMutation({
+    mutationFn: (item: FavoriteItem) =>
+      Promise.all(
+        item.placements.map(({ collectionId, itemId }) =>
+          api(`/collections/${collectionId}/items/${itemId}`, { method: 'DELETE' }),
+        ),
+      ),
     onSuccess: () => client.invalidateQueries({ queryKey: ['collections'] }),
   });
-  const addLink = useMutation({
-    mutationFn: () =>
-      api(`/collections/${activeFolder!.id}/items`, {
-        method: 'POST',
-        body: json({ itemType: 'EXTERNAL_LINK', targetId: linkUrl, label: linkLabel || linkUrl }),
-      }),
-    onSuccess: async () => {
-      setAddingLink(false);
-      setLinkUrl('');
-      setLinkLabel('');
-      await client.invalidateQueries({ queryKey: ['collections'] });
-    },
-  });
-  const deleteFolder = useMutation({
-    mutationFn: (id: string) => api(`/collections/${id}`, { method: 'DELETE' }),
-    onSuccess: async () => {
-      selectFolder(undefined);
-      await Promise.all([
-        client.invalidateQueries({ queryKey: ['collections'] }),
-        client.invalidateQueries({ queryKey: ['collection-trash'] }),
-      ]);
-    },
-  });
-  const restoreFolder = useMutation({
-    mutationFn: (id: string) => api(`/collections/${id}/restore`, { method: 'POST' }),
-    onSuccess: async () => {
-      await Promise.all([
-        client.invalidateQueries({ queryKey: ['collections'] }),
-        client.invalidateQueries({ queryKey: ['collection-trash'] }),
-      ]);
-    },
-  });
-  const removeItem = useMutation({
-    mutationFn: ({ folderId, itemId }: { folderId: string; itemId: string }) =>
-      api(`/collections/${folderId}/items/${itemId}`, { method: 'DELETE' }),
-    onSuccess: () => client.invalidateQueries({ queryKey: ['collections'] }),
-  });
-  const moveItem = useMutation({
-    mutationFn: ({
-      folderId,
-      itemId,
-      targetCollectionId,
-    }: {
-      folderId: string;
-      itemId: string;
-      targetCollectionId: string;
-    }) =>
-      api(`/collections/${folderId}/items/${itemId}`, {
-        method: 'PATCH',
-        body: json({ targetCollectionId }),
-      }),
-    onSuccess: () => client.invalidateQueries({ queryKey: ['collections'] }),
-  });
-  const reorderItems = useMutation({
-    mutationFn: ({ folderId, ids }: { folderId: string; ids: string[] }) =>
-      api(`/collections/${folderId}/items/reorder`, {
-        method: 'PATCH',
-        body: json({ ids }),
-      }),
-    onSuccess: () => client.invalidateQueries({ queryKey: ['collections'] }),
-  });
-  const selectFolder = (id?: string) => {
-    setSelected(id);
-    const next = new URLSearchParams(searchParams);
-    if (id) next.set('folder', id);
-    else next.delete('folder');
-    setSearchParams(next, { replace: true });
-  };
-  const dragEnd = (event: DragEndEvent) => {
-    if (!event.over || event.active.id === event.over.id) return;
-    const before = folders.findIndex((folder) => folder.id === event.active.id);
-    const after = folders.findIndex((folder) => folder.id === event.over?.id);
-    reorder.mutate(arrayMove(folders, before, after).map((folder) => folder.id));
-  };
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    if (name.trim()) createFolder.mutate();
-  };
 
   return (
-    <div className="home-page finder-home">
-      <section className="today-strip home-priority" aria-label="오늘의 요약">
+    <div className="home-page finder-home favorites-home">
+      <section className="today-strip home-priority favorites-today-strip" aria-label="오늘의 문제">
         <article className="today-feature">
           <div className="today-icon">
             <Code2 />
@@ -341,386 +121,101 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
             </div>
           </div>
         </article>
-        <Link to="/jobs?sort=new" className="today-summary-link">
-          <BriefcaseBusiness />
-          <div>
-            <strong>{dashboard.data?.recentJobs ?? '—'}</strong>
-            <span>신규 공고</span>
-          </div>
-        </Link>
-        <Link to="/jobs?saved=1&sort=deadline" className="today-summary-link">
-          <BellRing />
-          <div>
-            <strong>{dashboard.data?.expiringJobs ?? '—'}</strong>
-            <span>마감 임박</span>
-          </div>
-        </Link>
       </section>
+
       <section className="page-heading finder-canvas-heading">
         <div>
           <span className="eyebrow">
             <Sparkles size={15} /> 개인 워크스페이스
           </span>
-          <h1>내 폴더</h1>
-          <p>자료를 폴더처럼 자유롭게 모으고 정리하세요.</p>
+          <h1>즐겨찾기</h1>
+          <p>관심 공고, 코딩 문제, 학습자료와 풀이를 한곳에서 다시 확인하세요.</p>
         </div>
-        <button
-          className="primary-button compact"
-          onClick={() => {
-            setCreateParentId(null);
-            setCreating(true);
-          }}
-        >
-          <FolderPlus /> 새 폴더
-        </button>
       </section>
-      <section className="section-block">
+
+      <section className="favorite-shortcuts" aria-label="즐겨찾기 바로가기">
+        <Link to="/coding?favorites=1&view=all">
+          <Star aria-hidden="true" />
+          <span>
+            <strong>즐겨찾기 문제</strong>
+            <small>별표한 코딩 문제만 보기</small>
+          </span>
+        </Link>
+        <Link to="/jobs?saved=1">
+          <BriefcaseBusiness aria-hidden="true" />
+          <span>
+            <strong>관심 공고</strong>
+            <small>저장한 채용공고만 보기</small>
+          </span>
+        </Link>
+      </section>
+
+      <section className="section-block favorite-library">
         <div className="section-title">
           <div>
-            <h2>내 폴더</h2>
-            <span>{folders.length}개</span>
+            <h2>저장한 항목</h2>
+            <span>{favorites.length}개</span>
           </div>
-          <p>끌어서 자주 쓰는 순서로 정렬하세요.</p>
+          <p>기존 폴더에 있던 항목도 빠짐없이 한 목록으로 모았습니다.</p>
         </div>
-        {creating && (
-          <form className="inline-create" onSubmit={submit}>
-            <label>
-              <span>폴더 이름</span>
-              <input
-                autoFocus
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                maxLength={80}
-              />
-            </label>
-            <label>
-              <span>색상</span>
-              <select value={color} onChange={(event) => setColor(event.target.value)}>
-                <option value="violet">보라</option>
-                <option value="cyan">파랑</option>
-                <option value="amber">노랑</option>
-                <option value="rose">분홍</option>
-                <option value="emerald">초록</option>
-                <option value="slate">회색</option>
-              </select>
-            </label>
-            <button className="primary-button compact" type="submit">
-              만들기
-            </button>
-            <button type="button" className="ghost-button" onClick={() => setCreating(false)}>
-              취소
-            </button>
-          </form>
-        )}
         {collections.isLoading && (
-          <div className="skeleton-grid" aria-label="폴더 불러오는 중">
+          <div className="skeleton-grid" aria-label="즐겨찾기 불러오는 중">
             <i />
             <i />
             <i />
           </div>
         )}
         {collections.isError && (
-          <div className="error-panel">폴더를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</div>
+          <div className="error-panel">
+            즐겨찾기를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
+          </div>
         )}
-        {!collections.isLoading && folders.length === 0 && (
+        {!collections.isLoading && !collections.isError && favorites.length === 0 && (
           <div className="empty-panel">
-            <FolderPlus />
-            <h3>첫 폴더를 만들어보세요</h3>
-            <p>공고, 코딩 문제, 학습 단위를 원하는 기준으로 모을 수 있습니다.</p>
-            <button className="primary-button compact" onClick={() => setCreating(true)}>
-              폴더 만들기
-            </button>
+            <Star />
+            <h3>아직 저장한 항목이 없습니다</h3>
+            <p>학습자료나 풀이의 즐겨찾기 버튼을 눌러 여기에 모아보세요.</p>
           </div>
         )}
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={dragEnd}>
-          <SortableContext
-            items={folders.map((folder) => folder.id)}
-            strategy={rectSortingStrategy}
-          >
-            <div className={`folder-grid ${viewMode}`}>
-              {folders.map((folder) => (
-                <SortableFolder
-                  key={folder.id}
-                  folder={folder}
-                  selected={selected === folder.id}
-                  onSelect={() => selectFolder(folder.id)}
-                  viewMode={viewMode}
-                />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
-      </section>
-      {activeFolder && (
-        <section className="section-block collection-detail">
-          <nav className="folder-breadcrumbs" aria-label="폴더 경로">
-            <button type="button" onClick={() => selectFolder(undefined)}>
-              내 폴더
-            </button>
-            {breadcrumbs.map((folder) => (
-              <span key={folder.id}>
-                <span aria-hidden="true">/</span>
-                <button type="button" onClick={() => selectFolder(folder.id)}>
-                  {folder.name}
-                </button>
-              </span>
-            ))}
-          </nav>
-          <div className="section-title">
-            <div>
-              <h2>{activeFolder?.name || '폴더 미리보기'}</h2>
-              {activeFolder && <span>{activeFolder.items.length}개 항목</span>}
-            </div>
-            {activeFolder && (
-              <div className="detail-actions">
-                <button
-                  className="ghost-button"
-                  onClick={() => {
-                    setRenameValue(activeFolder.name);
-                    setRenaming(true);
-                  }}
-                >
-                  <Pencil /> 이름 변경
-                </button>
-                <button className="ghost-button" onClick={() => setAddingLink(true)}>
-                  <Link2 /> 링크 추가
-                </button>
-                <button
-                  className="ghost-button"
-                  onClick={() => {
-                    setCreateParentId(activeFolder.id);
-                    setCreating(true);
-                  }}
-                >
-                  <FolderPlus /> 하위 폴더
-                </button>
-                <label className="folder-move-control">
-                  <span>이동</span>
-                  <select
-                    value={activeFolder.parentId || ''}
-                    disabled={moveFolder.isPending}
-                    onChange={(event) => moveFolder.mutate(event.target.value || null)}
-                  >
-                    <option value="">내 폴더</option>
-                    {(collections.data || [])
-                      .filter((folder) => folder.id !== activeFolder.id)
-                      .map((folder) => (
-                        <option key={folder.id} value={folder.id}>
-                          {folder.name}
-                        </option>
-                      ))}
-                  </select>
-                </label>
-                <button
-                  className="ghost-button danger"
-                  onClick={() => {
-                    if (window.confirm(`“${activeFolder.name}” 폴더를 휴지통으로 이동할까요?`)) {
-                      deleteFolder.mutate(activeFolder.id);
-                    }
-                  }}
-                >
-                  <Trash2 /> 휴지통으로
-                </button>
-              </div>
-            )}
-          </div>
-          {renaming && activeFolder && (
-            <form
-              className="inline-create"
-              onSubmit={(event) => {
-                event.preventDefault();
-                if (renameValue.trim()) renameFolder.mutate();
-              }}
-            >
-              <label>
-                <span>새 폴더 이름</span>
-                <input
-                  autoFocus
-                  value={renameValue}
-                  onChange={(event) => setRenameValue(event.target.value)}
-                  maxLength={80}
-                />
-              </label>
-              <button className="primary-button compact">저장</button>
-              <button className="ghost-button" type="button" onClick={() => setRenaming(false)}>
-                취소
-              </button>
-            </form>
-          )}
-          {addingLink && activeFolder && (
-            <form
-              className="inline-create"
-              onSubmit={(event) => {
-                event.preventDefault();
-                if (linkUrl.trim()) addLink.mutate();
-              }}
-            >
-              <label>
-                <span>외부 링크</span>
-                <input
-                  type="url"
-                  autoFocus
-                  value={linkUrl}
-                  onChange={(event) => setLinkUrl(event.target.value)}
-                  placeholder="https://"
-                />
-              </label>
-              <label>
-                <span>표시 이름</span>
-                <input
-                  value={linkLabel}
-                  onChange={(event) => setLinkLabel(event.target.value)}
-                  maxLength={240}
-                />
-              </label>
-              <button className="primary-button compact">추가</button>
-              <button className="ghost-button" type="button" onClick={() => setAddingLink(false)}>
-                취소
-              </button>
-            </form>
-          )}
-          {activeFolder && activeFolder.items.length === 0 && (
-            <div className="hint-panel">
-              아직 비어 있습니다. 채용공고나 코딩테스트에서 “폴더에 저장”을 선택하세요.
-            </div>
-          )}
-          {(collections.data || []).some((folder) => folder.parentId === activeFolder.id) && (
-            <div className="subfolder-list">
-              {(collections.data || [])
-                .filter((folder) => folder.parentId === activeFolder.id)
-                .map((folder) => (
-                  <button key={folder.id} onClick={() => selectFolder(folder.id)}>
-                    <Folder /> <span>{folder.name}</span>
-                  </button>
-                ))}
-            </div>
-          )}
-          {activeFolder && (
-            <div className="item-list">
-              {activeFolder.items.map((item, itemIndex) => (
-                <article key={item.id}>
-                  <div>
-                    <span className="item-type">{item.itemType.replaceAll('_', ' ')}</span>
-                    <strong>{item.label || item.targetId}</strong>
-                  </div>
-                  <div className="item-actions">
-                    {itemHref(item) && item.itemType === 'EXTERNAL_LINK' ? (
-                      <a href={itemHref(item)} target="_blank" rel="noreferrer">
-                        원본 열기 <ExternalLink />
-                      </a>
-                    ) : itemHref(item) ? (
-                      <Link to={itemHref(item)!}>원본 열기</Link>
-                    ) : (
-                      <span>원본을 찾을 수 없음</span>
-                    )}
-                    <label>
-                      <select
-                        aria-label={`${item.label || item.targetId} 이동할 폴더`}
-                        value={activeFolder.id}
-                        disabled={moveItem.isPending}
-                        onChange={(event) =>
-                          moveItem.mutate({
-                            folderId: activeFolder.id,
-                            itemId: item.id,
-                            targetCollectionId: event.target.value,
-                          })
-                        }
-                      >
-                        {(collections.data || []).map((folder) => (
-                          <option key={folder.id} value={folder.id}>
-                            {folder.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <button
-                      type="button"
-                      className="ghost-button compact"
-                      aria-label={`${item.label || item.targetId} 위로 이동`}
-                      disabled={itemIndex === 0 || reorderItems.isPending}
-                      onClick={() => {
-                        const ids = activeFolder.items.map((entry) => entry.id);
-                        [ids[itemIndex - 1], ids[itemIndex]] = [
-                          ids[itemIndex]!,
-                          ids[itemIndex - 1]!,
-                        ];
-                        reorderItems.mutate({ folderId: activeFolder.id, ids });
-                      }}
-                    >
-                      <ChevronUp />
-                    </button>
-                    <button
-                      type="button"
-                      className="ghost-button compact"
-                      aria-label={`${item.label || item.targetId} 아래로 이동`}
-                      disabled={
-                        itemIndex === activeFolder.items.length - 1 || reorderItems.isPending
-                      }
-                      onClick={() => {
-                        const ids = activeFolder.items.map((entry) => entry.id);
-                        [ids[itemIndex], ids[itemIndex + 1]] = [
-                          ids[itemIndex + 1]!,
-                          ids[itemIndex]!,
-                        ];
-                        reorderItems.mutate({ folderId: activeFolder.id, ids });
-                      }}
-                    >
-                      <ChevronDown />
-                    </button>
-                    <button
-                      type="button"
-                      className="ghost-button danger compact"
-                      disabled={removeItem.isPending && removeItem.variables?.itemId === item.id}
-                      onClick={() =>
-                        removeItem.mutate({ folderId: activeFolder.id, itemId: item.id })
-                      }
-                    >
-                      <Trash2 /> 폴더에서 제거
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-      <section className="virtual-folders">
-        <Link to="/coding">
-          <Star />
-          <strong>즐겨찾기</strong>
-          <span>중요 표시 항목</span>
-        </Link>
-        <Link to="/jobs?saved=1">
-          <BriefcaseBusiness />
-          <strong>관심 공고</strong>
-          <span>지원 후보 모음</span>
-        </Link>
-      </section>
-      {Boolean(trash.data?.length) && (
-        <details className="trash-recovery">
-          <summary>
-            <Trash2 /> 최근 삭제한 폴더 {trash.data?.length}개
-          </summary>
-          <div>
-            {trash.data?.map((folder) => (
-              <article key={folder.id}>
-                <span>
-                  <Folder />
-                  <strong>{folder.name}</strong>
+        <div className={`favorite-item-grid ${viewMode}`}>
+          {favorites.map((item) => {
+            const href = itemHref(item);
+            const external = item.itemType === 'EXTERNAL_LINK';
+            return (
+              <article key={`${item.itemType}:${item.targetId}`}>
+                <span className="favorite-item-icon">
+                  <Star fill="currentColor" aria-hidden="true" />
                 </span>
-                <button
-                  type="button"
-                  className="ghost-button compact"
-                  disabled={restoreFolder.isPending && restoreFolder.variables === folder.id}
-                  onClick={() => restoreFolder.mutate(folder.id)}
-                >
-                  <RotateCcw /> 복원
-                </button>
+                <span className="favorite-item-copy">
+                  <small>{itemTypeLabels[item.itemType] || '저장 항목'}</small>
+                  <strong>{item.label || item.targetId}</strong>
+                </span>
+                <span className="favorite-item-actions">
+                  {href &&
+                    (external ? (
+                      <a href={href} target="_blank" rel="noreferrer">
+                        열기 <ExternalLink aria-hidden="true" />
+                      </a>
+                    ) : (
+                      <Link to={href}>열기</Link>
+                    ))}
+                  <button
+                    type="button"
+                    aria-label={`${item.label || item.targetId} 즐겨찾기 해제`}
+                    disabled={
+                      removeFavorite.isPending &&
+                      removeFavorite.variables?.targetId === item.targetId
+                    }
+                    onClick={() => removeFavorite.mutate(item)}
+                  >
+                    <Trash2 aria-hidden="true" /> 해제
+                  </button>
+                </span>
               </article>
-            ))}
-          </div>
-        </details>
-      )}
+            );
+          })}
+        </div>
+      </section>
     </div>
   );
 }

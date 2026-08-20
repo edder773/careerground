@@ -724,6 +724,7 @@ function problemListPlan(
   const level = search.get('level');
   const track = search.get('track');
   const scope = search.get('scope');
+  const favoritesOnly = search.get('favorites') === '1';
   if (level) {
     clauses.push('p.level = ?');
     filterValues.push(Number(level));
@@ -743,6 +744,16 @@ function problemListPlan(
                 WHERE counted_progress.problem_id = counted.id
                   AND counted_progress.user_id = ${readOwnerSql(owner)}
                   AND counted_progress.status = 'SOLVED')`,
+    );
+    countValues.push(owner.value);
+  }
+  if (favoritesOnly) {
+    clauses.push('pp.favorite = 1');
+    countClauses.push(
+      `EXISTS (SELECT 1 FROM problem_progress favorite_progress
+                WHERE favorite_progress.problem_id = counted.id
+                  AND favorite_progress.user_id = ${readOwnerSql(owner)}
+                  AND favorite_progress.favorite = 1)`,
     );
     countValues.push(owner.value);
   }
@@ -1067,7 +1078,6 @@ const bootstrapStatementsForUser = (
   if (!includeHome) return statements;
   statements.push(
     collectionTreeStatement(db, '?', userId),
-    dashboardStatement(db, '?', userId),
     db.prepare(dailyChallengeRowsSql).bind(userId, today),
   );
   return statements;
@@ -1091,14 +1101,12 @@ async function bootstrapPayload(
   const shouldIncludeHome = includeHome && Boolean(user.onboardingCompletedAt);
   if (!shouldIncludeHome) return { user: apiUser(user), unreadCount, home: null };
   const collectionResult = results[resultIndex++];
-  const dashboardResult = results[resultIndex++];
   const dailyRows = batchRows<DailyChallengeRow>(results[resultIndex]);
   return {
     user: apiUser(user),
     unreadCount,
     home: {
       collections: collectionTreeValue(collectionResult),
-      dashboard: dashboardValue(dashboardResult),
       dailyChallenges: await completeDailyChallenges(db, user.id, today, dailyRows),
     },
   };

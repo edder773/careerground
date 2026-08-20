@@ -30,7 +30,6 @@ describe('initial workspace bootstrap', () => {
         unreadCount: 3,
         home: {
           collections: [{ id: 'folder-1', name: '취업 준비', items: [] }],
-          dashboard: { recentJobs: 4, expiringJobs: 1, recentActivity: [] },
           dailyChallenges: [{ id: 'challenge-1', levelSlot: 1 }],
         },
       }),
@@ -53,7 +52,6 @@ describe('initial workspace bootstrap', () => {
     expect(client.getQueryData(['collections'])).toEqual([
       { id: 'folder-1', name: '취업 준비', items: [] },
     ]);
-    expect(client.getQueryData(['dashboard'])).toMatchObject({ recentJobs: 4, expiringJobs: 1 });
     expect(client.getQueryData(['daily-challenges'])).toEqual([
       { id: 'challenge-1', levelSlot: 1 },
     ]);

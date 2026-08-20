@@ -4,7 +4,15 @@ import {
   useQueryClient,
   type InfiniteData,
 } from '@tanstack/react-query';
-import { Bell, BellRing, CheckCheck, MessageCircle, RefreshCcw } from 'lucide-react';
+import {
+  Bell,
+  BellRing,
+  Check,
+  CheckCheck,
+  ChevronRight,
+  MessageCircle,
+  RefreshCcw,
+} from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router';
 import { api } from '../lib/api';
 import '../styles/notifications.css';
@@ -26,6 +34,14 @@ const iconFor = (type: string) =>
     : type === 'LEARNING_REVIEW'
       ? RefreshCcw
       : BellRing;
+
+const typeLabels: Record<string, string> = {
+  COMMENT: '댓글',
+  REPLY: '답글',
+  JOB_DEADLINE: '채용 마감',
+  LEARNING_REVIEW: '학습 복습',
+  SYSTEM: '시스템',
+};
 
 export function NotificationsPage() {
   const client = useQueryClient();
@@ -93,7 +109,7 @@ export function NotificationsPage() {
     },
   });
   return (
-    <div>
+    <div className="notifications-page">
       <section className="page-heading">
         <div>
           <span className="eyebrow">
@@ -150,25 +166,42 @@ export function NotificationsPage() {
       <div className="notification-list">
         {rows.map((item) => {
           const Icon = iconFor(item.type);
+          const internalHref = item.href?.startsWith('/') ? item.href : undefined;
           return (
-            <button
-              key={item.id}
-              className={item.readAt ? 'read' : 'unread'}
-              onClick={() => {
-                if (!item.readAt) read.mutate(item.id);
-                if (item.href?.startsWith('/')) navigate(item.href);
-              }}
-            >
+            <article key={item.id} className={item.readAt ? 'read' : 'unread'}>
               <span className="notification-icon">
                 <Icon />
               </span>
-              <span>
+              <span className="notification-copy">
+                <small className="notification-type">{typeLabels[item.type] || '알림'}</small>
                 <strong>{item.title}</strong>
                 <p>{item.message}</p>
                 <small>{new Date(item.createdAt).toLocaleString('ko-KR')}</small>
               </span>
-              {!item.readAt && <i aria-label="읽지 않음" />}
-            </button>
+              <span className="notification-actions">
+                {!item.readAt && (
+                  <button
+                    type="button"
+                    disabled={read.isPending}
+                    onClick={() => read.mutate(item.id)}
+                  >
+                    <Check aria-hidden="true" /> 읽음 처리
+                  </button>
+                )}
+                {internalHref && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!item.readAt) read.mutate(item.id);
+                      navigate(internalHref);
+                    }}
+                  >
+                    관련 내용 보기 <ChevronRight aria-hidden="true" />
+                  </button>
+                )}
+                {item.readAt && !internalHref && <small>읽음</small>}
+              </span>
+            </article>
           );
         })}
       </div>

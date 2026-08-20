@@ -16,7 +16,7 @@ export async function login(
   expect(response.ok()).toBe(true);
   await page.goto('/');
   const onboarding = page.getByRole('heading', { name: '어떻게 불러드릴까요?' });
-  const home = page.getByRole('heading', { name: '내 폴더', level: 1 });
+  const home = page.getByRole('heading', { name: '즐겨찾기', level: 1 });
   await expect(home.or(onboarding)).toBeVisible();
   if (!completeOnboarding) {
     await expect(onboarding).toBeVisible();

@@ -11,7 +11,6 @@ import { Link, useSearchParams } from 'react-router';
 import CodeMirror from '@uiw/react-codemirror';
 import { Code2, ExternalLink, Filter, Flame, Save, Star } from 'lucide-react';
 import { api, json } from '../lib/api';
-import { FolderSaveButton } from '../components/FolderSaveButton';
 import { useAuth } from '../auth';
 import {
   codeEditorAccessibility,
@@ -31,7 +30,7 @@ type Problem = {
 };
 type Challenge = { id: string; problemId: string; problem: Problem };
 type CodeLanguage = 'python' | 'java' | 'javascript' | 'cpp' | 'sql';
-type ProblemScope = 'solved' | 'all';
+type ProblemScope = 'solved' | 'favorites' | 'all';
 type CursorPage<T> = { items: T[]; nextCursor: string | null; total: number };
 type SolutionDraft = {
   code: string;
@@ -87,9 +86,10 @@ export function CodingPage() {
   const [track, setTrack] = useState<'ALGORITHM' | 'SQL'>(
     searchParams.get('track') === 'SQL' ? 'SQL' : 'ALGORITHM',
   );
-  const [scope, setScope] = useState<ProblemScope>(
-    searchParams.get('view') === 'all' || searchParams.has('problem') ? 'all' : 'solved',
-  );
+  const [scope, setScope] = useState<ProblemScope>(() => {
+    if (searchParams.get('favorites') === '1') return 'favorites';
+    return searchParams.get('view') === 'all' || searchParams.has('problem') ? 'all' : 'solved';
+  });
   const [selected, setSelected] = useState<Problem>();
   const [language, setLanguage] = useState<CodeLanguage>(user?.preferredLanguage || 'python');
   const [code, setCode] = useState('');
@@ -116,6 +116,8 @@ export function CodingPage() {
     else next.delete('level');
     if (scope === 'all') next.set('view', 'all');
     else next.delete('view');
+    if (scope === 'favorites') next.set('favorites', '1');
+    else next.delete('favorites');
     if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true });
   }, [level, scope, searchParams, setSearchParams, track]);
   const problems = useInfiniteQuery({
@@ -125,6 +127,7 @@ export function CodingPage() {
       const query = new URLSearchParams({ track, page: 'cursor', limit: '60' });
       if (level) query.set('level', level);
       if (scope === 'solved') query.set('scope', 'solved');
+      if (scope === 'favorites') query.set('favorites', '1');
       if (pageParam) query.set('cursor', pageParam);
       return api<CursorPage<Problem>>(`/coding/problems?${query.toString()}`);
     },
@@ -356,6 +359,14 @@ export function CodingPage() {
         </button>
         <button
           type="button"
+          aria-pressed={scope === 'favorites'}
+          className={scope === 'favorites' ? 'active' : ''}
+          onClick={() => setScope('favorites')}
+        >
+          즐겨찾기
+        </button>
+        <button
+          type="button"
           aria-pressed={scope === 'all'}
           className={scope === 'all' ? 'active' : ''}
           onClick={() => setScope('all')}
@@ -403,7 +414,9 @@ export function CodingPage() {
         <span>
           {scope === 'solved'
             ? `${problemTotal.toLocaleString()}개 해결 기록 · 내가 해결한 문제만 모아봅니다.`
-            : `${problemTotal.toLocaleString()}개 문제 · 문제를 선택해 코드와 풀이 과정을 기록하세요.`}
+            : scope === 'favorites'
+              ? `${problemTotal.toLocaleString()}개 즐겨찾기 · 별표한 문제만 모아봅니다.`
+              : `${problemTotal.toLocaleString()}개 문제 · 문제를 선택해 코드와 풀이 과정을 기록하세요.`}
         </span>
       </div>
       {problems.isLoading && <div className="loading-panel">문제 목록을 불러오는 중…</div>}
@@ -411,14 +424,20 @@ export function CodingPage() {
       {!problems.isLoading && !problems.isError && displayList.length === 0 && (
         <div className="empty-panel coding-problem-empty">
           <h2>
-            {scope === 'solved' ? '아직 해결한 문제가 없습니다' : '조건에 맞는 문제가 없습니다'}
+            {scope === 'solved'
+              ? '아직 해결한 문제가 없습니다'
+              : scope === 'favorites'
+                ? '즐겨찾기한 문제가 없습니다'
+                : '조건에 맞는 문제가 없습니다'}
           </h2>
           <p>
             {scope === 'solved'
               ? '전체 문제에서 첫 문제를 골라 풀이를 기록해보세요.'
-              : '문제 유형이나 레벨 조건을 바꿔보세요.'}
+              : scope === 'favorites'
+                ? '전체 문제에서 별표를 눌러 즐겨찾기에 추가해보세요.'
+                : '문제 유형이나 레벨 조건을 바꿔보세요.'}
           </p>
-          {scope === 'solved' && (
+          {scope !== 'all' && (
             <button
               type="button"
               className="primary-button compact"
@@ -477,11 +496,6 @@ export function CodingPage() {
               </a>
               <button onClick={() => openEditor(problem)}>풀이 기록</button>
               <Link to={solutionsUrl(problem)}>다른 풀이 보기</Link>
-              <FolderSaveButton
-                itemType="CODING_PROBLEM"
-                targetId={problem.id}
-                label={problem.displayTitle}
-              />
             </div>
           </article>
         ))}

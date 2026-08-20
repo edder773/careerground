@@ -11,30 +11,31 @@ generatedByAI: false
 
 ## 문서 목록
 
-| 시점  | 주제                                                                                                          | 관련 PR        | 핵심 근거                                |
-| ----- | ------------------------------------------------------------------------------------------------------------- | -------------- | ---------------------------------------- |
-| 08-12 | [초기 MVP와 정적 Sites 배포 경계](./2026-08-12-initial-mvp-and-deployment-boundary.md)                        | #3             | 39 tests, 12 E2E, 초기 화면              |
-| 08-12 | [Slack 제거와 OpenAI 계정 연결](./2026-08-12-openai-auth-and-seeded-user-linking.md)                          | #5–#6          | 인증 migration, seed ID 0                |
-| 08-12 | [운영 4xx/5xx와 D1 영속성](./2026-08-12-production-api-errors-and-d1-persistence.md)                          | #7             | 503 기준선, 24 tables/34 indexes         |
-| 08-12 | [회원·풀이 공개·노트 재구성](./2026-08-12-member-workspace-visibility-and-notes.md)                           | #8             | migration, 51 tests, 13 E2E              |
-| 08-12 | [트러블슈팅 자동화 게시 실패](./2026-08-12-troubleshooting-automation-failures.md)                            | #9–#10         | validator scope, 권한 fallback           |
-| 08-13 | [채용 달력과 쿼리 성능](./2026-08-13-job-calendar-and-query-performance.md)                                   | #11, #13       | median 20.153→0.137 ms                   |
-| 08-13 | [달력·PDF 학습·오늘의 문제](./2026-08-13-calendar-learning-and-daily-challenges.md)                           | #12            | 2 daily slots, clean-runner seed fix     |
-| 08-13 | [학습·설정·SQL/PDF 시각자료](./2026-08-13-learning-settings-sql-and-pdf-visuals.md)                           | #14–#15        | 427 problems 분류, slide 23개            |
-| 08-13 | [Sites runtime과 artifact 배포](./2026-08-13-sites-runtime-and-artifact-deployment.md)                        | #16–#18        | Node/jsdom 호환, exact-SHA archive       |
-| 08-13 | [120개 채용 catalog와 복수 필터](./2026-08-13-job-catalog-import-and-filter-usability.md)                     | #19            | 120 upsert, 119 공개                     |
-| 08-13 | [131개 감사와 canonical D1](./2026-08-13-canonical-d1-audit-remediation.md)                                   | 운영 선행 커밋 | P0 9/9, 합성 endpoint benchmark          |
-| 08-14 | [페이지네이션·멱등성·삭제 복구](./2026-08-14-pagination-reliability-and-recovery.md)                          | #20            | payload 77.1–88.1% 감소                  |
-| 08-14 | [잔여 감사 49개 완결](./2026-08-14-complete-audit-remediation.md)                                             | #22            | 127/131, 97 tests, 48 E2E                |
-| 08-14 | [최신 232개 전수 감사 재조치](./2026-08-14-latest-full-audit-remediation.md)                                  | #25–#28        | P0 데이터 안전, schema canary, 102 tests |
-| 08-15 | [채용공고 D1 왕복과 초기 워터폴 제거](./2026-08-15-jobs-d1-roundtrip-and-loading-waterfall.md)                | 운영 성능 개선 | D1 dispatch 4→1, p50 74.57% 감소         |
-| 08-15 | [전체 조회 fast batch와 채용 catalog 전환](./2026-08-15-read-path-fast-catalog.md)                            | 운영 성능 개선 | 주요 조회 1 batch, 채용 조작 read 0회    |
-| 08-15 | [작업대·학습·설정 UI 위계와 컨트롤 정리](./2026-08-15-ui-hierarchy-and-control-polish.md)                     | 운영 UI 개선   | 링크 카드·복습 행·설정 상태 분리         |
-| 08-15 | [액션 버튼 일관성·추천 제목 잘림·복습 일정 제거](./2026-08-15-action-consistency-and-review-removal.md)       | 운영 UI 개선   | 동일 폭 액션·제목 전체 표시·복습 UI 0개  |
-| 08-16 | [D1 조회 병목 제거와 학습 페이지 잔여 지연 분석](./2026-08-16-d1-read-performance-and-learning-latency.md)    | 운영 성능 분석 | 채용 dispatch 4→1, 학습 상세 5회 진단    |
-| 08-16 | [학습 페이지 D1 왕복 통합과 선행 로딩 적용](./2026-08-16-learning-read-latency-remediation.md)                | 운영 성능 개선 | 직접 진입 2→1, 학습 상세 dispatch 5→1    |
-| 08-18 | [OpenAI 전달 헤더에서 Google 검증 세션으로 전환](./2026-08-18-google-auth-migration.md)                       | #36            | RS256 검증, 익명 공통 API 401            |
-| 08-20 | [채용 catalog 증분 대조와 복수 필터 상태 안정화](./2026-08-20-job-catalog-reconciliation-and-filter-state.md) | 이번 변경      | 16개 추가, 7개 만료, URL 상태 단일화     |
+| 시점  | 주제                                                                                                          | 관련 PR        | 핵심 근거                                 |
+| ----- | ------------------------------------------------------------------------------------------------------------- | -------------- | ----------------------------------------- |
+| 08-12 | [초기 MVP와 정적 Sites 배포 경계](./2026-08-12-initial-mvp-and-deployment-boundary.md)                        | #3             | 39 tests, 12 E2E, 초기 화면               |
+| 08-12 | [Slack 제거와 OpenAI 계정 연결](./2026-08-12-openai-auth-and-seeded-user-linking.md)                          | #5–#6          | 인증 migration, seed ID 0                 |
+| 08-12 | [운영 4xx/5xx와 D1 영속성](./2026-08-12-production-api-errors-and-d1-persistence.md)                          | #7             | 503 기준선, 24 tables/34 indexes          |
+| 08-12 | [회원·풀이 공개·노트 재구성](./2026-08-12-member-workspace-visibility-and-notes.md)                           | #8             | migration, 51 tests, 13 E2E               |
+| 08-12 | [트러블슈팅 자동화 게시 실패](./2026-08-12-troubleshooting-automation-failures.md)                            | #9–#10         | validator scope, 권한 fallback            |
+| 08-13 | [채용 달력과 쿼리 성능](./2026-08-13-job-calendar-and-query-performance.md)                                   | #11, #13       | median 20.153→0.137 ms                    |
+| 08-13 | [달력·PDF 학습·오늘의 문제](./2026-08-13-calendar-learning-and-daily-challenges.md)                           | #12            | 2 daily slots, clean-runner seed fix      |
+| 08-13 | [학습·설정·SQL/PDF 시각자료](./2026-08-13-learning-settings-sql-and-pdf-visuals.md)                           | #14–#15        | 427 problems 분류, slide 23개             |
+| 08-13 | [Sites runtime과 artifact 배포](./2026-08-13-sites-runtime-and-artifact-deployment.md)                        | #16–#18        | Node/jsdom 호환, exact-SHA archive        |
+| 08-13 | [120개 채용 catalog와 복수 필터](./2026-08-13-job-catalog-import-and-filter-usability.md)                     | #19            | 120 upsert, 119 공개                      |
+| 08-13 | [131개 감사와 canonical D1](./2026-08-13-canonical-d1-audit-remediation.md)                                   | 운영 선행 커밋 | P0 9/9, 합성 endpoint benchmark           |
+| 08-14 | [페이지네이션·멱등성·삭제 복구](./2026-08-14-pagination-reliability-and-recovery.md)                          | #20            | payload 77.1–88.1% 감소                   |
+| 08-14 | [잔여 감사 49개 완결](./2026-08-14-complete-audit-remediation.md)                                             | #22            | 127/131, 97 tests, 48 E2E                 |
+| 08-14 | [최신 232개 전수 감사 재조치](./2026-08-14-latest-full-audit-remediation.md)                                  | #25–#28        | P0 데이터 안전, schema canary, 102 tests  |
+| 08-15 | [채용공고 D1 왕복과 초기 워터폴 제거](./2026-08-15-jobs-d1-roundtrip-and-loading-waterfall.md)                | 운영 성능 개선 | D1 dispatch 4→1, p50 74.57% 감소          |
+| 08-15 | [전체 조회 fast batch와 채용 catalog 전환](./2026-08-15-read-path-fast-catalog.md)                            | 운영 성능 개선 | 주요 조회 1 batch, 채용 조작 read 0회     |
+| 08-15 | [작업대·학습·설정 UI 위계와 컨트롤 정리](./2026-08-15-ui-hierarchy-and-control-polish.md)                     | 운영 UI 개선   | 링크 카드·복습 행·설정 상태 분리          |
+| 08-15 | [액션 버튼 일관성·추천 제목 잘림·복습 일정 제거](./2026-08-15-action-consistency-and-review-removal.md)       | 운영 UI 개선   | 동일 폭 액션·제목 전체 표시·복습 UI 0개   |
+| 08-16 | [D1 조회 병목 제거와 학습 페이지 잔여 지연 분석](./2026-08-16-d1-read-performance-and-learning-latency.md)    | 운영 성능 분석 | 채용 dispatch 4→1, 학습 상세 5회 진단     |
+| 08-16 | [학습 페이지 D1 왕복 통합과 선행 로딩 적용](./2026-08-16-learning-read-latency-remediation.md)                | 운영 성능 개선 | 직접 진입 2→1, 학습 상세 dispatch 5→1     |
+| 08-18 | [OpenAI 전달 헤더에서 Google 검증 세션으로 전환](./2026-08-18-google-auth-migration.md)                       | #36            | RS256 검증, 익명 공통 API 401             |
+| 08-20 | [채용 catalog 증분 대조와 복수 필터 상태 안정화](./2026-08-20-job-catalog-reconciliation-and-filter-state.md) | 이번 변경      | 16개 추가, 7개 만료, URL 상태 단일화      |
+| 08-20 | [직무 필터·알림 동작·개인 워크스페이스 단순화](./2026-08-20-favorites-filter-and-notification-ux.md)          | #41            | 직무 한글화, bootstrap 6→5, 즐겨찾기 통합 |
 
 Dependabot PR #4는 pnpm 11/Node 24를 지원하는 `pnpm/action-setup@6` 갱신이며 별도 장애가 없어 Sites runtime 문서의 도구 체인 맥락에 포함했다. PR #3 이전의 닫힌 #1/#2는 구현이 병합되지 않았으므로 운영 변경 기록에 포함하지 않았다.
 

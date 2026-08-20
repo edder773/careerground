@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { FolderSaveButton } from '../components/FolderSaveButton';
 import { api, json } from '../lib/api';
 
 type Job = {
@@ -63,6 +62,42 @@ const sizeLabels: Record<string, string> = {
   FOREIGN: '외국계',
   UNCLASSIFIED: '규모 확인 필요',
 };
+const categoryLabels: Record<string, string> = {
+  AI_AGENT_ENGINEERING: 'AI 에이전트 엔지니어링',
+  AI_ENGINEERING: 'AI 엔지니어링',
+  AI_ML: 'AI·머신러닝',
+  AI_RESEARCH: 'AI 연구',
+  AI_SOFTWARE: 'AI 소프트웨어',
+  ANDROID: '안드로이드',
+  BACKEND: '백엔드',
+  BACKEND_AND_AI: '백엔드·AI',
+  BACKEND_AND_AI_DATA: '백엔드·AI·데이터',
+  COMPUTER_VISION: '컴퓨터 비전',
+  CORPORATE_IT: '사내 IT',
+  DATA_ANALYTICS: '데이터 분석',
+  DATA_ENGINEERING: '데이터 엔지니어링',
+  DATA_SCIENCE: '데이터 사이언스',
+  DESKTOP_APPLICATION: '데스크톱 애플리케이션',
+  DEVOPS: '데브옵스',
+  EMBEDDED_OR_CONTROL_SOFTWARE: '임베디드·제어 소프트웨어',
+  EMBEDDED_SOFTWARE: '임베디드 소프트웨어',
+  FRONTEND: '프론트엔드',
+  FULLSTACK: '풀스택',
+  GAME_CLIENT: '게임 클라이언트',
+  INDUSTRIAL_SOFTWARE: '산업용 소프트웨어',
+  IOS: 'iOS',
+  ML_ENGINEERING: '머신러닝 엔지니어링',
+  MULTI_IT_ROLE: 'IT 직군 통합',
+  MULTI_IT_ROLES: 'IT 직군 통합',
+  MULTI_ROLE: '복수 직무',
+  SOFTWARE_ENGINEERING: '소프트웨어 엔지니어링',
+  SOLUTION_DEVELOPMENT: '솔루션 개발',
+  SOLUTION_ENGINEERING: '솔루션 엔지니어링',
+  SYSTEM_OPERATIONS: '시스템 운영',
+  TECHNICAL_CONSULTING: '기술 컨설팅',
+  WEB_DEVELOPMENT: '웹 개발',
+};
+const categoryLabel = (value: string) => categoryLabels[value] || value;
 const applicationLabels: Record<string, string> = {
   INTERESTED: '관심',
   PLANNED: '지원 예정',
@@ -285,7 +320,7 @@ function JobDetailModal({
           </header>
           <div className="job-modal-body">
             <div className="job-modal-title">
-              <span>{job.category}</span>
+              <span>{categoryLabel(job.category)}</span>
               <h3>{job.title}</h3>
               <p>{job.summary}</p>
             </div>
@@ -326,7 +361,6 @@ function JobDetailModal({
             <SourceDetails job={job} />
           </div>
           <footer>
-            <FolderSaveButton itemType="JOB_POSTING" targetId={job.id} label={job.title} />
             <button
               type="button"
               className={job.bookmarked ? 'saved' : ''}
@@ -431,7 +465,7 @@ function ScheduleListDialog({
                   <strong>{job.company.name}</strong>
                   <b>{job.title}</b>
                   <small>
-                    {job.category} · {job.source.name}
+                    {categoryLabel(job.category)} · {job.source.name}
                   </small>
                 </span>
                 <ChevronRight aria-hidden="true" />
@@ -565,7 +599,7 @@ function JobFilterPanel({
                       <span className="multi-filter-check">
                         {selectedJobs.has(value) && <Check aria-hidden="true" />}
                       </span>
-                      <span>{value}</span>
+                      <span>{categoryLabel(value)}</span>
                     </label>
                   ))}
                 </div>
@@ -609,7 +643,7 @@ export function JobsPage() {
     [searchParams],
   );
   const selectedCategories = useMemo(
-    () => dedupeOrdered(searchParams.getAll('category')),
+    () => dedupeOrdered(searchParams.getAll('category').map(categoryLabel)),
     [searchParams],
   );
   const requestedSort = searchParams.get('sort');
@@ -687,7 +721,7 @@ export function JobsPage() {
   const catalog = catalogQuery.data || [];
   const categories = useMemo(
     () =>
-      [...new Set(catalog.map((job) => job.category))].sort((left, right) =>
+      [...new Set(catalog.map((job) => categoryLabel(job.category)))].sort((left, right) =>
         left.localeCompare(right, 'ko'),
       ),
     [catalog],
@@ -698,7 +732,7 @@ export function JobsPage() {
     const terms = search.normalize('NFKC').toLocaleLowerCase('ko-KR').split(/\s+/).filter(Boolean);
     return catalog
       .filter((job) => !sizes.size || sizes.has(job.company.size))
-      .filter((job) => !selected.size || selected.has(job.category))
+      .filter((job) => !selected.size || selected.has(categoryLabel(job.category)))
       .filter((job) => !savedOnly || job.bookmarked)
       .filter(
         (job) => !terms.length || terms.every((term) => searchableJobText(job).includes(term)),
@@ -952,7 +986,7 @@ export function JobsPage() {
               )
             }
           >
-            {value} <X />
+            {categoryLabel(value)} <X />
           </button>
         ))}
         {jobs.isFetching && !jobs.isLoading && (
@@ -1178,7 +1212,7 @@ export function JobsPage() {
                   <div className="job-main">
                     <div className="job-meta">
                       <span>{sizeLabels[job.company.size] || job.company.size}</span>
-                      <span>{job.category}</span>
+                      <span>{categoryLabel(job.category)}</span>
                       {job.remote && <span>재택 가능</span>}
                     </div>
                     <button
@@ -1234,7 +1268,6 @@ export function JobsPage() {
                     <SourceDetails job={job} />
                   </div>
                   <div className="job-actions">
-                    <FolderSaveButton itemType="JOB_POSTING" targetId={job.id} label={job.title} />
                     <button
                       disabled={bookmark.isPending && bookmark.variables?.jobId === job.id}
                       onClick={() =>

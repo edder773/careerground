@@ -60,7 +60,7 @@ test('captures responsive home screenshots and has no serious accessibility viol
   for (const viewport of viewports) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.reload();
-    await expect(page.getByRole('heading', { name: '내 폴더', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '즐겨찾기', level: 1 })).toBeVisible();
     await expect(page.locator('.today-problem-list a')).toHaveCount(3);
     await page.screenshot({
       path: `test-results/visual/home-${viewport.name}.png`,
@@ -90,6 +90,7 @@ test('captures core domain screens', async ({ page }) => {
     { href: '/jobs', heading: '신입 IT 채용공고', name: 'jobs' },
     { href: '/learning', heading: '학습 라이브러리', name: 'learning' },
     { href: '/solutions', heading: '풀이 기록', name: 'solutions' },
+    { href: '/notifications', heading: '알림', name: 'notifications' },
     { href: '/settings', heading: '설정', name: 'settings' },
   ];
   for (const screen of screens) {
@@ -101,6 +102,11 @@ test('captures core domain screens', async ({ page }) => {
       const filterDialog = page.getByRole('dialog', { name: '채용공고 전체 필터' });
       await expect(filterDialog).toBeVisible();
       expect(await filterDialog.getByRole('checkbox').count()).toBeGreaterThan(4);
+      const largeCompany = filterDialog.getByRole('checkbox', { name: '대기업' });
+      await largeCompany.check();
+      await filterDialog.getByRole('checkbox', { name: '백엔드', exact: true }).check();
+      await expect(largeCompany.locator('..').locator('.multi-filter-check svg')).toBeVisible();
+      await expect(filterDialog.getByText('BACKEND', { exact: true })).toHaveCount(0);
       await page.waitForTimeout(220);
       await page.screenshot({
         path: 'test-results/visual/jobs-multi-filter-desktop-1440.png',
@@ -185,11 +191,23 @@ test('captures core domain screens', async ({ page }) => {
   await expect(page.getByLabel('표시 이름')).toHaveCount(0);
   await page.screenshot({ path: 'test-results/visual/settings-mobile-375.png', fullPage: false });
 
+  await page.goto('/notifications');
+  await expect(page.getByRole('heading', { name: '알림', exact: true })).toBeVisible();
+  await page.screenshot({
+    path: 'test-results/visual/notifications-mobile-375.png',
+    fullPage: false,
+  });
+
   await page.goto('/jobs');
   await page.getByRole('button', { name: /^채용공고 필터/ }).click();
   const mobileFilter = page.getByRole('dialog', { name: '채용공고 전체 필터' });
   await expect(mobileFilter).toBeVisible();
   await expect(page.locator('.job-filter-overlay')).toBeVisible();
+  const mobileLargeCompany = mobileFilter.getByRole('checkbox', { name: '대기업' });
+  await mobileLargeCompany.check();
+  await mobileFilter.getByRole('checkbox', { name: '백엔드', exact: true }).check();
+  await expect(mobileLargeCompany.locator('..').locator('.multi-filter-check svg')).toBeVisible();
+  await expect(mobileFilter.getByText('BACKEND', { exact: true })).toHaveCount(0);
   await page.waitForTimeout(220);
   expect(await mobileFilter.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(
     'rgb(255, 255, 255)',

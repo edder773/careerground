@@ -22,6 +22,79 @@
   margin: 18px auto 0;
 }
 
+.notifications-page .page-heading > .ghost-button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.notification-copy {
+  min-width: 0;
+}
+
+.notification-copy .notification-type {
+  display: inline-flex;
+  margin-bottom: 4px;
+  padding: 2px 6px;
+  color: #4f5da9;
+  background: #eceef9;
+  border-radius: 999px;
+  font-weight: 800;
+}
+
+.notification-copy > small:last-child {
+  color: #616c75;
+  font-size: 9px;
+}
+
+.notification-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.notification-actions button {
+  min-height: 32px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #4f5da9;
+  background: #fff;
+  border: 1px solid #d9ddf2;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.notification-actions button svg {
+  width: 13px;
+}
+
+.notification-actions > small {
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .notification-list > article {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+
+  .notification-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .notification-actions {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}
+
 .ranking-table tr.current-user {
   outline: 2px solid var(--accent);
   outline-offset: -2px;

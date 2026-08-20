@@ -2387,12 +2387,12 @@ p {
   display: grid;
   gap: 7px;
 }
-.notification-list > button {
+.notification-list > article {
   width: 100%;
   min-height: 76px;
   padding: 12px 15px;
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) 10px;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
   gap: 11px;
   align-items: center;
   text-align: left;
@@ -2400,7 +2400,7 @@ p {
   border: 1px solid var(--line);
   border-radius: 13px;
 }
-.notification-list > button.unread {
+.notification-list > article.unread {
   background: #f5faf8;
   border-color: #bcd8d5;
 }
@@ -2417,6 +2417,7 @@ p {
   width: 18px;
 }
 .notification-list strong {
+  display: block;
   font-size: 11px;
 }
 .notification-list p {
@@ -2427,12 +2428,6 @@ p {
 .notification-list small {
   color: #93a1a2;
   font-size: 8px;
-}
-.notification-list i {
-  width: 7px;
-  height: 7px;
-  background: #3f999c;
-  border-radius: 50%;
 }
 .admin-stats {
   margin-bottom: 18px;
@@ -4281,13 +4276,9 @@ body {
   border-color: #dfe2ef;
 }
 
-.notification-list > button.unread {
+.notification-list > article.unread {
   background: #f5f6fb;
   border-color: #d8dced;
-}
-
-.notification-list i {
-  background: #596bc8;
 }
 
 .admin-card.warning {
@@ -5623,6 +5614,12 @@ body {
   color: #4957a2;
   background: #f0f2fb;
   border-color: #c7cdec;
+}
+
+.job-filter-options input:checked + .multi-filter-check {
+  color: #fff;
+  background: #5867b9;
+  border-color: #5867b9;
 }
 
 .job-filter-options input {
@@ -7323,6 +7320,31 @@ body {
 }
 
 .folder-save-trigger svg {
+  width: 14px;
+}
+
+.favorite-save-button {
+  min-height: 38px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #4656a9;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.favorite-save-button.saved {
+  color: #fff;
+  background: #5867b9;
+  border-color: #5867b9;
+}
+
+.favorite-save-button svg {
   width: 14px;
 }
 

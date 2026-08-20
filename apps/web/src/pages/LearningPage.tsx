@@ -16,7 +16,7 @@ import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import { useSearchParams } from 'react-router';
 import { api, json } from '../lib/api';
-import { FolderSaveButton } from '../components/FolderSaveButton';
+import { FavoriteSaveButton } from '../components/FavoriteSaveButton';
 import '../styles/learning.css';
 
 type UnitSummary = {
@@ -161,7 +161,7 @@ function LearningUnitModal({
                   </ReactMarkdown>
                 </article>
                 <div className="learning-unit-actions">
-                  <FolderSaveButton
+                  <FavoriteSaveButton
                     itemType="LEARNING_UNIT"
                     targetId={unit.data.id}
                     label={unit.data.title}
