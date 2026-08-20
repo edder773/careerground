@@ -102,7 +102,7 @@
 2. 다음 명령 형식으로 마이그레이션을 만든다.
 
 ```bash
-pnpm jobs:catalog:reconcile -- \
+pnpm jobs:catalog:reconcile \
   --existing data/imports/job-refresh-YYYY-MM-DD/baseline.json \
   --incoming data/imports/job-refresh-YYYY-MM-DD/active.json \
   --audit data/imports/job-refresh-YYYY-MM-DD/reconciliation.json \
