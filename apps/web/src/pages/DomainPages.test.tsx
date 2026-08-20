@@ -33,7 +33,7 @@ describe('domain pages', () => {
       {
         id: 'job-1',
         title: 'Fullstack Engineer',
-        category: 'AI 풀스택 개발',
+        category: 'BACKEND',
         region: '서울',
         remote: false,
         techStack: ['Python'],
@@ -50,7 +50,7 @@ describe('domain pages', () => {
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
         calls.push({ url, method: init?.method || 'GET' });
-        return jobBootstrap(catalog, ['AI 풀스택 개발']);
+        return jobBootstrap(catalog, ['BACKEND']);
       }),
     );
     const user = userEvent.setup();
@@ -58,9 +58,11 @@ describe('domain pages', () => {
     await user.type(await screen.findByRole('searchbox', { name: '공고 검색' }), 'backend');
     await user.click(await screen.findByRole('button', { name: '채용공고 필터' }));
     const filter = screen.getByRole('dialog', { name: '채용공고 전체 필터' });
-    await user.click(within(filter).getByRole('checkbox', { name: '대기업' }));
+    const largeCompany = within(filter).getByRole('checkbox', { name: '대기업' });
+    await user.click(largeCompany);
+    expect(largeCompany.nextElementSibling?.querySelector('svg')).toBeInTheDocument();
     await user.click(within(filter).getByRole('checkbox', { name: '중견기업' }));
-    await user.click(within(filter).getByRole('checkbox', { name: 'AI 풀스택 개발' }));
+    await user.click(within(filter).getByRole('checkbox', { name: '백엔드' }));
     expect(
       calls.some((call) => {
         const params = new URL(call.url, 'https://careerground.example').searchParams;
@@ -76,7 +78,7 @@ describe('domain pages', () => {
     const reopenedFilter = screen.getByRole('dialog', { name: '채용공고 전체 필터' });
     expect(within(reopenedFilter).getByRole('checkbox', { name: '대기업' })).toBeChecked();
     expect(within(reopenedFilter).getByRole('checkbox', { name: '중견기업' })).toBeChecked();
-    expect(within(reopenedFilter).getByRole('checkbox', { name: 'AI 풀스택 개발' })).toBeChecked();
+    expect(within(reopenedFilter).getByRole('checkbox', { name: '백엔드' })).toBeChecked();
     await user.click(within(reopenedFilter).getByRole('button', { name: '필터 닫기' }));
     await user.click(screen.getByRole('button', { name: '마감 임박순' }));
     await waitFor(() => expect(calls).toHaveLength(1));

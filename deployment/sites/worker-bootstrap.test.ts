@@ -74,7 +74,7 @@ describe('Sites worker Google session bootstrap', () => {
       user: { displayName: 'Phase Two' },
       home: { collections: [], dailyChallenges: expect.any(Array) },
     });
-    expect(db.getQueryCount()).toBe(6);
+    expect(db.getQueryCount()).toBe(5);
     expect(db.getBatchCount()).toBe(1);
     expect(db.preparedSql[0]).toContain('JOIN auth_sessions');
     expect(

@@ -26,57 +26,33 @@ test.describe('CareerGround MVP vertical slices', () => {
     await page.getByLabel('이름').fill('첫 가입자');
     await page.getByLabel('C++').check();
     await page.getByRole('button', { name: /내 작업대 시작하기/ }).click();
-    await expect(page.getByRole('heading', { name: '내 폴더', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '즐겨찾기', level: 1 })).toBeVisible();
   });
 
-  test('creates, renames, and adds a link to a personal folder', async ({ page }) => {
-    const suffix = Date.now().toString().slice(-7);
-    const initialName = `E2E 폴더 ${suffix}`;
-    const renamed = `검증 폴더 ${suffix}`;
-    await page.getByRole('button', { name: '새 폴더' }).click();
-    await page.getByLabel('폴더 이름').fill(initialName);
-    await page.getByRole('button', { name: '만들기', exact: true }).click();
-    const folderCard = page.locator('.folder-card').filter({ hasText: initialName });
-    await expect(folderCard).toBeVisible();
+  test('uses a favorites-only workspace and opens favorite coding problems', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: '즐겨찾기', level: 1 })).toBeVisible();
+    await expect(page.getByText('신규 공고')).toHaveCount(0);
+    await expect(page.getByText('마감 임박')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /새 폴더|폴더 만들기/ })).toHaveCount(0);
 
-    await folderCard.click();
-    await page.getByRole('button', { name: '이름 변경' }).click();
-    await page.getByLabel('새 폴더 이름').fill(renamed);
-    await page.getByRole('button', { name: '저장', exact: true }).click();
-    await expect(page.getByRole('heading', { name: renamed })).toBeVisible();
-
-    await page.getByRole('button', { name: '링크 추가' }).click();
-    await page.getByLabel('외부 링크').fill('https://example.com/e2e');
-    await page.getByLabel('표시 이름').fill('E2E 참고 링크');
-    await page.getByRole('button', { name: '추가', exact: true }).click();
-    await expect(page.getByText('E2E 참고 링크')).toBeVisible();
-
-    await Promise.all([
-      page.waitForURL(/\/jobs$/),
-      page.getByRole('link', { name: '채용공고' }).first().click(),
-    ]);
-    await expect(page.getByRole('heading', { name: '신입 IT 채용공고' })).toBeVisible();
-    await page.getByRole('button', { name: '폴더에 저장' }).first().click();
-    const jobFolderDialog = page.getByRole('dialog', { name: /저장할 폴더/ });
-    const jobFolderOption = jobFolderDialog.getByRole('checkbox', { name: renamed });
-    await jobFolderOption.click();
-    await expect(jobFolderOption).toBeChecked();
-    await jobFolderDialog.getByRole('button', { name: '폴더 선택 닫기' }).click();
-    await expect(page.getByRole('button', { name: /\d+개 폴더에 저장됨/ }).first()).toBeVisible();
-
-    await Promise.all([
-      page.waitForURL(/\/coding$/),
-      page.getByRole('link', { name: '코딩테스트' }).first().click(),
-    ]);
+    await page.getByRole('link', { name: '코딩테스트' }).first().click();
     await expect(page.getByRole('heading', { name: '코딩테스트' })).toBeVisible();
     await page.getByRole('button', { name: '전체 문제', exact: true }).click();
-    await page.getByRole('button', { name: '폴더에 저장' }).first().click();
-    const codingFolderDialog = page.getByRole('dialog', { name: /저장할 폴더/ });
-    const codingFolderOption = codingFolderDialog.getByRole('checkbox', { name: renamed });
-    await codingFolderOption.click();
-    await expect(codingFolderOption).toBeChecked();
-    await codingFolderDialog.getByRole('button', { name: '폴더 선택 닫기' }).click();
-    await expect(page.getByRole('button', { name: /\d+개 폴더에 저장됨/ }).first()).toBeVisible();
+    const firstProblem = page.locator('.problem-grid article').first();
+    const title = await firstProblem.getByRole('heading').innerText();
+    const favoriteButton = firstProblem.getByRole('button', { name: /즐겨찾기/ });
+    if ((await favoriteButton.getAttribute('aria-pressed')) !== 'true')
+      await favoriteButton.click();
+    await expect(favoriteButton).toHaveAttribute('aria-pressed', 'true');
+
+    await page.getByRole('link', { name: '홈' }).first().click();
+    await page.getByRole('link', { name: /즐겨찾기 문제/ }).click();
+    await expect(page).toHaveURL(/favorites=1/);
+    await expect(page.getByRole('button', { name: '즐겨찾기', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await expect(page.locator('.problem-grid article').filter({ hasText: title })).toBeVisible();
   });
 
   test('filters problems and records a member-visible solution', async ({ page }) => {
@@ -142,19 +118,28 @@ test.describe('CareerGround MVP vertical slices', () => {
     await expect(page.getByRole('heading', { name: '신입 IT 채용공고' })).toBeVisible();
     await page.getByRole('button', { name: /^채용공고 필터/ }).click();
     const filterDialog = page.getByRole('dialog', { name: '채용공고 전체 필터' });
-    await filterDialog.getByRole('checkbox', { name: '대기업' }).check();
+    const largeCompany = filterDialog.getByRole('checkbox', { name: '대기업' });
+    await largeCompany.check();
+    await expect(largeCompany.locator('..').locator('.multi-filter-check svg')).toBeVisible();
     await filterDialog.getByRole('checkbox', { name: '중견기업' }).check();
-    await expect(filterDialog.getByText('2개 조건 적용')).toBeVisible();
-    await filterDialog.getByRole('button', { name: '2개 조건 적용' }).click();
+    await expect(filterDialog.getByRole('checkbox', { name: '백엔드', exact: true })).toBeVisible();
+    await expect(filterDialog.getByText('BACKEND', { exact: true })).toHaveCount(0);
+    await filterDialog.getByRole('checkbox', { name: '백엔드', exact: true }).check();
+    await expect(filterDialog.getByText('3개 조건 적용')).toBeVisible();
+    await filterDialog.getByRole('button', { name: '3개 조건 적용' }).click();
     await expect
       .poll(() => new URL(page.url()).searchParams.getAll('companySize'))
       .toEqual(['LARGE', 'MID']);
+    await expect
+      .poll(() => new URL(page.url()).searchParams.getAll('category'))
+      .toEqual(['백엔드']);
     await page.reload();
     await page.getByRole('button', { name: /^채용공고 필터/ }).click();
     await expect(filterDialog.getByRole('checkbox', { name: '대기업' })).toBeChecked();
     await expect(filterDialog.getByRole('checkbox', { name: '중견기업' })).toBeChecked();
+    await expect(filterDialog.getByRole('checkbox', { name: '백엔드', exact: true })).toBeChecked();
     await filterDialog.getByRole('checkbox', { name: '중견기업' }).uncheck();
-    await filterDialog.getByRole('button', { name: '1개 조건 적용' }).click();
+    await filterDialog.getByRole('button', { name: '2개 조건 적용' }).click();
     const save = page.getByRole('button', { name: /관심 저장|관심 공고/ }).first();
     await expect(save).toBeVisible();
     if ((await save.getAttribute('aria-pressed')) !== 'true') await save.click();
@@ -367,6 +352,6 @@ test.describe('CareerGround MVP vertical slices', () => {
     await login(page, `google-member-${Date.now()}@example.com`);
     await page.goto('/admin');
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByRole('heading', { name: '내 폴더', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '즐겨찾기', level: 1 })).toBeVisible();
   });
 });

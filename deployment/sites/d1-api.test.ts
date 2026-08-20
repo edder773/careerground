@@ -190,7 +190,6 @@ describe('Sites D1 API', () => {
       unreadCount: 1,
       home: {
         collections: [],
-        dashboard: { recentJobs: expect.any(Number), expiringJobs: expect.any(Number) },
         dailyChallenges: [
           expect.objectContaining({ levelSlot: 1 }),
           expect.objectContaining({ levelSlot: 2 }),
@@ -198,7 +197,7 @@ describe('Sites D1 API', () => {
         ],
       },
     });
-    expect(db.getQueryCount()).toBe(6);
+    expect(db.getQueryCount()).toBe(5);
     expect(db.preparedSql.some((sql) => /^\s*UPDATE users/i.test(sql))).toBe(false);
     expect(loaded.response.headers.get('server-timing')).toMatch(/^app;dur=\d+\.\d$/);
   });
@@ -606,6 +605,48 @@ describe('Sites D1 API', () => {
 
     const otherUser = await call(
       '/api/v1/coding/problems?scope=solved&track=ALGORITHM&page=cursor&limit=25',
+    );
+    expect(otherUser.body).toMatchObject({ total: 0, nextCursor: null, items: [] });
+  });
+
+  it('returns only the signed-in user favorite problems when the favorite scope is requested', async () => {
+    const catalog = await call(
+      '/api/v1/coding/problems?track=ALGORITHM&page=cursor&limit=25',
+      {},
+      memberHeaders,
+    );
+    const firstProblem = (
+      catalog.body as unknown as { items: Array<{ id: string; displayTitle: string }> }
+    ).items[0];
+    expect(firstProblem).toBeTruthy();
+
+    await call(
+      `/api/v1/coding/problems/${firstProblem!.id}/favorite`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ favorite: true }),
+      },
+      memberHeaders,
+    );
+
+    const favorites = await call(
+      '/api/v1/coding/problems?favorites=1&track=ALGORITHM&page=cursor&limit=25',
+      {},
+      memberHeaders,
+    );
+    expect(favorites.body).toMatchObject({
+      total: 1,
+      nextCursor: null,
+      items: [
+        {
+          id: firstProblem!.id,
+          progress: [{ status: 'UNTRIED', favorite: true }],
+        },
+      ],
+    });
+
+    const otherUser = await call(
+      '/api/v1/coding/problems?favorites=1&track=ALGORITHM&page=cursor&limit=25',
     );
     expect(otherUser.body).toMatchObject({ total: 0, nextCursor: null, items: [] });
   });

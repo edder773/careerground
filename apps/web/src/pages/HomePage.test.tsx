@@ -1,55 +1,62 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { HomePage, type Collection } from './HomePage';
 import { renderPage, response } from '../test/render';
 
-describe('folder workspace', () => {
-  let folders: Collection[];
-  let deletedFolders: Collection[];
-  const calls: Array<{ url: string; method: string; body?: unknown }> = [];
+describe('favorites workspace', () => {
+  let collections: Collection[];
+  const calls: Array<{ url: string; method: string }> = [];
 
   beforeEach(() => {
-    folders = [
+    collections = [
       {
         id: '11111111-1111-4111-8111-111111111111',
-        name: '취업 준비',
+        name: '예전 취업 준비 폴더',
         icon: 'folder',
         color: 'cyan',
         position: 0,
-        items: [],
+        items: [
+          {
+            id: 'item-learning',
+            itemType: 'LEARNING_UNIT',
+            targetId: 'unit-prompt',
+            label: '프롬프트 설계 핵심',
+          },
+        ],
+      },
+      {
+        id: '22222222-2222-4222-8222-222222222222',
+        name: '예전 학습 폴더',
+        icon: 'folder',
+        color: 'amber',
+        position: 1,
+        items: [
+          {
+            id: 'item-learning-copy',
+            itemType: 'LEARNING_UNIT',
+            targetId: 'unit-prompt',
+            label: '프롬프트 설계 핵심',
+          },
+        ],
       },
     ];
-    deletedFolders = [];
     calls.length = 0;
     vi.stubGlobal(
       'fetch',
       vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
         const method = init?.method || 'GET';
-        const body = init?.body ? JSON.parse(String(init.body)) : undefined;
-        calls.push({ url, method, body });
-        if (url.endsWith('/collections/trash') && method === 'GET') return response(deletedFolders);
-        if (url.endsWith('/collections') && method === 'GET') return response(folders);
-        if (url.endsWith('/collections') && method === 'POST') {
-          const folder = {
-            id: '22222222-2222-4222-8222-222222222222',
-            ...body,
-            position: 1,
-            items: [],
-          } as Collection;
-          folders = [...folders, folder];
-          return response(folder);
+        calls.push({ url, method });
+        if (url.endsWith('/collections') && method === 'GET') return response(collections);
+        if (url.includes('/collections/') && url.includes('/items/') && method === 'DELETE') {
+          const itemId = url.split('/').at(-1);
+          collections = collections.map((collection) => ({
+            ...collection,
+            items: collection.items.filter((item) => item.id !== itemId),
+          }));
+          return response({ count: 1 });
         }
-        if (url.includes('/collections/2222') && method === 'PATCH') {
-          folders[1] = { ...folders[1]!, name: body.name };
-          return response(folders[1]);
-        }
-        if (url.includes('/items') && method === 'POST') {
-          folders[1]!.items.push({ id: 'item-1', ...body });
-          return response(folders[1]!.items[0]);
-        }
-        if (url.endsWith('/dashboard')) return response({ recentJobs: 4, expiringJobs: 1 });
         if (url.endsWith('/coding/daily-challenges'))
           return response([
             {
@@ -91,62 +98,38 @@ describe('folder workspace', () => {
     );
   });
 
-  it('creates, renames, and adds an external item to a folder', async () => {
-    const user = userEvent.setup();
+  it('shows one favorites surface without job counters or folder controls', async () => {
     renderPage(<HomePage viewMode="grid" />);
-    expect(await screen.findByText('취업 준비')).toBeInTheDocument();
+
+    expect(await screen.findByRole('heading', { name: '즐겨찾기', level: 1 })).toBeInTheDocument();
     expect(await screen.findByText('오늘의 Lv. 1')).toBeInTheDocument();
     expect(screen.getByText('오늘의 Lv. 2')).toBeInTheDocument();
     expect(screen.getByText('오늘의 SQL')).toBeInTheDocument();
-    expect(screen.getByText('SQL · Lv. 3')).toBeInTheDocument();
-    expect(screen.queryByText('오늘 복습')).not.toBeInTheDocument();
-    expect(screen.queryByText('복습 예정')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /관심 공고.*지원 후보 모음/ })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /새 폴더/ }));
-    await user.type(screen.getByRole('textbox', { name: '폴더 이름' }), '코테 모음');
-    await user.click(screen.getByRole('button', { name: '만들기' }));
-    expect((await screen.findAllByText('코테 모음')).length).toBeGreaterThan(0);
-    await user.click(screen.getByRole('button', { name: /이름 변경/ }));
-    const rename = screen.getByRole('textbox', { name: '새 폴더 이름' });
-    fireEvent.change(rename, { target: { value: '알고리즘' } });
-    await user.click(screen.getByRole('button', { name: '저장' }));
-    expect((await screen.findAllByText('알고리즘')).length).toBeGreaterThan(0);
-    await user.click(screen.getByRole('button', { name: /링크 추가/ }));
-    await user.type(screen.getByRole('textbox', { name: '외부 링크' }), 'https://example.com/note');
-    await user.type(screen.getByRole('textbox', { name: '표시 이름' }), '참고 링크');
-    await user.click(screen.getByRole('button', { name: '추가' }));
-    expect(await screen.findByText('참고 링크')).toBeInTheDocument();
-    await waitFor(() =>
-      expect(calls.some((call) => call.method === 'POST' && call.url.includes('/items'))).toBe(
-        true,
-      ),
+    expect(screen.getByText('프롬프트 설계 핵심')).toBeInTheDocument();
+    expect(screen.getByText('저장한 항목').parentElement).toHaveTextContent('1개');
+    expect(screen.getByRole('link', { name: /즐겨찾기 문제/ })).toHaveAttribute(
+      'href',
+      '/coding?favorites=1&view=all',
     );
+    expect(screen.getByRole('link', { name: /관심 공고/ })).toHaveAttribute(
+      'href',
+      '/jobs?saved=1',
+    );
+    expect(screen.queryByText('신규 공고')).not.toBeInTheDocument();
+    expect(screen.queryByText('마감 임박')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /새 폴더|폴더 만들기/ })).not.toBeInTheDocument();
+    expect(screen.queryByText('예전 취업 준비 폴더')).not.toBeInTheDocument();
   });
 
-  it('restores a recently deleted folder from the workspace', async () => {
-    deletedFolders = [
-      {
-        id: '33333333-3333-4333-8333-333333333333',
-        name: '삭제된 지원 자료',
-        icon: 'folder',
-        color: 'violet',
-        position: 0,
-        items: [],
-      },
-    ];
+  it('removes one favorite from every legacy folder placement', async () => {
     const user = userEvent.setup();
-    renderPage(<HomePage viewMode="grid" />);
+    renderPage(<HomePage viewMode="list" />);
 
-    await user.click(await screen.findByText('최근 삭제한 폴더 1개'));
-    expect(screen.getByText('삭제된 지원 자료')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: '복원' }));
-
-    await waitFor(() =>
-      expect(calls).toContainEqual({
-        url: 'http://localhost:4000/api/v1/collections/33333333-3333-4333-8333-333333333333/restore',
-        method: 'POST',
-        body: undefined,
-      }),
+    await user.click(
+      await screen.findByRole('button', { name: '프롬프트 설계 핵심 즐겨찾기 해제' }),
     );
+
+    await waitFor(() => expect(calls.filter((call) => call.method === 'DELETE')).toHaveLength(2));
+    expect(await screen.findByText('아직 저장한 항목이 없습니다')).toBeInTheDocument();
   });
 });

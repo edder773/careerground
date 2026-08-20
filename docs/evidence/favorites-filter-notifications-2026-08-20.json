@@ -1,0 +1,109 @@
+{
+  "schema": "careerground-favorites-filter-notifications/v1",
+  "generatedAt": "2026-08-20T14:26:28+09:00",
+  "scope": "job filter labels and selection feedback, ambiguous home metrics, notification actions, and favorites-only workspace",
+  "baseline": [
+    {
+      "surface": "job category filter",
+      "finding": "Database category values such as BACKEND were rendered directly, and Korean legacy values could produce a duplicate label after localization."
+    },
+    {
+      "surface": "job filter checkbox",
+      "finding": "The checked-state CSS targeted .multi-filter-option[data-state='checked'], while the rendered filter used a native input without that wrapper or data-state."
+    },
+    {
+      "surface": "home summary",
+      "finding": "Two cards labeled 신규 공고 and 마감 임박 were visible even though their calculation boundaries were not explained in the UI."
+    },
+    {
+      "surface": "notification list",
+      "finding": "The entire notification card was a button that marked the row read and navigated when an internal href existed."
+    },
+    {
+      "surface": "personal workspace",
+      "finding": "Folder creation, nesting, moving, trash recovery, and separate favorite controls exposed two overlapping organization models."
+    }
+  ],
+  "structuralComparison": [
+    {
+      "metric": "known English category codes with Korean display labels",
+      "before": 0,
+      "after": 33
+    },
+    {
+      "metric": "ambiguous job summary cards on the home screen",
+      "before": 2,
+      "after": 0
+    },
+    {
+      "metric": "home bootstrap LocalD1 query count",
+      "before": 6,
+      "after": 5,
+      "batchCountBefore": 1,
+      "batchCountAfter": 1
+    },
+    {
+      "metric": "implicit notification-card navigation surfaces per row",
+      "before": 1,
+      "after": 0
+    },
+    {
+      "metric": "explicit notification actions per row",
+      "before": 0,
+      "after": "up to 2: 읽음 처리 and 관련 내용 보기"
+    },
+    {
+      "metric": "workspace organization models exposed in the UI",
+      "before": 2,
+      "after": 1
+    }
+  ],
+  "implemented": {
+    "jobCategories": "Normalize raw and legacy category variants to one Korean display value for both filter state and catalog matching.",
+    "checkboxFeedback": "Style the adjacent visual checkbox from input:checked and render a Check icon when selected.",
+    "home": "Remove the two job counters and all folder-management controls, then expose coding favorites, saved jobs, and a deduplicated saved-item list.",
+    "legacyCollections": "Keep existing collection rows and flatten their items by itemType and targetId so no saved item is discarded.",
+    "notifications": "Use a static article for the message and separate read and navigation buttons with Korean notification type labels.",
+    "favoriteProblemQuery": "Add an owner-scoped favorites filter to the D1 coding-problem query."
+  },
+  "verification": {
+    "formatCheck": "pass",
+    "lint": "pass",
+    "typecheck": "pass",
+    "unitAndComponentTests": {
+      "passed": 132,
+      "failed": 0
+    },
+    "e2e": {
+      "passed": 56,
+      "failed": 0,
+      "projects": ["chromium", "chromium-mobile-375", "firefox", "webkit"]
+    },
+    "productionBuild": "pass",
+    "sitesBuild": "pass",
+    "performanceBudget": {
+      "status": "pass",
+      "failures": 0
+    },
+    "visualViewports": ["1440x900", "375x812"],
+    "accessibilitySeriousViolations": 0
+  },
+  "screenshots": {
+    "homeDesktop": "docs/assets/troubleshooting/current/home-desktop-1440.webp",
+    "homeMobile": "docs/assets/troubleshooting/current/home-mobile-375.webp",
+    "jobFilterDesktop": "docs/assets/troubleshooting/current/jobs-multi-filter-desktop-1440.webp",
+    "jobFilterMobile": "docs/assets/troubleshooting/current/jobs-multi-filter-mobile-375.webp",
+    "notificationsDesktop": "docs/assets/troubleshooting/current/notifications-desktop.webp",
+    "notificationsMobile": "docs/assets/troubleshooting/current/notifications-mobile-375.webp"
+  },
+  "dataHandling": {
+    "collectionRowsDeleted": false,
+    "savedItemsDeletedByMigration": false,
+    "schemaMigrationRequired": false,
+    "note": "Folder-management UI is removed, but existing collection data remains readable through the unified favorites list."
+  },
+  "limitations": [
+    "No end-to-end latency improvement percentage is claimed because a matched production before-and-after timing sample was not captured.",
+    "The legacy collection API remains for backward-compatible storage while the user-facing workflow is favorites-only."
+  ]
+}

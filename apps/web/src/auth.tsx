@@ -7,11 +7,6 @@ type BootstrapPayload = {
   unreadCount: number;
   home?: null | {
     collections: unknown[];
-    dashboard: {
-      recentJobs: number;
-      expiringJobs: number;
-      recentActivity: unknown[];
-    };
     dailyChallenges: unknown[];
   };
   categories?: string[];
@@ -58,7 +53,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
       client.setQueryData(['notification-unread-count'], { count: payload.unreadCount });
       if (payload.home) {
         client.setQueryData(['collections'], payload.home.collections);
-        client.setQueryData(['dashboard'], payload.home.dashboard);
         client.setQueryData(['daily-challenges'], payload.home.dailyChallenges);
       }
       if (jobsBootstrap && payload.categories && payload.data && !Array.isArray(payload.data)) {
