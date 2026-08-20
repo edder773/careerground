@@ -2,6 +2,10 @@
   "schema": "careerground-favorites-filter-notifications/v1",
   "generatedAt": "2026-08-20T14:26:28+09:00",
   "scope": "job filter labels and selection feedback, ambiguous home metrics, notification actions, and favorites-only workspace",
+  "source": {
+    "pullRequest": 41,
+    "commit": "8e5087ad9d531097f6643780f41a8677daf528a9"
+  },
   "baseline": [
     {
       "surface": "job category filter",

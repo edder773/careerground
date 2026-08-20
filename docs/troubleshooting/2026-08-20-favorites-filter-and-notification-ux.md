@@ -3,8 +3,8 @@ title: 직무 필터·알림 동작·개인 워크스페이스 단순화
 date: 2026-08-20
 tags: [jobs, filters, favorites, notifications, accessibility]
 generatedByAI: false
-pr: pending
-commit: pending
+pr: 41
+commit: 8e5087ad9d531097f6643780f41a8677daf528a9
 evidence: docs/evidence/favorites-filter-notifications-2026-08-20.json
 ---
 

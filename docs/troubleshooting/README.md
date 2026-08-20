@@ -35,7 +35,7 @@ generatedByAI: false
 | 08-16 | [학습 페이지 D1 왕복 통합과 선행 로딩 적용](./2026-08-16-learning-read-latency-remediation.md)                | 운영 성능 개선 | 직접 진입 2→1, 학습 상세 dispatch 5→1     |
 | 08-18 | [OpenAI 전달 헤더에서 Google 검증 세션으로 전환](./2026-08-18-google-auth-migration.md)                       | #36            | RS256 검증, 익명 공통 API 401             |
 | 08-20 | [채용 catalog 증분 대조와 복수 필터 상태 안정화](./2026-08-20-job-catalog-reconciliation-and-filter-state.md) | 이번 변경      | 16개 추가, 7개 만료, URL 상태 단일화      |
-| 08-20 | [직무 필터·알림 동작·개인 워크스페이스 단순화](./2026-08-20-favorites-filter-and-notification-ux.md)          | 이번 변경      | 직무 한글화, bootstrap 6→5, 즐겨찾기 통합 |
+| 08-20 | [직무 필터·알림 동작·개인 워크스페이스 단순화](./2026-08-20-favorites-filter-and-notification-ux.md)          | #41            | 직무 한글화, bootstrap 6→5, 즐겨찾기 통합 |
 
 Dependabot PR #4는 pnpm 11/Node 24를 지원하는 `pnpm/action-setup@6` 갱신이며 별도 장애가 없어 Sites runtime 문서의 도구 체인 맥락에 포함했다. PR #3 이전의 닫힌 #1/#2는 구현이 병합되지 않았으므로 운영 변경 기록에 포함하지 않았다.
 
