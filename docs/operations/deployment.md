@@ -58,6 +58,7 @@ E2E는 `deployment/sites/local-d1-server.ts`가 메모리 D1 fixture를 직접 �
 - `AUTH_TEST_MODE`는 로컬 D1 회귀 테스트 전용이며 운영 환경에 설정하지 않는다.
 - `RATE_LIMIT_READS_PER_MINUTE`, `RATE_LIMIT_WRITES_PER_MINUTE`는 선택 설정이며 기본값은 각각 240/60이다.
 - `MAX_ACTIVE_USERS`는 활성 사용자 상한이다.
+- `DIGEST_API_TOKEN`은 GitHub Actions가 `/api/v1/internal/slack-digest`를 호출할 때 사용하는 전용 Bearer token이다. GitHub 저장소 secret `CAREERGROUND_DIGEST_TOKEN`과 같은 값을 사용하며 로그나 문서에 원문을 남기지 않는다.
 - `OPENAI_API_KEY`는 앱 런타임과 트러블슈팅 기록에 필수가 아니다. 선택적 AI 문서 재작성 workflow에서만 사용한다.
 
 ## migration과 rollback

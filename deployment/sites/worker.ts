@@ -9,6 +9,7 @@ type SitesEnv = {
   DB?: D1Database;
   ADMIN_EMAILS?: string;
   AUTH_TEST_MODE?: string;
+  DIGEST_API_TOKEN?: string;
   GOOGLE_CLIENT_ID?: string;
   MAX_ACTIVE_USERS?: string;
   REQUEST_LOGGING?: string;
