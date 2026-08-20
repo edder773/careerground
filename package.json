@@ -12,7 +12,7 @@
     "dev": "node --import tsx deployment/sites/dev.ts",
     "dev:sites:api": "node --import tsx deployment/sites/local-d1-server.ts",
     "dev:sites:web": "VITE_API_URL=/api/v1 VITE_API_PROXY_ORIGIN=http://127.0.0.1:4000 pnpm --filter @careerground/web dev",
-    "build": "pnpm --filter @careerground/contracts build && pnpm --filter @careerground/ui build && pnpm --filter @careerground/api build && pnpm --filter @careerground/web build && pnpm --filter @careerground/docs build",
+    "build": "pnpm --filter @careerground/contracts build && pnpm --filter @careerground/ui build && pnpm --filter @careerground/api build && pnpm --filter @careerground/web build && pnpm --filter @careerground/docs build && pnpm sites:build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

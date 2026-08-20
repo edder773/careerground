@@ -17,17 +17,17 @@ describe('Sites package staging', () => {
       mkdirSync(join(project, 'drizzle'), { recursive: true });
       writeFileSync(join(project, 'dist/server/index.js'), 'export default {};\n');
       writeFileSync(join(project, '.openai/hosting.json'), '{"d1":"DB"}\n');
-      writeFileSync(join(project, 'dist/.openai/drizzle/0017_forward.sql'), 'SELECT 17;\n');
-      writeFileSync(join(project, 'dist/.openai/drizzle/0018_index.sql'), 'SELECT 18;\n');
+      writeFileSync(join(project, 'dist/.openai/drizzle/0025_forward.sql'), 'SELECT 25;\n');
+      writeFileSync(join(project, 'dist/.openai/drizzle/0026_index.sql'), 'SELECT 26;\n');
       writeFileSync(join(project, 'drizzle/0000_baseline.sql'), 'SELECT 0;\n');
-      writeFileSync(join(project, 'drizzle/0017_forward.sql'), 'SELECT 17;\n');
+      writeFileSync(join(project, 'drizzle/0025_forward.sql'), 'SELECT 25;\n');
 
       const result = await preparePackageStage(project, stage);
 
-      expect(result.migrations).toEqual(['0017_forward.sql', '0018_index.sql']);
+      expect(result.migrations).toEqual(['0025_forward.sql', '0026_index.sql']);
       expect(() => readFileSync(join(stage, 'drizzle/0000_baseline.sql'))).toThrow();
-      expect(readFileSync(join(stage, 'dist/.openai/drizzle/0017_forward.sql'), 'utf8')).toBe(
-        'SELECT 17;\n',
+      expect(readFileSync(join(stage, 'dist/.openai/drizzle/0025_forward.sql'), 'utf8')).toBe(
+        'SELECT 25;\n',
       );
     } finally {
       rmSync(root, { recursive: true, force: true });
@@ -44,10 +44,10 @@ describe('Sites package staging', () => {
       mkdirSync(join(project, '.openai'), { recursive: true });
       writeFileSync(join(project, 'dist/server/index.js'), 'export default {};\n');
       writeFileSync(join(project, '.openai/hosting.json'), '{"d1":"DB"}\n');
-      writeFileSync(join(project, 'dist/.openai/drizzle/0016_legacy.sql'), 'SELECT 16;\n');
+      writeFileSync(join(project, 'dist/.openai/drizzle/0024_legacy.sql'), 'SELECT 24;\n');
 
       await expect(preparePackageStage(project, join(root, 'stage'))).rejects.toThrow(
-        /baseline migrations: 0016_legacy\.sql/,
+        /baseline migrations: 0024_legacy\.sql/,
       );
     } finally {
       rmSync(root, { recursive: true, force: true });
