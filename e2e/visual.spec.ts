@@ -186,6 +186,25 @@ test('captures core domain screens', async ({ page }) => {
   await page.screenshot({ path: 'test-results/visual/settings-mobile-375.png', fullPage: false });
 
   await page.goto('/jobs');
+  await page.getByRole('button', { name: /^채용공고 필터/ }).click();
+  const mobileFilter = page.getByRole('dialog', { name: '채용공고 전체 필터' });
+  await expect(mobileFilter).toBeVisible();
+  await expect(page.locator('.job-filter-overlay')).toBeVisible();
+  await page.waitForTimeout(220);
+  expect(await mobileFilter.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(
+    'rgb(255, 255, 255)',
+  );
+  const mobileFilterBox = await mobileFilter.boundingBox();
+  expect(mobileFilterBox).not.toBeNull();
+  expect(mobileFilterBox!.x).toBeGreaterThanOrEqual(0);
+  expect(mobileFilterBox!.y).toBeGreaterThanOrEqual(0);
+  expect(mobileFilterBox!.x + mobileFilterBox!.width).toBeLessThanOrEqual(375);
+  expect(mobileFilterBox!.y + mobileFilterBox!.height).toBeLessThanOrEqual(812);
+  await page.screenshot({
+    path: 'test-results/visual/jobs-multi-filter-mobile-375.png',
+    fullPage: false,
+  });
+  await mobileFilter.getByRole('button', { name: '필터 닫기' }).click();
   await page.getByRole('button', { name: '달력' }).click();
   await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
   await expect(page.locator('.job-calendar-legend')).toContainText('등록일');

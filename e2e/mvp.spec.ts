@@ -145,6 +145,14 @@ test.describe('CareerGround MVP vertical slices', () => {
     await filterDialog.getByRole('checkbox', { name: '대기업' }).check();
     await filterDialog.getByRole('checkbox', { name: '중견기업' }).check();
     await expect(filterDialog.getByText('2개 조건 적용')).toBeVisible();
+    await filterDialog.getByRole('button', { name: '2개 조건 적용' }).click();
+    await expect
+      .poll(() => new URL(page.url()).searchParams.getAll('companySize'))
+      .toEqual(['LARGE', 'MID']);
+    await page.reload();
+    await page.getByRole('button', { name: /^채용공고 필터/ }).click();
+    await expect(filterDialog.getByRole('checkbox', { name: '대기업' })).toBeChecked();
+    await expect(filterDialog.getByRole('checkbox', { name: '중견기업' })).toBeChecked();
     await filterDialog.getByRole('checkbox', { name: '중견기업' }).uncheck();
     await filterDialog.getByRole('button', { name: '1개 조건 적용' }).click();
     const save = page.getByRole('button', { name: /관심 저장|관심 공고/ }).first();
@@ -159,6 +167,7 @@ test.describe('CareerGround MVP vertical slices', () => {
     await filterDialog.getByRole('button', { name: '전체 해제' }).click();
     expect(await filterDialog.getByRole('checkbox').count()).toBeGreaterThan(4);
     await filterDialog.getByRole('button', { name: '전체 공고 보기' }).click();
+    await expect.poll(() => new URL(page.url()).searchParams.getAll('companySize')).toEqual([]);
     await page
       .getByRole('group', { name: '채용공고 정렬' })
       .getByRole('button', {
