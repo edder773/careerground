@@ -21,9 +21,9 @@ function migrate(file) {
   }
 }
 
-migrate('drizzle/0000_loose_shooting_star.sql');
-migrate('drizzle/0003_import_careerground_catalog.sql');
-migrate('drizzle/0004_melodic_xavin.sql');
+migrate('drizzle-history/0000_loose_shooting_star.sql');
+migrate('drizzle-history/0003_import_careerground_catalog.sql');
+migrate('drizzle-history/0004_melodic_xavin.sql');
 database.exec('DELETE FROM jobs;');
 
 const insert = database.prepare(
@@ -70,7 +70,7 @@ for (let index = 0; index < 50_000; index += 1) {
 database.exec('COMMIT');
 
 if (variant === 'optimized') {
-  migrate('drizzle/0006_tense_iron_patriot.sql');
+  migrate('drizzle-history/0006_tense_iron_patriot.sql');
 }
 
 const from = '2026-02-01T00:00:00.000Z';

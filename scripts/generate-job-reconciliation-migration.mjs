@@ -9,7 +9,7 @@ export const reconciliationPaths = {
   existing: 'data/imports/job-refresh-2026-08-14-v2/active.json',
   incoming: 'data/imports/job-refresh-2026-08-20/active.json',
   audit: 'data/imports/job-refresh-2026-08-20/reconciliation.json',
-  migration: 'drizzle/0024_reconcile_job_catalog_20260820.sql',
+  migration: 'drizzle-history/0024_reconcile_job_catalog_20260820.sql',
   migrationVersion: '0024_reconcile_job_catalog_20260820',
   batchId: 'catalog-jobs-20260820-delta',
   allowOverwrite: true,

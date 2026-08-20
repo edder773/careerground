@@ -53,5 +53,8 @@ for (const sourceDefinition of sources) {
 }
 
 statements.push('PRAGMA optimize');
-const outputUrl = new URL('../drizzle/0007_learning_catalog_expansion.sql', import.meta.url);
+const outputUrl = new URL(
+  '../drizzle-history/0007_learning_catalog_expansion.sql',
+  import.meta.url,
+);
 await writeFile(outputUrl, `${statements.join(';--> statement-breakpoint\n')};\n`);

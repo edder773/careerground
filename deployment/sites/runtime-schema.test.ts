@@ -126,14 +126,24 @@ describe('Sites production migration baseline', () => {
     mkdirSync(forwardDirectory);
 
     try {
-      const migrations = readdirSync('drizzle')
-        .filter((file) => /^\d{4}_.+\.sql$/.test(file))
-        .sort();
-      for (const migration of migrations.filter((file) => Number(file.slice(0, 4)) < 17)) {
-        copyFileSync(join('drizzle', migration), join(baselineDirectory, migration));
+      const migrations = ['drizzle-history', 'drizzle']
+        .flatMap((directory) =>
+          readdirSync(directory)
+            .filter((file) => /^\d{4}_.+\.sql$/.test(file))
+            .map((file) => ({ directory, file })),
+        )
+        .sort((left, right) => left.file.localeCompare(right.file));
+      for (const migration of migrations.filter(({ file }) => Number(file.slice(0, 4)) < 17)) {
+        copyFileSync(
+          join(migration.directory, migration.file),
+          join(baselineDirectory, migration.file),
+        );
       }
-      for (const migration of migrations.filter((file) => Number(file.slice(0, 4)) >= 17)) {
-        copyFileSync(join('drizzle', migration), join(forwardDirectory, migration));
+      for (const migration of migrations.filter(({ file }) => Number(file.slice(0, 4)) >= 17)) {
+        copyFileSync(
+          join(migration.directory, migration.file),
+          join(forwardDirectory, migration.file),
+        );
       }
 
       const baseline = new LocalD1(databasePath, baselineDirectory);
