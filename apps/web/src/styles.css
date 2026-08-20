@@ -5505,12 +5505,23 @@ body {
   box-shadow: 0 0 0 3px rgba(86, 101, 185, 0.14);
 }
 
+.job-filter-overlay {
+  position: fixed;
+  z-index: 109;
+  inset: 0;
+  background: rgba(24, 29, 39, 0.34);
+  backdrop-filter: blur(2px);
+  animation: filter-overlay-in 130ms ease-out;
+}
+
 .job-filter-panel {
-  position: absolute;
+  position: fixed;
   z-index: 110;
-  top: calc(100% + 7px);
+  top: 84px;
   left: 0;
+  right: 0;
   width: min(760px, calc(100vw - 72px));
+  margin: 0 auto;
   max-height: min(640px, calc(100dvh - 180px));
   overflow: hidden;
   display: grid;
@@ -5873,6 +5884,12 @@ body {
   from {
     opacity: 0;
     transform: translateY(-3px) scale(0.98);
+  }
+}
+
+@keyframes filter-overlay-in {
+  from {
+    opacity: 0;
   }
 }
 
@@ -6883,12 +6900,12 @@ body {
   }
 
   .job-filter-panel {
-    position: fixed;
     top: 12px;
     right: 12px;
     bottom: 12px;
     left: 12px;
     width: auto;
+    margin: 0;
     max-height: none;
   }
 

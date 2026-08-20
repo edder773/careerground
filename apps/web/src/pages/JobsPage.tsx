@@ -16,7 +16,7 @@ import {
   SlidersHorizontal,
   X,
 } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { FolderSaveButton } from '../components/FolderSaveButton';
 import { api, json } from '../lib/api';
@@ -458,14 +458,12 @@ function JobFilterPanel({
   companySizes,
   categories,
   selectedCategories,
-  onCompanySizesChange,
-  onCategoriesChange,
+  onApply,
 }: {
   companySizes: string[];
   categories: string[];
   selectedCategories: string[];
-  onCompanySizesChange: (value: string[]) => void;
-  onCategoriesChange: (value: string[]) => void;
+  onApply: (companySizes: string[], categories: string[]) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [draftSizes, setDraftSizes] = useState(companySizes);
@@ -506,7 +504,10 @@ function JobFilterPanel({
             {selectedCount > 0 && <strong>{selectedCount}</strong>}
           </button>
         </DialogPrimitive.Trigger>
-        {open && (
+      </div>
+      {open && (
+        <DialogPrimitive.Portal>
+          <DialogPrimitive.Overlay className="job-filter-overlay" />
           <DialogPrimitive.Content
             className="job-filter-panel"
             aria-label="채용공고 전체 필터"
@@ -586,8 +587,7 @@ function JobFilterPanel({
                 type="button"
                 className="job-filter-done"
                 onClick={() => {
-                  onCompanySizesChange(draftSizes);
-                  onCategoriesChange(draftCategories);
+                  onApply(draftSizes, draftCategories);
                   setOpen(false);
                 }}
               >
@@ -595,8 +595,8 @@ function JobFilterPanel({
               </button>
             </footer>
           </DialogPrimitive.Content>
-        )}
-      </div>
+        </DialogPrimitive.Portal>
+      )}
     </DialogPrimitive.Root>
   );
 }
@@ -604,16 +604,17 @@ function JobFilterPanel({
 export function JobsPage() {
   const client = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [companySizes, setCompanySizes] = useState<string[]>(() =>
-    searchParams.getAll('companySize'),
+  const companySizes = useMemo(
+    () => dedupeOrdered(searchParams.getAll('companySize')),
+    [searchParams],
   );
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(() =>
-    searchParams.getAll('category'),
+  const selectedCategories = useMemo(
+    () => dedupeOrdered(searchParams.getAll('category')),
+    [searchParams],
   );
-  const initialSort = searchParams.get('sort');
-  const [sort, setSort] = useState<SortMode>(
-    initialSort === 'deadline' || initialSort === 'company' ? initialSort : 'new',
-  );
+  const requestedSort = searchParams.get('sort');
+  const sort: SortMode =
+    requestedSort === 'deadline' || requestedSort === 'company' ? requestedSort : 'new';
   const [memoDrafts, setMemoDrafts] = useState<Record<string, string>>({});
   const search = searchParams.get('q') || '';
   const [searchInput, setSearchInput] = useState(search);
@@ -629,34 +630,38 @@ export function JobsPage() {
   const [expandedDateKey, setExpandedDateKey] = useState<string>();
   const [focusedCalendarDate, setFocusedCalendarDate] = useState(koreaDateKey(new Date()));
   const calendarCells = useRef(new Map<string, HTMLDivElement>());
+  const searchParamsRef = useRef(searchParams);
+  searchParamsRef.current = searchParams;
 
-  const setUrlParam = (key: string, value: string) => {
-    const next = new URLSearchParams(searchParams);
-    if (value) next.set(key, value);
-    else next.delete(key);
-    setSearchParams(next, { replace: true });
-  };
-
-  useEffect(() => {
-    const nextCompanySizes = dedupeOrdered(searchParams.getAll('companySize'));
-    const nextCategories = dedupeOrdered(searchParams.getAll('category'));
-    const nextSort = searchParams.get('sort');
-    const nextSortMode: SortMode =
-      nextSort === 'deadline' || nextSort === 'company' ? nextSort : 'new';
-
-    setCompanySizes((current) =>
-      current.length === nextCompanySizes.length && current.every((value, index) => value === nextCompanySizes[index])
-        ? current
-        : nextCompanySizes,
-    );
-    setSelectedCategories((current) =>
-      current.length === nextCategories.length &&
-      current.every((value, index) => value === nextCategories[index])
-        ? current
-        : nextCategories,
-    );
-    setSort((current) => (current === nextSortMode ? current : nextSortMode));
-  }, [searchParams]);
+  const updateSearchParams = useCallback(
+    (update: (next: URLSearchParams) => void) => {
+      const next = new URLSearchParams(searchParamsRef.current);
+      update(next);
+      searchParamsRef.current = next;
+      setSearchParams(next, { replace: true });
+    },
+    [setSearchParams],
+  );
+  const setUrlParam = useCallback(
+    (key: string, value: string) => {
+      updateSearchParams((next) => {
+        if (value) next.set(key, value);
+        else next.delete(key);
+      });
+    },
+    [updateSearchParams],
+  );
+  const setJobFilters = useCallback(
+    (sizes: string[], categories: string[]) => {
+      updateSearchParams((next) => {
+        next.delete('companySize');
+        next.delete('category');
+        dedupeOrdered(sizes).forEach((value) => next.append('companySize', value));
+        dedupeOrdered(categories).forEach((value) => next.append('category', value));
+      });
+    },
+    [updateSearchParams],
+  );
 
   useEffect(() => setSearchInput(search), [search]);
   useEffect(() => {
@@ -664,18 +669,7 @@ export function JobsPage() {
       if (searchInput !== search) setUrlParam('q', searchInput.trim());
     }, 350);
     return () => window.clearTimeout(timer);
-  }, [search, searchInput]);
-
-  useEffect(() => {
-    const next = new URLSearchParams(searchParams);
-    next.delete('companySize');
-    next.delete('category');
-    companySizes.forEach((value) => next.append('companySize', value));
-    selectedCategories.forEach((value) => next.append('category', value));
-    if (sort === 'new') next.delete('sort');
-    else next.set('sort', sort);
-    if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true });
-  }, [companySizes, searchParams, selectedCategories, setSearchParams, sort]);
+  }, [search, searchInput, setUrlParam]);
 
   const bounds = monthBounds(visibleMonth);
   const catalogQuery = useQuery({
@@ -929,15 +923,19 @@ export function JobsPage() {
           companySizes={companySizes}
           categories={categories}
           selectedCategories={selectedCategories}
-          onCompanySizesChange={setCompanySizes}
-          onCategoriesChange={setSelectedCategories}
+          onApply={setJobFilters}
         />
         {companySizes.map((value) => (
           <button
             type="button"
             key={value}
             className="job-filter-chip"
-            onClick={() => setCompanySizes((current) => current.filter((item) => item !== value))}
+            onClick={() =>
+              setJobFilters(
+                companySizes.filter((item) => item !== value),
+                selectedCategories,
+              )
+            }
           >
             {sizeLabels[value] || value} <X />
           </button>
@@ -948,7 +946,10 @@ export function JobsPage() {
             key={value}
             className="job-filter-chip"
             onClick={() =>
-              setSelectedCategories((current) => current.filter((item) => item !== value))
+              setJobFilters(
+                companySizes,
+                selectedCategories.filter((item) => item !== value),
+              )
             }
           >
             {value} <X />
@@ -970,7 +971,7 @@ export function JobsPage() {
                 key={option.value}
                 className={sort === option.value ? 'active' : ''}
                 aria-pressed={sort === option.value}
-                onClick={() => setSort(option.value)}
+                onClick={() => setUrlParam('sort', option.value === 'new' ? '' : option.value)}
               >
                 {option.label}
               </button>

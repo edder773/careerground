@@ -358,21 +358,25 @@ describe('Sites D1 API', () => {
       )
       .first<{ count: number }>();
 
-    expect(jobCount?.count).toBe(51);
-    expect(currentJobCount?.count).toBe(51);
-    expect(expiredJobCount?.count).toBe(0);
+    expect(jobCount?.count).toBe(67);
+    expect(currentJobCount?.count).toBe(60);
+    expect(expiredJobCount?.count).toBe(7);
     expect(problemCount?.count).toBe(427);
     expect(sqlProblemCount?.count).toBe(62);
     expect(dummyCount?.count).toBe(0);
 
     const jobs = await call('/api/v1/jobs?sort=new');
     expect(jobs.response.status).toBe(200);
-    expect(jobs.body).toHaveLength(51);
+    expect(jobs.body).toHaveLength(60);
     expect(jobs.body).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           title: '2026년 개발직 신입 및 경력사원 채용',
           company: expect.objectContaining({ name: '㈜퓨전소프트' }),
+        }),
+        expect.objectContaining({
+          title: '신규 웹서비스를 함께 만들어갈 백엔드 개발자 채용',
+          company: expect.objectContaining({ name: '㈜원시' }),
         }),
       ]),
     );
@@ -414,7 +418,7 @@ describe('Sites D1 API', () => {
     db.resetBatchCount();
     const catalog = await call('/api/v1/jobs?sort=new&page=cursor&limit=40', {}, memberHeaders);
     expect(catalog.response.status).toBe(200);
-    expect(catalog.body).toMatchObject({ items: expect.any(Array), total: 51 });
+    expect(catalog.body).toMatchObject({ items: expect.any(Array), total: 60 });
     expect(db.getQueryCount()).toBe(4);
     expect(db.getBatchCount()).toBe(1);
     expect(
@@ -437,7 +441,7 @@ describe('Sites D1 API', () => {
       user: { email: 'member@example.test' },
       unreadCount: expect.any(Number),
       categories: expect.arrayContaining(['AI_ML']),
-      data: { items: expect.any(Array), total: 51 },
+      data: { items: expect.any(Array), total: 60 },
     });
     expect(db.getQueryCount()).toBe(6);
     expect(db.getBatchCount()).toBe(1);
@@ -450,7 +454,7 @@ describe('Sites D1 API', () => {
       categories: expect.arrayContaining(['AI_ML', 'WEB_DEVELOPMENT']),
       data: expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]),
     });
-    expect(fullCatalog.body.data as unknown[]).toHaveLength(51);
+    expect(fullCatalog.body.data as unknown[]).toHaveLength(60);
     expect(db.getQueryCount()).toBe(4);
     expect(db.getBatchCount()).toBe(1);
   });
@@ -467,7 +471,7 @@ describe('Sites D1 API', () => {
       newcomer,
     );
     expect(bootstrap.response.status).toBe(200);
-    expect(bootstrap.body).toMatchObject({ unreadCount: 1, data: { total: 51 } });
+    expect(bootstrap.body).toMatchObject({ unreadCount: 1, data: { total: 60 } });
   });
 
   it('serves the high-traffic read routes in one D1 dispatch each', async () => {
@@ -553,7 +557,7 @@ describe('Sites D1 API', () => {
       total: number;
     };
     expect(jobPage.items).toHaveLength(10);
-    expect(jobPage.total).toBe(51);
+    expect(jobPage.total).toBe(60);
     expect(jobPage.nextCursor).toBeTruthy();
     const nextJobs = await call(
       `/api/v1/jobs?sort=new&page=cursor&limit=10&cursor=${encodeURIComponent(jobPage.nextCursor)}`,
@@ -732,7 +736,7 @@ describe('Sites D1 API', () => {
 
   it('keeps registration, application start, and collection timestamps separate', async () => {
     const candidates = await db
-      .prepare('SELECT id FROM jobs WHERE rolling = 0 ORDER BY id LIMIT 3')
+      .prepare("SELECT id FROM jobs WHERE rolling = 0 AND status = 'ACTIVE' ORDER BY id LIMIT 3")
       .all<{ id: string }>();
     const [published, application, collectedOnly] = candidates.results;
     expect(published && application && collectedOnly).toBeTruthy();

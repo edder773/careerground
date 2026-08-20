@@ -55,6 +55,7 @@ describe('domain pages', () => {
     );
     const user = userEvent.setup();
     renderPage(<JobsPage />);
+    await user.type(await screen.findByRole('searchbox', { name: '공고 검색' }), 'backend');
     await user.click(await screen.findByRole('button', { name: '채용공고 필터' }));
     const filter = screen.getByRole('dialog', { name: '채용공고 전체 필터' });
     await user.click(within(filter).getByRole('checkbox', { name: '대기업' }));
@@ -68,6 +69,15 @@ describe('domain pages', () => {
     ).toBe(false);
     await user.click(within(filter).getByRole('button', { name: '3개 조건 적용' }));
     expect(await screen.findByText('0개 공고')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /채용공고 필터, 3개 선택/ })).toBeInTheDocument(),
+    );
+    await user.click(screen.getByRole('button', { name: /채용공고 필터, 3개 선택/ }));
+    const reopenedFilter = screen.getByRole('dialog', { name: '채용공고 전체 필터' });
+    expect(within(reopenedFilter).getByRole('checkbox', { name: '대기업' })).toBeChecked();
+    expect(within(reopenedFilter).getByRole('checkbox', { name: '중견기업' })).toBeChecked();
+    expect(within(reopenedFilter).getByRole('checkbox', { name: 'AI 풀스택 개발' })).toBeChecked();
+    await user.click(within(reopenedFilter).getByRole('button', { name: '필터 닫기' }));
     await user.click(screen.getByRole('button', { name: '마감 임박순' }));
     await waitFor(() => expect(calls).toHaveLength(1));
     expect(calls[0]?.url).toContain('/jobs/bootstrap?catalog=true');
