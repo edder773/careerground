@@ -61,6 +61,7 @@ DB를 reset하면 로컬 데이터가 삭제되므로 대상 DB URL을 확인한
 - `AUTH_TEST_MODE`: 로컬 D1/E2E 전용 테스트 로그인 endpoint 활성화. 운영에는 설정하지 않는다.
 - `MAX_ACTIVE_USERS`: 기본 10
 - `INTERNAL_SERVICE_SECRET`: daily challenge ensure endpoint 보호
+- `DIGEST_API_TOKEN`: GitHub Actions의 Slack 일일 요약 전용 API 인증 토큰. 운영 Worker와 GitHub secret `CAREERGROUND_DIGEST_TOKEN`에 같은 값을 저장한다.
 - `OPENAI_API_KEY`, `OPENAI_TROUBLESHOOTING_MODEL`: 선택형 트러블슈팅 문서 보강에만 사용하며, 없어도 변경 파일·테스트 결과 기반 기록은 생성됨
 
 실제 `.env*`, 업로드 파일, DB 볼륨, API 키는 Git에 포함하지 않는다.

@@ -75,7 +75,7 @@ describe('Sites D1 API', () => {
       if (!cookie) throw new Error('Test Google login did not issue a session cookie.');
       sessionCookies.set(subject, cookie);
     }
-    const requestHeaders = new Headers();
+    const requestHeaders = new Headers(init.headers);
     if (cookie) requestHeaders.set('cookie', cookie);
     if (init.body && !(init.body instanceof FormData))
       requestHeaders.set('content-type', 'application/json');
@@ -144,6 +144,132 @@ describe('Sites D1 API', () => {
       { DB: db, AUTH_TEST_MODE: 'true', REQUEST_LOGGING: 'false' },
     );
     expect(legacyOnly.status).toBe(401);
+  });
+
+  it("protects the Slack digest and returns only today's dated new-grad jobs", async () => {
+    const token = 'test-digest-token';
+    const today = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date());
+    const dayStart = new Date(`${today}T00:00:00+09:00`).toISOString();
+    const deadline = new Date(Date.now() + 7 * 86_400_000).toISOString();
+    const timestamp = new Date().toISOString();
+
+    await db.prepare("UPDATE jobs SET created_at = '2026-01-01T00:00:00.000Z'").run();
+    const jobRows = await db
+      .prepare('SELECT id FROM jobs ORDER BY id LIMIT 2')
+      .all<{ id: string }>();
+    expect(jobRows.results).toHaveLength(2);
+    await db
+      .prepare(
+        `UPDATE jobs
+            SET company_name = ?, title = ?, source_name = ?, source_url = ?,
+                status = 'ACTIVE', career_scope = 'NEW_GRAD_ELIGIBLE', rolling = ?,
+                deadline_at = ?, created_at = ?
+          WHERE id = ?`,
+      )
+      .bind(
+        '알림 대상 회사',
+        '신입 백엔드 개발자',
+        '공식 채용',
+        'https://example.test/jobs/digest-included',
+        0,
+        deadline,
+        dayStart,
+        jobRows.results[0]!.id,
+      )
+      .run();
+    await db
+      .prepare(
+        `UPDATE jobs
+            SET company_name = ?, title = ?, source_url = ?,
+                status = 'ACTIVE', career_scope = 'NEW_GRAD_ELIGIBLE', rolling = 1,
+                deadline_at = ?, created_at = ?
+          WHERE id = ?`,
+      )
+      .bind(
+        '상시 회사',
+        '상시 신입 개발자',
+        'https://example.test/jobs/digest-rolling',
+        deadline,
+        dayStart,
+        jobRows.results[1]!.id,
+      )
+      .run();
+
+    await db.prepare('DELETE FROM daily_challenges WHERE kst_date = ?').bind(today).run();
+    const problems = [
+      ['digest-algorithm-1', '알고리즘 1', 1, 'ALGORITHM', 1],
+      ['digest-algorithm-2', '알고리즘 2', 2, 'ALGORITHM', 2],
+      ['digest-sql-4', 'SQL 4', 4, 'SQL', 34],
+    ] as const;
+    for (const [id, title, level, track, slot] of problems) {
+      await db
+        .prepare(
+          `INSERT OR REPLACE INTO coding_problems
+             (id, source_url, display_title, level, track, tags, position, active, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, '[]', ?, 1, ?, ?)`,
+        )
+        .bind(
+          id,
+          `https://school.programmers.co.kr/learn/courses/30/lessons/${slot}`,
+          title,
+          level,
+          track,
+          slot,
+          timestamp,
+          timestamp,
+        )
+        .run();
+      await db
+        .prepare(
+          `INSERT INTO daily_challenges (id, kst_date, level_slot, problem_id, created_at)
+           VALUES (?, ?, ?, ?, ?)`,
+        )
+        .bind(`challenge-${id}`, today, slot, id, timestamp)
+        .run();
+    }
+
+    const missingConfiguration = await call('/api/v1/internal/slack-digest', {}, {}, {});
+    expect(missingConfiguration.response.status).toBe(503);
+    expect(missingConfiguration.body).toMatchObject({ code: 'DIGEST_AUTH_NOT_CONFIGURED' });
+
+    const unauthorized = await call(
+      '/api/v1/internal/slack-digest',
+      { headers: { authorization: 'Bearer wrong-token' } },
+      {},
+      { DIGEST_API_TOKEN: token },
+    );
+    expect(unauthorized.response.status).toBe(401);
+    expect(unauthorized.body).toMatchObject({ code: 'DIGEST_UNAUTHORIZED' });
+
+    const digest = await call(
+      '/api/v1/internal/slack-digest',
+      { headers: { authorization: `Bearer ${token}` } },
+      {},
+      { DIGEST_API_TOKEN: token },
+    );
+    expect(digest.response.status).toBe(200);
+    expect(digest.body).toMatchObject({
+      date: today,
+      siteUrl: 'https://careerground.example/',
+      challenges: [
+        { title: '알고리즘 1', track: 'ALGORITHM', level: 1 },
+        { title: '알고리즘 2', track: 'ALGORITHM', level: 2 },
+        { title: 'SQL 4', track: 'SQL', level: 4 },
+      ],
+      jobs: [
+        {
+          company: '알림 대상 회사',
+          title: '신입 백엔드 개발자',
+          sourceName: '공식 채용',
+          sourceUrl: 'https://example.test/jobs/digest-included',
+        },
+      ],
+    });
   });
 
   it('rate limits each user and normalized route with Retry-After', async () => {

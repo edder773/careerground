@@ -41,6 +41,7 @@ type D1Env = {
   DB: D1Database;
   ADMIN_EMAILS?: string;
   AUTH_TEST_MODE?: string;
+  DIGEST_API_TOKEN?: string;
   GOOGLE_CLIENT_ID?: string;
   MAX_ACTIVE_USERS?: string;
   RATE_LIMIT_READS_PER_MINUTE?: string;
@@ -865,6 +866,38 @@ const kstDate = () =>
     day: '2-digit',
   }).format(new Date());
 
+const kstDayBounds = (date: string) => {
+  const start = new Date(`${date}T00:00:00+09:00`);
+  const end = new Date(start.getTime() + 86_400_000);
+  return { start: start.toISOString(), end: end.toISOString() };
+};
+
+async function secureTokenMatch(actual: string, expected: string) {
+  const [actualHash, expectedHash] = await Promise.all([sha256(actual), sha256(expected)]);
+  let difference = actualHash.length ^ expectedHash.length;
+  const length = Math.max(actualHash.length, expectedHash.length);
+  for (let index = 0; index < length; index += 1) {
+    difference |= (actualHash.charCodeAt(index) || 0) ^ (expectedHash.charCodeAt(index) || 0);
+  }
+  return difference === 0;
+}
+
+async function requireDigestToken(request: Request, env: D1Env) {
+  const expected = cleanText(env.DIGEST_API_TOKEN);
+  if (!expected) {
+    throw new RouteError(
+      503,
+      '일일 알림 인증이 구성되지 않았습니다.',
+      'DIGEST_AUTH_NOT_CONFIGURED',
+    );
+  }
+  const authorization = request.headers.get('authorization') || '';
+  const actual = authorization.startsWith('Bearer ') ? authorization.slice(7).trim() : '';
+  if (!actual || !(await secureTokenMatch(actual, expected))) {
+    throw new RouteError(401, '일일 알림 인증에 실패했습니다.', 'DIGEST_UNAUTHORIZED');
+  }
+}
+
 type DailyChallengeRow = {
   id: string;
   problemId: string;
@@ -1045,6 +1078,47 @@ async function dailyChallenge(db: D1Database, userId: string) {
   const challenge = challenges.find((value) => value.levelSlot === 1);
   if (!challenge) throw new RouteError(500, '오늘의 문제를 준비하지 못했습니다.');
   return challenge;
+}
+
+async function slackDigest(db: D1Database, requestUrl: URL) {
+  const today = kstDate();
+  const rows = await dailyChallengeRows(db, '', today);
+  const challenges = await completeDailyChallenges(db, '', today, rows);
+  const { start, end } = kstDayBounds(today);
+  const jobs = await all<{
+    company: string;
+    title: string;
+    deadlineAt: string;
+    sourceName: string;
+    sourceUrl: string;
+  }>(
+    db,
+    `SELECT company_name AS company, title, deadline_at AS deadlineAt,
+            source_name AS sourceName, source_url AS sourceUrl
+       FROM jobs
+      WHERE status = 'ACTIVE'
+        AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
+        AND rolling = 0
+        AND deadline_at IS NOT NULL
+        AND deadline_at > ?
+        AND created_at >= ? AND created_at < ?
+      ORDER BY deadline_at, company_name, title, id`,
+    nowIso(),
+    start,
+    end,
+  );
+  return {
+    date: today,
+    generatedAt: nowIso(),
+    siteUrl: new URL('/', requestUrl).toString(),
+    challenges: challenges.map((challenge) => ({
+      title: challenge.problem.displayTitle,
+      track: challenge.problem.track,
+      level: challenge.problem.level,
+      sourceUrl: challenge.problem.sourceUrl,
+    })),
+    jobs,
+  };
 }
 
 type BatchResult = { results?: Record<string, unknown>[] };
@@ -4197,6 +4271,15 @@ export async function handleD1Api(request: Request, env: D1Env) {
           requestId,
         ),
       );
+    }
+    if (url.pathname === '/api/v1/internal/slack-digest') {
+      if (request.method !== 'GET') {
+        throw new RouteError(405, 'GET 요청만 허용됩니다.', 'METHOD_NOT_ALLOWED', undefined, {
+          allow: 'GET',
+        });
+      }
+      await requireDigestToken(request, env);
+      return finish(responseJson(await slackDigest(env.DB, url), 200, requestId));
     }
     if (request.method === 'POST' && url.pathname === '/api/v1/auth/google') {
       const body = await readJson(request);
