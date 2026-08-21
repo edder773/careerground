@@ -1,0 +1,49 @@
+{
+  "schema": "careerground-slack-digest-lv3-challenge/v1",
+  "generatedAt": "2026-08-21T16:24:48+09:00",
+  "scope": "Slack-only algorithm Lv.3 challenge selection without live delivery",
+  "baseline": {
+    "focusedTests": { "passed": 46, "failed": 0 },
+    "slackChallengeCount": 3,
+    "siteDailyChallengeCount": 3
+  },
+  "structuralComparison": [
+    {
+      "metric": "coding problems in the Slack digest",
+      "before": 3,
+      "after": 4
+    },
+    {
+      "metric": "coding problems on the site daily-challenge API",
+      "before": 3,
+      "after": 3
+    },
+    {
+      "metric": "live Slack posts during validation",
+      "before": 0,
+      "after": 0
+    }
+  ],
+  "verification": {
+    "focusedTests": { "passed": 47, "failed": 0 },
+    "formatCheck": "pass",
+    "lint": "pass",
+    "typecheck": "pass",
+    "unitAndComponentTests": { "passed": 144, "failed": 0 },
+    "e2e": {
+      "passed": 56,
+      "failed": 0,
+      "projects": ["chromium", "chromium-mobile-375", "firefox", "webkit"]
+    },
+    "productionBuild": "pass",
+    "sitesBuild": "pass",
+    "sameDaySelectionStable": true,
+    "siteDailyChallengeUnchanged": true,
+    "deliveryMode": "mocked fetch and local formatter only",
+    "liveWebhookInvoked": false
+  },
+  "limitations": [
+    "No live Slack message was sent because the user explicitly requested implementation without an alert.",
+    "The documentation-site build retains its existing bundle-size warning; the build succeeds."
+  ]
+}
