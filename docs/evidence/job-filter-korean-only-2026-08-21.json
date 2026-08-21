@@ -1,0 +1,51 @@
+{
+  "schema": "careerground-job-filter-korean-only/v1",
+  "generatedAt": "2026-08-21T17:04:35+09:00",
+  "scope": "Korean-only job category filters for the active production catalog",
+  "baseline": {
+    "activeJobRowsInspected": 83,
+    "rawCategoryValues": 40,
+    "mappedCategoryValues": 26,
+    "unmappedEnglishCategoryValues": 14
+  },
+  "structuralComparison": [
+    {
+      "metric": "unmapped English category values",
+      "before": 14,
+      "after": 0
+    },
+    {
+      "metric": "raw category values represented by filters",
+      "before": 40,
+      "after": 40
+    },
+    {
+      "metric": "deduplicated Korean filter options",
+      "before": null,
+      "after": 37
+    }
+  ],
+  "verification": {
+    "formatCheck": "pass",
+    "lint": "pass",
+    "typecheck": "pass",
+    "unitComponentAndRuntimeTests": { "passed": 145, "failed": 0 },
+    "e2e": {
+      "passed": 56,
+      "failed": 0,
+      "projects": ["chromium", "chromium-mobile-375", "firefox", "webkit"]
+    },
+    "productionBuild": "pass",
+    "sitesBuild": "pass",
+    "visualViewports": ["1440x900", "375x812"],
+    "unknownEnglishFallback": "기타 IT 직무"
+  },
+  "screenshots": {
+    "desktop": "docs/assets/troubleshooting/job-filter-korean-only-2026-08-21/after-desktop-1440.png",
+    "mobile": "docs/assets/troubleshooting/job-filter-korean-only-2026-08-21/after-mobile-375.png"
+  },
+  "limitations": [
+    "No latency improvement is claimed because this change only normalizes labels in memory.",
+    "The documentation-site build retains its existing bundle-size warning; the build succeeds."
+  ]
+}
