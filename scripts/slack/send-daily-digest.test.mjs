@@ -47,6 +47,8 @@ describe('daily Slack digest', () => {
     expect(rendered).toContain('<https://careerground.example/|코딩테스트·채용공고 전체 보기 →>');
     expect(rendered).toContain('<https://www.baeumzip.site/|자격증 &amp; SW 전공 테스트 준비 →>');
     expect(rendered).not.toContain('신규 채용 알림 공고');
+    expect(rendered).toContain('🔥 *오늘의 코딩 테스트*');
+    expect(rendered).not.toContain('💼');
     expect(messages).toHaveLength(1);
   });
 
@@ -66,13 +68,13 @@ describe('daily Slack digest', () => {
       '<https://example.com/jobs/40|회사 40 — 신입 백엔드 개발자 채용 40>',
     );
     expect(rendered).not.toContain('원문 보기');
-    expect(rendered).not.toMatch(/🔥|💼/u);
-    expect(rendered).toContain('오늘의 코딩 테스트');
-    expect(rendered).toContain('신규 채용 알림 공고 · 40건');
+    expect(rendered.match(/🔥|💼/gu)).toHaveLength(2);
+    expect(rendered).toContain('🔥 *오늘의 코딩 테스트*');
+    expect(rendered).toContain('💼 *신규 채용 알림 공고 · 40건*');
     expect(rendered).toContain('배움집');
     const blocks = messages[0].blocks;
     const jobsHeadingIndex = blocks.findIndex(
-      (block) => block.type === 'section' && block.text?.text === '*신규 채용 알림 공고 · 40건*',
+      (block) => block.type === 'section' && block.text?.text === '💼 *신규 채용 알림 공고 · 40건*',
     );
     expect(blocks[jobsHeadingIndex - 1]).toEqual({ type: 'divider' });
   });
