@@ -1,0 +1,74 @@
+{
+  "version": "1.0",
+  "asOfDate": "2026-08-21",
+  "timezone": "Asia/Seoul",
+  "recordedAt": "2026-08-21T09:28:35+09:00",
+  "method": "COMPANY_NAME_BACKSTOP",
+  "summary": {
+    "confirmedActiveCandidates": 2,
+    "uncertainCandidates": 2,
+    "excludedCandidates": 2
+  },
+  "companies": [
+    {
+      "companyName": "SK하이닉스",
+      "aliases": ["SK하이닉스", "SK hynix", "하이닉스"],
+      "sourcesChecked": ["SK Careers", "캐치", "공개 채용 보도"],
+      "detailUrls": [
+        "https://www.skcareers.com/Recruit/Detail/R261762",
+        "https://www.catch.co.kr/NCS/RecruitInfoDetails/566857"
+      ],
+      "decision": "ACTIVE_CANDIDATE",
+      "reason": "SK Careers 공식 상세에서 신입, 정규직, IT·System Arch./SW Solution·Solution SW 모집, 활성 지원 버튼과 2026-08-26 17:00 마감을 확인함",
+      "checkedAt": "2026-08-21T09:28:35+09:00"
+    },
+    {
+      "companyName": "한국전력거래소",
+      "aliases": ["한국전력거래소", "전력거래소", "KPX"],
+      "sourcesChecked": ["ALIO", "캐치", "공개 채용 검색"],
+      "detailUrls": [
+        "https://www.catch.co.kr/NCS/RecruitInfoDetails/566163",
+        "https://job.alio.go.kr/recruitview.do?idx=303880"
+      ],
+      "decision": "ACTIVE_CANDIDATE",
+      "reason": "2026년 하반기 일반직 신입 공개채용 상세에서 Software·Systems·Network·AI/AX 직무 및 2026-08-28 10:00 마감을 확인함",
+      "checkedAt": "2026-08-21T09:28:35+09:00"
+    },
+    {
+      "companyName": "한국산업안전보건공단",
+      "aliases": ["한국산업안전보건공단", "안전보건공단", "KOSHA"],
+      "sourcesChecked": ["공식 채용 페이지", "공개 채용 검색"],
+      "detailUrls": ["https://kosha.career.co.kr/"],
+      "decision": "UNCERTAIN",
+      "reason": "현재 채용 일정은 발견했지만 신입 IT 모집 단위와 실제 지원 가능 상태를 상세 공고에서 함께 확정하지 못함",
+      "checkedAt": "2026-08-21T09:20:44+09:00"
+    },
+    {
+      "companyName": "한국원자력환경공단",
+      "aliases": ["한국원자력환경공단", "원자력환경공단", "KORAD"],
+      "sourcesChecked": ["대학 취업게시판", "캐치", "공개 채용 검색"],
+      "detailUrls": ["https://safety.korea.ac.kr/bbs/cdc/526/271779/artclView.do"],
+      "decision": "UNCERTAIN",
+      "reason": "현재 채용 공고는 발견했지만 신입 IT 모집 단위를 현재 상세 근거로 확정하지 못함",
+      "checkedAt": "2026-08-21T09:20:44+09:00"
+    },
+    {
+      "companyName": "HL클레무브",
+      "aliases": ["HL클레무브", "HL Klemove", "클레무브"],
+      "sourcesChecked": ["공개 채용 상세", "공개 채용 검색"],
+      "detailUrls": ["https://www.urjob.kr/jobs/f3507034-cc70-44b8-bc36-0e7135fb9d1f"],
+      "decision": "EXCLUDED",
+      "reason": "확인된 8월 채용 공고의 지원 마감일 2026-08-17이 지났음",
+      "checkedAt": "2026-08-21T09:20:44+09:00"
+    },
+    {
+      "companyName": "BNK시스템",
+      "aliases": ["BNK시스템", "BNK System"],
+      "sourcesChecked": ["공식 채용 공지", "공개 채용 검색"],
+      "detailUrls": [],
+      "decision": "EXCLUDED",
+      "reason": "검색 결과는 현재 공고처럼 보였으나 확인 가능한 공식 채용의 마감일은 2026-07-19로 종료됨",
+      "checkedAt": "2026-08-21T09:20:44+09:00"
+    }
+  ]
+}

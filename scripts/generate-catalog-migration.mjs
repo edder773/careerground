@@ -5,7 +5,7 @@ import { URL } from 'node:url';
 
 const jobsPath = 'data/imports/careerground_job_postings_47.json';
 const problemsPath = 'data/imports/careerground_programmers_problems_427.json';
-const migrationPath = 'drizzle/0003_import_careerground_catalog.sql';
+const migrationPath = 'drizzle-history/0003_import_careerground_catalog.sql';
 const statementBreak = '\n--> statement-breakpoint\n';
 
 const [jobsSource, problemsSource] = await Promise.all([

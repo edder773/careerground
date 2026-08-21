@@ -1,4 +1,5 @@
 import { readdirSync, readFileSync } from 'node:fs';
+import { basename } from 'node:path';
 import { DatabaseSync, type SQLInputValue, type StatementSync } from 'node:sqlite';
 import type { D1Database, D1PreparedStatement, D1Result } from './d1.js';
 
@@ -42,13 +43,22 @@ export class LocalD1 implements D1Database {
   private batchCount = 0;
   preparedSql: string[] = [];
 
-  constructor(filename = ':memory:', migrationsDirectory = 'drizzle') {
+  constructor(
+    filename = ':memory:',
+    migrationsDirectories: string | string[] = ['drizzle-history', 'drizzle'],
+  ) {
     this.sqlite = new DatabaseSync(filename);
     this.sqlite.exec('PRAGMA foreign_keys = ON');
-    const migrations = readdirSync(migrationsDirectory)
-      .filter((file) => /^\d{4}_.+\.sql$/.test(file))
-      .sort()
-      .map((file) => `${migrationsDirectory}/${file}`);
+    const directories = Array.isArray(migrationsDirectories)
+      ? migrationsDirectories
+      : [migrationsDirectories];
+    const migrations = directories
+      .flatMap((directory) =>
+        readdirSync(directory)
+          .filter((file) => /^\d{4}_.+\.sql$/.test(file))
+          .map((file) => `${directory}/${file}`),
+      )
+      .sort((left, right) => basename(left).localeCompare(basename(right)));
     for (const file of migrations) {
       const migration = readFileSync(file, 'utf8');
       for (const statement of migration.split('--> statement-breakpoint')) {

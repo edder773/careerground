@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "asOfDate": "2026-08-21",
+  "reconciledAt": "2026-08-21T09:28:35+09:00",
+  "snapshotMode": "DELTA",
+  "scope": "ADDITIVE_COMPANY_BACKSTOP",
+  "liveDatabaseBefore": {
+    "jobsRows": 74,
+    "visibleRows": 64,
+    "matchingCandidateUrls": 0
+  },
+  "comparison": {
+    "existingItems": 0,
+    "incomingItems": 2,
+    "matchedItems": 0,
+    "addedItems": 2,
+    "expiredByDeadlineItems": 0,
+    "removedItems": 0,
+    "retainedUnconfirmedItems": 0,
+    "retainedExistingRollingItems": 0,
+    "storedItemsAfter": 2,
+    "visibleItemsAfter": 2
+  },
+  "deactivations": [],
+  "removals": [],
+  "retentionVerification": [],
+  "rollingVerification": []
+}

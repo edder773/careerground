@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const migrationPattern = /^(\d{4})_.+\.sql$/;
-const productionMigrationFloor = 17;
+const productionMigrationFloor = 25;
 
 async function directoryIsEmpty(path: string) {
   try {

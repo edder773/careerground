@@ -1,0 +1,771 @@
+{
+  "version": "1.0",
+  "asOfDate": "2026-08-21",
+  "timezone": "Asia/Seoul",
+  "reconciledAt": "2026-08-21T06:11:28+09:00",
+  "snapshotMode": "FULL_REVALIDATION",
+  "comparison": {
+    "existingItems": 60,
+    "incomingItems": 16,
+    "matchedItems": 9,
+    "addedItems": 7,
+    "expiredByDeadlineItems": 1,
+    "removedItems": 2,
+    "retainedUnconfirmedItems": 48,
+    "retainedExistingRollingItems": 11,
+    "storedItemsAfter": 67,
+    "visibleItemsAfter": 64
+  },
+  "policy": {
+    "incoming": "현재 원문 또는 현재 상세 목록에서 지원 가능·신입 조건을 확인한 공고만 upsert한다.",
+    "missing": "접근 실패만으로 기존 공고를 제거하지 않고, 비상시 공고는 retentionVerification, 상시 공고는 rollingVerification으로 유지한다.",
+    "deadline": "비상시 공고의 명시 마감일이 기준 시각보다 과거일 때만 EXPIRED로 전환한다.",
+    "removal": "원본에서 지원 마감 또는 신입 IT 지원 불가가 명확한 경우에만 REMOVED로 전환한다."
+  },
+  "collection": {
+    "startedAt": "2026-08-21T06:02:46+09:00",
+    "finishedAt": "2026-08-21T06:08:35+09:00",
+    "secondVerificationFinishedAt": "2026-08-21T06:11:28+09:00"
+  },
+  "concentrationReview": {
+    "thresholdPercent": 30,
+    "dominantSource": "JobKorea",
+    "visibleBaselineSharePercent": 51.7,
+    "conclusion": "15개 출처의 키워드와 후보를 재탐색했으며, 검증 가능한 신규 공고는 Wanted와 Saramin에서 추가했다. 출처 편중 자체를 이유로 기존 유효 공고를 제거하지 않았다."
+  },
+  "deactivations": [
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49620106",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49620106",
+      "deadlineAt": "2026-08-20T14:59:59.000Z",
+      "status": "EXPIRED",
+      "reason": "DEADLINE_PASSED"
+    }
+  ],
+  "removals": [
+    {
+      "sourceName": "자소설닷컴",
+      "sourceId": "104762",
+      "sourceUrl": "https://jasoseol.com/recruit/104762",
+      "status": "REMOVED",
+      "reason": "APPLICATION_CLOSED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "현재 상세 페이지가 2026년 12월 31일 표기와 별개로 모집 직무 모두에 '지원 마감'을 명시하여 실제 지원 불가를 확인했다."
+    },
+    {
+      "sourceName": "자소설닷컴",
+      "sourceId": "105547",
+      "sourceUrl": "https://jasoseol.com/recruit/105547",
+      "status": "REMOVED",
+      "reason": "NOT_ELIGIBLE",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "현재 상세에서 신입 IT 직무는 확인되지 않았고, SW개발은 경력 직무로 표시되며 지원 가능한 신입 IT 트랙이 없어 대상 기준을 충족하지 않는다."
+    }
+  ],
+  "retentionVerification": [
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "159145",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/159145",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-08-22T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49730137",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49730137",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-10-05T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49749780",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49749780",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-09T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49757336",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49757336",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-10T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49781983",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49781983",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-12T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49757173",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49757173",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-10T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "한국예탁결제원 채용",
+      "sourceId": null,
+      "sourceUrl": "https://ksd-recruit.co.kr/",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-01T00:00:00.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49803832",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49803832",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-17T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "KCC Careers",
+      "sourceId": "14192",
+      "sourceUrl": "https://recruit.kccworld.co.kr/recruit/recruitMain?SEQ=14192&SiteType=A",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-08-30T05:59:00.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49761888",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49761888",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-08-25T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "Superookie",
+      "sourceId": "6a7d25abaf923602db79ab82",
+      "sourceUrl": "https://www.superookie.com/jobs/6a7d25abaf923602db79ab82",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-08-23T14:59:00.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "159184",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/159184",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-19T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49660820",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49660820",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-08-26T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49763378",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/49763378",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-08-31T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49722786",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49722786",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-04T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "158834",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/158834",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-14T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49716794",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49716794",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-03T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49783772",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49783772",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-13T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "159157",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/159157",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-01T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "159008",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/159008",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-01T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49760249",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/49760249",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-30T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "158841",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/158841",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2027-01-01T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "NAVER Careers",
+      "sourceId": "30005300",
+      "sourceUrl": "https://recruit.navercorp.com/rcrt/view.do?annoId=30005300",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-08-27T01:00:00.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49716823",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49716823",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-03T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49779691",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49779691",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-12T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49758419",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49758419",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-08-31T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49716925",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49716925",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-04T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49706105",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49706105",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-08-21T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49658565",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49658565",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-08-26T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "159144",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/159144",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-11-06T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49724108",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49724108",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-04T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49744417",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49744417",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-08T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49576376",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49576376",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-11T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49607918",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49607918",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-18T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49788950",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49788950",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-09-13T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49686653",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49686653",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-08-29T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49787297",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49787297",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 안전 오류로 실패해 종료를 확정할 수 없었다. 기존 명시 마감일 2026-08-31T14:59:59.000Z이 기준 시각 이후이므로 운영 행을 변경하지 않고 유지한다."
+    }
+  ],
+  "rollingVerification": [
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49746362",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49746362",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 상태 본문이 충분히 노출되지 않아 상시채용 종료를 확정할 수 없었다. 접근 실패만으로 제거하지 않고 기존 운영 행을 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156011",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156011",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 상태 본문이 충분히 노출되지 않아 상시채용 종료를 확정할 수 없었다. 접근 실패만으로 제거하지 않고 기존 운영 행을 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156469",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156469",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 상태 본문이 충분히 노출되지 않아 상시채용 종료를 확정할 수 없었다. 접근 실패만으로 제거하지 않고 기존 운영 행을 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49749703",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49749703",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 상태 본문이 충분히 노출되지 않아 상시채용 종료를 확정할 수 없었다. 접근 실패만으로 제거하지 않고 기존 운영 행을 유지한다."
+    },
+    {
+      "sourceName": "Coupang Careers",
+      "sourceId": "8121392",
+      "sourceUrl": "https://www.coupang.jobs/en/jobs/8121392/%EC%8B%A0%EC%9E%85%EC%B1%84%EC%9A%A9-back-end-engineer-eats-ads-engineering/",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 상태 본문이 충분히 노출되지 않아 상시채용 종료를 확정할 수 없었다. 접근 실패만으로 제거하지 않고 기존 운영 행을 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49649110",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49649110",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 상태 본문이 충분히 노출되지 않아 상시채용 종료를 확정할 수 없었다. 접근 실패만으로 제거하지 않고 기존 운영 행을 유지한다."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49748610",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49748610",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 상태 본문이 충분히 노출되지 않아 상시채용 종료를 확정할 수 없었다. 접근 실패만으로 제거하지 않고 기존 운영 행을 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156007",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156007",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 상태 본문이 충분히 노출되지 않아 상시채용 종료를 확정할 수 없었다. 접근 실패만으로 제거하지 않고 기존 운영 행을 유지한다."
+    },
+    {
+      "sourceName": "Dreamus Company Careers",
+      "sourceId": "227074",
+      "sourceUrl": "https://recruit.dreamuscompany.com/pages/careers_view.jsp?id=227074&jobName=All&title=",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 상태 본문이 충분히 노출되지 않아 상시채용 종료를 확정할 수 없었다. 접근 실패만으로 제거하지 않고 기존 운영 행을 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "157706",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/157706",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 상태 본문이 충분히 노출되지 않아 상시채용 종료를 확정할 수 없었다. 접근 실패만으로 제거하지 않고 기존 운영 행을 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "158917",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/158917",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-21T06:11:28+09:00",
+      "evidence": "원본 상세 접근이 차단되거나 상태 본문이 충분히 노출되지 않아 상시채용 종료를 확정할 수 없었다. 접근 실패만으로 제거하지 않고 기존 운영 행을 유지한다."
+    }
+  ],
+  "sourceInvestigations": [
+    {
+      "source": "자소설닷컴",
+      "searchStartedAt": "2026-08-21T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-21T06:08:35+09:00",
+      "keywords": ["신입 개발", "인턴 IT", "경력무관 데이터"],
+      "pagesChecked": 4,
+      "candidateCount": 2,
+      "detailChecked": 2,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 0,
+      "careerOnlyExcluded": 1,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 0,
+      "exhaustionStatus": "COMPLETED",
+      "limitationReason": null
+    },
+    {
+      "source": "사람인",
+      "searchStartedAt": "2026-08-21T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-21T06:11:28+09:00",
+      "keywords": ["신입 개발자", "IT 데이터", "인턴"],
+      "pagesChecked": 6,
+      "candidateCount": 4,
+      "detailChecked": 4,
+      "verifiedActive": 4,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 0,
+      "exhaustionStatus": "COMPLETED",
+      "limitationReason": null
+    },
+    {
+      "source": "잡코리아",
+      "searchStartedAt": "2026-08-21T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-21T06:08:35+09:00",
+      "keywords": ["신입 개발자", "IT 신입", "경력무관"],
+      "pagesChecked": 32,
+      "candidateCount": 31,
+      "detailChecked": 31,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 30,
+      "expired": 1,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 31,
+      "exhaustionStatus": "LIMITED",
+      "limitationReason": "모바일 상세 URL이 안전 오류로 열리지 않아 미래 마감일 공고는 유지 보류 처리했다."
+    },
+    {
+      "source": "원티드",
+      "searchStartedAt": "2026-08-21T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-21T06:11:28+09:00",
+      "keywords": ["신입 개발", "인턴 로봇", "Android 인턴"],
+      "pagesChecked": 6,
+      "candidateCount": 5,
+      "detailChecked": 5,
+      "verifiedActive": 5,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 1,
+      "exhaustionStatus": "COMPLETED",
+      "limitationReason": "한 기존 공고의 2차 요청에서 403이 발생했으나 같은 실행의 1차 상세에서 상시채용과 신입 조건을 확인했다."
+    },
+    {
+      "source": "점핏",
+      "searchStartedAt": "2026-08-21T06:05:00+09:00",
+      "searchFinishedAt": "2026-08-21T06:08:35+09:00",
+      "keywords": ["신입 개발자", "백엔드 신입"],
+      "pagesChecked": 3,
+      "candidateCount": 2,
+      "detailChecked": 2,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 1,
+      "expired": 1,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 1,
+      "accessFailure": 1,
+      "exhaustionStatus": "LIMITED",
+      "limitationReason": "신규 클라우드 엔지니어 상세가 열리지 않아 지원 버튼을 검증하지 못했다."
+    },
+    {
+      "source": "인디스워크",
+      "searchStartedAt": "2026-08-21T06:05:00+09:00",
+      "searchFinishedAt": "2026-08-21T06:08:35+09:00",
+      "keywords": ["신입 IT", "개발 인턴", "데이터 인턴"],
+      "pagesChecked": 4,
+      "candidateCount": 6,
+      "detailChecked": 0,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 6,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 6,
+      "exhaustionStatus": "LIMITED",
+      "limitationReason": "목록에서 후보 제목은 확인했으나 개별 상세 URL과 현재 지원 상태를 추출하지 못했다."
+    },
+    {
+      "source": "링커리어",
+      "searchStartedAt": "2026-08-21T06:05:00+09:00",
+      "searchFinishedAt": "2026-08-21T06:08:35+09:00",
+      "keywords": ["개발자 인턴", "AI 인턴"],
+      "pagesChecked": 3,
+      "candidateCount": 2,
+      "detailChecked": 2,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 2,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 0,
+      "exhaustionStatus": "COMPLETED",
+      "limitationReason": null
+    },
+    {
+      "source": "캐치",
+      "searchStartedAt": "2026-08-21T06:05:00+09:00",
+      "searchFinishedAt": "2026-08-21T06:08:35+09:00",
+      "keywords": ["신입 개발", "AI 경력무관"],
+      "pagesChecked": 4,
+      "candidateCount": 2,
+      "detailChecked": 2,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 1,
+      "expired": 1,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 1,
+      "exhaustionStatus": "LIMITED",
+      "limitationReason": "솔트룩스 회사 페이지는 신규 공고 존재만 표시하고 정확한 공고 링크·지원 상태를 노출하지 않았다."
+    },
+    {
+      "source": "리멤버 커리어",
+      "searchStartedAt": "2026-08-21T06:05:00+09:00",
+      "searchFinishedAt": "2026-08-21T06:08:35+09:00",
+      "keywords": ["신입 개발", "IT 인턴"],
+      "pagesChecked": 1,
+      "candidateCount": 0,
+      "detailChecked": 0,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 1,
+      "exhaustionStatus": "LIMITED",
+      "limitationReason": "검색 색인에서 검증 가능한 공개 후보를 반환하지 않았다."
+    },
+    {
+      "source": "로켓펀치",
+      "searchStartedAt": "2026-08-21T06:05:00+09:00",
+      "searchFinishedAt": "2026-08-21T06:11:28+09:00",
+      "keywords": ["신입 개발", "인턴 AI", "상시채용"],
+      "pagesChecked": 20,
+      "candidateCount": 19,
+      "detailChecked": 19,
+      "verifiedActive": 7,
+      "deadlineUnknown": 0,
+      "needsReview": 12,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 12,
+      "exhaustionStatus": "LIMITED",
+      "limitationReason": "일부 상세는 제목만 반환하거나 안전 오류가 발생해 지원 상태를 재확정하지 못했다."
+    },
+    {
+      "source": "고용24",
+      "searchStartedAt": "2026-08-21T06:05:00+09:00",
+      "searchFinishedAt": "2026-08-21T06:08:35+09:00",
+      "keywords": ["신입 AI 개발", "소프트웨어 신입"],
+      "pagesChecked": 3,
+      "candidateCount": 1,
+      "detailChecked": 1,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 1,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 1,
+      "exhaustionStatus": "LIMITED",
+      "limitationReason": "상세 본문이 한 줄로 제한되어 회사·마감·지원 버튼을 함께 검증하지 못했다."
+    },
+    {
+      "source": "LinkedIn Korea",
+      "searchStartedAt": "2026-08-21T06:05:00+09:00",
+      "searchFinishedAt": "2026-08-21T06:08:35+09:00",
+      "keywords": ["AI intern Korea", "software intern Korea"],
+      "pagesChecked": 3,
+      "candidateCount": 2,
+      "detailChecked": 1,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 1,
+      "expired": 1,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 1,
+      "exhaustionStatus": "LIMITED",
+      "limitationReason": "검색 목록 다수는 경력 요건 또는 마감 상태를 상세에서 확정할 수 없었다."
+    },
+    {
+      "source": "슈퍼루키",
+      "searchStartedAt": "2026-08-21T06:05:00+09:00",
+      "searchFinishedAt": "2026-08-21T06:08:35+09:00",
+      "keywords": ["개발 인턴", "신입 IT"],
+      "pagesChecked": 2,
+      "candidateCount": 1,
+      "detailChecked": 1,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 1,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 0,
+      "exhaustionStatus": "COMPLETED",
+      "limitationReason": null
+    },
+    {
+      "source": "커리어",
+      "searchStartedAt": "2026-08-21T06:05:00+09:00",
+      "searchFinishedAt": "2026-08-21T06:08:35+09:00",
+      "keywords": ["신입 개발", "채용연계형 IT"],
+      "pagesChecked": 3,
+      "candidateCount": 1,
+      "detailChecked": 0,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 1,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 1,
+      "exhaustionStatus": "LIMITED",
+      "limitationReason": "목록의 날짜와 상세 링크가 일치하지 않아 현재 지원 가능 여부를 확정하지 못했다."
+    },
+    {
+      "source": "인크루트",
+      "searchStartedAt": "2026-08-21T06:05:00+09:00",
+      "searchFinishedAt": "2026-08-21T06:08:35+09:00",
+      "keywords": ["신입 IT", "개발 인턴", "데이터 인턴"],
+      "pagesChecked": 4,
+      "candidateCount": 3,
+      "detailChecked": 0,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 3,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 3,
+      "exhaustionStatus": "LIMITED",
+      "limitationReason": "목록에서 후보는 확인했으나 정확한 원본 상세 URL과 지원 버튼 상태를 재검증하지 못했다."
+    }
+  ]
+}
