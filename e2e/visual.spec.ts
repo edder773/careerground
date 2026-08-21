@@ -98,6 +98,14 @@ test('captures core domain screens', async ({ page }) => {
     await expect(page.getByRole('heading', { name: screen.heading, exact: true })).toBeVisible();
     if (screen.name === 'jobs') {
       await expect(page.locator('.job-card').first()).toBeVisible();
+      const companySearch = page.getByRole('searchbox', { name: '회사명 검색' });
+      await expect(companySearch).toBeVisible();
+      await companySearch.fill('NAVER');
+      await expect(page.locator('.job-card').first()).toContainText('NAVER');
+      const companyResults = await page.locator('.job-card').allTextContents();
+      expect(companyResults.length).toBeGreaterThan(0);
+      expect(companyResults.every((value) => value.includes('NAVER'))).toBe(true);
+      await companySearch.fill('');
       await page.getByRole('button', { name: /^채용공고 필터/ }).click();
       const filterDialog = page.getByRole('dialog', { name: '채용공고 전체 필터' });
       await expect(filterDialog).toBeVisible();
@@ -156,7 +164,7 @@ test('captures core domain screens', async ({ page }) => {
       await page.getByRole('button', { name: '달력' }).click();
       await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
       await expect(page.locator('.calendar-job').first()).toBeVisible();
-      await expect(page.locator('.job-calendar-legend')).toContainText('등록일');
+      await expect(page.locator('.job-calendar-legend')).not.toContainText('등록일');
       await expect(page.locator('.job-calendar-legend')).toContainText('접수 시작일');
       await expect(page.getByText('시작·확인일', { exact: true })).toHaveCount(0);
       await page.screenshot({
@@ -223,9 +231,10 @@ test('captures core domain screens', async ({ page }) => {
     fullPage: false,
   });
   await mobileFilter.getByRole('button', { name: '필터 닫기' }).click();
+  await expect(page.getByRole('searchbox', { name: '회사명 검색' })).toBeVisible();
   await page.getByRole('button', { name: '달력' }).click();
   await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
-  await expect(page.locator('.job-calendar-legend')).toContainText('등록일');
+  await expect(page.locator('.job-calendar-legend')).not.toContainText('등록일');
   await expect(page.locator('.job-calendar-legend')).toContainText('접수 시작일');
   await expect(page.getByText('시작·확인일', { exact: true })).toHaveCount(0);
   await page.screenshot({
@@ -285,9 +294,7 @@ test('captures core domain screens', async ({ page }) => {
   });
 });
 
-test('keeps registration and application start labels separate on desktop and mobile', async ({
-  page,
-}) => {
+test('keeps registration out of the calendar on desktop and mobile', async ({ page }) => {
   await mkdir('test-results/visual', { recursive: true });
   await login(page, 'calendar-label@careerground.local');
 
@@ -297,9 +304,10 @@ test('keeps registration and application start labels separate on desktop and mo
   ]) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto('/jobs');
+    await expect(page.getByRole('searchbox', { name: '회사명 검색' })).toBeVisible();
     await page.getByRole('button', { name: '달력' }).click();
     await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
-    await expect(page.locator('.job-calendar-legend')).toContainText('등록일');
+    await expect(page.locator('.job-calendar-legend')).not.toContainText('등록일');
     await expect(page.locator('.job-calendar-legend')).toContainText('접수 시작일');
     await expect(page.getByText('시작·확인일', { exact: true })).toHaveCount(0);
     await page.screenshot({

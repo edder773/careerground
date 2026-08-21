@@ -1,6 +1,6 @@
 # Slack 일일 요약 운영
 
-CareerGround는 GitHub Actions에서 매일 오전 7시(Asia/Seoul)에 운영 Sites API를 조회하고 Slack Incoming Webhook으로 요약을 전송한다. 실행 장비가 GitHub이므로 개인 Mac이 꺼져 있어도 동작한다.
+CareerGround는 GitHub Actions에서 평일 오전 8시(Asia/Seoul, 대한민국 공휴일 제외)에 운영 Sites API를 조회하고 Slack Incoming Webhook으로 요약을 전송한다. 실행 장비가 GitHub이므로 개인 Mac이 꺼져 있어도 동작한다.
 
 ## 전송 내용
 
@@ -8,7 +8,9 @@ CareerGround는 GitHub Actions에서 매일 오전 7시(Asia/Seoul)에 운영 Si
 - 해당 KST 날짜에 CareerGround에 처음 등록된, 마감일이 명확한 신입 채용공고 전체
 - 상시채용, 마감 공고, 경력직 전용 공고는 제외
 - 신규 공고가 0개면 채용 섹션 자체를 생략
-- Slack 한 메시지 제한에 여유를 두고 3,800자 단위로 분할하되 공고를 누락하지 않음
+- 최상단에 `YYYY년 M월 D일 기준 새로운 알림`을 표시
+- 코딩테스트와 채용공고는 한 메시지 안에서 구분선으로 분리
+- Slack 섹션 제한에 여유를 두고 긴 채용 목록만 내부 섹션으로 나누되 공고를 누락하지 않음
 
 신규 여부는 수집 시각이 아니라 `created_at`을 사용한다. 기존 공고를 다시 수집해 `collected_at`이 갱신되더라도 신규 알림으로 재전송하지 않기 위해서다.
 

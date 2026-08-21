@@ -1087,7 +1087,12 @@ describe('Sites D1 API', () => {
     expect(imported.response.status).toBe(200);
 
     const learning = await call('/api/v1/learning');
-    const source = (learning.body as unknown as Array<{ units: Array<{ id: string }> }>)[0];
+    const source = (
+      learning.body as unknown as Array<{
+        title: string;
+        units: Array<{ id: string; summaryPreview: string }>;
+      }>
+    ).find((item) => item.title === payload.source.title)!;
     expect(source.units.length).toBeGreaterThan(0);
     expect(source.units[0]).toMatchObject({
       summaryPreview: 'List<String>과 a < b를 그대로 학습합니다.',
@@ -1364,6 +1369,16 @@ describe('Sites D1 API', () => {
         '데이터 분석 기초: 변수에서 가설검정까지',
         '데이터 관계 읽기: 상관과 회귀',
         '개발 입문: Git, 환경 구성, AI 코딩',
+        '컨테이너 이해와 애플리케이션 컨테이너화',
+        'Spring AI 이해와 활용',
+        '스마트 데이터 이해와 활용',
+        'Vue.js 프런트엔드 프레임워크',
+        'REST API와 Spring Boot 백엔드 개발',
+        'Java 백엔드 프로그래밍 기초',
+        '데이터 분석을 위한 Python 이해',
+        'HTML·CSS·JavaScript 웹 개발 기초',
+        'LLM과 Transformer 아키텍처 I',
+        'LLM과 Transformer 아키텍처 II',
       ]),
     );
     expect(memberLearning.body).toEqual(adminLearning.body);
@@ -1372,7 +1387,7 @@ describe('Sites D1 API', () => {
         units: Array<{ id: string }>;
       }>
     ).flatMap((source) => source.units);
-    expect(units).toHaveLength(23);
+    expect(units).toHaveLength(102);
     const details = [];
     for (const unit of units) {
       details.push(await call(`/api/v1/learning/units/${unit.id}`, {}, memberHeaders));

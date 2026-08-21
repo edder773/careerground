@@ -37,6 +37,7 @@ generatedByAI: false
 | 08-20 | [채용 catalog 증분 대조와 복수 필터 상태 안정화](./2026-08-20-job-catalog-reconciliation-and-filter-state.md) | 이번 변경      | 16개 추가, 7개 만료, URL 상태 단일화      |
 | 08-20 | [직무 필터·알림 동작·개인 워크스페이스 단순화](./2026-08-20-favorites-filter-and-notification-ux.md)          | #41            | 직무 한글화, bootstrap 6→5, 즐겨찾기 통합 |
 | 08-20 | [매일 Slack 코딩·채용 요약 자동화](./2026-08-20-daily-slack-digest.md)                                        | 이번 변경      | 보호 API, 07:00 KST, 136 unit·56 E2E      |
+| 08-21 | [채용 달력 날짜 중복·회사 검색·Slack 요약 단일화](./2026-08-21-job-calendar-search-and-slack-digest.md)       | 이번 변경      | 등록일 event 0, webhook 2→1, 08:00 KST    |
 
 Dependabot PR #4는 pnpm 11/Node 24를 지원하는 `pnpm/action-setup@6` 갱신이며 별도 장애가 없어 Sites runtime 문서의 도구 체인 맥락에 포함했다. PR #3 이전의 닫힌 #1/#2는 구현이 병합되지 않았으므로 운영 변경 기록에 포함하지 않았다.
 

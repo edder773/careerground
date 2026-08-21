@@ -44,17 +44,36 @@ describe('domain pages', () => {
         source: { name: '로켓펀치' },
         savedBy: [],
       },
+      {
+        id: 'job-2',
+        title: 'Frontend Engineer',
+        category: 'FRONTEND',
+        region: '판교',
+        remote: false,
+        techStack: ['TypeScript'],
+        rolling: true,
+        summary: '웹 서비스 개발',
+        sourceUrl: 'https://example.test/jobs/2',
+        company: { name: '다른회사', size: 'LARGE' },
+        source: { name: '회사 채용 홈페이지' },
+        savedBy: [],
+      },
     ];
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
         calls.push({ url, method: init?.method || 'GET' });
-        return jobBootstrap(catalog, ['BACKEND']);
+        return jobBootstrap(catalog, ['BACKEND', 'FRONTEND']);
       }),
     );
     const user = userEvent.setup();
     renderPage(<JobsPage />);
+    const companySearch = await screen.findByRole('searchbox', { name: '회사명 검색' });
+    await user.type(companySearch, 'Hudson');
+    expect(await screen.findByText('1개 공고')).toBeInTheDocument();
+    await user.clear(companySearch);
+    expect(await screen.findByText('2개 공고')).toBeInTheDocument();
     await user.type(await screen.findByRole('searchbox', { name: '공고 검색' }), 'backend');
     await user.click(await screen.findByRole('button', { name: '채용공고 필터' }));
     const filter = screen.getByRole('dialog', { name: '채용공고 전체 필터' });
@@ -137,14 +156,14 @@ describe('domain pages', () => {
 
     await user.click(screen.getByRole('button', { name: '달력' }));
     const legend = await screen.findByLabelText('일정 색상 안내');
-    expect(within(legend).getByText('등록일')).toBeInTheDocument();
+    expect(within(legend).queryByText('등록일')).not.toBeInTheDocument();
     expect(within(legend).getByText('접수 시작일')).toBeInTheDocument();
     expect(screen.queryByText('시작·확인일')).not.toBeInTheDocument();
     expect(within(legend).getByText('마감일')).toBeInTheDocument();
     expect(within(legend).getByText('상시')).toBeInTheDocument();
     await user.click(
       await screen.findByRole('button', {
-        name: '캘린더테크 신입 플랫폼 엔지니어 등록일 상세 보기',
+        name: '캘린더테크 신입 플랫폼 엔지니어 접수 시작일 상세 보기',
       }),
     );
     const dialog = screen.getByRole('dialog', { name: '캘린더테크' });

@@ -24,6 +24,20 @@ const deadlineLabel = (value) => {
   }).format(date);
 };
 
+const digestDateLabel = (value) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value))) {
+    throw new Error('알림 기준일이 올바르지 않습니다.');
+  }
+  const date = new Date(`${value}T00:00:00+09:00`);
+  if (Number.isNaN(date.getTime())) throw new Error('알림 기준일이 올바르지 않습니다.');
+  return new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(date);
+};
+
 const challengeText = (challenge) => {
   const track = challenge.track === 'SQL' ? 'SQL' : '알고리즘';
   return [
@@ -77,35 +91,40 @@ const serviceLinks = ({ careergroundUrl, baeumzipUrl }) => ({
   ],
 });
 
-const buildChallengeMessage = ({ challenges }) => ({
-  text: '오늘의 코딩 테스트',
-  blocks: [
+const buildDigestMessage = ({ date, siteUrl, challenges, jobs }, { baeumzipUrl }) => {
+  const dateLabel = digestDateLabel(date);
+  const blocks = [
     {
       type: 'header',
-      text: { type: 'plain_text', text: '🔥 오늘의 코딩 테스트', emoji: true },
+      text: { type: 'plain_text', text: `${dateLabel} 기준 새로운 알림`, emoji: true },
     },
-    { type: 'divider' },
+    section('*오늘의 코딩 테스트*'),
     ...challenges.map((challenge) => section(challengeText(challenge))),
-  ],
-});
+  ];
 
-const buildJobsMessage = ({ jobs }) => ({
-  text: `신규 채용 알림 ${jobs.length}건`,
-  blocks: [
-    {
-      type: 'header',
-      text: { type: 'plain_text', text: '💼 신규 채용 알림', emoji: true },
-    },
-    {
-      type: 'context',
-      elements: [
-        { type: 'mrkdwn', text: `새롭게 등록된 마감일 확정 공고 *${jobs.length}개*입니다.` },
-      ],
-    },
-    { type: 'divider' },
-    ...packSectionText(jobs.map(jobText)).map(section),
-  ],
-});
+  if (jobs.length > 0) {
+    blocks.push(
+      { type: 'divider' },
+      section(`*신규 채용 알림 공고 · ${jobs.length}건*`),
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'mrkdwn',
+            text: `${dateLabel}에 새롭게 등록된 마감일 확정 공고입니다.`,
+          },
+        ],
+      },
+      ...packSectionText(jobs.map(jobText)).map(section),
+    );
+  }
+
+  blocks.push({ type: 'divider' }, serviceLinks({ careergroundUrl: siteUrl, baeumzipUrl }));
+  return {
+    text: `${dateLabel} 기준 CareerGround 새 알림`,
+    blocks,
+  };
+};
 
 const validateDigestPayload = (payload) => {
   if (!payload || !Array.isArray(payload.challenges) || !Array.isArray(payload.jobs)) {
@@ -118,17 +137,7 @@ const validateDigestPayload = (payload) => {
 
 export function formatSlackMessages(payload, { baeumzipUrl }) {
   validateDigestPayload(payload);
-  const messages = [
-    buildChallengeMessage(payload),
-    ...(payload.jobs.length > 0 ? [buildJobsMessage(payload)] : []),
-  ];
-  messages
-    .at(-1)
-    .blocks.push(
-      { type: 'divider' },
-      serviceLinks({ careergroundUrl: payload.siteUrl, baeumzipUrl }),
-    );
-  return messages;
+  return [buildDigestMessage(payload, { baeumzipUrl })];
 }
 
 const forceSendEnabled = (value) => ['1', 'true'].includes(String(value).toLowerCase());
