@@ -43,7 +43,7 @@ type Job = {
 type ViewMode = 'calendar' | 'list';
 type SortMode = 'new' | 'deadline' | 'company';
 type JobFontSize = 'comfortable' | 'large' | 'largest';
-type CalendarEventType = 'published' | 'application' | 'deadline' | 'rolling';
+type CalendarEventType = 'application' | 'deadline' | 'rolling';
 type CalendarEvent = { job: Job; type: CalendarEventType };
 type JobBootstrapPayload = {
   unreadCount: number;
@@ -110,7 +110,6 @@ const applicationLabels: Record<string, string> = {
 };
 const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
 const calendarEventLabels: Record<CalendarEventType, string> = {
-  published: '등록일',
   application: '접수 시작일',
   deadline: '마감일',
   rolling: '상시',
@@ -229,7 +228,7 @@ const compareJobs = (mode: SortMode) => (left: Job, right: Job) => {
 
 const fallsWithinCalendar = (job: Job, from: number, to: number) => {
   if (job.rolling) return true;
-  return [job.publishedAt, job.applicationStartAt, job.deadlineAt].some((value) => {
+  return [job.applicationStartAt, job.deadlineAt].some((value) => {
     if (!value) return false;
     const timestamp = Date.parse(value);
     return timestamp >= from && timestamp < to;
@@ -652,6 +651,8 @@ export function JobsPage() {
   const [memoDrafts, setMemoDrafts] = useState<Record<string, string>>({});
   const search = searchParams.get('q') || '';
   const [searchInput, setSearchInput] = useState(search);
+  const companySearch = searchParams.get('company') || '';
+  const [companySearchInput, setCompanySearchInput] = useState(companySearch);
   const rawSavedFilter = searchParams.get('saved');
   const savedOnly = rawSavedFilter === '1' || rawSavedFilter === 'true';
   const requestedJob = searchParams.get('job');
@@ -704,6 +705,15 @@ export function JobsPage() {
     }, 350);
     return () => window.clearTimeout(timer);
   }, [search, searchInput, setUrlParam]);
+  useEffect(() => setCompanySearchInput(companySearch), [companySearch]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (companySearchInput !== companySearch) {
+        setUrlParam('company', companySearchInput.trim());
+      }
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [companySearch, companySearchInput, setUrlParam]);
 
   const bounds = monthBounds(visibleMonth);
   const catalogQuery = useQuery({
@@ -730,15 +740,25 @@ export function JobsPage() {
     const sizes = new Set(companySizes);
     const selected = new Set(selectedCategories);
     const terms = search.normalize('NFKC').toLocaleLowerCase('ko-KR').split(/\s+/).filter(Boolean);
+    const companyTerms = companySearch
+      .normalize('NFKC')
+      .toLocaleLowerCase('ko-KR')
+      .split(/\s+/)
+      .filter(Boolean);
     return catalog
       .filter((job) => !sizes.size || sizes.has(job.company.size))
       .filter((job) => !selected.size || selected.has(categoryLabel(job.category)))
       .filter((job) => !savedOnly || job.bookmarked)
+      .filter((job) => {
+        if (!companyTerms.length) return true;
+        const companyName = job.company.name.normalize('NFKC').toLocaleLowerCase('ko-KR');
+        return companyTerms.every((term) => companyName.includes(term));
+      })
       .filter(
         (job) => !terms.length || terms.every((term) => searchableJobText(job).includes(term)),
       )
       .sort(compareJobs(sort));
-  }, [catalog, companySizes, savedOnly, search, selectedCategories, sort]);
+  }, [catalog, companySearch, companySizes, savedOnly, search, selectedCategories, sort]);
   const calendarJobs = useMemo(() => {
     const from = Date.parse(bounds.from);
     const to = Date.parse(bounds.to);
@@ -746,7 +766,7 @@ export function JobsPage() {
   }, [bounds.from, bounds.to, filteredJobs]);
   useEffect(
     () => setVisibleCount(JOB_PAGE_SIZE),
-    [companySizes, savedOnly, search, selectedCategories, sort],
+    [companySearch, companySizes, savedOnly, search, selectedCategories, sort],
   );
   const jobRows = viewMode === 'calendar' ? calendarJobs : filteredJobs.slice(0, visibleCount);
   const jobTotal = viewMode === 'calendar' ? calendarJobs.length : filteredJobs.length;
@@ -821,10 +841,6 @@ export function JobsPage() {
       if (job.rolling) {
         rollingJobs.push(job);
         continue;
-      }
-      if (job.publishedAt) {
-        const key = koreaDateKey(job.publishedAt);
-        grouped.set(key, [...(grouped.get(key) || []), { job, type: 'published' }]);
       }
       if (job.applicationStartAt) {
         const key = koreaDateKey(job.applicationStartAt);
@@ -908,7 +924,7 @@ export function JobsPage() {
           </span>
           <h1>신입 IT 채용공고</h1>
           <p>
-            등록일과 접수 시작일을 별도로 표시하며, 확인되지 않은 날짜는 임의로 대체하지 않습니다.
+            달력에는 접수 시작일과 마감일만 표시하며, 확인되지 않은 날짜는 임의로 대체하지 않습니다.
           </p>
         </div>
         <div className="jobs-view-switch" role="group" aria-label="채용공고 보기 방식">
@@ -932,6 +948,15 @@ export function JobsPage() {
       </section>
 
       <div className="filter-bar jobs-filter">
+        <label>
+          회사명 검색
+          <input
+            type="search"
+            value={companySearchInput}
+            onChange={(event) => setCompanySearchInput(event.target.value)}
+            placeholder="예: NAVER, 카카오"
+          />
+        </label>
         {viewMode === 'list' && (
           <>
             <label>
@@ -940,7 +965,7 @@ export function JobsPage() {
                 type="search"
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
-                placeholder="회사, 직무, 기술 스택"
+                placeholder="직무, 기술 스택, 지역"
               />
             </label>
             <label className="check-label">
@@ -1059,7 +1084,6 @@ export function JobsPage() {
             </nav>
           </header>
           <div className="job-calendar-legend" aria-label="일정 색상 안내">
-            <span className="schedule-published">등록일</span>
             <span className="schedule-application">접수 시작일</span>
             <span className="schedule-deadline">마감일</span>
             <span className="schedule-rolling">상시</span>
@@ -1178,7 +1202,7 @@ export function JobsPage() {
           if (!open) setExpandedDateKey(undefined);
         }}
         title={expandedDateKey ? `${dateLabel(expandedDateKey)} 채용 일정` : '채용 일정'}
-        description={`등록일, 접수 시작일과 마감일을 포함한 ${expandedDateEvents.length}개 일정을 확인하세요.`}
+        description={`접수 시작일과 마감일을 포함한 ${expandedDateEvents.length}개 일정을 확인하세요.`}
         items={expandedDateEvents}
         onSelect={openJob}
       />
