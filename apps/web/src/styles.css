@@ -5848,9 +5848,12 @@ body {
 .multi-filter-check {
   width: 17px;
   height: 17px;
-  display: grid;
+  display: inline-flex;
   flex: 0 0 auto;
-  place-items: center;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 0;
   color: white;
   background: #fff;
   border: 1px solid #cfd4da;
@@ -5863,7 +5866,11 @@ body {
 }
 
 .multi-filter-check svg {
-  width: 11px;
+  width: 12px;
+  height: 12px;
+  display: block;
+  flex: 0 0 12px;
+  margin: 0;
 }
 
 .multi-filter-menu [role='separator'] {

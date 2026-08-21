@@ -576,7 +576,9 @@ function JobFilterPanel({
                         }
                       />
                       <span className="multi-filter-check">
-                        {selectedSizes.has(value) && <Check aria-hidden="true" />}
+                        {selectedSizes.has(value) && (
+                          <Check size={12} strokeWidth={3} aria-hidden="true" />
+                        )}
                       </span>
                       <span>{label}</span>
                     </label>
@@ -596,7 +598,9 @@ function JobFilterPanel({
                         }
                       />
                       <span className="multi-filter-check">
-                        {selectedJobs.has(value) && <Check aria-hidden="true" />}
+                        {selectedJobs.has(value) && (
+                          <Check size={12} strokeWidth={3} aria-hidden="true" />
+                        )}
                       </span>
                       <span>{categoryLabel(value)}</span>
                     </label>
