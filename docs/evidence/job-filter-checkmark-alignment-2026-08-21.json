@@ -1,0 +1,50 @@
+{
+  "schema": "careerground-job-filter-checkmark-alignment/v1",
+  "generatedAt": "2026-08-21T13:38:00+09:00",
+  "scope": "selected job-filter checkmark geometry on desktop and mobile",
+  "baseline": {
+    "chromiumVisual": { "passed": 5, "failed": 0 },
+    "iconHeightExplicit": false,
+    "containerLineHeightExplicit": false,
+    "centerInvariant": false
+  },
+  "structuralComparison": [
+    {
+      "metric": "explicit SVG dimensions",
+      "before": 1,
+      "after": 2
+    },
+    {
+      "metric": "container line height",
+      "before": "inherited",
+      "after": "0px"
+    },
+    {
+      "metric": "maximum allowed center delta per axis",
+      "before": null,
+      "after": "0.5px"
+    }
+  ],
+  "verification": {
+    "formatCheck": "pass",
+    "lint": "pass",
+    "typecheck": "pass",
+    "unitAndComponentTests": { "passed": 143, "failed": 0 },
+    "e2e": {
+      "passed": 56,
+      "failed": 0,
+      "projects": ["chromium", "chromium-mobile-375", "firefox", "webkit"]
+    },
+    "productionBuild": "pass",
+    "sitesBuild": "pass",
+    "performanceBudget": { "status": "pass", "failures": 0 },
+    "visualViewports": ["1440x900", "375x812"]
+  },
+  "screenshots": {
+    "desktop": "docs/assets/troubleshooting/job-filter-checkmark-2026-08-21/after-desktop-1440.webp",
+    "mobile": "docs/assets/troubleshooting/job-filter-checkmark-2026-08-21/after-mobile-375.webp"
+  },
+  "limitations": [
+    "The pre-change center delta was not captured numerically, so no percentage improvement is claimed."
+  ]
+}

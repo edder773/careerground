@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { login } from './helpers';
 
@@ -18,6 +18,29 @@ async function expectNoSeriousViolations(page: Page) {
       ['critical', 'serious', 'moderate'].includes(item.impact || ''),
     ),
   ).toEqual([]);
+}
+
+async function expectCenteredFilterCheck(checkbox: Locator) {
+  const check = checkbox.locator('..').locator('.multi-filter-check');
+  const metrics = await check.evaluate((element) => {
+    const icon = element.querySelector('svg');
+    if (!icon) return null;
+    const containerBox = element.getBoundingClientRect();
+    const iconBox = icon.getBoundingClientRect();
+    return {
+      centerDeltaX: iconBox.x + iconBox.width / 2 - (containerBox.x + containerBox.width / 2),
+      centerDeltaY: iconBox.y + iconBox.height / 2 - (containerBox.y + containerBox.height / 2),
+      iconWidth: iconBox.width,
+      iconHeight: iconBox.height,
+      lineHeight: getComputedStyle(element).lineHeight,
+    };
+  });
+  expect(metrics).not.toBeNull();
+  expect(Math.abs(metrics!.centerDeltaX)).toBeLessThanOrEqual(0.5);
+  expect(Math.abs(metrics!.centerDeltaY)).toBeLessThanOrEqual(0.5);
+  expect(metrics!.iconWidth).toBe(12);
+  expect(metrics!.iconHeight).toBe(12);
+  expect(metrics!.lineHeight).toBe('0px');
 }
 
 async function mockGoogleIdentityScript(page: Page) {
@@ -114,6 +137,7 @@ test('captures core domain screens', async ({ page }) => {
       await largeCompany.check();
       await filterDialog.getByRole('checkbox', { name: '백엔드', exact: true }).check();
       await expect(largeCompany.locator('..').locator('.multi-filter-check svg')).toBeVisible();
+      await expectCenteredFilterCheck(largeCompany);
       await expect(filterDialog.getByText('BACKEND', { exact: true })).toHaveCount(0);
       await page.waitForTimeout(220);
       await page.screenshot({
@@ -215,6 +239,7 @@ test('captures core domain screens', async ({ page }) => {
   await mobileLargeCompany.check();
   await mobileFilter.getByRole('checkbox', { name: '백엔드', exact: true }).check();
   await expect(mobileLargeCompany.locator('..').locator('.multi-filter-check svg')).toBeVisible();
+  await expectCenteredFilterCheck(mobileLargeCompany);
   await expect(mobileFilter.getByText('BACKEND', { exact: true })).toHaveCount(0);
   await page.waitForTimeout(220);
   expect(await mobileFilter.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(
