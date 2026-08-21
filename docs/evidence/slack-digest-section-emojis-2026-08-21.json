@@ -1,0 +1,46 @@
+{
+  "schema": "careerground-slack-digest-section-emojis/v1",
+  "generatedAt": "2026-08-21T14:38:30+09:00",
+  "scope": "Slack digest section-heading emoji restoration without live delivery",
+  "baseline": {
+    "focusedTests": { "passed": 8, "failed": 0 },
+    "emojiCountWithCodingOnly": 0,
+    "emojiCountWithCodingAndJobs": 0
+  },
+  "structuralComparison": [
+    {
+      "metric": "emoji count in coding-only digest",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "metric": "emoji count in digest with jobs",
+      "before": 0,
+      "after": 2
+    },
+    {
+      "metric": "live Slack posts during validation",
+      "before": 0,
+      "after": 0
+    }
+  ],
+  "verification": {
+    "focusedTests": { "passed": 8, "failed": 0 },
+    "formatCheck": "pass",
+    "lint": "pass",
+    "typecheck": "pass",
+    "unitAndComponentTests": { "passed": 143, "failed": 0 },
+    "e2e": {
+      "passed": 56,
+      "failed": 0,
+      "projects": ["chromium", "chromium-mobile-375", "firefox", "webkit"]
+    },
+    "productionBuild": "pass",
+    "sitesBuild": "pass",
+    "deliveryMode": "mocked fetch only",
+    "liveWebhookInvoked": false
+  },
+  "limitations": [
+    "No live Slack message was sent because the user explicitly requested validation without an alert."
+  ]
+}

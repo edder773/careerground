@@ -98,14 +98,14 @@ const buildDigestMessage = ({ date, siteUrl, challenges, jobs }, { baeumzipUrl }
       type: 'header',
       text: { type: 'plain_text', text: `${dateLabel} 기준 새로운 알림`, emoji: true },
     },
-    section('*오늘의 코딩 테스트*'),
+    section('🔥 *오늘의 코딩 테스트*'),
     ...challenges.map((challenge) => section(challengeText(challenge))),
   ];
 
   if (jobs.length > 0) {
     blocks.push(
       { type: 'divider' },
-      section(`*신규 채용 알림 공고 · ${jobs.length}건*`),
+      section(`💼 *신규 채용 알림 공고 · ${jobs.length}건*`),
       {
         type: 'context',
         elements: [
