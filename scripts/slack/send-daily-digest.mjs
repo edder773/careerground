@@ -1,5 +1,6 @@
 import process from 'node:process';
 import { URL, pathToFileURL } from 'node:url';
+import { getKoreanDispatchDecision } from './korean-business-day.mjs';
 
 const MAX_SECTION_LENGTH = 2_800;
 
@@ -62,12 +63,21 @@ const section = (text) => ({
   text: { type: 'mrkdwn', text },
 });
 
-const footer = (siteUrl, label) => ({
-  type: 'context',
-  elements: [{ type: 'mrkdwn', text: slackUrl(siteUrl, label) }],
+const serviceLinks = ({ careergroundUrl, baeumzipUrl }) => ({
+  type: 'section',
+  fields: [
+    {
+      type: 'mrkdwn',
+      text: `*CareerGround*\n${slackUrl(careergroundUrl, '코딩테스트·채용공고 전체 보기 →')}`,
+    },
+    {
+      type: 'mrkdwn',
+      text: `*배움집*\n${slackUrl(baeumzipUrl, '자격증 & SW 전공 테스트 준비 →')}`,
+    },
+  ],
 });
 
-const buildChallengeMessage = ({ challenges, siteUrl }) => ({
+const buildChallengeMessage = ({ challenges }) => ({
   text: '오늘의 코딩 테스트',
   blocks: [
     {
@@ -76,11 +86,10 @@ const buildChallengeMessage = ({ challenges, siteUrl }) => ({
     },
     { type: 'divider' },
     ...challenges.map((challenge) => section(challengeText(challenge))),
-    footer(siteUrl, 'CareerGround에서 자세히 보기'),
   ],
 });
 
-const buildJobsMessage = ({ jobs, siteUrl }) => ({
+const buildJobsMessage = ({ jobs }) => ({
   text: `신규 채용 알림 ${jobs.length}건`,
   blocks: [
     {
@@ -95,7 +104,6 @@ const buildJobsMessage = ({ jobs, siteUrl }) => ({
     },
     { type: 'divider' },
     ...packSectionText(jobs.map(jobText)).map(section),
-    footer(siteUrl, 'CareerGround에서 전체 공고 보기'),
   ],
 });
 
@@ -108,21 +116,40 @@ const validateDigestPayload = (payload) => {
   }
 };
 
-export function formatSlackMessages(payload) {
+export function formatSlackMessages(payload, { baeumzipUrl }) {
   validateDigestPayload(payload);
-  return [
+  const messages = [
     buildChallengeMessage(payload),
     ...(payload.jobs.length > 0 ? [buildJobsMessage(payload)] : []),
   ];
+  messages
+    .at(-1)
+    .blocks.push(
+      { type: 'divider' },
+      serviceLinks({ careergroundUrl: payload.siteUrl, baeumzipUrl }),
+    );
+  return messages;
 }
 
-export async function sendDailyDigest(env = process.env, fetchImpl = globalThis.fetch) {
+const forceSendEnabled = (value) => ['1', 'true'].includes(String(value).toLowerCase());
+
+export async function sendDailyDigest(
+  env = process.env,
+  fetchImpl = globalThis.fetch,
+  now = () => new Date(),
+) {
+  if (!forceSendEnabled(env.SLACK_DIGEST_FORCE_SEND)) {
+    const decision = getKoreanDispatchDecision(now());
+    if (!decision.shouldSend) return { messageCount: 0, skipped: decision };
+  }
+
   const digestUrl = env.CAREERGROUND_DIGEST_URL;
   const digestToken = env.CAREERGROUND_DIGEST_TOKEN;
   const webhookUrl = env.SLACK_WEBHOOK_URL;
-  if (!digestUrl || !digestToken || !webhookUrl) {
+  const baeumzipUrl = env.BAEUMZIP_URL;
+  if (!digestUrl || !digestToken || !webhookUrl || !baeumzipUrl) {
     throw new Error(
-      'CAREERGROUND_DIGEST_URL, CAREERGROUND_DIGEST_TOKEN, SLACK_WEBHOOK_URL이 필요합니다.',
+      'CAREERGROUND_DIGEST_URL, CAREERGROUND_DIGEST_TOKEN, SLACK_WEBHOOK_URL, BAEUMZIP_URL이 필요합니다.',
     );
   }
   const webhook = new URL(webhookUrl);
@@ -137,7 +164,7 @@ export async function sendDailyDigest(env = process.env, fetchImpl = globalThis.
   if (!digestResponse.ok) {
     throw new Error(`CareerGround 알림 API 오류: HTTP ${digestResponse.status}`);
   }
-  const messages = formatSlackMessages(await digestResponse.json());
+  const messages = formatSlackMessages(await digestResponse.json(), { baeumzipUrl });
   for (const message of messages) {
     const slackResponse = await fetchImpl(webhook, {
       method: 'POST',
@@ -152,7 +179,12 @@ export async function sendDailyDigest(env = process.env, fetchImpl = globalThis.
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   sendDailyDigest()
-    .then(({ messageCount }) => process.stdout.write(`Slack digest sent: ${messageCount}\n`))
+    .then(({ messageCount, skipped }) => {
+      const result = skipped
+        ? `Slack digest skipped: ${skipped.reason} (${skipped.dateKey})`
+        : `Slack digest sent: ${messageCount}`;
+      process.stdout.write(`${result}\n`);
+    })
     .catch((error) => {
       process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
       process.exitCode = 1;

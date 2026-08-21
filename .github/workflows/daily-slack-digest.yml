@@ -2,9 +2,14 @@ name: Daily CareerGround Slack digest
 
 on:
   schedule:
-    - cron: '0 7 * * *'
+    - cron: '0 7 * * 1-5'
       timezone: 'Asia/Seoul'
   workflow_dispatch:
+    inputs:
+      force:
+        description: '주말·공휴일에도 강제로 전송'
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -27,4 +32,6 @@ jobs:
           CAREERGROUND_DIGEST_URL: https://careerground-workspace.edder773.chatgpt.site/api/v1/internal/slack-digest
           CAREERGROUND_DIGEST_TOKEN: ${{ secrets.CAREERGROUND_DIGEST_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          BAEUMZIP_URL: https://www.baeumzip.site/
+          SLACK_DIGEST_FORCE_SEND: ${{ github.event_name == 'workflow_dispatch' && inputs.force || false }}
         run: node scripts/slack/send-daily-digest.mjs
