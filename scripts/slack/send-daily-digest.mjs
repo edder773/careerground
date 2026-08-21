@@ -1,7 +1,7 @@
 import process from 'node:process';
 import { URL, pathToFileURL } from 'node:url';
 
-const MAX_MESSAGE_LENGTH = 3_800;
+const MAX_SECTION_LENGTH = 2_800;
 
 const escapeSlackText = (value) =>
   String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
@@ -9,7 +9,8 @@ const escapeSlackText = (value) =>
 const slackUrl = (value, label) => {
   const url = new URL(String(value));
   if (!['http:', 'https:'].includes(url.protocol)) throw new Error('HTTP(S) 링크만 허용됩니다.');
-  return `<${url.toString().replaceAll('|', '%7C').replaceAll('>', '%3E')}|${label}>`;
+  const safeLabel = escapeSlackText(label).replaceAll('|', '｜');
+  return `<${url.toString().replaceAll('|', '%7C').replaceAll('>', '%3E')}|${safeLabel}>`;
 };
 
 const deadlineLabel = (value) => {
@@ -22,49 +23,97 @@ const deadlineLabel = (value) => {
   }).format(date);
 };
 
-const challengeLine = (challenge, index) => {
+const challengeText = (challenge) => {
   const track = challenge.track === 'SQL' ? 'SQL' : '알고리즘';
-  return `${index + 1}. *${escapeSlackText(challenge.title)}* · ${track} Lv.${Number(challenge.level)} · ${slackUrl(challenge.sourceUrl, '문제 열기')}`;
+  return [
+    `• *${slackUrl(challenge.sourceUrl, challenge.title)}*`,
+    `  ${track} · Lv.${Number(challenge.level)}`,
+  ].join('\n');
 };
 
-const jobLines = (job, index) => [
-  `${index + 1}. *${escapeSlackText(job.company)} — ${escapeSlackText(job.title)}*`,
-  `   마감 ${deadlineLabel(job.deadlineAt)} · ${escapeSlackText(job.sourceName)} · ${slackUrl(job.sourceUrl, '원문 보기')}`,
-];
+const jobText = (job) =>
+  [
+    `• *${slackUrl(job.sourceUrl, `${job.company} — ${job.title}`)}*`,
+    `  마감 ${deadlineLabel(job.deadlineAt)} · ${escapeSlackText(job.sourceName)}`,
+  ].join('\n');
 
-export function formatSlackMessages(payload) {
+const packSectionText = (entries) => {
+  const sections = [];
+  let current = '';
+
+  for (const entry of entries) {
+    if (entry.length > MAX_SECTION_LENGTH) {
+      throw new Error('Slack 항목이 허용된 섹션 길이를 초과했습니다.');
+    }
+    const candidate = current ? `${current}\n\n${entry}` : entry;
+    if (candidate.length > MAX_SECTION_LENGTH) {
+      sections.push(current);
+      current = entry;
+    } else {
+      current = candidate;
+    }
+  }
+  if (current) sections.push(current);
+  return sections;
+};
+
+const section = (text) => ({
+  type: 'section',
+  text: { type: 'mrkdwn', text },
+});
+
+const footer = (siteUrl, label) => ({
+  type: 'context',
+  elements: [{ type: 'mrkdwn', text: slackUrl(siteUrl, label) }],
+});
+
+const buildChallengeMessage = ({ challenges, siteUrl }) => ({
+  text: '오늘의 코딩 테스트',
+  blocks: [
+    {
+      type: 'header',
+      text: { type: 'plain_text', text: '🔥 오늘의 코딩 테스트', emoji: true },
+    },
+    { type: 'divider' },
+    ...challenges.map((challenge) => section(challengeText(challenge))),
+    footer(siteUrl, 'CareerGround에서 자세히 보기'),
+  ],
+});
+
+const buildJobsMessage = ({ jobs, siteUrl }) => ({
+  text: `신규 채용 알림 ${jobs.length}건`,
+  blocks: [
+    {
+      type: 'header',
+      text: { type: 'plain_text', text: '💼 신규 채용 알림', emoji: true },
+    },
+    {
+      type: 'context',
+      elements: [
+        { type: 'mrkdwn', text: `새롭게 등록된 마감일 확정 공고 *${jobs.length}개*입니다.` },
+      ],
+    },
+    { type: 'divider' },
+    ...packSectionText(jobs.map(jobText)).map(section),
+    footer(siteUrl, 'CareerGround에서 전체 공고 보기'),
+  ],
+});
+
+const validateDigestPayload = (payload) => {
   if (!payload || !Array.isArray(payload.challenges) || !Array.isArray(payload.jobs)) {
     throw new Error('CareerGround 알림 응답 형식이 올바르지 않습니다.');
   }
   if (payload.challenges.length !== 3) {
     throw new Error(`오늘의 코딩테스트는 3개여야 합니다: ${payload.challenges.length}개`);
   }
+};
 
-  const intro = [
-    '*CareerGround 오늘의 업데이트*',
-    '',
-    `모든 상세 항목은 ${slackUrl(payload.siteUrl, 'CareerGround')}에서 확인할 수 있습니다.`,
-    '',
-    '*오늘의 코딩 테스트*',
-    '',
-    ...payload.challenges.map(challengeLine),
+export function formatSlackMessages(payload) {
+  validateDigestPayload(payload);
+  return [
+    buildChallengeMessage(payload),
+    ...(payload.jobs.length > 0 ? [buildJobsMessage(payload)] : []),
   ];
-  if (payload.jobs.length === 0) return [intro.join('\n')];
-
-  const messages = [];
-  let current = [...intro, '', '*신규 채용 알림 공고*', ''];
-  payload.jobs.forEach((job, index) => {
-    const lines = jobLines(job, index);
-    const candidate = [...current, ...lines].join('\n');
-    if (candidate.length > MAX_MESSAGE_LENGTH && current.length > 2) {
-      messages.push(current.join('\n'));
-      current = ['*신규 채용 알림 공고 (계속)*', '', ...lines];
-    } else {
-      current.push(...lines);
-    }
-  });
-  messages.push(current.join('\n'));
-  return messages;
 }
 
 export async function sendDailyDigest(env = process.env, fetchImpl = globalThis.fetch) {
@@ -89,11 +138,11 @@ export async function sendDailyDigest(env = process.env, fetchImpl = globalThis.
     throw new Error(`CareerGround 알림 API 오류: HTTP ${digestResponse.status}`);
   }
   const messages = formatSlackMessages(await digestResponse.json());
-  for (const text of messages) {
+  for (const message of messages) {
     const slackResponse = await fetchImpl(webhook, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify(message),
       signal: globalThis.AbortSignal.timeout(15_000),
     });
     if (!slackResponse.ok) throw new Error(`Slack 전송 오류: HTTP ${slackResponse.status}`);

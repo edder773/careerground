@@ -27,14 +27,18 @@ const payload = {
 };
 
 describe('daily Slack digest', () => {
-  it('links coding tests directly to Programmers and omits an empty jobs section', () => {
+  it('links coding-test titles directly to Programmers and omits an empty jobs message', () => {
     const [message] = formatSlackMessages(payload);
-    expect(message).toContain('오늘의 코딩 테스트');
-    expect(message).toContain('school.programmers.co.kr/learn/courses/30/lessons/12935');
-    expect(message).not.toContain('신규 채용 알림 공고');
+    const rendered = JSON.stringify(message);
+    expect(message.text).toBe('오늘의 코딩 테스트');
+    expect(rendered).toContain(
+      '<https://school.programmers.co.kr/learn/courses/30/lessons/12935|제일 작은 수 제거하기>',
+    );
+    expect(rendered).not.toContain('문제 열기');
+    expect(formatSlackMessages(payload)).toHaveLength(1);
   });
 
-  it('includes every dated non-rolling job and splits oversized messages', () => {
+  it('sends every job in one separate message with linked titles and restrained icons', () => {
     const jobs = Array.from({ length: 40 }, (_, index) => ({
       company: `회사 ${index + 1}`,
       title: `신입 백엔드 개발자 채용 ${index + 1}`,
@@ -43,9 +47,15 @@ describe('daily Slack digest', () => {
       sourceUrl: `https://example.com/jobs/${index + 1}`,
     }));
     const messages = formatSlackMessages({ ...payload, jobs });
-    expect(messages.length).toBeGreaterThan(1);
-    expect(messages.every((message) => message.length <= 3_800)).toBe(true);
-    expect(messages.join('\n')).toContain('회사 40');
+    const rendered = JSON.stringify(messages);
+    expect(messages).toHaveLength(2);
+    expect(messages[0].text).toBe('오늘의 코딩 테스트');
+    expect(messages[1].text).toBe('신규 채용 알림 40건');
+    expect(rendered).toContain(
+      '<https://example.com/jobs/40|회사 40 — 신입 백엔드 개발자 채용 40>',
+    );
+    expect(rendered).not.toContain('원문 보기');
+    expect(rendered.match(/🔥|💼/gu)).toHaveLength(2);
   });
 
   it('fetches the protected digest and posts the formatted payload to Slack', async () => {
@@ -73,6 +83,44 @@ describe('daily Slack digest', () => {
       'https://careerground.example/api/v1/internal/slack-digest',
       expect.objectContaining({ headers: { authorization: 'Bearer service-token' } }),
     );
-    expect(JSON.parse(fetchMock.mock.calls[1][1].body).text).not.toContain('신규 채용 알림 공고');
+    const slackPayload = JSON.parse(fetchMock.mock.calls[1][1].body);
+    expect(slackPayload.text).toBe('오늘의 코딩 테스트');
+    expect(slackPayload.blocks).toEqual(expect.any(Array));
+  });
+
+  it('posts coding tests and jobs as two Slack messages', async () => {
+    const jobs = [
+      {
+        company: 'NAVER',
+        title: 'AI 연구 개발 체험형 인턴',
+        deadlineAt: '2026-08-27T01:00:00.000Z',
+        sourceName: 'NAVER Careers',
+        sourceUrl: 'https://recruit.navercorp.com/jobs/1',
+      },
+    ];
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new globalThis.Response(JSON.stringify({ ...payload, jobs }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+      )
+      .mockResolvedValue(new globalThis.Response('ok', { status: 200 }));
+
+    await expect(
+      sendDailyDigest(
+        {
+          CAREERGROUND_DIGEST_URL: 'https://careerground.example/api/v1/internal/slack-digest',
+          CAREERGROUND_DIGEST_TOKEN: 'service-token',
+          SLACK_WEBHOOK_URL: 'https://hooks.slack.com/services/T000/B000/secret',
+        },
+        fetchMock,
+      ),
+    ).resolves.toEqual({ messageCount: 2 });
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body).text).toBe('오늘의 코딩 테스트');
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body).text).toBe('신규 채용 알림 1건');
   });
 });
