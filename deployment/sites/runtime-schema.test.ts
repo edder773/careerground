@@ -239,6 +239,7 @@ describe('Sites production migration baseline', () => {
         replacementChecksum: string;
         reconciliationChecksum: string;
         companyBackstopChecksum: string;
+        learningCatalogChecksum: string;
         googleChecksum: string;
         personalPurgeChecksum: string;
         authTables: number;
@@ -297,6 +298,8 @@ describe('Sites production migration baseline', () => {
                  (SELECT checksum FROM app_schema_migrations
                    WHERE version = '0027_add_company_backstop_jobs_20260821') AS companyBackstopChecksum,
                  (SELECT checksum FROM app_schema_migrations
+                   WHERE version = '0029_expand_learning_catalog_20260821') AS learningCatalogChecksum,
+                 (SELECT checksum FROM app_schema_migrations
                    WHERE version = '0022_google_auth') AS googleChecksum,
                  (SELECT checksum FROM app_schema_migrations
                    WHERE version = '0023_purge_legacy_personal_data') AS personalPurgeChecksum,
@@ -327,7 +330,7 @@ describe('Sites production migration baseline', () => {
       );
 
       expect(schema).toEqual({
-        questions: countBefore?.count,
+        questions: (countBefore?.count || 0) + 79,
         learningColumns: 2,
         publishedColumn: 1,
         applicationStartColumn: 1,
@@ -353,6 +356,8 @@ describe('Sites production migration baseline', () => {
         reconciliationChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
         dailyReconciliationChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
         companyBackstopChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
+        learningCatalogChecksum:
+          'sha256:316d21648a83120d94234a8c64f355728dd9b9ea298dd2a302254bffe8f9a958',
         googleChecksum: 'sha256:d453c92ca558c68ae6efc1e9f6ef86e49a93422442aa0ad3bdc17de76e509f2d',
         personalPurgeChecksum:
           'sha256:33d7868739506072fe37c9ba0f19a863fc1343c53c31e45b79390acfaa1b9f6f',
