@@ -40,8 +40,9 @@ const digestDateLabel = (value) => {
 
 const challengeText = (challenge) => {
   const track = challenge.track === 'SQL' ? 'SQL' : '알고리즘';
+  const title = challenge.isChallenge ? `(도전 문제) ${challenge.title}` : challenge.title;
   return [
-    `• *${slackUrl(challenge.sourceUrl, challenge.title)}*`,
+    `• *${slackUrl(challenge.sourceUrl, title)}*`,
     `  ${track} · Lv.${Number(challenge.level)}`,
   ].join('\n');
 };
@@ -130,8 +131,21 @@ const validateDigestPayload = (payload) => {
   if (!payload || !Array.isArray(payload.challenges) || !Array.isArray(payload.jobs)) {
     throw new Error('CareerGround 알림 응답 형식이 올바르지 않습니다.');
   }
-  if (payload.challenges.length !== 3) {
-    throw new Error(`오늘의 코딩테스트는 3개여야 합니다: ${payload.challenges.length}개`);
+  if (payload.challenges.length !== 4) {
+    throw new Error(`Slack 코딩테스트는 4개여야 합니다: ${payload.challenges.length}개`);
+  }
+  const [level1, level2, advanced, sql] = payload.challenges;
+  if (
+    level1.track !== 'ALGORITHM' ||
+    Number(level1.level) !== 1 ||
+    level2.track !== 'ALGORITHM' ||
+    Number(level2.level) !== 2 ||
+    advanced.track !== 'ALGORITHM' ||
+    Number(advanced.level) !== 3 ||
+    advanced.isChallenge !== true ||
+    sql.track !== 'SQL'
+  ) {
+    throw new Error('Slack 코딩테스트 순서는 Lv.1, Lv.2, 도전 Lv.3, SQL이어야 합니다.');
   }
 };
 

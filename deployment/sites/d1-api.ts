@@ -982,6 +982,15 @@ const hasEveryDailyChallenge = (rows: DailyChallengeRow[]) => {
   return [1, 2, 34].every((levelSlot) => slots.has(levelSlot));
 };
 
+const seededCandidateIndex = (value: string, candidateCount: number) => {
+  let seed = 0x811c9dc5;
+  for (const character of value) {
+    seed ^= character.charCodeAt(0);
+    seed = Math.imul(seed, 0x01000193) >>> 0;
+  }
+  return seed % candidateCount;
+};
+
 async function selectMissingDailyChallenges(
   db: D1Database,
   today: string,
@@ -1029,12 +1038,13 @@ async function selectMissingDailyChallenges(
         `오늘의 ${spec.track === 'SQL' ? 'SQL Lv. 3~4' : `Lv. ${spec.levelSlot}`} 문제 후보가 없습니다.`,
       );
     }
-    let seed = 0x811c9dc5;
-    for (const character of `${today}:${spec.track}:${spec.levelSlot}:${spec.levels.join('-')}`) {
-      seed ^= character.charCodeAt(0);
-      seed = Math.imul(seed, 0x01000193) >>> 0;
-    }
-    const selected = candidates[seed % candidates.length]!;
+    const selected =
+      candidates[
+        seededCandidateIndex(
+          `${today}:${spec.track}:${spec.levelSlot}:${spec.levels.join('-')}`,
+          candidates.length,
+        )
+      ]!;
     return db
       .prepare(
         `INSERT OR IGNORE INTO daily_challenges
@@ -1080,10 +1090,64 @@ async function dailyChallenge(db: D1Database, userId: string) {
   return challenge;
 }
 
+type SlackChallengeRow = {
+  problemId: string;
+  sourceUrl: string;
+  displayTitle: string;
+  level: number;
+  track: 'ALGORITHM';
+};
+
+const slackChallengeSql = `SELECT p.id AS problemId, p.source_url AS sourceUrl,
+                                   p.display_title AS displayTitle, p.level, p.track
+                              FROM daily_challenges dc
+                              JOIN coding_problems p ON p.id = dc.problem_id AND p.active = 1
+                             WHERE dc.kst_date = ? AND dc.level_slot = 3
+                             LIMIT 1`;
+
+async function slackLv3Challenge(db: D1Database, today: string) {
+  let selected = await first<SlackChallengeRow>(db, slackChallengeSql, today);
+  if (!selected) {
+    const setting =
+      (await first<DailyChallengeSettingRow>(db, dailyChallengeSettingSql)) || undefined;
+    const configuration = dailyChallengeConfiguration(setting);
+    const cutoff = new Date(`${today}T00:00:00.000Z`);
+    cutoff.setUTCDate(cutoff.getUTCDate() - configuration.repeatExclusionDays);
+    const candidateSql = `SELECT id FROM coding_problems
+                            WHERE active = 1 AND track = 'ALGORITHM' AND level = 3
+                              AND id NOT IN (
+                                SELECT problem_id FROM daily_challenges WHERE kst_date >= ?
+                              )
+                            ORDER BY position, id`;
+    let candidates = await all<{ id: string }>(db, candidateSql, cutoff.toISOString().slice(0, 10));
+    if (!candidates.length && configuration.allowRepeatRelaxation) {
+      candidates = await all<{ id: string }>(db, candidateSql, today);
+    }
+    if (!candidates.length) {
+      throw new RouteError(404, 'Slack 도전 문제로 사용할 알고리즘 Lv.3 후보가 없습니다.');
+    }
+    const candidate =
+      candidates[seededCandidateIndex(`${today}:SLACK:ALGORITHM:3`, candidates.length)]!;
+    await db
+      .prepare(
+        `INSERT INTO daily_challenges
+           (id, kst_date, level_slot, problem_id, created_at) VALUES (?, ?, 3, ?, ?)
+         ON CONFLICT(kst_date, level_slot) DO UPDATE SET
+           problem_id = excluded.problem_id, created_at = excluded.created_at`,
+      )
+      .bind(newId(), today, candidate.id, nowIso())
+      .run();
+    selected = await first<SlackChallengeRow>(db, slackChallengeSql, today);
+  }
+  if (!selected) throw new RouteError(500, 'Slack 도전 문제를 준비하지 못했습니다.');
+  return selected;
+}
+
 async function slackDigest(db: D1Database, requestUrl: URL) {
   const today = kstDate();
   const rows = await dailyChallengeRows(db, '', today);
   const challenges = await completeDailyChallenges(db, '', today, rows);
+  const advancedChallenge = await slackLv3Challenge(db, today);
   const { start, end } = kstDayBounds(today);
   const jobs = await all<{
     company: string;
@@ -1111,12 +1175,31 @@ async function slackDigest(db: D1Database, requestUrl: URL) {
     date: today,
     generatedAt: nowIso(),
     siteUrl: new URL('/', requestUrl).toString(),
-    challenges: challenges.map((challenge) => ({
-      title: challenge.problem.displayTitle,
-      track: challenge.problem.track,
-      level: challenge.problem.level,
-      sourceUrl: challenge.problem.sourceUrl,
-    })),
+    challenges: [
+      ...challenges
+        .filter((challenge) => challenge.problem.track === 'ALGORITHM')
+        .map((challenge) => ({
+          title: challenge.problem.displayTitle,
+          track: challenge.problem.track,
+          level: challenge.problem.level,
+          sourceUrl: challenge.problem.sourceUrl,
+        })),
+      {
+        title: advancedChallenge.displayTitle,
+        track: advancedChallenge.track,
+        level: advancedChallenge.level,
+        sourceUrl: advancedChallenge.sourceUrl,
+        isChallenge: true,
+      },
+      ...challenges
+        .filter((challenge) => challenge.problem.track === 'SQL')
+        .map((challenge) => ({
+          title: challenge.problem.displayTitle,
+          track: challenge.problem.track,
+          level: challenge.problem.level,
+          sourceUrl: challenge.problem.sourceUrl,
+        })),
+    ],
     jobs,
   };
 }

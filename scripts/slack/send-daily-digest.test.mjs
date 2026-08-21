@@ -24,6 +24,13 @@ const payload = {
       sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/12914',
     },
     {
+      title: '네트워크',
+      track: 'ALGORITHM',
+      level: 3,
+      isChallenge: true,
+      sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/43162',
+    },
+    {
       title: '식품분류별 가장 비싼 식품의 정보 조회하기',
       track: 'SQL',
       level: 4,
@@ -44,12 +51,44 @@ describe('daily Slack digest', () => {
       '<https://school.programmers.co.kr/learn/courses/30/lessons/12935|제일 작은 수 제거하기>',
     );
     expect(rendered).not.toContain('문제 열기');
+    expect(rendered).toContain(
+      '<https://school.programmers.co.kr/learn/courses/30/lessons/43162|(도전 문제) 네트워크>',
+    );
+    expect(rendered.indexOf('(도전 문제) 네트워크')).toBeLessThan(
+      rendered.indexOf('식품분류별 가장 비싼 식품의 정보 조회하기'),
+    );
     expect(rendered).toContain('<https://careerground.example/|코딩테스트·채용공고 전체 보기 →>');
     expect(rendered).toContain('<https://www.baeumzip.site/|자격증 &amp; SW 전공 테스트 준비 →>');
     expect(rendered).not.toContain('신규 채용 알림 공고');
     expect(rendered).toContain('🔥 *오늘의 코딩 테스트*');
     expect(rendered).not.toContain('💼');
     expect(messages).toHaveLength(1);
+  });
+
+  it('rejects a digest whose challenge-only Lv.3 item is missing or out of order', () => {
+    expect(() =>
+      formatSlackMessages(
+        {
+          ...payload,
+          challenges: payload.challenges.filter((challenge) => !challenge.isChallenge),
+        },
+        { baeumzipUrl: BAEUMZIP_URL },
+      ),
+    ).toThrow('Slack 코딩테스트는 4개여야 합니다');
+    expect(() =>
+      formatSlackMessages(
+        {
+          ...payload,
+          challenges: [
+            payload.challenges[0],
+            payload.challenges[2],
+            payload.challenges[1],
+            payload.challenges[3],
+          ],
+        },
+        { baeumzipUrl: BAEUMZIP_URL },
+      ),
+    ).toThrow('Slack 코딩테스트 순서는 Lv.1, Lv.2, 도전 Lv.3, SQL이어야 합니다.');
   });
 
   it('keeps every linked job in one message below a divider with restrained decoration', () => {

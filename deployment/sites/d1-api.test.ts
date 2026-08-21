@@ -201,9 +201,13 @@ describe('Sites D1 API', () => {
       .run();
 
     await db.prepare('DELETE FROM daily_challenges WHERE kst_date = ?').bind(today).run();
+    await db
+      .prepare("UPDATE coding_problems SET active = 0 WHERE track = 'ALGORITHM' AND level = 3")
+      .run();
     const problems = [
       ['digest-algorithm-1', '알고리즘 1', 1, 'ALGORITHM', 1],
       ['digest-algorithm-2', '알고리즘 2', 2, 'ALGORITHM', 2],
+      ['digest-algorithm-3', '네트워크', 3, 'ALGORITHM', 3],
       ['digest-sql-4', 'SQL 4', 4, 'SQL', 34],
     ] as const;
     for (const [id, title, level, track, slot] of problems) {
@@ -259,6 +263,7 @@ describe('Sites D1 API', () => {
       challenges: [
         { title: '알고리즘 1', track: 'ALGORITHM', level: 1 },
         { title: '알고리즘 2', track: 'ALGORITHM', level: 2 },
+        { title: '네트워크', track: 'ALGORITHM', level: 3, isChallenge: true },
         { title: 'SQL 4', track: 'SQL', level: 4 },
       ],
       jobs: [
@@ -270,6 +275,30 @@ describe('Sites D1 API', () => {
         },
       ],
     });
+
+    const repeatedDigest = await call(
+      '/api/v1/internal/slack-digest',
+      { headers: { authorization: `Bearer ${token}` } },
+      {},
+      { DIGEST_API_TOKEN: token },
+    );
+    expect(repeatedDigest.body).toMatchObject({
+      challenges: [
+        { title: '알고리즘 1' },
+        { title: '알고리즘 2' },
+        { title: '네트워크', isChallenge: true },
+        { title: 'SQL 4' },
+      ],
+    });
+
+    const siteDaily = await call('/api/v1/coding/daily-challenges', {}, memberHeaders);
+    expect(siteDaily.response.status).toBe(200);
+    expect(siteDaily.body).toHaveLength(3);
+    expect(siteDaily.body).toEqual([
+      expect.objectContaining({ levelSlot: 1 }),
+      expect.objectContaining({ levelSlot: 2 }),
+      expect.objectContaining({ levelSlot: 34 }),
+    ]);
   });
 
   it('rate limits each user and normalized route with Retry-After', async () => {
