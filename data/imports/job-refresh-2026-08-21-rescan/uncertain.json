@@ -1,0 +1,118 @@
+{
+  "version": "1.0",
+  "asOfDate": "2026-08-21",
+  "timezone": "Asia/Seoul",
+  "generatedAt": "2026-08-21T11:37:02+09:00",
+  "items": [
+    {
+      "sourceName": "인디스워크/Dalpha Careers",
+      "sourceId": "388671",
+      "sourceUrl": "https://inthiswork.com/archives/388671",
+      "companyName": "Dalpha",
+      "title": "AI Engineer 인턴/정규직",
+      "reasonCode": "OFFICIAL_APPLY_ACCESS_FAILED",
+      "reasonDetail": "현재 상세에서 6개월 인턴 지원 가능성을 확인했지만 공식 GreetingHR 지원 URL이 403을 반환해 현재 접수 상태를 확정하지 못했다.",
+      "uncertainUrl": "https://dalpha-recruiting.career.greetinghr.com/ko/o/233353",
+      "checkedAt": "2026-08-21T11:37:02+09:00"
+    },
+    {
+      "sourceName": "인디스워크/VoyagerX Careers",
+      "sourceId": "388295",
+      "sourceUrl": "https://inthiswork.com/archives/388295",
+      "companyName": "VoyagerX",
+      "title": "개발자 인턴",
+      "reasonCode": "OFFICIAL_APPLY_NOT_FOUND",
+      "reasonDetail": "상세에는 프로그래밍·딥러닝 인턴이 설명되지만 연결된 공식 Notion 지원 URL이 404라 현재 지원 가능 여부를 확정하지 못했다.",
+      "uncertainUrl": "https://inthiswork.com/archives/388295",
+      "checkedAt": "2026-08-21T11:37:02+09:00"
+    },
+    {
+      "sourceName": "인디스워크/KOG Careers",
+      "sourceId": "388304",
+      "sourceUrl": "https://inthiswork.com/archives/388304",
+      "companyName": "KOG",
+      "title": "DBA 상시채용",
+      "reasonCode": "OFFICIAL_DETAIL_EMPTY",
+      "reasonDetail": "공식 상세 URL은 페이지 셸만 반환하고 공고 본문·지원 버튼을 노출하지 않아 상시채용을 현재 증거로 확정하지 못했다.",
+      "uncertainUrl": "https://www.kog.co.kr/recruit/notice/334",
+      "checkedAt": "2026-08-21T11:37:02+09:00"
+    },
+    {
+      "sourceName": "인디스워크/VNTG Careers",
+      "sourceId": "388409",
+      "sourceUrl": "https://inthiswork.com/archives/388409",
+      "companyName": "VNTG",
+      "title": "네트워크·인프라 직무",
+      "reasonCode": "OFFICIAL_DETAIL_EMPTY",
+      "reasonDetail": "교차 상세에서는 IT 직무를 확인했지만 공식 Recruiter 상세가 본문과 지원 상태를 반환하지 않았다.",
+      "uncertainUrl": "https://vntg.recruiter.co.kr/career/jobs/125429",
+      "checkedAt": "2026-08-21T11:37:02+09:00"
+    },
+    {
+      "sourceName": "인디스워크/SmileShark Careers",
+      "sourceId": "387513",
+      "sourceUrl": "https://inthiswork.com/archives/387513",
+      "companyName": "SmileShark",
+      "title": "AWS Cloud Engineer 전환형 인턴",
+      "reasonCode": "OFFICIAL_APPLY_ACCESS_FAILED",
+      "reasonDetail": "직무와 인턴 조건은 확인했지만 공식 Recruiter.im 지원 페이지를 불러오지 못해 현재 접수를 확정하지 못했다.",
+      "uncertainUrl": "https://smileshark.recruiter.im/jobs/5967",
+      "checkedAt": "2026-08-21T11:37:02+09:00"
+    },
+    {
+      "sourceName": "인디스워크/금융감독원 채용",
+      "sourceId": "388237",
+      "sourceUrl": "https://inthiswork.com/archives/388237",
+      "companyName": "금융감독원",
+      "title": "2027년도 5급 신입직원 채용",
+      "reasonCode": "ROLE_DETAIL_UNAVAILABLE",
+      "reasonDetail": "현재 교차 상세가 이미지 중심이고 공식 공고문 접근도 실패해 IT 모집 단위와 실제 지원 가능 상태를 동시에 확정하지 못했다.",
+      "uncertainUrl": "https://inthiswork.com/archives/388237",
+      "checkedAt": "2026-08-21T11:37:02+09:00"
+    },
+    {
+      "sourceName": "인디스워크/ECOUNT Careers",
+      "sourceId": null,
+      "sourceUrl": "https://inthiswork.com/it",
+      "companyName": "ECOUNT",
+      "title": "개발 직군 신입 후보",
+      "reasonCode": "SOURCE_RATE_LIMITED",
+      "reasonDetail": "최신 목록에서 후보를 발견했지만 상세 요청이 429로 제한돼 공고 ID·지원 상태·마감일을 확정하지 못했다.",
+      "uncertainUrl": "https://inthiswork.com/it",
+      "checkedAt": "2026-08-21T11:37:02+09:00"
+    },
+    {
+      "sourceName": "인디스워크/Upstage Careers",
+      "sourceId": "387562",
+      "sourceUrl": "https://inthiswork.com/archives/387562",
+      "companyName": "Upstage",
+      "title": "AI DevOps 정규직 전환형 인턴 후보",
+      "reasonCode": "SOURCE_RATE_LIMITED",
+      "reasonDetail": "최신 목록에서 후보를 발견했지만 상세 재검증 요청이 429로 제한돼 공식 지원 상태를 확정하지 못했다.",
+      "uncertainUrl": "https://inthiswork.com/archives/387562",
+      "checkedAt": "2026-08-21T11:37:02+09:00"
+    },
+    {
+      "sourceName": "인디스워크/Upstage Careers",
+      "sourceId": "387559",
+      "sourceUrl": "https://inthiswork.com/archives/387559",
+      "companyName": "Upstage",
+      "title": "AI Research Post-training 인턴 후보",
+      "reasonCode": "SOURCE_RATE_LIMITED",
+      "reasonDetail": "최신 목록에서 후보를 발견했지만 상세 재검증 요청이 429로 제한돼 공식 지원 상태를 확정하지 못했다.",
+      "uncertainUrl": "https://inthiswork.com/archives/387559",
+      "checkedAt": "2026-08-21T11:37:02+09:00"
+    },
+    {
+      "sourceName": "인디스워크/Upstage Careers",
+      "sourceId": null,
+      "sourceUrl": "https://inthiswork.com/it",
+      "companyName": "Upstage",
+      "title": "Full-Stack Product Engineer Internship 후보",
+      "reasonCode": "SOURCE_RATE_LIMITED",
+      "reasonDetail": "최신 목록에서 후보 제목을 발견했지만 상세 URL과 공식 지원 상태를 확정하기 전에 429 제한이 발생했다.",
+      "uncertainUrl": "https://inthiswork.com/it",
+      "checkedAt": "2026-08-21T11:37:02+09:00"
+    }
+  ]
+}

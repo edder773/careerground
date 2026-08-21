@@ -1,0 +1,68 @@
+{
+  "version": "1.0",
+  "asOfDate": "2026-08-21",
+  "timezone": "Asia/Seoul",
+  "generatedAt": "2026-08-21T11:37:02+09:00",
+  "items": [
+    {
+      "sourceName": "자소설닷컴/Applied Materials Careers",
+      "sourceId": "105523",
+      "sourceUrl": "https://jasoseol.com/recruit/105523",
+      "companyName": "어플라이드머티어리얼즈코리아",
+      "title": "Global Software Support Engineer",
+      "reasonCode": "APPLICATION_CLOSED",
+      "reasonDetail": "공식·교차 상세에서 지원 종료 및 2026-08-20 마감이 확인돼 신규 활성 공고로 넣지 않았다.",
+      "checkedAt": "2026-08-21T11:37:02+09:00"
+    },
+    {
+      "sourceName": "Thermo Fisher Scientific Careers",
+      "sourceId": "R-01360196",
+      "sourceUrl": "https://jobs.thermofisher.com/global/en/job/R-01360196/IT-Intern-Business-Application",
+      "companyName": "Thermo Fisher Scientific Korea",
+      "title": "IT Intern - Business Application",
+      "reasonCode": "APPLICATION_CLOSED",
+      "reasonDetail": "공식 지원 페이지가 해당 공고가 이미 충원됐다고 명시한다.",
+      "checkedAt": "2026-08-21T11:37:02+09:00"
+    },
+    {
+      "sourceName": "Thermo Fisher Scientific Careers",
+      "sourceId": "R-01360197",
+      "sourceUrl": "https://jobs.thermofisher.com/global/en/job/R-01360197/IT-Intern-Data-oriented",
+      "companyName": "Thermo Fisher Scientific Korea",
+      "title": "IT Intern - Data-oriented",
+      "reasonCode": "APPLICATION_CLOSED",
+      "reasonDetail": "공식 지원 페이지가 해당 공고가 이미 충원됐다고 명시한다.",
+      "checkedAt": "2026-08-21T11:37:02+09:00"
+    },
+    {
+      "sourceName": "LG AI Research Careers",
+      "sourceId": "254",
+      "sourceUrl": "https://www.lgresearch.ai/careers/view?seq=254",
+      "companyName": "LG AI Research",
+      "title": "Backend Engineer Internship",
+      "reasonCode": "SOURCE_REMOVED",
+      "reasonDetail": "교차 출처에는 상세가 남아 있지만 공식 공고 URL이 채용 홈으로 이동해 현재 지원 상세와 지원 폼이 사라졌다.",
+      "checkedAt": "2026-08-21T11:37:02+09:00"
+    },
+    {
+      "sourceName": "한국원자력환경공단 Careers",
+      "sourceId": "1018",
+      "sourceUrl": "https://korad.scout.co.kr/jobinfo/jobinfo_view.asp?ID=1018",
+      "companyName": "한국원자력환경공단",
+      "title": "2026년도 일반직·연구직 신입 채용",
+      "reasonCode": "NON_IT",
+      "reasonDetail": "공식 모집 단위를 전수 확인했으나 폐기물관리·방사선·지질·전기설비·안전·기록물·재무·행정 등으로, CareerGround 포함 IT 직무가 없다.",
+      "checkedAt": "2026-08-21T11:37:02+09:00"
+    },
+    {
+      "sourceName": "인디스워크/신한투자증권 채용",
+      "sourceId": "388209",
+      "sourceUrl": "https://inthiswork.com/archives/388209",
+      "companyName": "신한투자증권",
+      "title": "2026년 신입사원 채용(통합 직무)",
+      "reasonCode": "NON_IT",
+      "reasonDetail": "초기 배치 모집 단위가 PB이며 디지털은 입사 후 가능한 경력 경로 설명일 뿐 현재 IT 모집 단위가 아니다.",
+      "checkedAt": "2026-08-21T11:37:02+09:00"
+    }
+  ]
+}

@@ -1,0 +1,204 @@
+{
+  "version": "1.0",
+  "asOfDate": "2026-08-21",
+  "timezone": "Asia/Seoul",
+  "reconciledAt": "2026-08-21T11:37:02+09:00",
+  "snapshotMode": "DISCOVERY_RESCAN_WITH_FIVE_DAY_OVERLAP",
+  "scope": "신규 후보 발견 보완 스캔. 기존 운영 공고 66건의 FULL_REVALIDATION 또는 운영 반영을 수행하지 않았다.",
+  "liveDatabase": {
+    "rowsRead": 76,
+    "visibleRowsAtBaseline": 66,
+    "changed": false,
+    "candidateUrlsAlreadyPresent": 0,
+    "duplicateCampaignsAlreadyPresent": 1
+  },
+  "comparison": {
+    "discoveredItems": 37,
+    "classifiedItems": 37,
+    "unclassifiedItems": 0,
+    "activeCandidateItems": 20,
+    "activeWithFutureOrRollingEvidenceItems": 15,
+    "deadlineUnknownButApplyFormVisibleItems": 5,
+    "excludedItems": 6,
+    "uncertainItems": 10,
+    "duplicateItems": 1,
+    "newCandidateItemsNotInLiveDatabase": 20
+  },
+  "completenessGates": {
+    "allDiscoveredCandidatesClassified": "PASS",
+    "activeCandidateEvidenceAttached": "PASS",
+    "candidateUrlUniqueness": "PASS_WITH_SHARED_AGGREGATE_LIST_URLS",
+    "allRequiredSourcesFullyEnumerated": "FAIL",
+    "highWatermarkAdvanced": false,
+    "productionDeploymentAllowed": false,
+    "reason": "자소설닷컴을 포함한 일부 동적 목록을 끝까지 열거하지 못했고 인디스워크 일부 상세가 429를 반환했다. 이번 결과는 누락 보완용 후보 원장으로만 사용한다."
+  },
+  "sourceInvestigations": [
+    {
+      "source": "자소설닷컴",
+      "method": "회사명·공고 ID 교차검색",
+      "candidateCount": 4,
+      "verifiedActive": 3,
+      "excluded": 1,
+      "uncertain": 0,
+      "exhaustionStatus": "INCOMPLETE",
+      "limitationReason": "동적 최신 목록을 페이지 단위로 열거하지 못함"
+    },
+    {
+      "source": "사람인",
+      "method": "공개 검색·교차검색",
+      "candidateCount": 0,
+      "verifiedActive": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "exhaustionStatus": "INCOMPLETE",
+      "limitationReason": "최신 목록 전체 열거를 완료하지 못함"
+    },
+    {
+      "source": "잡코리아",
+      "method": "공개 검색·교차검색",
+      "candidateCount": 0,
+      "verifiedActive": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "exhaustionStatus": "LIMITED",
+      "limitationReason": "모바일·상세 접근 제한이 반복됨"
+    },
+    {
+      "source": "원티드",
+      "method": "공개 검색·교차검색",
+      "candidateCount": 0,
+      "verifiedActive": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "exhaustionStatus": "INCOMPLETE",
+      "limitationReason": "최신 목록 전체 열거를 완료하지 못함"
+    },
+    {
+      "source": "점핏",
+      "method": "공개 검색",
+      "candidateCount": 0,
+      "verifiedActive": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "exhaustionStatus": "LIMITED",
+      "limitationReason": "상세 상태를 안정적으로 검증하지 못함"
+    },
+    {
+      "source": "인디스워크",
+      "method": "IT 최신 목록 2페이지와 상세 직무 확장",
+      "candidateCount": 19,
+      "verifiedActive": 6,
+      "excluded": 3,
+      "uncertain": 10,
+      "exhaustionStatus": "OVERLAP_REACHED_WITH_LIMITS",
+      "limitationReason": "직전 수집 구간까지 도달했으나 일부 상세가 429 또는 공식 지원 URL 실패"
+    },
+    {
+      "source": "링커리어",
+      "method": "최신·회사명 교차검색",
+      "candidateCount": 1,
+      "verifiedActive": 1,
+      "excluded": 0,
+      "uncertain": 0,
+      "exhaustionStatus": "INCOMPLETE",
+      "limitationReason": "전체 최신 목록 열거가 아닌 관련 후보 검색"
+    },
+    {
+      "source": "캐치",
+      "method": "회사명 교차검색",
+      "candidateCount": 0,
+      "verifiedActive": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "exhaustionStatus": "LIMITED",
+      "limitationReason": "동적 회사·채용 목록에서 canonical 상세 추출이 불안정"
+    },
+    {
+      "source": "리멤버 커리어",
+      "method": "공개 검색",
+      "candidateCount": 0,
+      "verifiedActive": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "exhaustionStatus": "INCOMPLETE",
+      "limitationReason": "검증 가능한 공개 최신 목록을 반환하지 않음"
+    },
+    {
+      "source": "로켓펀치",
+      "method": "공개 검색",
+      "candidateCount": 0,
+      "verifiedActive": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "exhaustionStatus": "LIMITED",
+      "limitationReason": "목록·상세의 최신 상태를 일관되게 열거하지 못함"
+    },
+    {
+      "source": "고용24",
+      "method": "공개 검색",
+      "candidateCount": 0,
+      "verifiedActive": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "exhaustionStatus": "LIMITED",
+      "limitationReason": "본문과 지원 상태를 함께 검증하지 못함"
+    },
+    {
+      "source": "LinkedIn Korea",
+      "method": "공개 검색",
+      "candidateCount": 0,
+      "verifiedActive": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "exhaustionStatus": "INCOMPLETE",
+      "limitationReason": "로그인 없는 공개 결과만 사용해 최신 목록 전체 열거 불가"
+    },
+    {
+      "source": "슈퍼루키",
+      "method": "공개 목록·검색",
+      "candidateCount": 0,
+      "verifiedActive": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "exhaustionStatus": "INCOMPLETE",
+      "limitationReason": "관련 신규 후보를 공식 지원 상태까지 확정하지 못함"
+    },
+    {
+      "source": "커리어",
+      "method": "공개 검색",
+      "candidateCount": 0,
+      "verifiedActive": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "exhaustionStatus": "INCOMPLETE",
+      "limitationReason": "최신 목록 전체 열거를 완료하지 못함"
+    },
+    {
+      "source": "인크루트",
+      "method": "공개 검색·공식 지원 교차검증",
+      "candidateCount": 1,
+      "verifiedActive": 1,
+      "excluded": 0,
+      "uncertain": 0,
+      "exhaustionStatus": "INCOMPLETE",
+      "limitationReason": "SGI 지원 도메인 외 최신 목록 전체 열거는 완료하지 못함"
+    },
+    {
+      "source": "기업 공식 채용 페이지",
+      "method": "회사명 보완·공식 목록·실제 지원 링크",
+      "candidateCount": 12,
+      "verifiedActive": 9,
+      "excluded": 3,
+      "uncertain": 0,
+      "exhaustionStatus": "TARGETED_COMPLETE",
+      "limitationReason": "발견 회사의 대상 상세는 확인했으나 국내 모든 회사의 모집 목록을 의미하지 않음"
+    }
+  ],
+  "findings": [
+    "기존 방식에서 지적된 연합인포맥스·한국석유공사·iMBC는 모두 신규 활성 후보로 복구했다.",
+    "어플라이드머티어리얼즈코리아는 누락이 아니라 현재 지원 종료로 제외했다.",
+    "출처 최신 목록과 공식 회사 목록을 함께 읽어 추가 활성 후보 17건을 더 발견했다.",
+    "검색 목록의 존재만으로 활성 처리하지 않아 공식 페이지에서 충원 완료된 Thermo Fisher 2건과 삭제된 LG AI Research Backend 인턴을 걸러냈다."
+  ]
+}
