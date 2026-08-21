@@ -3,7 +3,7 @@ title: Slack 전용 Lv.3 도전 문제 분리
 date: 2026-08-21
 tags: [slack, digest, coding-test, daily-challenge]
 generatedByAI: false
-pr: pending
+pr: 50
 commit: 46c8c692d99243d444ade276fc0b133e4701efad
 evidence: docs/evidence/slack-digest-lv3-challenge-2026-08-21.json
 ---
