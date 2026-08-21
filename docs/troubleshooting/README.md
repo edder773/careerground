@@ -41,6 +41,7 @@ generatedByAI: false
 | 08-21 | [채용 복수 필터 체크 아이콘 정렬](./2026-08-21-job-filter-checkmark-alignment.md)                             | 이번 변경      | 중심 오차 축별 ≤0.5px, 56 E2E             |
 | 08-21 | [Slack 요약 섹션 이모지 복원](./2026-08-21-slack-digest-section-emojis.md)                                    | 이번 변경      | 제목 이모지 0→최대 2, 실전송 0건          |
 | 08-21 | [Slack 전용 Lv.3 도전 문제 분리](./2026-08-21-slack-only-lv3-challenge.md)                                    | 이번 변경      | Slack 3→4, 사이트 3 유지, 실전송 0건      |
+| 08-21 | [채용 직무 필터 한글 통합](./2026-08-21-job-filter-korean-only.md)                                            | #51            | 미변환 영문 코드 14→0, 한글 옵션 37종     |
 
 Dependabot PR #4는 pnpm 11/Node 24를 지원하는 `pnpm/action-setup@6` 갱신이며 별도 장애가 없어 Sites runtime 문서의 도구 체인 맥락에 포함했다. PR #3 이전의 닫힌 #1/#2는 구현이 병합되지 않았으므로 운영 변경 기록에 포함하지 않았다.
 
