@@ -43,6 +43,16 @@ async function expectCenteredFilterCheck(checkbox: Locator) {
   expect(metrics!.lineHeight).toBe('0px');
 }
 
+async function expectKoreanCategoryFilters(filterDialog: Locator) {
+  const labels = await filterDialog
+    .getByRole('group', { name: '직무' })
+    .locator('label > span:last-child')
+    .allTextContents();
+  expect(labels.length).toBeGreaterThan(0);
+  expect(labels.every((label) => /[가-힣]/.test(label))).toBe(true);
+  expect(new Set(labels).size).toBe(labels.length);
+}
+
 async function mockGoogleIdentityScript(page: Page) {
   await page.route('https://accounts.google.com/gsi/client', (route) =>
     route.fulfill({
@@ -139,6 +149,7 @@ test('captures core domain screens', async ({ page }) => {
       await expect(largeCompany.locator('..').locator('.multi-filter-check svg')).toBeVisible();
       await expectCenteredFilterCheck(largeCompany);
       await expect(filterDialog.getByText('BACKEND', { exact: true })).toHaveCount(0);
+      await expectKoreanCategoryFilters(filterDialog);
       await page.waitForTimeout(220);
       await page.screenshot({
         path: 'test-results/visual/jobs-multi-filter-desktop-1440.png',
@@ -241,6 +252,7 @@ test('captures core domain screens', async ({ page }) => {
   await expect(mobileLargeCompany.locator('..').locator('.multi-filter-check svg')).toBeVisible();
   await expectCenteredFilterCheck(mobileLargeCompany);
   await expect(mobileFilter.getByText('BACKEND', { exact: true })).toHaveCount(0);
+  await expectKoreanCategoryFilters(mobileFilter);
   await page.waitForTimeout(220);
   expect(await mobileFilter.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(
     'rgb(255, 255, 255)',
