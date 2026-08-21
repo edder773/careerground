@@ -19,11 +19,11 @@ await build({
 const hosting = JSON.parse(await readFile('.openai/hosting.json', 'utf8'));
 await mkdir('dist/.openai', { recursive: true });
 await writeFile('dist/.openai/hosting.json', `${JSON.stringify(hosting, null, 2)}\n`);
-// The existing Sites D1 was bootstrapped by the additive runtime schema before
-// provider-managed migrations were available. Replaying 0000-0015 would try to
-// create those live tables again. Keep the complete immutable history in the
-// repository, but publish only forward migrations after that production baseline.
-const deployMigrationFloor = 17;
+// The live Sites D1 ledger confirms 0000-0024 were already applied before the
+// provider migration history was established. Replaying them would recreate
+// live tables or reapply catalog data. Keep immutable history in the repository,
+// but publish only the forward provider baseline and later daily migrations.
+const deployMigrationFloor = 25;
 const deployMigrations = (await readdir('drizzle'))
   .filter((file) => /^\d{4}_.+\.sql$/.test(file))
   .filter((file) => Number(file.slice(0, 4)) >= deployMigrationFloor)

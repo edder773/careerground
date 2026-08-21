@@ -42,7 +42,7 @@ E2E는 `deployment/sites/local-d1-server.ts`가 메모리 D1 fixture를 직접 �
    - `dist/server/index.js`
    - `dist/.openai/hosting.json`
    - `dist/.openai/drizzle/*.sql`
-   - 이 기존 프로젝트에서는 운영 기준선 이후인 `0017`~`0023` migration만 존재
+   - `drizzle-history/`의 이미 적용된 migration은 없고 `drizzle/`의 `0025` 이후 순방향 migration만 존재
 6. **같은 commit SHA와 archive**를 새 Sites version으로 저장한다.
 7. visibility를 `public`으로 지정해 운영 배포한다.
 8. 배포 상태가 완료될 때까지 확인하고 `/api/v1/health/ready`가 `200`, `database: d1`을 반환하는지 검사한다.
@@ -63,4 +63,4 @@ E2E는 `deployment/sites/local-d1-server.ts`가 메모리 D1 fixture를 직접 �
 
 ## migration과 rollback
 
-D1 migration은 기존 파일을 수정하지 않고 새 순방향 SQL만 추가한다. 배포 전 export를 확보하고, migration 이후 무결성 집계를 비교한다. 애플리케이션 rollback은 이전 정상 Sites version을 다시 배포하되, 이미 적용된 스키마는 되돌리지 않고 호환 가능한 forward-fix migration을 만든다. 상세 절차는 `docs/operations/backup-restore.md`를 따른다.
+D1 migration은 기존 파일을 수정하지 않고 새 순방향 SQL만 `drizzle/`에 추가한다. 운영 적용이 끝난 과거 SQL은 `drizzle-history/`에 보존하며 배포 archive에는 포함하지 않는다. 배포 전 export를 확보하고, migration 이후 무결성 집계를 비교한다. 애플리케이션 rollback은 이전 정상 Sites version을 다시 배포하되, 이미 적용된 스키마는 되돌리지 않고 호환 가능한 forward-fix migration을 만든다. 상세 절차는 `docs/operations/backup-restore.md`를 따른다.

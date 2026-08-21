@@ -1,0 +1,80 @@
+{
+  "version": "1.0",
+  "asOfDate": "2026-08-21",
+  "timezone": "Asia/Seoul",
+  "generatedAt": "2026-08-21T06:11:28+09:00",
+  "items": [
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49620106",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49620106",
+      "title": "2026년 개발직 신입 및 경력사원 채용",
+      "reasonCode": "DEADLINE_PASSED",
+      "reasonDetail": "명시 마감일 2026-08-20 23:59:59 KST가 기준 시각보다 과거다.",
+      "checkedAt": "2026-08-21T06:11:28+09:00"
+    },
+    {
+      "sourceName": "자소설닷컴",
+      "sourceId": "104762",
+      "sourceUrl": "https://jasoseol.com/recruit/104762",
+      "title": "2026 6월 신입 채용",
+      "reasonCode": "APPLICATION_CLOSED",
+      "reasonDetail": "현재 상세에서 모집 직무에 지원 마감이 표시된다.",
+      "checkedAt": "2026-08-21T06:11:28+09:00"
+    },
+    {
+      "sourceName": "자소설닷컴",
+      "sourceId": "105547",
+      "sourceUrl": "https://jasoseol.com/recruit/105547",
+      "title": "2026년 3분기 신입·채용연계형 인턴·경력 정기 채용",
+      "reasonCode": "NOT_ELIGIBLE",
+      "reasonDetail": "현재 지원 가능한 신입 IT 트랙을 확인하지 못했고 SW개발은 경력 직무로 표시된다.",
+      "checkedAt": "2026-08-21T06:11:28+09:00"
+    },
+    {
+      "sourceName": "CATCH",
+      "sourceId": "547424",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/547424",
+      "title": "[의료IT] 2026년 이지케어텍 신입 개발자 채용",
+      "reasonCode": "APPLICATION_CLOSED",
+      "reasonDetail": "상세 페이지가 마감 상태를 명시한다.",
+      "checkedAt": "2026-08-21T06:11:28+09:00"
+    },
+    {
+      "sourceName": "LinkedIn Korea",
+      "sourceId": "4226061155",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/%ED%8B%B0%EB%B9%99-%EC%95%B1-%EA%B0%9C%EB%B0%9C%EC%9E%90-ios-developer-%EC%B2%B4%ED%97%98%ED%98%95-%EC%9D%B8%ED%84%B4%EC%B1%84%EC%9A%A9-at-tving-%ED%8B%B0%EB%B9%99-4226061155",
+      "title": "[티빙] 앱 개발자 (iOS Developer) 체험형 인턴채용",
+      "reasonCode": "APPLICATION_CLOSED",
+      "reasonDetail": "LinkedIn 상세에 채용공고 마감됨과 2025년 접수 마감이 명시된다.",
+      "checkedAt": "2026-08-21T06:11:28+09:00"
+    },
+    {
+      "sourceName": "Linkareer",
+      "sourceId": "306903",
+      "sourceUrl": "https://linkareer.com/activity/306903",
+      "title": "[에프앤가이드] [AI팀] 인턴 채용",
+      "reasonCode": "DEADLINE_PASSED",
+      "reasonDetail": "상세 접수 마감일이 2026-03-31이다.",
+      "checkedAt": "2026-08-21T06:11:28+09:00"
+    },
+    {
+      "sourceName": "Jumpit",
+      "sourceId": "54419201",
+      "sourceUrl": "https://www.jumpit.co.kr/position/54419201",
+      "title": "콘텐츠 플랫폼 백엔드 개발(Junior)",
+      "reasonCode": "DUPLICATE",
+      "reasonDetail": "기존 Dreamus 공식 공고와 동일 직무 후보이며 점핏 표기 마감일 2026-08-06도 경과했다.",
+      "checkedAt": "2026-08-21T06:11:28+09:00"
+    },
+    {
+      "sourceName": "Superookie",
+      "sourceId": "6a26549d54d45962c95d268c",
+      "sourceUrl": "https://www.superookie.com/jobs/6a26549d54d45962c95d268c",
+      "title": "동아일보 시넥스트팀 인턴",
+      "reasonCode": "APPLICATION_CLOSED",
+      "reasonDetail": "상세가 마감된 공고와 현재 지원기간 아님을 명시한다.",
+      "checkedAt": "2026-08-21T06:11:28+09:00"
+    }
+  ]
+}

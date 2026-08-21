@@ -103,7 +103,7 @@ describe('Sites runtime schema', () => {
     expect(Number(searchCountBefore?.count)).toBeGreaterThan(0);
     const jobResults = await all<{ kind: string }>(
       db,
-      `SELECT kind FROM workspace_search WHERE workspace_search MATCH '"퓨전소프트"*'`,
+      `SELECT kind FROM workspace_search WHERE workspace_search MATCH '"엑스와이지"*'`,
     );
     expect(jobResults.some((result) => result.kind === 'jobs')).toBe(true);
 
@@ -126,14 +126,24 @@ describe('Sites production migration baseline', () => {
     mkdirSync(forwardDirectory);
 
     try {
-      const migrations = readdirSync('drizzle')
-        .filter((file) => /^\d{4}_.+\.sql$/.test(file))
-        .sort();
-      for (const migration of migrations.filter((file) => Number(file.slice(0, 4)) < 17)) {
-        copyFileSync(join('drizzle', migration), join(baselineDirectory, migration));
+      const migrations = ['drizzle-history', 'drizzle']
+        .flatMap((directory) =>
+          readdirSync(directory)
+            .filter((file) => /^\d{4}_.+\.sql$/.test(file))
+            .map((file) => ({ directory, file })),
+        )
+        .sort((left, right) => left.file.localeCompare(right.file));
+      for (const migration of migrations.filter(({ file }) => Number(file.slice(0, 4)) < 17)) {
+        copyFileSync(
+          join(migration.directory, migration.file),
+          join(baselineDirectory, migration.file),
+        );
       }
-      for (const migration of migrations.filter((file) => Number(file.slice(0, 4)) >= 17)) {
-        copyFileSync(join('drizzle', migration), join(forwardDirectory, migration));
+      for (const migration of migrations.filter(({ file }) => Number(file.slice(0, 4)) >= 17)) {
+        copyFileSync(
+          join(migration.directory, migration.file),
+          join(forwardDirectory, migration.file),
+        );
       }
 
       const baseline = new LocalD1(databasePath, baselineDirectory);
@@ -228,6 +238,7 @@ describe('Sites production migration baseline', () => {
         checksum: string;
         replacementChecksum: string;
         reconciliationChecksum: string;
+        companyBackstopChecksum: string;
         googleChecksum: string;
         personalPurgeChecksum: string;
         authTables: number;
@@ -282,6 +293,10 @@ describe('Sites production migration baseline', () => {
                  (SELECT checksum FROM app_schema_migrations
                    WHERE version = '0024_reconcile_job_catalog_20260820') AS reconciliationChecksum,
                  (SELECT checksum FROM app_schema_migrations
+                   WHERE version = '0026_reconcile_job_catalog_20260821') AS dailyReconciliationChecksum,
+                 (SELECT checksum FROM app_schema_migrations
+                   WHERE version = '0027_add_company_backstop_jobs_20260821') AS companyBackstopChecksum,
+                 (SELECT checksum FROM app_schema_migrations
                    WHERE version = '0022_google_auth') AS googleChecksum,
                  (SELECT checksum FROM app_schema_migrations
                    WHERE version = '0023_purge_legacy_personal_data') AS personalPurgeChecksum,
@@ -323,19 +338,21 @@ describe('Sites production migration baseline', () => {
         categoryIndex: 1,
         removedNoteTables: 0,
         noteItems: 0,
-        jobs: 67,
-        visibleJobs: 60,
+        jobs: 76,
+        visibleJobs: 66,
         reviewJobs: 0,
         savedJobs: 0,
         jobItems: 0,
         jobDeadlineNotifications: 0,
-        jobSearchRows: 60,
+        jobSearchRows: 66,
         jobTechRows: expect.any(Number),
         orphanTechRows: 0,
-        jobImportBatches: 2,
+        jobImportBatches: 4,
         checksum: 'sha256:86c1de85559a9b51e959bf7c423ad8a9e9afd3586ad672c2ec32da009057fe4b',
         replacementChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
         reconciliationChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
+        dailyReconciliationChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
+        companyBackstopChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
         googleChecksum: 'sha256:d453c92ca558c68ae6efc1e9f6ef86e49a93422442aa0ad3bdc17de76e509f2d',
         personalPurgeChecksum:
           'sha256:33d7868739506072fe37c9ba0f19a863fc1343c53c31e45b79390acfaa1b9f6f',

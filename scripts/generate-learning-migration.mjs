@@ -5,7 +5,7 @@ const inputUrl = new URL(
   '../data/imports/generative_ai_prompt_context_learning.json',
   import.meta.url,
 );
-const outputUrl = new URL('../drizzle/0005_naive_blindfold.sql', import.meta.url);
+const outputUrl = new URL('../drizzle-history/0005_naive_blindfold.sql', import.meta.url);
 const payload = JSON.parse(await readFile(inputUrl, 'utf8'));
 const timestamp = '2026-08-13T00:00:00.000Z';
 const sourceId = 'source-generative-ai-context';

@@ -9,7 +9,7 @@ export const catalogPaths = {
   uncertain: 'data/imports/job-refresh-2026-08-14-v2/uncertain.json',
   excluded: 'data/imports/job-refresh-2026-08-14-v2/excluded.json',
   audit: 'data/imports/job-refresh-2026-08-14-v2/audit.json',
-  migration: 'drizzle/0020_replace_job_catalog_20260814_verified.sql',
+  migration: 'drizzle-history/0020_replace_job_catalog_20260814_verified.sql',
 };
 
 const expectedCounts = { active: 51, uncertain: 0, excluded: 19 };
