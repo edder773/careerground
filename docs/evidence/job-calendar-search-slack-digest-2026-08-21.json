@@ -1,0 +1,88 @@
+{
+  "schema": "careerground-job-calendar-search-slack-digest/v1",
+  "generatedAt": "2026-08-21T12:38:15+09:00",
+  "scope": "calendar date projection, dedicated company search, single-message Slack digest, and weekday schedule",
+  "baseline": {
+    "jobComponentTests": { "passed": 6, "failed": 0 },
+    "slackTests": { "passed": 7, "failed": 0 },
+    "calendarEventTypesPerDatedJobMaximum": 3,
+    "calendarRegistrationSurfaces": 2,
+    "slackWebhookPostsWhenJobsExist": 2,
+    "scheduleAsiaSeoul": "07:00"
+  },
+  "structuralComparison": [
+    {
+      "metric": "calendar event types per dated non-rolling job maximum",
+      "before": 3,
+      "after": 2
+    },
+    {
+      "metric": "calendar registration-date surfaces",
+      "before": 2,
+      "after": 0
+    },
+    {
+      "metric": "dedicated company search surfaces",
+      "before": 0,
+      "after": 2
+    },
+    {
+      "metric": "additional catalog requests caused by company search",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "metric": "Slack webhook POSTs when jobs exist",
+      "before": 2,
+      "after": 1,
+      "reductionPercent": 50
+    },
+    {
+      "metric": "Slack messages returned by formatter",
+      "before": 2,
+      "after": 1
+    },
+    {
+      "metric": "weekday schedule in Asia/Seoul",
+      "before": "07:00",
+      "after": "08:00"
+    }
+  ],
+  "operatingDatabaseReadOnlySnapshot": {
+    "date": "2026-08-21",
+    "totalJobRows": 105,
+    "createdOnDate": 31,
+    "dailyDigestEligible": 15,
+    "eligibility": ["status ACTIVE", "new-grad scope", "not rolling", "deadline present"],
+    "rawRowsCaptured": false,
+    "migrationRequired": false
+  },
+  "verification": {
+    "formatCheck": "pass",
+    "lint": "pass",
+    "typecheck": "pass",
+    "unitAndComponentTests": { "passed": 143, "failed": 0 },
+    "focused": {
+      "jobComponent": { "passed": 6, "failed": 0 },
+      "slack": { "passed": 8, "failed": 0 },
+      "chromiumVisual": { "passed": 5, "failed": 0 }
+    },
+    "e2e": {
+      "passed": 56,
+      "failed": 0,
+      "projects": ["chromium", "chromium-mobile-375", "firefox", "webkit"]
+    },
+    "productionBuild": "pass",
+    "sitesBuild": "pass",
+    "performanceBudget": { "status": "pass", "failures": 0 },
+    "visualViewports": ["1440x900", "375x812"]
+  },
+  "screenshots": {
+    "calendarDesktop": "docs/assets/troubleshooting/job-calendar-slack-2026-08-21/after-calendar-desktop-1440.webp",
+    "calendarMobile": "docs/assets/troubleshooting/job-calendar-slack-2026-08-21/after-calendar-mobile-375.webp"
+  },
+  "limitations": [
+    "No matched production before-and-after latency sample was captured, so no search latency or Slack delivery-latency improvement percentage is claimed.",
+    "The operating database snapshot records aggregate counts only and intentionally excludes raw production rows."
+  ]
+}

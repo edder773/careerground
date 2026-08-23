@@ -43,7 +43,7 @@ type Job = {
 type ViewMode = 'calendar' | 'list';
 type SortMode = 'new' | 'deadline' | 'company';
 type JobFontSize = 'comfortable' | 'large' | 'largest';
-type CalendarEventType = 'published' | 'application' | 'deadline' | 'rolling';
+type CalendarEventType = 'application' | 'deadline' | 'rolling';
 type CalendarEvent = { job: Job; type: CalendarEventType };
 type JobBootstrapPayload = {
   unreadCount: number;
@@ -64,9 +64,11 @@ const sizeLabels: Record<string, string> = {
 };
 const categoryLabels: Record<string, string> = {
   AI_AGENT_ENGINEERING: 'AI 에이전트 엔지니어링',
+  AI_DATA_ENGINEERING: 'AI·데이터 엔지니어링',
   AI_ENGINEERING: 'AI 엔지니어링',
   AI_ML: 'AI·머신러닝',
   AI_RESEARCH: 'AI 연구',
+  AI_ROBOTICS: 'AI·로보틱스',
   AI_SOFTWARE: 'AI 소프트웨어',
   ANDROID: '안드로이드',
   BACKEND: '백엔드',
@@ -77,27 +79,40 @@ const categoryLabels: Record<string, string> = {
   DATA_ANALYTICS: '데이터 분석',
   DATA_ENGINEERING: '데이터 엔지니어링',
   DATA_SCIENCE: '데이터 사이언스',
+  DATABASE: '데이터베이스',
+  DATABASE_AND_WEB: '데이터베이스·웹 개발',
   DESKTOP_APPLICATION: '데스크톱 애플리케이션',
   DEVOPS: '데브옵스',
+  DEVOPS_BUILD_SYSTEM: '데브옵스·빌드 시스템',
   EMBEDDED_OR_CONTROL_SOFTWARE: '임베디드·제어 소프트웨어',
   EMBEDDED_SOFTWARE: '임베디드 소프트웨어',
+  FINANCIAL_IT: '금융 IT',
   FRONTEND: '프론트엔드',
   FULLSTACK: '풀스택',
+  FULL_STACK_DEVELOPMENT: '풀스택',
   GAME_CLIENT: '게임 클라이언트',
+  GAME_DEVELOPMENT: '게임 개발',
   INDUSTRIAL_SOFTWARE: '산업용 소프트웨어',
-  IOS: 'iOS',
+  IOS: 'iOS 개발',
   ML_ENGINEERING: '머신러닝 엔지니어링',
+  MOBILE_ANDROID: '안드로이드',
+  MOBILE_DEVELOPMENT: '모바일 개발',
   MULTI_IT_ROLE: 'IT 직군 통합',
   MULTI_IT_ROLES: 'IT 직군 통합',
   MULTI_ROLE: '복수 직무',
+  PUBLIC_ICT: '공공기관 IT',
+  ROBOTICS_AUTONOMOUS: '자율주행·로보틱스',
+  SOFTWARE_DEVELOPMENT: '소프트웨어 개발',
   SOFTWARE_ENGINEERING: '소프트웨어 엔지니어링',
   SOLUTION_DEVELOPMENT: '솔루션 개발',
   SOLUTION_ENGINEERING: '솔루션 엔지니어링',
   SYSTEM_OPERATIONS: '시스템 운영',
+  SYSTEM_SOFTWARE: '시스템 소프트웨어',
   TECHNICAL_CONSULTING: '기술 컨설팅',
   WEB_DEVELOPMENT: '웹 개발',
 };
-const categoryLabel = (value: string) => categoryLabels[value] || value;
+const categoryLabel = (value: string) =>
+  categoryLabels[value] || (/[가-힣]/.test(value) ? value : '기타 IT 직무');
 const applicationLabels: Record<string, string> = {
   INTERESTED: '관심',
   PLANNED: '지원 예정',
@@ -110,7 +125,6 @@ const applicationLabels: Record<string, string> = {
 };
 const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
 const calendarEventLabels: Record<CalendarEventType, string> = {
-  published: '등록일',
   application: '접수 시작일',
   deadline: '마감일',
   rolling: '상시',
@@ -229,7 +243,7 @@ const compareJobs = (mode: SortMode) => (left: Job, right: Job) => {
 
 const fallsWithinCalendar = (job: Job, from: number, to: number) => {
   if (job.rolling) return true;
-  return [job.publishedAt, job.applicationStartAt, job.deadlineAt].some((value) => {
+  return [job.applicationStartAt, job.deadlineAt].some((value) => {
     if (!value) return false;
     const timestamp = Date.parse(value);
     return timestamp >= from && timestamp < to;
@@ -577,7 +591,9 @@ function JobFilterPanel({
                         }
                       />
                       <span className="multi-filter-check">
-                        {selectedSizes.has(value) && <Check aria-hidden="true" />}
+                        {selectedSizes.has(value) && (
+                          <Check size={12} strokeWidth={3} aria-hidden="true" />
+                        )}
                       </span>
                       <span>{label}</span>
                     </label>
@@ -597,7 +613,9 @@ function JobFilterPanel({
                         }
                       />
                       <span className="multi-filter-check">
-                        {selectedJobs.has(value) && <Check aria-hidden="true" />}
+                        {selectedJobs.has(value) && (
+                          <Check size={12} strokeWidth={3} aria-hidden="true" />
+                        )}
                       </span>
                       <span>{categoryLabel(value)}</span>
                     </label>
@@ -652,6 +670,8 @@ export function JobsPage() {
   const [memoDrafts, setMemoDrafts] = useState<Record<string, string>>({});
   const search = searchParams.get('q') || '';
   const [searchInput, setSearchInput] = useState(search);
+  const companySearch = searchParams.get('company') || '';
+  const [companySearchInput, setCompanySearchInput] = useState(companySearch);
   const rawSavedFilter = searchParams.get('saved');
   const savedOnly = rawSavedFilter === '1' || rawSavedFilter === 'true';
   const requestedJob = searchParams.get('job');
@@ -704,6 +724,15 @@ export function JobsPage() {
     }, 350);
     return () => window.clearTimeout(timer);
   }, [search, searchInput, setUrlParam]);
+  useEffect(() => setCompanySearchInput(companySearch), [companySearch]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (companySearchInput !== companySearch) {
+        setUrlParam('company', companySearchInput.trim());
+      }
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [companySearch, companySearchInput, setUrlParam]);
 
   const bounds = monthBounds(visibleMonth);
   const catalogQuery = useQuery({
@@ -730,15 +759,25 @@ export function JobsPage() {
     const sizes = new Set(companySizes);
     const selected = new Set(selectedCategories);
     const terms = search.normalize('NFKC').toLocaleLowerCase('ko-KR').split(/\s+/).filter(Boolean);
+    const companyTerms = companySearch
+      .normalize('NFKC')
+      .toLocaleLowerCase('ko-KR')
+      .split(/\s+/)
+      .filter(Boolean);
     return catalog
       .filter((job) => !sizes.size || sizes.has(job.company.size))
       .filter((job) => !selected.size || selected.has(categoryLabel(job.category)))
       .filter((job) => !savedOnly || job.bookmarked)
+      .filter((job) => {
+        if (!companyTerms.length) return true;
+        const companyName = job.company.name.normalize('NFKC').toLocaleLowerCase('ko-KR');
+        return companyTerms.every((term) => companyName.includes(term));
+      })
       .filter(
         (job) => !terms.length || terms.every((term) => searchableJobText(job).includes(term)),
       )
       .sort(compareJobs(sort));
-  }, [catalog, companySizes, savedOnly, search, selectedCategories, sort]);
+  }, [catalog, companySearch, companySizes, savedOnly, search, selectedCategories, sort]);
   const calendarJobs = useMemo(() => {
     const from = Date.parse(bounds.from);
     const to = Date.parse(bounds.to);
@@ -746,7 +785,7 @@ export function JobsPage() {
   }, [bounds.from, bounds.to, filteredJobs]);
   useEffect(
     () => setVisibleCount(JOB_PAGE_SIZE),
-    [companySizes, savedOnly, search, selectedCategories, sort],
+    [companySearch, companySizes, savedOnly, search, selectedCategories, sort],
   );
   const jobRows = viewMode === 'calendar' ? calendarJobs : filteredJobs.slice(0, visibleCount);
   const jobTotal = viewMode === 'calendar' ? calendarJobs.length : filteredJobs.length;
@@ -821,10 +860,6 @@ export function JobsPage() {
       if (job.rolling) {
         rollingJobs.push(job);
         continue;
-      }
-      if (job.publishedAt) {
-        const key = koreaDateKey(job.publishedAt);
-        grouped.set(key, [...(grouped.get(key) || []), { job, type: 'published' }]);
       }
       if (job.applicationStartAt) {
         const key = koreaDateKey(job.applicationStartAt);
@@ -908,7 +943,7 @@ export function JobsPage() {
           </span>
           <h1>신입 IT 채용공고</h1>
           <p>
-            등록일과 접수 시작일을 별도로 표시하며, 확인되지 않은 날짜는 임의로 대체하지 않습니다.
+            달력에는 접수 시작일과 마감일만 표시하며, 확인되지 않은 날짜는 임의로 대체하지 않습니다.
           </p>
         </div>
         <div className="jobs-view-switch" role="group" aria-label="채용공고 보기 방식">
@@ -932,6 +967,15 @@ export function JobsPage() {
       </section>
 
       <div className="filter-bar jobs-filter">
+        <label>
+          회사명 검색
+          <input
+            type="search"
+            value={companySearchInput}
+            onChange={(event) => setCompanySearchInput(event.target.value)}
+            placeholder="예: NAVER, 카카오"
+          />
+        </label>
         {viewMode === 'list' && (
           <>
             <label>
@@ -940,7 +984,7 @@ export function JobsPage() {
                 type="search"
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
-                placeholder="회사, 직무, 기술 스택"
+                placeholder="직무, 기술 스택, 지역"
               />
             </label>
             <label className="check-label">
@@ -1059,7 +1103,6 @@ export function JobsPage() {
             </nav>
           </header>
           <div className="job-calendar-legend" aria-label="일정 색상 안내">
-            <span className="schedule-published">등록일</span>
             <span className="schedule-application">접수 시작일</span>
             <span className="schedule-deadline">마감일</span>
             <span className="schedule-rolling">상시</span>
@@ -1178,7 +1221,7 @@ export function JobsPage() {
           if (!open) setExpandedDateKey(undefined);
         }}
         title={expandedDateKey ? `${dateLabel(expandedDateKey)} 채용 일정` : '채용 일정'}
-        description={`등록일, 접수 시작일과 마감일을 포함한 ${expandedDateEvents.length}개 일정을 확인하세요.`}
+        description={`접수 시작일과 마감일을 포함한 ${expandedDateEvents.length}개 일정을 확인하세요.`}
         items={expandedDateEvents}
         onSelect={openJob}
       />

@@ -238,8 +238,11 @@ describe('Sites production migration baseline', () => {
         checksum: string;
         replacementChecksum: string;
         reconciliationChecksum: string;
+        dailyReconciliationChecksum: string;
         companyBackstopChecksum: string;
         approvedRescanChecksum: string;
+        refresh20260824Checksum: string;
+        learningCatalogChecksum: string;
         googleChecksum: string;
         personalPurgeChecksum: string;
         authTables: number;
@@ -300,7 +303,9 @@ describe('Sites production migration baseline', () => {
                 (SELECT checksum FROM app_schema_migrations
                   WHERE version = '0028_add_approved_rescan_jobs_20260821') AS approvedRescanChecksum,
                 (SELECT checksum FROM app_schema_migrations
-                  WHERE version = '0029_reconcile_job_catalog_20260824') AS refresh20260824Checksum,
+                  WHERE version = '0030_reconcile_job_catalog_20260824') AS refresh20260824Checksum,
+                 (SELECT checksum FROM app_schema_migrations
+                   WHERE version = '0029_expand_learning_catalog_20260821') AS learningCatalogChecksum,
                  (SELECT checksum FROM app_schema_migrations
                    WHERE version = '0022_google_auth') AS googleChecksum,
                  (SELECT checksum FROM app_schema_migrations
@@ -332,7 +337,7 @@ describe('Sites production migration baseline', () => {
       );
 
       expect(schema).toEqual({
-        questions: countBefore?.count,
+        questions: (countBefore?.count || 0) + 79,
         learningColumns: 2,
         publishedColumn: 1,
         applicationStartColumn: 1,
@@ -360,6 +365,8 @@ describe('Sites production migration baseline', () => {
         companyBackstopChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
         approvedRescanChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
         refresh20260824Checksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
+        learningCatalogChecksum:
+          'sha256:316d21648a83120d94234a8c64f355728dd9b9ea298dd2a302254bffe8f9a958',
         googleChecksum: 'sha256:d453c92ca558c68ae6efc1e9f6ef86e49a93422442aa0ad3bdc17de76e509f2d',
         personalPurgeChecksum:
           'sha256:33d7868739506072fe37c9ba0f19a863fc1343c53c31e45b79390acfaa1b9f6f',

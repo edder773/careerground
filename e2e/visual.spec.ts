@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { login } from './helpers';
 
@@ -18,6 +18,39 @@ async function expectNoSeriousViolations(page: Page) {
       ['critical', 'serious', 'moderate'].includes(item.impact || ''),
     ),
   ).toEqual([]);
+}
+
+async function expectCenteredFilterCheck(checkbox: Locator) {
+  const check = checkbox.locator('..').locator('.multi-filter-check');
+  const metrics = await check.evaluate((element) => {
+    const icon = element.querySelector('svg');
+    if (!icon) return null;
+    const containerBox = element.getBoundingClientRect();
+    const iconBox = icon.getBoundingClientRect();
+    return {
+      centerDeltaX: iconBox.x + iconBox.width / 2 - (containerBox.x + containerBox.width / 2),
+      centerDeltaY: iconBox.y + iconBox.height / 2 - (containerBox.y + containerBox.height / 2),
+      iconWidth: iconBox.width,
+      iconHeight: iconBox.height,
+      lineHeight: getComputedStyle(element).lineHeight,
+    };
+  });
+  expect(metrics).not.toBeNull();
+  expect(Math.abs(metrics!.centerDeltaX)).toBeLessThanOrEqual(0.5);
+  expect(Math.abs(metrics!.centerDeltaY)).toBeLessThanOrEqual(0.5);
+  expect(metrics!.iconWidth).toBe(12);
+  expect(metrics!.iconHeight).toBe(12);
+  expect(metrics!.lineHeight).toBe('0px');
+}
+
+async function expectKoreanCategoryFilters(filterDialog: Locator) {
+  const labels = await filterDialog
+    .getByRole('group', { name: '직무' })
+    .locator('label > span:last-child')
+    .allTextContents();
+  expect(labels.length).toBeGreaterThan(0);
+  expect(labels.every((label) => /[가-힣]/.test(label))).toBe(true);
+  expect(new Set(labels).size).toBe(labels.length);
 }
 
 async function mockGoogleIdentityScript(page: Page) {
@@ -98,6 +131,14 @@ test('captures core domain screens', async ({ page }) => {
     await expect(page.getByRole('heading', { name: screen.heading, exact: true })).toBeVisible();
     if (screen.name === 'jobs') {
       await expect(page.locator('.job-card').first()).toBeVisible();
+      const companySearch = page.getByRole('searchbox', { name: '회사명 검색' });
+      await expect(companySearch).toBeVisible();
+      await companySearch.fill('NAVER');
+      await expect(page.locator('.job-card').first()).toContainText('NAVER');
+      const companyResults = await page.locator('.job-card').allTextContents();
+      expect(companyResults.length).toBeGreaterThan(0);
+      expect(companyResults.every((value) => value.includes('NAVER'))).toBe(true);
+      await companySearch.fill('');
       await page.getByRole('button', { name: /^채용공고 필터/ }).click();
       const filterDialog = page.getByRole('dialog', { name: '채용공고 전체 필터' });
       await expect(filterDialog).toBeVisible();
@@ -106,7 +147,9 @@ test('captures core domain screens', async ({ page }) => {
       await largeCompany.check();
       await filterDialog.getByRole('checkbox', { name: '백엔드', exact: true }).check();
       await expect(largeCompany.locator('..').locator('.multi-filter-check svg')).toBeVisible();
+      await expectCenteredFilterCheck(largeCompany);
       await expect(filterDialog.getByText('BACKEND', { exact: true })).toHaveCount(0);
+      await expectKoreanCategoryFilters(filterDialog);
       await page.waitForTimeout(220);
       await page.screenshot({
         path: 'test-results/visual/jobs-multi-filter-desktop-1440.png',
@@ -156,7 +199,7 @@ test('captures core domain screens', async ({ page }) => {
       await page.getByRole('button', { name: '달력' }).click();
       await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
       await expect(page.locator('.calendar-job').first()).toBeVisible();
-      await expect(page.locator('.job-calendar-legend')).toContainText('등록일');
+      await expect(page.locator('.job-calendar-legend')).not.toContainText('등록일');
       await expect(page.locator('.job-calendar-legend')).toContainText('접수 시작일');
       await expect(page.getByText('시작·확인일', { exact: true })).toHaveCount(0);
       await page.screenshot({
@@ -207,7 +250,9 @@ test('captures core domain screens', async ({ page }) => {
   await mobileLargeCompany.check();
   await mobileFilter.getByRole('checkbox', { name: '백엔드', exact: true }).check();
   await expect(mobileLargeCompany.locator('..').locator('.multi-filter-check svg')).toBeVisible();
+  await expectCenteredFilterCheck(mobileLargeCompany);
   await expect(mobileFilter.getByText('BACKEND', { exact: true })).toHaveCount(0);
+  await expectKoreanCategoryFilters(mobileFilter);
   await page.waitForTimeout(220);
   expect(await mobileFilter.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(
     'rgb(255, 255, 255)',
@@ -223,9 +268,10 @@ test('captures core domain screens', async ({ page }) => {
     fullPage: false,
   });
   await mobileFilter.getByRole('button', { name: '필터 닫기' }).click();
+  await expect(page.getByRole('searchbox', { name: '회사명 검색' })).toBeVisible();
   await page.getByRole('button', { name: '달력' }).click();
   await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
-  await expect(page.locator('.job-calendar-legend')).toContainText('등록일');
+  await expect(page.locator('.job-calendar-legend')).not.toContainText('등록일');
   await expect(page.locator('.job-calendar-legend')).toContainText('접수 시작일');
   await expect(page.getByText('시작·확인일', { exact: true })).toHaveCount(0);
   await page.screenshot({
@@ -285,9 +331,7 @@ test('captures core domain screens', async ({ page }) => {
   });
 });
 
-test('keeps registration and application start labels separate on desktop and mobile', async ({
-  page,
-}) => {
+test('keeps registration out of the calendar on desktop and mobile', async ({ page }) => {
   await mkdir('test-results/visual', { recursive: true });
   await login(page, 'calendar-label@careerground.local');
 
@@ -297,9 +341,10 @@ test('keeps registration and application start labels separate on desktop and mo
   ]) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto('/jobs');
+    await expect(page.getByRole('searchbox', { name: '회사명 검색' })).toBeVisible();
     await page.getByRole('button', { name: '달력' }).click();
     await expect(page.getByRole('region', { name: /신입 채용 달력/ })).toBeVisible();
-    await expect(page.locator('.job-calendar-legend')).toContainText('등록일');
+    await expect(page.locator('.job-calendar-legend')).not.toContainText('등록일');
     await expect(page.locator('.job-calendar-legend')).toContainText('접수 시작일');
     await expect(page.getByText('시작·확인일', { exact: true })).toHaveCount(0);
     await page.screenshot({

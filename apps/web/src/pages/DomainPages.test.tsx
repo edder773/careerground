@@ -44,17 +44,36 @@ describe('domain pages', () => {
         source: { name: '로켓펀치' },
         savedBy: [],
       },
+      {
+        id: 'job-2',
+        title: 'Frontend Engineer',
+        category: 'FRONTEND',
+        region: '판교',
+        remote: false,
+        techStack: ['TypeScript'],
+        rolling: true,
+        summary: '웹 서비스 개발',
+        sourceUrl: 'https://example.test/jobs/2',
+        company: { name: '다른회사', size: 'LARGE' },
+        source: { name: '회사 채용 홈페이지' },
+        savedBy: [],
+      },
     ];
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
         calls.push({ url, method: init?.method || 'GET' });
-        return jobBootstrap(catalog, ['BACKEND']);
+        return jobBootstrap(catalog, ['BACKEND', 'FRONTEND']);
       }),
     );
     const user = userEvent.setup();
     renderPage(<JobsPage />);
+    const companySearch = await screen.findByRole('searchbox', { name: '회사명 검색' });
+    await user.type(companySearch, 'Hudson');
+    expect(await screen.findByText('1개 공고')).toBeInTheDocument();
+    await user.clear(companySearch);
+    expect(await screen.findByText('2개 공고')).toBeInTheDocument();
     await user.type(await screen.findByRole('searchbox', { name: '공고 검색' }), 'backend');
     await user.click(await screen.findByRole('button', { name: '채용공고 필터' }));
     const filter = screen.getByRole('dialog', { name: '채용공고 전체 필터' });
@@ -85,6 +104,43 @@ describe('domain pages', () => {
     expect(calls[0]?.url).toContain('/jobs/bootstrap?catalog=true');
     await user.click(screen.getByRole('button', { name: '크게' }));
     expect(document.querySelector('.jobs-page')).toHaveAttribute('data-font-size', 'large');
+  });
+
+  it('shows only Korean job filters and merges equivalent category values', async () => {
+    const baseJob = {
+      region: '서울',
+      remote: false,
+      techStack: ['TypeScript'],
+      rolling: true,
+      summary: '신입 개발자 채용',
+      sourceUrl: 'https://example.test/jobs',
+      company: { name: '테스트회사', size: 'LARGE' },
+      source: { name: '회사 채용 홈페이지' },
+      savedBy: [],
+    };
+    const catalog = [
+      { ...baseJob, id: 'job-backend-code', title: '백엔드 개발자', category: 'BACKEND' },
+      { ...baseJob, id: 'job-backend-ko', title: '서버 개발자', category: '백엔드' },
+      { ...baseJob, id: 'job-public', title: '공공 ICT 개발자', category: 'PUBLIC_ICT' },
+      { ...baseJob, id: 'job-unknown', title: '기타 개발자', category: 'UNMAPPED_ROLE' },
+    ];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => jobBootstrap(catalog, [])),
+    );
+    const user = userEvent.setup();
+    renderPage(<JobsPage />);
+
+    await user.click(await screen.findByRole('button', { name: '채용공고 필터' }));
+    const filter = screen.getByRole('dialog', { name: '채용공고 전체 필터' });
+    const jobFilters = within(filter).getByRole('group', { name: '직무' });
+
+    expect(within(jobFilters).getAllByRole('checkbox')).toHaveLength(3);
+    expect(within(jobFilters).getAllByRole('checkbox', { name: '백엔드' })).toHaveLength(1);
+    expect(within(jobFilters).getByRole('checkbox', { name: '공공기관 IT' })).toBeInTheDocument();
+    expect(within(jobFilters).getByRole('checkbox', { name: '기타 IT 직무' })).toBeInTheDocument();
+    expect(within(jobFilters).queryByText('PUBLIC_ICT')).not.toBeInTheDocument();
+    expect(within(jobFilters).queryByText('UNMAPPED_ROLE')).not.toBeInTheDocument();
   });
 
   it('shows company deadlines in a monthly calendar with prominent source details', async () => {
@@ -137,14 +193,14 @@ describe('domain pages', () => {
 
     await user.click(screen.getByRole('button', { name: '달력' }));
     const legend = await screen.findByLabelText('일정 색상 안내');
-    expect(within(legend).getByText('등록일')).toBeInTheDocument();
+    expect(within(legend).queryByText('등록일')).not.toBeInTheDocument();
     expect(within(legend).getByText('접수 시작일')).toBeInTheDocument();
     expect(screen.queryByText('시작·확인일')).not.toBeInTheDocument();
     expect(within(legend).getByText('마감일')).toBeInTheDocument();
     expect(within(legend).getByText('상시')).toBeInTheDocument();
     await user.click(
       await screen.findByRole('button', {
-        name: '캘린더테크 신입 플랫폼 엔지니어 등록일 상세 보기',
+        name: '캘린더테크 신입 플랫폼 엔지니어 접수 시작일 상세 보기',
       }),
     );
     const dialog = screen.getByRole('dialog', { name: '캘린더테크' });

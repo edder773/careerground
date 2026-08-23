@@ -1684,6 +1684,6 @@ VALUES
    53, 0, '{"existingItems":95,"incomingItems":53,"matchedItems":43,"addedItems":10,"expiredByDeadlineItems":5,"removedItems":1,"retainedUnconfirmedItems":46,"retainedExistingRollingItems":18,"storedItemsAfter":105,"visibleItemsAfter":99,"snapshotMode":"FULL_REVALIDATION","policy":"full-revalidation-upsert; explicit-deadline-expiry; evidence-backed-removal"}', '2026-08-23T23:26:14.000Z', '2026-08-23T23:26:14.000Z');
 --> statement-breakpoint
 INSERT OR REPLACE INTO app_schema_migrations (version, checksum, applied_at)
-VALUES ('0029_reconcile_job_catalog_20260824', 'sha256:792ff1bbbbee57c96e4969cdd6ae3acc3f06bedb231b50580ef651a22ad591f9', '2026-08-23T23:26:14.000Z');
+VALUES ('0030_reconcile_job_catalog_20260824', 'sha256:792ff1bbbbee57c96e4969cdd6ae3acc3f06bedb231b50580ef651a22ad591f9', '2026-08-23T23:26:14.000Z');
 --> statement-breakpoint
 PRAGMA optimize;
