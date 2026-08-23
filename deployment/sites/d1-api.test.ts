@@ -483,16 +483,16 @@ describe('Sites D1 API', () => {
       )
       .first<{ count: number }>();
 
-    expect(jobCount?.count).toBe(105);
-    expect(currentJobCount?.count).toBe(97);
-    expect(expiredJobCount?.count).toBe(8);
+    expect(jobCount?.count).toBe(115);
+    expect(currentJobCount?.count).toBe(102);
+    expect(expiredJobCount?.count).toBe(13);
     expect(problemCount?.count).toBe(427);
     expect(sqlProblemCount?.count).toBe(62);
     expect(dummyCount?.count).toBe(0);
 
     const jobs = await call('/api/v1/jobs?sort=new');
     expect(jobs.response.status).toBe(200);
-    expect(jobs.body).toHaveLength(95);
+    expect(jobs.body).toHaveLength(99);
     expect(jobs.body).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -543,7 +543,7 @@ describe('Sites D1 API', () => {
     db.resetBatchCount();
     const catalog = await call('/api/v1/jobs?sort=new&page=cursor&limit=40', {}, memberHeaders);
     expect(catalog.response.status).toBe(200);
-    expect(catalog.body).toMatchObject({ items: expect.any(Array), total: 95 });
+    expect(catalog.body).toMatchObject({ items: expect.any(Array), total: 99 });
     expect(db.getQueryCount()).toBe(4);
     expect(db.getBatchCount()).toBe(1);
     expect(
@@ -566,7 +566,7 @@ describe('Sites D1 API', () => {
       user: { email: 'member@example.test' },
       unreadCount: expect.any(Number),
       categories: expect.arrayContaining(['AI_ML']),
-      data: { items: expect.any(Array), total: 95 },
+      data: { items: expect.any(Array), total: 99 },
     });
     expect(db.getQueryCount()).toBe(6);
     expect(db.getBatchCount()).toBe(1);
@@ -579,7 +579,7 @@ describe('Sites D1 API', () => {
       categories: expect.arrayContaining(['AI_ML', 'WEB_DEVELOPMENT']),
       data: expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]),
     });
-    expect(fullCatalog.body.data as unknown[]).toHaveLength(95);
+    expect(fullCatalog.body.data as unknown[]).toHaveLength(99);
     expect(db.getQueryCount()).toBe(4);
     expect(db.getBatchCount()).toBe(1);
   });
@@ -596,7 +596,7 @@ describe('Sites D1 API', () => {
       newcomer,
     );
     expect(bootstrap.response.status).toBe(200);
-    expect(bootstrap.body).toMatchObject({ unreadCount: 1, data: { total: 95 } });
+    expect(bootstrap.body).toMatchObject({ unreadCount: 1, data: { total: 99 } });
   });
 
   it('serves the high-traffic read routes in one D1 dispatch each', async () => {
@@ -682,7 +682,7 @@ describe('Sites D1 API', () => {
       total: number;
     };
     expect(jobPage.items).toHaveLength(10);
-    expect(jobPage.total).toBe(95);
+    expect(jobPage.total).toBe(99);
     expect(jobPage.nextCursor).toBeTruthy();
     const nextJobs = await call(
       `/api/v1/jobs?sort=new&page=cursor&limit=10&cursor=${encodeURIComponent(jobPage.nextCursor)}`,
