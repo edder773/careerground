@@ -118,13 +118,14 @@ describe('daily Slack digest', () => {
     expect(blocks[jobsHeadingIndex - 1]).toEqual({ type: 'divider' });
   });
 
-  it('runs at 08:00 on weekdays in the Seoul timezone', async () => {
+  it('runs at 08:01 on weekdays in the Seoul timezone', async () => {
     const workflow = await readFile(
       new URL('../../.github/workflows/daily-slack-digest.yml', import.meta.url),
       'utf8',
     );
-    expect(workflow).toContain("cron: '0 8 * * 1-5'");
+    expect(workflow).toContain("cron: '1 8 * * 1-5'");
     expect(workflow).toContain("timezone: 'Asia/Seoul'");
+    expect(workflow).not.toContain("cron: '0 8 * * 1-5'");
     expect(workflow).not.toContain("cron: '0 7 * * 1-5'");
   });
 

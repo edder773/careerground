@@ -2,7 +2,7 @@ name: Daily CareerGround Slack digest
 
 on:
   schedule:
-    - cron: '0 8 * * 1-5'
+    - cron: '1 8 * * 1-5'
       timezone: 'Asia/Seoul'
   workflow_dispatch:
     inputs:
