@@ -242,6 +242,7 @@ describe('Sites production migration baseline', () => {
         companyBackstopChecksum: string;
         approvedRescanChecksum: string;
         refresh20260824Checksum: string;
+        libraryImport20260824Checksum: string;
         learningCatalogChecksum: string;
         googleChecksum: string;
         personalPurgeChecksum: string;
@@ -304,6 +305,8 @@ describe('Sites production migration baseline', () => {
                   WHERE version = '0028_add_approved_rescan_jobs_20260821') AS approvedRescanChecksum,
                 (SELECT checksum FROM app_schema_migrations
                   WHERE version = '0030_reconcile_job_catalog_20260824') AS refresh20260824Checksum,
+                (SELECT checksum FROM app_schema_migrations
+                  WHERE version = '0031_import_verified_library_jobs_20260824') AS libraryImport20260824Checksum,
                  (SELECT checksum FROM app_schema_migrations
                    WHERE version = '0029_expand_learning_catalog_20260821') AS learningCatalogChecksum,
                  (SELECT checksum FROM app_schema_migrations
@@ -348,16 +351,16 @@ describe('Sites production migration baseline', () => {
         categoryIndex: 1,
         removedNoteTables: 0,
         noteItems: 0,
-        jobs: 115,
-        visibleJobs: 99,
+        jobs: 120,
+        visibleJobs: 104,
         reviewJobs: 0,
         savedJobs: 0,
         jobItems: 0,
         jobDeadlineNotifications: 0,
-        jobSearchRows: 99,
+        jobSearchRows: 104,
         jobTechRows: expect.any(Number),
         orphanTechRows: 0,
-        jobImportBatches: 6,
+        jobImportBatches: 7,
         checksum: 'sha256:86c1de85559a9b51e959bf7c423ad8a9e9afd3586ad672c2ec32da009057fe4b',
         replacementChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
         reconciliationChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
@@ -365,6 +368,7 @@ describe('Sites production migration baseline', () => {
         companyBackstopChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
         approvedRescanChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
         refresh20260824Checksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
+        libraryImport20260824Checksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
         learningCatalogChecksum:
           'sha256:316d21648a83120d94234a8c64f355728dd9b9ea298dd2a302254bffe8f9a958',
         googleChecksum: 'sha256:d453c92ca558c68ae6efc1e9f6ef86e49a93422442aa0ad3bdc17de76e509f2d',
