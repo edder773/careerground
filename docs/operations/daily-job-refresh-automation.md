@@ -63,8 +63,9 @@
 2. 운영 기준선에 같은 canonical URL이 있으면 `EXISTING_SKIPPED`로 기록하고 어떤 필드도 변경하지 않는다.
 3. 운영 기준선에 URL은 없지만 같은 `id` 또는 `fingerprint`가 있으면 `CONFLICT_REVIEW_REQUIRED`로 기록하고 배포를 중단한다.
 4. 운영 기준선에 없는 행 중 `status === ACTIVE`이고 4절 검증을 통과한 행만 `NEW_ACTIVE`로 결정한다.
-5. 운영 기준선에 없는 비활성·불확실 행은 `NON_ACTIVE_EXCLUDED`로 기록하고 마이그레이션에 넣지 않는다.
-6. `NEW_ACTIVE`가 0건이면 마이그레이션과 배포를 만들지 않고 변경 없음으로 종료한다.
+5. 실행 시점에 마감이 지난 신규 `ACTIVE` 행은 `STALE_ACTIVE_EXCLUDED`로 기록한다. 이 행만 제외하고 다른 유효 후보의 처리는 계속한다.
+6. 운영 기준선에 없는 비활성·불확실 행은 `NON_ACTIVE_EXCLUDED`로 기록하고 마이그레이션에 넣지 않는다.
+7. `NEW_ACTIVE`가 0건이면 마이그레이션과 배포를 만들지 않고 변경 없음으로 종료한다.
 
 이 작업의 허용 변경은 `NEW_ACTIVE`의 `INSERT`뿐이다. 라이브러리 JSON이 전체 스냅샷이더라도 운영 DB를 라이브러리 상태와 동기화하지 않는다.
 

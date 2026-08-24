@@ -186,10 +186,6 @@ function validateNewActive(row, libraryExportedAt, runAt, location) {
     `${location}.career_scope must be entry-level eligible.`,
   );
   requireImport(
-    row.rolling === 1 || (row.deadline_at && Date.parse(row.deadline_at) > Date.parse(runAt)),
-    `${location} must have a future deadline or rolling=1.`,
-  );
-  requireImport(
     seoulDate(row.last_verified_at) === seoulDate(libraryExportedAt),
     `${location}.last_verified_at must be from the library export date.`,
   );
@@ -253,6 +249,17 @@ export function generateLibraryInsertSql({
       });
       continue;
     }
+    if (row.rolling !== 1 && (!row.deadline_at || Date.parse(row.deadline_at) <= Date.parse(runAt))) {
+      excluded.push({
+        id: row.id,
+        company_name: row.company_name,
+        title: row.title,
+        source_url: row.source_url,
+        status: row.status,
+        reason: 'STALE_ACTIVE_EXCLUDED',
+      });
+      continue;
+    }
     validateNewActive(row, library.exportedAt, runAt, `newActive.${row.id}`);
     candidates.push(row);
   }
@@ -290,6 +297,9 @@ export function generateLibraryInsertSql({
       newSourceRows: candidates.length + excluded.length,
       addedActiveRows: candidates.length,
       excludedNewNonActiveRows: excluded.length,
+      excludedStaleActiveRows: excluded.filter(
+        (row) => row.reason === 'STALE_ACTIVE_EXCLUDED',
+      ).length,
       conflictRows: conflicts.length,
       updatedExistingRows: 0,
       deletedRows: 0,

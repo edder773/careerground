@@ -35,6 +35,7 @@ describe('library-only job insert migration', () => {
       newSourceRows: 23,
       addedActiveRows: 5,
       excludedNewNonActiveRows: 18,
+      excludedStaleActiveRows: 0,
       conflictRows: 0,
       updatedExistingRows: 0,
       deletedRows: 0,
@@ -85,7 +86,7 @@ describe('library-only job insert migration', () => {
     ).toThrow(/filename date must match exportedAt/);
   });
 
-  it('rejects stale ACTIVE rows without a future deadline or rolling evidence', async () => {
+  it('excludes stale ACTIVE rows without blocking valid new rows', async () => {
     const sources = await currentSources();
     const library = JSON.parse(sources.librarySource);
     const baseline = JSON.parse(sources.baselineSource);
@@ -99,13 +100,17 @@ describe('library-only job insert migration', () => {
     newActive.rolling = 0;
     newActive.deadline_at = '2026-08-23T14:59:59.000Z';
 
-    expect(() =>
-      generateLibraryInsertSql({
-        baselineSource: sources.baselineSource,
-        librarySource: JSON.stringify(library),
-        ...options(),
-      }),
-    ).toThrow(/future deadline or rolling=1/);
+    const result = generateLibraryInsertSql({
+      baselineSource: sources.baselineSource,
+      librarySource: JSON.stringify(library),
+      ...options(),
+    });
+
+    expect(result.candidates).toHaveLength(4);
+    expect(result.excluded).toContainEqual(
+      expect.objectContaining({ id: newActive.id, reason: 'STALE_ACTIVE_EXCLUDED' }),
+    );
+    expect(result.report.comparison.excludedStaleActiveRows).toBe(1);
   });
 
   it('rejects a new URL that collides with a baseline fingerprint', async () => {
