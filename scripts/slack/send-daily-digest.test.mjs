@@ -118,6 +118,32 @@ describe('daily Slack digest', () => {
     expect(blocks[jobsHeadingIndex - 1]).toEqual({ type: 'divider' });
   });
 
+  it('replays one imported snapshot as a jobs-only bot message', () => {
+    const messages = formatSlackMessages(
+      {
+        ...payload,
+        snapshotCreatedAt: '2026-08-24T14:34:04.000Z',
+        jobs: [
+          {
+            company: 'NHN Cloud',
+            title: '스토리지 엔진 개발',
+            deadlineAt: null,
+            rolling: 1,
+            sourceName: 'NHN Careers',
+            sourceUrl: 'https://careers.nhn.com/recruits/1',
+          },
+        ],
+      },
+      { baeumzipUrl: BAEUMZIP_URL, jobsOnly: true },
+    );
+    const rendered = JSON.stringify(messages);
+    expect(messages).toHaveLength(1);
+    expect(messages[0].text).toBe('2026년 8월 24일 23:34 final:latest CareerGround 채용 알림');
+    expect(rendered).toContain('신규 채용 알림 공고 · 1건');
+    expect(rendered).toContain('채용 시 마감 · NHN Careers');
+    expect(rendered).not.toContain('오늘의 코딩 테스트');
+  });
+
   it('runs at 08:01 on weekdays in the Seoul timezone', async () => {
     const workflow = await readFile(
       new URL('../../.github/workflows/daily-slack-digest.yml', import.meta.url),
@@ -251,5 +277,52 @@ describe('daily Slack digest', () => {
         () => new Date('2026-08-17T00:00:00.000Z'),
       ),
     ).resolves.toEqual({ messageCount: 1 });
+  });
+
+  it('requests an exact snapshot for a jobs-only replay', async () => {
+    const snapshotCreatedAt = '2026-08-24T14:34:04.000Z';
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new globalThis.Response(
+          JSON.stringify({
+            ...payload,
+            snapshotCreatedAt,
+            jobs: [
+              {
+                company: '스냅샷 회사',
+                title: '신입 개발자',
+                deadlineAt: '2026-09-01T14:59:59.000Z',
+                rolling: 0,
+                sourceName: '공식 채용',
+                sourceUrl: 'https://example.com/jobs/snapshot',
+              },
+            ],
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        ),
+      )
+      .mockResolvedValueOnce(new globalThis.Response('ok', { status: 200 }));
+
+    await expect(
+      sendDailyDigest(
+        {
+          CAREERGROUND_DIGEST_URL: 'https://careerground.example/api/v1/internal/slack-digest',
+          CAREERGROUND_DIGEST_TOKEN: 'service-token',
+          SLACK_WEBHOOK_URL: 'https://hooks.slack.com/services/T000/B000/secret',
+          BAEUMZIP_URL,
+          SLACK_DIGEST_FORCE_SEND: 'true',
+          SLACK_DIGEST_SNAPSHOT_CREATED_AT: snapshotCreatedAt,
+          SLACK_DIGEST_JOBS_ONLY: 'true',
+        },
+        fetchMock,
+        BUSINESS_DAY,
+      ),
+    ).resolves.toEqual({ messageCount: 1 });
+    const requested = new URL(String(fetchMock.mock.calls[0][0]));
+    expect(requested.searchParams.get('snapshotCreatedAt')).toBe(snapshotCreatedAt);
+    const slackPayload = JSON.parse(fetchMock.mock.calls[1][1].body);
+    expect(slackPayload.text).toContain('final:latest CareerGround 채용 알림');
+    expect(JSON.stringify(slackPayload)).not.toContain('오늘의 코딩 테스트');
   });
 });
