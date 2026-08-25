@@ -20,16 +20,10 @@
   "companies": [
     {
       "companyName": "한국무역보험공사",
-      "aliases": [
-        "한국무역보험공사",
-        "K-SURE"
-      ],
+      "aliases": ["한국무역보험공사", "K-SURE"],
       "sector": "PUBLIC",
       "selectionReason": "공공기관 포괄 신입공채 IT 직무 검사",
-      "sourcesChecked": [
-        "공식 채용 페이지",
-        "인디스워크"
-      ],
+      "sourcesChecked": ["공식 채용 페이지", "인디스워크"],
       "detailUrls": [
         "https://ksure.incruit.com/index_main.asp",
         "https://inthiswork.com/archives/385780"
@@ -40,17 +34,9 @@
     },
     {
       "companyName": "한국석유공사",
-      "aliases": [
-        "한국석유공사",
-        "KNOC"
-      ],
-      "sourcesChecked": [
-        "NCS 공정채용",
-        "자소설닷컴"
-      ],
-      "detailUrls": [
-        "https://jasoseol.com/recruit/105651"
-      ],
+      "aliases": ["한국석유공사", "KNOC"],
+      "sourcesChecked": ["NCS 공정채용", "자소설닷컴"],
+      "detailUrls": ["https://jasoseol.com/recruit/105651"],
       "decision": "ACTIVE_CANDIDATE",
       "reason": "현재 상세에서 신입/경력 기술 IT와 2026-08-28 11:00 KST 마감을 재확인했다.",
       "checkedAt": "2026-08-24T06:12:40+09:00",
@@ -59,17 +45,9 @@
     },
     {
       "companyName": "iMBC",
-      "aliases": [
-        "iMBC",
-        "아이엠비씨"
-      ],
-      "sourcesChecked": [
-        "인비원",
-        "자소설닷컴"
-      ],
-      "detailUrls": [
-        "https://jasoseol.com/recruit/52064"
-      ],
+      "aliases": ["iMBC", "아이엠비씨"],
+      "sourcesChecked": ["인비원", "자소설닷컴"],
+      "detailUrls": ["https://jasoseol.com/recruit/52064"],
       "decision": "ACTIVE_CANDIDATE",
       "reason": "현재 상세에서 웹개발 신입과 2026-08-28 마감을 재확인했다.",
       "checkedAt": "2026-08-24T06:12:40+09:00",
@@ -78,14 +56,8 @@
     },
     {
       "companyName": "연합인포맥스",
-      "aliases": [
-        "연합인포맥스",
-        "Infomax"
-      ],
-      "sourcesChecked": [
-        "자소설닷컴",
-        "JobKorea"
-      ],
+      "aliases": ["연합인포맥스", "Infomax"],
+      "sourcesChecked": ["자소설닷컴", "JobKorea"],
       "detailUrls": [
         "https://jasoseol.com/recruit/105724",
         "https://m.jobkorea.co.kr/Recruit/GI_Read/49815332"
@@ -98,17 +70,9 @@
     },
     {
       "companyName": "어플라이드 머티어리얼즈 코리아",
-      "aliases": [
-        "어플라이드머티어리얼즈코리아",
-        "Applied Materials Korea"
-      ],
-      "sourcesChecked": [
-        "자소설닷컴",
-        "공개 검색"
-      ],
-      "detailUrls": [
-        "https://jasoseol.com/recruit"
-      ],
+      "aliases": ["어플라이드머티어리얼즈코리아", "Applied Materials Korea"],
+      "sourcesChecked": ["자소설닷컴", "공개 검색"],
+      "detailUrls": ["https://jasoseol.com/recruit"],
       "decision": "EXCLUDED",
       "reason": "회사명 역검색에서 확인한 최신 2026년 8월 채용 일정은 2026-08-20 종료로 현재 활성 공고가 아니다.",
       "checkedAt": "2026-08-24T06:12:40+09:00",
@@ -117,17 +81,10 @@
     },
     {
       "companyName": "SK하이닉스",
-      "aliases": [
-        "SK하이닉스",
-        "SK hynix",
-        "하이닉스"
-      ],
+      "aliases": ["SK하이닉스", "SK hynix", "하이닉스"],
       "sector": "MANUFACTURING_IT_SERVICE",
       "selectionReason": "반도체 대기업 포괄 공채의 SW·IT 세부 직무 검사",
-      "sourcesChecked": [
-        "SK Careers",
-        "자소설닷컴"
-      ],
+      "sourcesChecked": ["SK Careers", "자소설닷컴"],
       "detailUrls": [
         "https://www.skcareers.com/Recruit/Detail/R261762",
         "https://jasoseol.com/recruit/105766"
@@ -138,20 +95,10 @@
     },
     {
       "companyName": "한화금융",
-      "aliases": [
-        "한화금융",
-        "한화생명",
-        "한화손해보험",
-        "한화투자증권",
-        "한화자산운용"
-      ],
+      "aliases": ["한화금융", "한화생명", "한화손해보험", "한화투자증권", "한화자산운용"],
       "sector": "FINANCE",
       "selectionReason": "금융그룹 공동채용 및 계열사별 IT 직무 누락 방지",
-      "sourcesChecked": [
-        "한화금융 공식 모집 페이지",
-        "자소설닷컴",
-        "인디스워크"
-      ],
+      "sourcesChecked": ["한화금융 공식 모집 페이지", "자소설닷컴", "인디스워크"],
       "detailUrls": [
         "https://recruit-hanwhafinance.com/",
         "https://jasoseol.com/recruit/105739",
@@ -163,55 +110,32 @@
     },
     {
       "companyName": "신한투자증권",
-      "aliases": [
-        "신한투자증권",
-        "신한금융"
-      ],
+      "aliases": ["신한투자증권", "신한금융"],
       "sector": "FINANCE",
       "selectionReason": "금융그룹·계열사 통합채용 검사",
-      "sourcesChecked": [
-        "인디스워크",
-        "공개 채용 상세"
-      ],
-      "detailUrls": [
-        "https://inthiswork.com/"
-      ],
+      "sourcesChecked": ["인디스워크", "공개 채용 상세"],
+      "detailUrls": ["https://inthiswork.com/"],
       "decision": "EXCLUDED",
       "reason": "현재 통합 직무는 PB 배치가 기본이며 신입 IT 모집단위가 아니다.",
       "checkedAt": "2026-08-24T08:26:14+09:00"
     },
     {
       "companyName": "iM뱅크",
-      "aliases": [
-        "iM뱅크",
-        "아이엠뱅크",
-        "DGB"
-      ],
+      "aliases": ["iM뱅크", "아이엠뱅크", "DGB"],
       "sector": "FINANCE",
       "selectionReason": "지방금융·은행 신입공채 IT 트랙 검사",
-      "sourcesChecked": [
-        "인디스워크",
-        "공개 채용 상세"
-      ],
-      "detailUrls": [
-        "https://inthiswork.com/"
-      ],
+      "sourcesChecked": ["인디스워크", "공개 채용 상세"],
+      "detailUrls": ["https://inthiswork.com/"],
       "decision": "EXCLUDED",
       "reason": "현재 신입행원 모집에서 별도 IT 개발·데이터 모집단위를 확인하지 못했다.",
       "checkedAt": "2026-08-24T08:26:14+09:00"
     },
     {
       "companyName": "한국자산평가",
-      "aliases": [
-        "한국자산평가",
-        "KAP"
-      ],
+      "aliases": ["한국자산평가", "KAP"],
       "sector": "FINANCE",
       "selectionReason": "금융공학·평가엔진 개발 직무 검사",
-      "sourcesChecked": [
-        "한국자산평가 공식 채용 게시판",
-        "인디스워크"
-      ],
+      "sourcesChecked": ["한국자산평가 공식 채용 게시판", "인디스워크"],
       "detailUrls": [
         "https://www.koreaap.com/kor/company03_02.html",
         "https://inthiswork.com/archives/385164"
@@ -222,34 +146,21 @@
     },
     {
       "companyName": "드림텍",
-      "aliases": [
-        "드림텍"
-      ],
+      "aliases": ["드림텍"],
       "sector": "MANUFACTURING_IT_SERVICE",
       "selectionReason": "포괄 상시채용의 세부 IT 직무 검사",
-      "sourcesChecked": [
-        "인디스워크",
-        "공개 검색"
-      ],
-      "detailUrls": [
-        "https://inthiswork.com/archives/389209"
-      ],
+      "sourcesChecked": ["인디스워크", "공개 검색"],
+      "detailUrls": ["https://inthiswork.com/archives/389209"],
       "decision": "UNCERTAIN",
       "reason": "상세 접근 제한으로 신입 IT 세부 직무와 현재 지원 상태를 함께 확정하지 못했다.",
       "checkedAt": "2026-08-24T08:26:14+09:00"
     },
     {
       "companyName": "화승코퍼레이션",
-      "aliases": [
-        "화승코퍼레이션",
-        "화승"
-      ],
+      "aliases": ["화승코퍼레이션", "화승"],
       "sector": "MANUFACTURING_IT_SERVICE",
       "selectionReason": "포괄 신입·경력 공채의 IT 직무 검사",
-      "sourcesChecked": [
-        "화승 공식 지원 페이지",
-        "인디스워크"
-      ],
+      "sourcesChecked": ["화승 공식 지원 페이지", "인디스워크"],
       "detailUrls": [
         "https://hwaseung.recruiter.co.kr/career/jobs/125724",
         "https://inthiswork.com/archives/389160"
@@ -260,36 +171,21 @@
     },
     {
       "companyName": "일동제약그룹",
-      "aliases": [
-        "일동제약",
-        "일동그룹"
-      ],
+      "aliases": ["일동제약", "일동그룹"],
       "sector": "MANUFACTURING_IT_SERVICE",
       "selectionReason": "포괄 공개채용의 IT 직무 검사",
-      "sourcesChecked": [
-        "일동제약 공식 채용 목록",
-        "인디스워크"
-      ],
-      "detailUrls": [
-        "https://careers.ildong.com/apply",
-        "https://inthiswork.com/archives/388802"
-      ],
+      "sourcesChecked": ["일동제약 공식 채용 목록", "인디스워크"],
+      "detailUrls": ["https://careers.ildong.com/apply", "https://inthiswork.com/archives/388802"],
       "decision": "UNCERTAIN",
       "reason": "현재 포괄 공채에서 신입 IT 세부 직무와 지원 가능 상태를 함께 확정하지 못했다.",
       "checkedAt": "2026-08-24T08:26:14+09:00"
     },
     {
       "companyName": "LG AI Research",
-      "aliases": [
-        "LG AI연구원",
-        "LG AI Research"
-      ],
+      "aliases": ["LG AI연구원", "LG AI Research"],
       "sector": "PLATFORM_TECH",
       "selectionReason": "AI 플랫폼 인턴 신규 공고 검사",
-      "sourcesChecked": [
-        "LG AI Research 공식 채용",
-        "인디스워크"
-      ],
+      "sourcesChecked": ["LG AI Research 공식 채용", "인디스워크"],
       "detailUrls": [
         "https://www.lgresearch.ai/careers/view?seq=294",
         "https://inthiswork.com/archives/387411"
@@ -300,19 +196,11 @@
     },
     {
       "companyName": "뱅크샐러드",
-      "aliases": [
-        "뱅크샐러드",
-        "Banksalad"
-      ],
+      "aliases": ["뱅크샐러드", "Banksalad"],
       "sector": "PLATFORM_TECH",
       "selectionReason": "핀테크 플랫폼 신입 모바일 개발 직무 검사",
-      "sourcesChecked": [
-        "인디스워크",
-        "공개 검색"
-      ],
-      "detailUrls": [
-        "https://inthiswork.com/archives/389403"
-      ],
+      "sourcesChecked": ["인디스워크", "공개 검색"],
+      "detailUrls": ["https://inthiswork.com/archives/389403"],
       "decision": "UNCERTAIN",
       "reason": "목록의 신입·인턴 표시는 확인했으나 상세 접근 제한으로 현재 지원 상태를 확정하지 못했다.",
       "checkedAt": "2026-08-24T08:26:14+09:00"

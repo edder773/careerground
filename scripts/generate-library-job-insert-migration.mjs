@@ -249,7 +249,10 @@ export function generateLibraryInsertSql({
       });
       continue;
     }
-    if (row.rolling !== 1 && (!row.deadline_at || Date.parse(row.deadline_at) <= Date.parse(runAt))) {
+    if (
+      row.rolling !== 1 &&
+      (!row.deadline_at || Date.parse(row.deadline_at) <= Date.parse(runAt))
+    ) {
       excluded.push({
         id: row.id,
         company_name: row.company_name,
@@ -297,9 +300,8 @@ export function generateLibraryInsertSql({
       newSourceRows: candidates.length + excluded.length,
       addedActiveRows: candidates.length,
       excludedNewNonActiveRows: excluded.length,
-      excludedStaleActiveRows: excluded.filter(
-        (row) => row.reason === 'STALE_ACTIVE_EXCLUDED',
-      ).length,
+      excludedStaleActiveRows: excluded.filter((row) => row.reason === 'STALE_ACTIVE_EXCLUDED')
+        .length,
       conflictRows: conflicts.length,
       updatedExistingRows: 0,
       deletedRows: 0,
