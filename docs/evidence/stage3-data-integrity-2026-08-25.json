@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-08-25T08:10:56Z",
+  "baselineCommit": "07303759702fae27b017abb52a98dd532a6faf63",
+  "environment": {
+    "node": "26.7.0",
+    "pnpm": "11.21.0",
+    "database": "isolated LocalD1 with repository migrations",
+    "timezone": "Asia/Seoul"
+  },
+  "baseline": {
+    "runtimeExpectedMigration": "0023_purge_legacy_personal_data",
+    "productionLatestLedgerMigration": "0032_import_library_jobs_20260825",
+    "unledgeredPackagedMigrationCount": 1,
+    "productionMigrationListAuthorities": 3,
+    "slackDatabaseDeliveryGuards": 0,
+    "jobCanonicalUniqueConstraints": 1
+  },
+  "after": {
+    "runtimeExpectedMigration": "0034_migration_authority_and_delivery_integrity",
+    "productionMigrationListAuthorities": 1,
+    "packagedForwardMigrationCount": 11,
+    "localJobRows": 135,
+    "localCanonicalJobKeys": 135,
+    "localDistinctCanonicalJobKeys": 135,
+    "slackDatabaseDeliveryGuards": 1,
+    "consecutiveDailyClaims": {
+      "first": "CLAIMED",
+      "second": "BLOCKED",
+      "afterCompletion": "ALREADY_SENT"
+    }
+  },
+  "validation": {
+    "targeted": {
+      "files": 4,
+      "tests": 61,
+      "status": "passed"
+    },
+    "unitIntegration": {
+      "files": 38,
+      "tests": 158,
+      "status": "passed"
+    },
+    "e2e": {
+      "projects": 4,
+      "tests": 56,
+      "duration": "1.2m",
+      "status": "passed"
+    },
+    "performanceBudget": {
+      "jobsCursorP95Milliseconds": 5.26,
+      "searchP95Milliseconds": 38.21,
+      "failures": 0,
+      "status": "passed"
+    },
+    "recoveryDrill": {
+      "snapshotBytes": 1912832,
+      "snapshotPages": 467,
+      "snapshotDurationMilliseconds": 2.3,
+      "restoreDurationMilliseconds": 2.02,
+      "foreignKeyViolations": 0,
+      "checksumMatched": true,
+      "jobs": 135,
+      "slackDigestDeliveries": 1,
+      "schemaMigrationRows": 20,
+      "status": "passed"
+    },
+    "productionBuild": "passed",
+    "slackMessagesSent": 0
+  },
+  "limitations": [
+    "Incoming Webhooks do not provide end-to-end exactly-once delivery; ambiguous network outcomes are blocked as UNCERTAIN instead of being retried automatically.",
+    "Production D1 export remains unavailable through the installed Sites management surface."
+  ]
+}

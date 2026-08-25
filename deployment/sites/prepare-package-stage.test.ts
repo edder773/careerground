@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { preparePackageStage } from './prepare-package-stage.js';
+import { PRODUCTION_MIGRATIONS } from './migration-authority.js';
 
 describe('Sites package staging', () => {
   it('keeps the immutable source history out of the production migration archive', async () => {
@@ -17,17 +18,40 @@ describe('Sites package staging', () => {
       mkdirSync(join(project, 'drizzle'), { recursive: true });
       writeFileSync(join(project, 'dist/server/index.js'), 'export default {};\n');
       writeFileSync(join(project, '.openai/hosting.json'), '{"d1":"DB"}\n');
-      writeFileSync(join(project, 'dist/.openai/drizzle/0025_forward.sql'), 'SELECT 25;\n');
-      writeFileSync(join(project, 'dist/.openai/drizzle/0026_index.sql'), 'SELECT 26;\n');
+      for (const migration of PRODUCTION_MIGRATIONS) {
+        writeFileSync(join(project, 'dist/.openai/drizzle', migration), `SELECT '${migration}';\n`);
+      }
       writeFileSync(join(project, 'drizzle/0000_baseline.sql'), 'SELECT 0;\n');
       writeFileSync(join(project, 'drizzle/0025_forward.sql'), 'SELECT 25;\n');
 
       const result = await preparePackageStage(project, stage);
 
-      expect(result.migrations).toEqual(['0025_forward.sql', '0026_index.sql']);
+      expect(result.migrations).toEqual(PRODUCTION_MIGRATIONS);
       expect(() => readFileSync(join(stage, 'drizzle/0000_baseline.sql'))).toThrow();
-      expect(readFileSync(join(stage, 'dist/.openai/drizzle/0025_forward.sql'), 'utf8')).toBe(
-        'SELECT 25;\n',
+      expect(
+        readFileSync(join(stage, 'dist/.openai/drizzle', PRODUCTION_MIGRATIONS[0]), 'utf8'),
+      ).toBe(`SELECT '${PRODUCTION_MIGRATIONS[0]}';\n`);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects an unlisted forward migration', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'careerground-package-unlisted-'));
+    const project = join(root, 'project');
+    try {
+      mkdirSync(join(project, 'dist/server'), { recursive: true });
+      mkdirSync(join(project, 'dist/.openai/drizzle'), { recursive: true });
+      mkdirSync(join(project, '.openai'), { recursive: true });
+      writeFileSync(join(project, 'dist/server/index.js'), 'export default {};\n');
+      writeFileSync(join(project, '.openai/hosting.json'), '{"d1":"DB"}\n');
+      for (const migration of PRODUCTION_MIGRATIONS) {
+        writeFileSync(join(project, 'dist/.openai/drizzle', migration), 'SELECT 1;\n');
+      }
+      writeFileSync(join(project, 'dist/.openai/drizzle/9999_unapproved.sql'), 'SELECT 9999;\n');
+
+      await expect(preparePackageStage(project, join(root, 'stage'))).rejects.toThrow(
+        /migration authority mismatch/,
       );
     } finally {
       rmSync(root, { recursive: true, force: true });

@@ -51,6 +51,9 @@ const checks = {
   duplicateJobFingerprints: `SELECT COUNT(*) AS count FROM (
     SELECT fingerprint FROM jobs WHERE fingerprint IS NOT NULL
     GROUP BY fingerprint HAVING COUNT(*) > 1)`,
+  duplicateCanonicalJobKeys: `SELECT COUNT(*) AS count FROM (
+    SELECT canonical_key FROM jobs WHERE canonical_key IS NOT NULL
+    GROUP BY canonical_key HAVING COUNT(*) > 1)`,
   duplicateLearningPackages: `SELECT COUNT(*) AS count FROM (
     SELECT source_checksum, source_version FROM learning_sources
     WHERE source_checksum IS NOT NULL AND source_version IS NOT NULL
@@ -67,6 +70,17 @@ const checks = {
        OR bookmarked NOT IN (0, 1)`,
   expiredUnconsumedPreviews: `SELECT COUNT(*) AS count FROM import_previews
     WHERE consumed_at IS NULL AND expires_at < datetime('now')`,
+  invalidSlackDigestDeliveries: `SELECT COUNT(*) AS count FROM slack_digest_deliveries
+    WHERE status NOT IN ('CLAIMED', 'SENT', 'FAILED', 'UNCERTAIN')
+       OR delivery_mode NOT IN ('DAILY', 'SNAPSHOT')
+       OR attempt_count < 1
+       OR length(claim_token_hash) <> 64
+       OR length(payload_checksum) <> 64`,
+  missingMigrationAuthority: `SELECT CASE WHEN EXISTS (
+    SELECT 1 FROM app_schema_migrations
+     WHERE version = '0034_migration_authority_and_delivery_integrity'
+       AND checksum = 'sha256:f67834f4d70094941c682f94ad726066d4ffeb7f9380d7cbf5c18783191eee56'
+  ) THEN 0 ELSE 1 END AS count`,
 };
 
 const results = Object.fromEntries(

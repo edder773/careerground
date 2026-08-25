@@ -1,9 +1,8 @@
 import { first, type D1Database } from './d1.js';
+import { EXPECTED_SCHEMA_CHECKSUM, EXPECTED_SCHEMA_VERSION } from './migration-authority.js';
 
 const schemaPromises = new WeakMap<D1Database, Promise<void>>();
-export const EXPECTED_SCHEMA_VERSION = '0023_purge_legacy_personal_data';
-export const EXPECTED_SCHEMA_CHECKSUM =
-  'sha256:33d7868739506072fe37c9ba0f19a863fc1343c53c31e45b79390acfaa1b9f6f';
+export { EXPECTED_SCHEMA_CHECKSUM, EXPECTED_SCHEMA_VERSION };
 
 export type RuntimeSchemaState = {
   ready: boolean;
@@ -20,6 +19,9 @@ export type RuntimeSchemaState = {
   legacyNoteConstraintCount: number;
   authTableCount: number;
   legacyIdentityColumnCount: number;
+  canonicalJobColumnCount: number;
+  canonicalJobIndexCount: number;
+  slackDeliveryTableCount: number;
 };
 
 export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchemaState> {
@@ -57,6 +59,9 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
       legacyNoteConstraintCount: 0,
       authTableCount: 0,
       legacyIdentityColumnCount: 0,
+      canonicalJobColumnCount: 0,
+      canonicalJobIndexCount: 0,
+      slackDeliveryTableCount: 0,
     };
   }
   const state = await first<{
@@ -71,6 +76,9 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
     legacyNoteConstraintCount: number;
     authTableCount: number;
     legacyIdentityColumnCount: number;
+    canonicalJobColumnCount: number;
+    canonicalJobIndexCount: number;
+    slackDeliveryTableCount: number;
   }>(
     db,
     `SELECT
@@ -98,7 +106,13 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
        (SELECT COUNT(*) FROM sqlite_schema
          WHERE type = 'table' AND name IN ('auth_identities', 'auth_sessions')) AS authTableCount,
        (SELECT COUNT(*) FROM pragma_table_info('users')
-         WHERE name = 'site_user_id') AS legacyIdentityColumnCount`,
+         WHERE name = 'site_user_id') AS legacyIdentityColumnCount,
+       (SELECT COUNT(*) FROM pragma_table_xinfo('jobs')
+         WHERE name = 'canonical_key') AS canonicalJobColumnCount,
+       (SELECT COUNT(*) FROM pragma_index_list('jobs')
+         WHERE name = 'idx_jobs_canonical_key' AND [unique] = 1) AS canonicalJobIndexCount,
+       (SELECT COUNT(*) FROM sqlite_schema
+         WHERE type = 'table' AND name = 'slack_digest_deliveries') AS slackDeliveryTableCount`,
   );
   const tableCount = Number(state?.tableCount || 0);
   const triggerCount = Number(state?.triggerCount || 0);
@@ -111,6 +125,9 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
   const legacyNoteConstraintCount = Number(state?.legacyNoteConstraintCount || 0);
   const authTableCount = Number(state?.authTableCount || 0);
   const legacyIdentityColumnCount = Number(state?.legacyIdentityColumnCount || 0);
+  const canonicalJobColumnCount = Number(state?.canonicalJobColumnCount || 0);
+  const canonicalJobIndexCount = Number(state?.canonicalJobIndexCount || 0);
+  const slackDeliveryTableCount = Number(state?.slackDeliveryTableCount || 0);
   const ledger =
     tableCount === 10
       ? await first<{ version: string; checksum: string }>(
@@ -132,6 +149,9 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
       removedNoteSearchCount === 0 &&
       legacyNoteConstraintCount === 0 &&
       authTableCount === 2 &&
+      canonicalJobColumnCount === 1 &&
+      canonicalJobIndexCount === 1 &&
+      slackDeliveryTableCount === 1 &&
       appliedVersion === EXPECTED_SCHEMA_VERSION &&
       ledger?.checksum === EXPECTED_SCHEMA_CHECKSUM,
     expectedVersion: EXPECTED_SCHEMA_VERSION,
@@ -147,6 +167,9 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
     legacyNoteConstraintCount,
     authTableCount,
     legacyIdentityColumnCount,
+    canonicalJobColumnCount,
+    canonicalJobIndexCount,
+    slackDeliveryTableCount,
   };
 }
 

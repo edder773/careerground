@@ -235,28 +235,73 @@ export async function sendDailyDigest(
   const digestRequestUrl = new URL(digestUrl);
   const snapshotCreatedAt = String(env.SLACK_DIGEST_SNAPSHOT_CREATED_AT || '').trim();
   const jobsOnly = forceSendEnabled(env.SLACK_DIGEST_JOBS_ONLY);
-  if (snapshotCreatedAt) digestRequestUrl.searchParams.set('snapshotCreatedAt', snapshotCreatedAt);
   if (jobsOnly && !snapshotCreatedAt) {
     throw new Error('채용공고만 재전송하려면 SLACK_DIGEST_SNAPSHOT_CREATED_AT이 필요합니다.');
   }
 
-  const digestResponse = await fetchImpl(snapshotCreatedAt ? digestRequestUrl : digestUrl, {
-    headers: { authorization: `Bearer ${digestToken}` },
+  digestRequestUrl.pathname = `${digestRequestUrl.pathname.replace(/\/$/, '')}/claim`;
+  digestRequestUrl.search = '';
+  const apiHeaders = {
+    authorization: `Bearer ${digestToken}`,
+    'content-type': 'application/json',
+  };
+  const digestResponse = await fetchImpl(digestRequestUrl, {
+    method: 'POST',
+    headers: apiHeaders,
+    body: JSON.stringify({ snapshotCreatedAt: snapshotCreatedAt || undefined, jobsOnly }),
     signal: globalThis.AbortSignal.timeout(15_000),
   });
   if (!digestResponse.ok) {
     throw new Error(`CareerGround 알림 API 오류: HTTP ${digestResponse.status}`);
   }
-  const messages = formatSlackMessages(await digestResponse.json(), { baeumzipUrl, jobsOnly });
-  for (const message of messages) {
-    const slackResponse = await fetchImpl(webhook, {
+  const claim = await digestResponse.json();
+  if (claim.status !== 'claimed') {
+    return {
+      messageCount: 0,
+      skipped: {
+        reason: claim.status === 'already-sent' ? 'already-sent' : 'delivery-blocked',
+        dateKey: String(claim.deliveryKey || ''),
+      },
+    };
+  }
+  const settleUrl = new URL(digestRequestUrl);
+  const settle = async (action, extra = {}) => {
+    settleUrl.pathname = settleUrl.pathname.replace(/\/claim$/, `/${action}`);
+    const response = await fetchImpl(settleUrl, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(message),
+      headers: apiHeaders,
+      body: JSON.stringify({
+        deliveryKey: claim.deliveryKey,
+        claimToken: claim.claimToken,
+        ...extra,
+      }),
       signal: globalThis.AbortSignal.timeout(15_000),
     });
-    if (!slackResponse.ok) throw new Error(`Slack 전송 오류: HTTP ${slackResponse.status}`);
+    if (!response.ok) throw new Error(`CareerGround 발송 확정 API 오류: HTTP ${response.status}`);
+  };
+  const messages = formatSlackMessages(claim.payload, { baeumzipUrl, jobsOnly });
+  for (const message of messages) {
+    let slackResponse;
+    try {
+      slackResponse = await fetchImpl(webhook, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(message),
+        signal: globalThis.AbortSignal.timeout(15_000),
+      });
+    } catch (error) {
+      await settle('fail', {
+        uncertain: true,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+    if (!slackResponse.ok) {
+      await settle('fail', { error: `Slack HTTP ${slackResponse.status}` });
+      throw new Error(`Slack 전송 오류: HTTP ${slackResponse.status}`);
+    }
   }
+  await settle('complete');
   return { messageCount: messages.length };
 }
 

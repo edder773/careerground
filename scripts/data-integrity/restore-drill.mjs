@@ -38,6 +38,8 @@ const tableNames = [
   'job_source_snapshot_items',
   'request_rate_limits',
   'scheduler_leases',
+  'slack_digest_deliveries',
+  'app_schema_migrations',
 ];
 
 function tableCounts(database) {
@@ -50,13 +52,27 @@ function tableCounts(database) {
 }
 
 function contentChecksum(database) {
-  const rows = database
-    .prepare(
-      `SELECT id, user_id AS userId, name, icon, color, position
-         FROM collections WHERE id = 'restore-drill-collection'`,
-    )
-    .all();
-  return createHash('sha256').update(JSON.stringify(rows)).digest('hex');
+  const fixture = {
+    collections: database
+      .prepare(
+        `SELECT id, user_id AS userId, name, icon, color, position
+           FROM collections WHERE id = 'restore-drill-collection'`,
+      )
+      .all(),
+    deliveries: database
+      .prepare(
+        `SELECT delivery_key AS deliveryKey, status, payload_checksum AS payloadChecksum
+           FROM slack_digest_deliveries WHERE delivery_key = 'daily:2099-01-01'`,
+      )
+      .all(),
+    authority: database
+      .prepare(
+        `SELECT version, checksum FROM app_schema_migrations
+          WHERE version = '0034_migration_authority_and_delivery_integrity'`,
+      )
+      .all(),
+  };
+  return createHash('sha256').update(JSON.stringify(fixture)).digest('hex');
 }
 
 function verify(database) {
@@ -95,6 +111,15 @@ try {
       timestamp,
       timestamp,
     )
+    .run();
+  await source
+    .prepare(
+      `INSERT INTO slack_digest_deliveries
+         (delivery_key, delivery_mode, status, claim_token_hash, payload, payload_checksum,
+          attempt_count, claimed_at, completed_at)
+       VALUES ('daily:2099-01-01', 'DAILY', 'SENT', ?, '{}', ?, 1, ?, ?)`,
+    )
+    .bind('a'.repeat(64), 'b'.repeat(64), timestamp, timestamp)
     .run();
   await source
     .prepare(
