@@ -42,13 +42,14 @@ E2E는 `deployment/sites/local-d1-server.ts`가 메모리 D1 fixture를 직접 �
    - `dist/server/index.js`
    - `dist/.openai/hosting.json`
    - `dist/.openai/drizzle/*.sql`
-   - `drizzle-history/`의 이미 적용된 migration은 없고 `drizzle/`의 `0025` 이후 순방향 migration만 존재
+   - `drizzle-history/`의 이미 적용된 migration은 없음
+   - `deployment/sites/migration-authority.ts`에 등록된 `0025` 이후 순방향 migration만 존재
 6. **같은 commit SHA와 archive**를 새 Sites version으로 저장한다.
 7. visibility를 `public`으로 지정해 운영 배포한다.
 8. 배포 상태가 완료될 때까지 확인하고 `/api/v1/health/ready`가 `200`, `database: d1`을 반환하는지 검사한다.
 9. 로그인 사용자로 홈·채용·코딩·학습의 공통 데이터와 폴더의 사용자별 격리를 smoke test한다.
 
-소스 commit만 저장하고 archive를 생략하면 플랫폼이 모노레포의 일반 `build`를 다시 선택하여 Worker와 migration을 누락할 수 있다. 따라서 소스와 archive의 SHA 일치와 archive migration 목록 검사는 배포 불변식이다. 새 Sites 프로젝트는 기존 runtime baseline이 없으므로 이 0017 이후 staging 규칙 대신 0000부터 전체 migration을 적용하는 별도 bootstrap이 필요하다.
+소스 commit만 저장하고 archive를 생략하면 플랫폼이 모노레포의 일반 `build`를 다시 선택하여 Worker와 migration을 누락할 수 있다. 따라서 소스와 archive의 SHA 일치와 archive migration 목록 검사는 배포 불변식이다. 새 Sites 프로젝트는 기존 runtime baseline이 없으므로 이 0025 이후 staging 규칙 대신 0000부터 전체 migration을 적용하는 별도 bootstrap이 필요하다.
 
 ## 설정과 비밀
 
@@ -63,4 +64,6 @@ E2E는 `deployment/sites/local-d1-server.ts`가 메모리 D1 fixture를 직접 �
 
 ## migration과 rollback
 
-D1 migration은 기존 파일을 수정하지 않고 새 순방향 SQL만 `drizzle/`에 추가한다. 운영 적용이 끝난 과거 SQL은 `drizzle-history/`에 보존하며 배포 archive에는 포함하지 않는다. 배포 전 export를 확보하고, migration 이후 무결성 집계를 비교한다. 애플리케이션 rollback은 이전 정상 Sites version을 다시 배포하되, 이미 적용된 스키마는 되돌리지 않고 호환 가능한 forward-fix migration을 만든다. 상세 절차는 `docs/operations/backup-restore.md`를 따른다.
+D1 migration은 기존 파일을 수정하지 않고 새 순방향 SQL만 `drizzle/`에 추가한다. 운영 적용이 끝난 과거 SQL은 `drizzle-history/`에 보존하며 배포 archive에는 포함하지 않는다. 운영 archive의 유일한 순서·포함 권위는 `deployment/sites/migration-authority.ts`다. 새 SQL을 추가할 때 이 목록과 최신 expected version/checksum을 함께 갱신해야 하며, build와 staging은 누락되거나 목록에 없는 SQL을 거부한다. `db/schema.ts`와 Prisma schema는 운영 migration을 실행하는 권위가 아니라 타입·reference 용도다.
+
+배포 전 export를 확보하고, migration 이후 원장 version/checksum, canonical job key 중복, Slack delivery 상태, 공통·개인 데이터 집계를 비교한다. 애플리케이션 rollback은 이전 정상 Sites version을 다시 배포하되, 이미 적용된 스키마는 되돌리지 않고 호환 가능한 forward-fix migration을 만든다. 상세 절차는 `docs/operations/backup-restore.md`를 따른다.

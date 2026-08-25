@@ -13,6 +13,7 @@ import {
 } from './d1.js';
 import {
   canonicalJobUrl,
+  canonicalJobIdentity,
   DomainValidationError,
   jobFingerprint,
   normalizedText,
@@ -1294,6 +1295,130 @@ async function slackDigest(db: D1Database, requestUrl: URL) {
   };
 }
 
+type SlackDigestDeliveryRow = {
+  deliveryKey: string;
+  status: 'CLAIMED' | 'SENT' | 'FAILED' | 'UNCERTAIN';
+  payload: string;
+  attemptCount: number;
+};
+
+const slackDigestDeliveryInput = (input: unknown) => {
+  const body = parseObject(input);
+  const snapshotCreatedAt = cleanText(body.snapshotCreatedAt);
+  const jobsOnly = body.jobsOnly === true;
+  if (jobsOnly && !snapshotCreatedAt) {
+    throw new RouteError(
+      400,
+      '채용공고 전용 알림에는 스냅샷 반영 시각이 필요합니다.',
+      'SNAPSHOT_REQUIRED',
+    );
+  }
+  return { snapshotCreatedAt, jobsOnly };
+};
+
+async function claimSlackDigest(db: D1Database, requestUrl: URL, input: unknown) {
+  const options = slackDigestDeliveryInput(input);
+  const digestUrl = new URL(requestUrl);
+  digestUrl.pathname = '/api/v1/internal/slack-digest';
+  digestUrl.search = '';
+  if (options.snapshotCreatedAt) {
+    digestUrl.searchParams.set('snapshotCreatedAt', options.snapshotCreatedAt);
+  }
+  const payload = await slackDigest(db, digestUrl);
+  const deliveryMode = options.snapshotCreatedAt ? 'SNAPSHOT' : 'DAILY';
+  const deliveryKey = options.snapshotCreatedAt
+    ? `snapshot:${options.snapshotCreatedAt}:jobs`
+    : `daily:${payload.date}`;
+  const serializedPayload = JSON.stringify(payload);
+  const payloadChecksum = await sha256(serializedPayload);
+  const claimToken = newSessionToken();
+  const claimTokenHash = await hashSessionToken(claimToken);
+  const timestamp = nowIso();
+  const claimed = await all<SlackDigestDeliveryRow>(
+    db,
+    `INSERT INTO slack_digest_deliveries
+       (delivery_key, delivery_mode, status, claim_token_hash, payload, payload_checksum,
+        attempt_count, claimed_at)
+     VALUES (?, ?, 'CLAIMED', ?, ?, ?, 1, ?)
+     ON CONFLICT(delivery_key) DO UPDATE SET
+       delivery_mode = excluded.delivery_mode,
+       status = 'CLAIMED',
+       claim_token_hash = excluded.claim_token_hash,
+       payload = excluded.payload,
+       payload_checksum = excluded.payload_checksum,
+       attempt_count = slack_digest_deliveries.attempt_count + 1,
+       claimed_at = excluded.claimed_at,
+       completed_at = NULL,
+       failed_at = NULL,
+       last_error = NULL
+     WHERE slack_digest_deliveries.status = 'FAILED'
+     RETURNING delivery_key AS deliveryKey, status, payload, attempt_count AS attemptCount`,
+    deliveryKey,
+    deliveryMode,
+    claimTokenHash,
+    serializedPayload,
+    payloadChecksum,
+    timestamp,
+  );
+  if (claimed[0]) {
+    return {
+      status: 'claimed' as const,
+      deliveryKey,
+      claimToken,
+      attemptCount: Number(claimed[0].attemptCount),
+      jobsOnly: options.jobsOnly,
+      payload: JSON.parse(claimed[0].payload) as Record<string, unknown>,
+    };
+  }
+  const existing = await first<SlackDigestDeliveryRow>(
+    db,
+    `SELECT delivery_key AS deliveryKey, status, payload, attempt_count AS attemptCount
+       FROM slack_digest_deliveries WHERE delivery_key = ?`,
+    deliveryKey,
+  );
+  return {
+    status: existing?.status === 'SENT' ? ('already-sent' as const) : ('blocked' as const),
+    deliveryKey,
+    deliveryStatus: existing?.status || 'UNKNOWN',
+    attemptCount: Number(existing?.attemptCount || 0),
+  };
+}
+
+async function settleSlackDigestDelivery(
+  db: D1Database,
+  input: unknown,
+  outcome: 'SENT' | 'FAILED' | 'UNCERTAIN',
+) {
+  const body = parseObject(input);
+  const deliveryKey = cleanText(body.deliveryKey);
+  const claimToken = cleanText(body.claimToken);
+  if (!deliveryKey || !claimToken) {
+    throw new RouteError(400, '발송 식별자와 claim token이 필요합니다.', 'DELIVERY_CLAIM_REQUIRED');
+  }
+  const claimTokenHash = await hashSessionToken(claimToken);
+  const timestamp = nowIso();
+  const error = cleanText(body.error).slice(0, 500) || null;
+  const result = await db
+    .prepare(
+      `UPDATE slack_digest_deliveries
+          SET status = ?,
+              completed_at = CASE WHEN ? = 'SENT' THEN ? ELSE completed_at END,
+              failed_at = CASE WHEN ? IN ('FAILED', 'UNCERTAIN') THEN ? ELSE NULL END,
+              last_error = ?
+        WHERE delivery_key = ? AND status = 'CLAIMED' AND claim_token_hash = ?`,
+    )
+    .bind(outcome, outcome, timestamp, outcome, timestamp, error, deliveryKey, claimTokenHash)
+    .run();
+  if (Number(result.meta?.changes || 0) !== 1) {
+    throw new RouteError(
+      409,
+      '발송 claim이 없거나 이미 종료되었습니다.',
+      'DELIVERY_CLAIM_CONFLICT',
+    );
+  }
+  return { status: outcome.toLowerCase(), deliveryKey };
+}
+
 type BatchResult = { results?: Record<string, unknown>[] };
 
 const batchRows = <T>(result: BatchResult | undefined) => (result?.results || []) as T[];
@@ -2410,14 +2535,17 @@ async function analyzeJobImport(db: D1Database, input: unknown) {
       index,
       item,
       canonicalUrl: canonicalJobUrl(item.sourceUrl),
+      canonicalKey: canonicalJobIdentity(item.sourceId, item.sourceUrl),
       fingerprint: await jobFingerprint(item),
     })),
   );
   const existingByUrl = new Map<string, string>();
+  const existingByCanonicalKey = new Map<string, string>();
   const existingFingerprints = new Set<string>();
   for (let offset = 0; offset < normalized.length; offset += 200) {
     const chunk = normalized.slice(offset, offset + 200);
     const urls = [...new Set(chunk.map((row) => row.canonicalUrl))];
+    const canonicalKeys = [...new Set(chunk.map((row) => row.canonicalKey))];
     const fingerprints = [...new Set(chunk.map((row) => row.fingerprint))];
     const urlRows = urls.length
       ? await all<{ id: string; sourceUrl: string }>(
@@ -2427,6 +2555,15 @@ async function analyzeJobImport(db: D1Database, input: unknown) {
         )
       : [];
     for (const row of urlRows) existingByUrl.set(row.sourceUrl, row.id);
+    const canonicalRows = canonicalKeys.length
+      ? await all<{ id: string; canonicalKey: string }>(
+          db,
+          `SELECT id, canonical_key AS canonicalKey FROM jobs
+            WHERE canonical_key IN (${canonicalKeys.map(() => '?').join(',')})`,
+          ...canonicalKeys,
+        )
+      : [];
+    for (const row of canonicalRows) existingByCanonicalKey.set(row.canonicalKey, row.id);
     const fingerprintRows = fingerprints.length
       ? await all<{ fingerprint: string }>(
           db,
@@ -2437,6 +2574,7 @@ async function analyzeJobImport(db: D1Database, input: unknown) {
     for (const row of fingerprintRows) existingFingerprints.add(row.fingerprint);
   }
   const seenUrls = new Set<string>();
+  const seenCanonicalKeys = new Set<string>();
   const seenFingerprints = new Set<string>();
   const rows = normalized.map((row) => {
     let outcome: 'CREATE' | 'REVIEW' | 'REJECT' | 'DUPLICATE';
@@ -2447,12 +2585,19 @@ async function analyzeJobImport(db: D1Database, input: unknown) {
     } else if (row.item.careerScope === 'CAREER_ONLY') {
       outcome = 'REJECT';
       reason = '경력직 전용 공고';
-    } else if (seenUrls.has(row.canonicalUrl) || seenFingerprints.has(row.fingerprint)) {
+    } else if (
+      seenUrls.has(row.canonicalUrl) ||
+      seenCanonicalKeys.has(row.canonicalKey) ||
+      seenFingerprints.has(row.fingerprint)
+    ) {
       outcome = 'DUPLICATE';
       reason = '입력 package 내부 중복';
     } else if (existingByUrl.has(row.canonicalUrl)) {
       outcome = 'DUPLICATE';
       reason = '기존 공고는 변경하지 않음';
+    } else if (existingByCanonicalKey.has(row.canonicalKey)) {
+      outcome = 'DUPLICATE';
+      reason = '같은 출처의 공고 식별자가 이미 등록되어 있음';
     } else if (existingFingerprints.has(row.fingerprint)) {
       outcome = 'REVIEW';
       reason = 'URL은 다르지만 fingerprint가 같은 공고';
@@ -2465,9 +2610,16 @@ async function analyzeJobImport(db: D1Database, input: unknown) {
     }
     if (outcome !== 'REJECT') {
       seenUrls.add(row.canonicalUrl);
+      seenCanonicalKeys.add(row.canonicalKey);
       seenFingerprints.add(row.fingerprint);
     }
-    return { ...row, outcome, reason, existingId: existingByUrl.get(row.canonicalUrl) };
+    return {
+      ...row,
+      outcome,
+      reason,
+      existingId:
+        existingByUrl.get(row.canonicalUrl) || existingByCanonicalKey.get(row.canonicalKey),
+    };
   });
   const counts = {
     original: rows.length,
@@ -2552,7 +2704,7 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
               deadline_at, rolling, summary, status, fingerprint, collected_at, last_verified_at,
               created_at, updated_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-           ON CONFLICT(source_url) DO NOTHING`,
+           ON CONFLICT DO NOTHING`,
       )
       .bind(
         row.persistedId,
@@ -4396,6 +4548,45 @@ export async function handleD1Api(request: Request, env: D1Env) {
       }
       await requireDigestToken(request, env);
       return finish(responseJson(await slackDigest(env.DB, url), 200, requestId));
+    }
+    if (url.pathname === '/api/v1/internal/slack-digest/claim') {
+      if (request.method !== 'POST') {
+        throw new RouteError(405, 'POST 요청만 허용됩니다.', 'METHOD_NOT_ALLOWED', undefined, {
+          allow: 'POST',
+        });
+      }
+      await requireDigestToken(request, env);
+      return finish(
+        responseJson(await claimSlackDigest(env.DB, url, await readJson(request)), 200, requestId),
+      );
+    }
+    if (url.pathname === '/api/v1/internal/slack-digest/complete') {
+      if (request.method !== 'POST') {
+        throw new RouteError(405, 'POST 요청만 허용됩니다.', 'METHOD_NOT_ALLOWED', undefined, {
+          allow: 'POST',
+        });
+      }
+      await requireDigestToken(request, env);
+      return finish(
+        responseJson(
+          await settleSlackDigestDelivery(env.DB, await readJson(request), 'SENT'),
+          200,
+          requestId,
+        ),
+      );
+    }
+    if (url.pathname === '/api/v1/internal/slack-digest/fail') {
+      if (request.method !== 'POST') {
+        throw new RouteError(405, 'POST 요청만 허용됩니다.', 'METHOD_NOT_ALLOWED', undefined, {
+          allow: 'POST',
+        });
+      }
+      await requireDigestToken(request, env);
+      const body = await readJson(request);
+      const outcome = body.uncertain === true ? 'UNCERTAIN' : 'FAILED';
+      return finish(
+        responseJson(await settleSlackDigestDelivery(env.DB, body, outcome), 200, requestId),
+      );
     }
     if (request.method === 'POST' && url.pathname === '/api/v1/auth/google') {
       const body = await readJson(request);

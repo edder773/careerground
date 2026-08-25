@@ -347,6 +347,106 @@ describe('Sites D1 API', () => {
     ]);
   });
 
+  it('claims one Slack delivery atomically and blocks duplicate dispatch after completion', async () => {
+    const token = 'test-digest-token';
+    const authorized = { authorization: `Bearer ${token}` };
+    const environment = { DIGEST_API_TOKEN: token };
+    const firstClaim = await call(
+      '/api/v1/internal/slack-digest/claim',
+      { method: 'POST', headers: authorized, body: JSON.stringify({ jobsOnly: false }) },
+      {},
+      environment,
+    );
+    expect(firstClaim.response.status).toBe(200);
+    expect(firstClaim.body).toMatchObject({
+      status: 'claimed',
+      deliveryKey: expect.stringMatching(/^daily:\d{4}-\d{2}-\d{2}$/),
+      claimToken: expect.any(String),
+      attemptCount: 1,
+      payload: { challenges: expect.any(Array), jobs: expect.any(Array) },
+    });
+
+    const blockedClaim = await call(
+      '/api/v1/internal/slack-digest/claim',
+      { method: 'POST', headers: authorized, body: JSON.stringify({ jobsOnly: false }) },
+      {},
+      environment,
+    );
+    expect(blockedClaim.body).toMatchObject({
+      status: 'blocked',
+      deliveryStatus: 'CLAIMED',
+      attemptCount: 1,
+    });
+
+    const completed = await call(
+      '/api/v1/internal/slack-digest/complete',
+      {
+        method: 'POST',
+        headers: authorized,
+        body: JSON.stringify({
+          deliveryKey: firstClaim.body.deliveryKey,
+          claimToken: firstClaim.body.claimToken,
+        }),
+      },
+      {},
+      environment,
+    );
+    expect(completed.body).toEqual({ status: 'sent', deliveryKey: firstClaim.body.deliveryKey });
+
+    const alreadySent = await call(
+      '/api/v1/internal/slack-digest/claim',
+      { method: 'POST', headers: authorized, body: JSON.stringify({ jobsOnly: false }) },
+      {},
+      environment,
+    );
+    expect(alreadySent.body).toMatchObject({ status: 'already-sent', deliveryStatus: 'SENT' });
+    const delivery = await db
+      .prepare(
+        `SELECT status, attempt_count AS attemptCount, completed_at AS completedAt
+           FROM slack_digest_deliveries WHERE delivery_key = ?`,
+      )
+      .bind(firstClaim.body.deliveryKey)
+      .first<{ status: string; attemptCount: number; completedAt: string | null }>();
+    expect(delivery).toMatchObject({ status: 'SENT', attemptCount: 1 });
+    expect(delivery?.completedAt).toBeTruthy();
+  });
+
+  it('allows a retry only after an explicit Slack rejection', async () => {
+    const token = 'test-digest-token';
+    const authorized = { authorization: `Bearer ${token}` };
+    const environment = { DIGEST_API_TOKEN: token };
+    const firstClaim = await call(
+      '/api/v1/internal/slack-digest/claim',
+      { method: 'POST', headers: authorized, body: '{}' },
+      {},
+      environment,
+    );
+    const failed = await call(
+      '/api/v1/internal/slack-digest/fail',
+      {
+        method: 'POST',
+        headers: authorized,
+        body: JSON.stringify({
+          deliveryKey: firstClaim.body.deliveryKey,
+          claimToken: firstClaim.body.claimToken,
+          error: 'Slack HTTP 500',
+        }),
+      },
+      {},
+      environment,
+    );
+    expect(failed.body).toMatchObject({ status: 'failed' });
+
+    const retry = await call(
+      '/api/v1/internal/slack-digest/claim',
+      { method: 'POST', headers: authorized, body: '{}' },
+      {},
+      environment,
+    );
+    expect(retry.body).toMatchObject({ status: 'claimed', attemptCount: 2 });
+    expect(retry.body.claimToken).not.toBe(firstClaim.body.claimToken);
+  });
+
   it('repairs an SQL problem stored in an algorithm slot and blocks SQL manual reselection', async () => {
     const today = new Intl.DateTimeFormat('en-CA', {
       timeZone: 'Asia/Seoul',
@@ -1719,6 +1819,68 @@ describe('Sites D1 API', () => {
       .prepare("SELECT status FROM jobs WHERE source_name = 'insert-only-fixture'")
       .all<{ status: string }>();
     expect(rows.results).toEqual([{ status: 'ACTIVE' }]);
+  });
+
+  it('deduplicates a source posting even when its canonical URL changes', async () => {
+    const timestamp = new Date().toISOString();
+    const item = (sourceUrl: string, title: string) => ({
+      sourceName: 'canonical-fixture',
+      sourceId: 'posting-77',
+      sourceUrl,
+      companyName: '식별자 회사',
+      title,
+      category: '백엔드',
+      careerScope: 'NEW_GRAD_ONLY',
+      careerEvidence: '신입 지원 가능',
+      companySize: 'SMALL',
+      employmentType: 'FULL_TIME',
+      region: '서울',
+      remote: false,
+      techStack: ['TypeScript'],
+      rolling: true,
+      collectedAt: timestamp,
+      lastVerifiedAt: timestamp,
+      summary: 'canonical identity 회귀 테스트',
+      status: 'ACTIVE',
+    });
+    const commit = async (sourceUrl: string, title: string) => {
+      const payload = {
+        version: '1.0',
+        collectedAt: timestamp,
+        sourceCount: 1,
+        items: [item(sourceUrl, title)],
+      };
+      const preview = await call('/api/v1/jobs/import/preview', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      if ((preview.body.counts as { create?: number }).create === 0) return preview;
+      return call('/api/v1/jobs/import/commit', {
+        method: 'POST',
+        body: JSON.stringify(importApproval(preview.body, 1)),
+      });
+    };
+
+    const created = await commit('https://jobs.example.test/openings/77', '처음 제목');
+    expect(created.response.status).toBe(200);
+    const duplicate = await commit('https://jobs.example.test/recruit/77', '변경된 제목');
+    expect(duplicate.body).toMatchObject({
+      counts: { create: 0, duplicate: 1 },
+      rows: [
+        expect.objectContaining({
+          outcome: 'DUPLICATE',
+          reason: '같은 출처의 공고 식별자가 이미 등록되어 있음',
+        }),
+      ],
+    });
+    const stored = await db
+      .prepare(
+        `SELECT COUNT(*) AS count, MIN(title) AS title,
+                COUNT(DISTINCT canonical_key) AS canonicalKeys
+           FROM jobs WHERE source_name = 'canonical-fixture'`,
+      )
+      .first<{ count: number; title: string; canonicalKeys: number }>();
+    expect(stored).toEqual({ count: 1, title: '처음 제목', canonicalKeys: 1 });
   });
 
   it('treats full source packages as insert-only and preserves existing jobs', async () => {

@@ -91,6 +91,15 @@ export function canonicalJobUrl(value: string) {
   return url.toString();
 }
 
+export function canonicalJobIdentity(sourceId: string | undefined, value: string) {
+  const url = new URL(canonicalJobUrl(value));
+  const normalizedSourceId = normalizedText(sourceId).normalize('NFKC').toLowerCase();
+  if (normalizedSourceId) {
+    return `source:${url.host.toLowerCase()}:${normalizedSourceId}`;
+  }
+  return `url:${url.toString().trim().toLowerCase()}`;
+}
+
 export const normalizeCompanyName = (value: string) =>
   value
     .normalize('NFKC')

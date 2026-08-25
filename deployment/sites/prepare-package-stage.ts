@@ -1,9 +1,9 @@
 import { cp, mkdir, readdir, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { PRODUCTION_MIGRATION_FLOOR, PRODUCTION_MIGRATIONS } from './migration-authority.js';
 
 const migrationPattern = /^(\d{4})_.+\.sql$/;
-const productionMigrationFloor = 25;
 
 async function directoryIsEmpty(path: string) {
   try {
@@ -34,17 +34,24 @@ export async function preparePackageStage(projectRoot: string, stageRoot: string
     .sort((left, right) => left.sequence - right.sequence);
 
   if (!migrations.length) throw new Error('Package stage has no forward migrations.');
-  const legacy = migrations.filter(({ sequence }) => sequence < productionMigrationFloor);
+  const legacy = migrations.filter(({ sequence }) => sequence < PRODUCTION_MIGRATION_FLOOR);
   if (legacy.length) {
     throw new Error(
       `Package stage contains baseline migrations: ${legacy.map(({ file }) => file).join(', ')}`,
+    );
+  }
+  const migrationNames = migrations.map(({ file }) => file).sort();
+  const authorityNames = [...PRODUCTION_MIGRATIONS].sort();
+  if (JSON.stringify(migrationNames) !== JSON.stringify(authorityNames)) {
+    throw new Error(
+      `Package stage migration authority mismatch: expected=${authorityNames.join(',')} actual=${migrationNames.join(',')}`,
     );
   }
 
   // Intentionally do not copy the repository-root drizzle directory. The official
   // Sites packager overlays that directory on dist/.openai/drizzle; on this
   // runtime-bootstrapped project that would replay 0000-0015 against production.
-  return { stage, migrations: migrations.map(({ file }) => file) };
+  return { stage, migrations: [...PRODUCTION_MIGRATIONS] };
 }
 
 const invokedPath = process.argv[1] ? resolve(process.argv[1]) : null;

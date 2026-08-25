@@ -340,6 +340,14 @@ export const jobs = sqliteTable(
     sourceName: text('source_name').notNull(),
     sourcePostingId: text('source_posting_id'),
     sourceUrl: text('source_url').notNull(),
+    canonicalKey: text('canonical_key').generatedAlwaysAs(
+      sql`CASE
+        WHEN length(trim(coalesce(source_posting_id, ''))) > 0 THEN
+          'source:' || lower(substr(substr(source_url, instr(source_url, '://') + 3), 1, instr(substr(source_url, instr(source_url, '://') + 3) || '/', '/') - 1)) || ':' || lower(trim(source_posting_id))
+        ELSE 'url:' || lower(trim(source_url))
+      END`,
+      { mode: 'virtual' },
+    ),
     title: text('title').notNull(),
     category: text('category').notNull(),
     careerScope: text('career_scope').notNull().default('NEW_GRAD_ELIGIBLE'),
@@ -361,6 +369,9 @@ export const jobs = sqliteTable(
   },
   (table) => [
     uniqueIndex('idx_jobs_source_url').on(table.sourceUrl),
+    uniqueIndex('idx_jobs_canonical_key')
+      .on(table.canonicalKey)
+      .where(sql`${table.canonicalKey} IS NOT NULL`),
     index('idx_jobs_status_deadline').on(table.status, table.deadlineAt),
     index('idx_jobs_category_created').on(table.category, table.createdAt),
     index('idx_jobs_created_status').on(table.createdAt, table.status),
@@ -785,3 +796,29 @@ export const schedulerLeases = sqliteTable('scheduler_leases', {
   leaseUntil: text('lease_until').notNull(),
   updatedAt: text('updated_at').notNull(),
 });
+
+export const slackDigestDeliveries = sqliteTable(
+  'slack_digest_deliveries',
+  {
+    deliveryKey: text('delivery_key').primaryKey(),
+    deliveryMode: text('delivery_mode').notNull(),
+    status: text('status').notNull(),
+    claimTokenHash: text('claim_token_hash').notNull(),
+    payload: text('payload').notNull(),
+    payloadChecksum: text('payload_checksum').notNull(),
+    attemptCount: integer('attempt_count').notNull().default(1),
+    claimedAt: text('claimed_at').notNull(),
+    completedAt: text('completed_at'),
+    failedAt: text('failed_at'),
+    lastError: text('last_error'),
+  },
+  (table) => [
+    index('idx_slack_digest_deliveries_status_claimed').on(table.status, table.claimedAt),
+    check('chk_slack_digest_delivery_mode', sql`${table.deliveryMode} IN ('DAILY', 'SNAPSHOT')`),
+    check(
+      'chk_slack_digest_delivery_status',
+      sql`${table.status} IN ('CLAIMED', 'SENT', 'FAILED', 'UNCERTAIN')`,
+    ),
+    check('chk_slack_digest_delivery_attempt_count', sql`${table.attemptCount} >= 1`),
+  ],
+);

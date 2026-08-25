@@ -216,6 +216,8 @@ describe('Sites production migration baseline', () => {
         refresh20260824Checksum: string;
         libraryImport20260824Checksum: string;
         libraryImport20260825Checksum: string;
+        sqlClassificationChecksum: string;
+        authorityChecksum: string;
         learningCatalogChecksum: string;
         googleChecksum: string;
         personalPurgeChecksum: string;
@@ -223,6 +225,10 @@ describe('Sites production migration baseline', () => {
         legacyIdentityColumns: number;
         users: number;
         personalRows: number;
+        canonicalJobColumns: number;
+        canonicalJobIndexes: number;
+        duplicateCanonicalJobs: number;
+        slackDeliveryTables: number;
       }>(
         upgraded,
         `SELECT (SELECT COUNT(*) FROM learning_questions) AS questions,
@@ -282,6 +288,10 @@ describe('Sites production migration baseline', () => {
                   WHERE version = '0031_import_verified_library_jobs_20260824') AS libraryImport20260824Checksum,
                 (SELECT checksum FROM app_schema_migrations
                   WHERE version = '0032_import_library_jobs_20260825') AS libraryImport20260825Checksum,
+                (SELECT checksum FROM app_schema_migrations
+                  WHERE version = '0033_fix_sql_problem_classification_20260825') AS sqlClassificationChecksum,
+                (SELECT checksum FROM app_schema_migrations
+                  WHERE version = '0034_migration_authority_and_delivery_integrity') AS authorityChecksum,
                  (SELECT checksum FROM app_schema_migrations
                    WHERE version = '0029_expand_learning_catalog_20260821') AS learningCatalogChecksum,
                  (SELECT checksum FROM app_schema_migrations
@@ -293,6 +303,16 @@ describe('Sites production migration baseline', () => {
                  (SELECT COUNT(*) FROM pragma_table_info('users')
                    WHERE name = 'site_user_id') AS legacyIdentityColumns,
                  (SELECT COUNT(*) FROM users) AS users,
+                 (SELECT COUNT(*) FROM pragma_table_xinfo('jobs')
+                   WHERE name = 'canonical_key') AS canonicalJobColumns,
+                 (SELECT COUNT(*) FROM pragma_index_list('jobs')
+                   WHERE name = 'idx_jobs_canonical_key' AND [unique] = 1) AS canonicalJobIndexes,
+                 (SELECT COUNT(*) FROM (
+                   SELECT canonical_key FROM jobs
+                    GROUP BY canonical_key HAVING COUNT(*) > 1
+                 )) AS duplicateCanonicalJobs,
+                 (SELECT COUNT(*) FROM sqlite_schema
+                   WHERE type = 'table' AND name = 'slack_digest_deliveries') AS slackDeliveryTables,
                  (SELECT COUNT(*) FROM collections) +
                  (SELECT COUNT(*) FROM collection_items) +
                  (SELECT COUNT(*) FROM problem_progress) +
@@ -345,6 +365,10 @@ describe('Sites production migration baseline', () => {
         refresh20260824Checksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
         libraryImport20260824Checksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
         libraryImport20260825Checksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
+        sqlClassificationChecksum:
+          'sha256:58d3ad7e8869e5cc94e9f4a5ed53b5c368dc2b67994ce35e0043f8ecc4e95dd2',
+        authorityChecksum:
+          'sha256:f67834f4d70094941c682f94ad726066d4ffeb7f9380d7cbf5c18783191eee56',
         learningCatalogChecksum:
           'sha256:316d21648a83120d94234a8c64f355728dd9b9ea298dd2a302254bffe8f9a958',
         googleChecksum: 'sha256:d453c92ca558c68ae6efc1e9f6ef86e49a93422442aa0ad3bdc17de76e509f2d',
@@ -353,6 +377,10 @@ describe('Sites production migration baseline', () => {
         authTables: 2,
         legacyIdentityColumns: 1,
         users: 0,
+        canonicalJobColumns: 1,
+        canonicalJobIndexes: 1,
+        duplicateCanonicalJobs: 0,
+        slackDeliveryTables: 1,
         personalRows: 0,
       });
       expect(schema?.jobTechRows).toBeGreaterThan(0);

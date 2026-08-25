@@ -40,6 +40,20 @@ const payload = {
   jobs: [],
 };
 
+const claimed = (value = payload) =>
+  new globalThis.Response(
+    JSON.stringify({
+      status: 'claimed',
+      deliveryKey: `daily:${value.date}`,
+      claimToken: 'claim-token',
+      attemptCount: 1,
+      payload: value,
+    }),
+    { status: 200, headers: { 'content-type': 'application/json' } },
+  );
+
+const ok = () => new globalThis.Response('ok', { status: 200 });
+
 describe('daily Slack digest', () => {
   it('shows the digest date, links coding-test titles, and omits an empty jobs section', () => {
     const messages = formatSlackMessages(payload, { baeumzipUrl: BAEUMZIP_URL });
@@ -185,13 +199,9 @@ describe('daily Slack digest', () => {
   it('fetches the protected digest and posts the formatted payload to Slack', async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(
-        new globalThis.Response(JSON.stringify(payload), {
-          status: 200,
-          headers: { 'content-type': 'application/json' },
-        }),
-      )
-      .mockResolvedValueOnce(new globalThis.Response('ok', { status: 200 }));
+      .mockResolvedValueOnce(claimed())
+      .mockResolvedValueOnce(ok())
+      .mockResolvedValueOnce(ok());
     await expect(
       sendDailyDigest(
         {
@@ -204,10 +214,13 @@ describe('daily Slack digest', () => {
         BUSINESS_DAY,
       ),
     ).resolves.toEqual({ messageCount: 1 });
-    expect(fetchMock).toHaveBeenNthCalledWith(
-      1,
-      'https://careerground.example/api/v1/internal/slack-digest',
-      expect.objectContaining({ headers: { authorization: 'Bearer service-token' } }),
+    const claimUrl = new URL(String(fetchMock.mock.calls[0][0]));
+    expect(claimUrl.pathname).toBe('/api/v1/internal/slack-digest/claim');
+    expect(fetchMock.mock.calls[0][1]).toEqual(
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({ authorization: 'Bearer service-token' }),
+      }),
     );
     const slackPayload = JSON.parse(fetchMock.mock.calls[1][1].body);
     expect(slackPayload.text).toBe('2026년 8월 21일 기준 CareerGround 새 알림');
@@ -226,13 +239,8 @@ describe('daily Slack digest', () => {
     ];
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(
-        new globalThis.Response(JSON.stringify({ ...payload, jobs }), {
-          status: 200,
-          headers: { 'content-type': 'application/json' },
-        }),
-      )
-      .mockResolvedValue(new globalThis.Response('ok', { status: 200 }));
+      .mockResolvedValueOnce(claimed({ ...payload, jobs }))
+      .mockResolvedValue(ok());
 
     await expect(
       sendDailyDigest(
@@ -247,7 +255,7 @@ describe('daily Slack digest', () => {
       ),
     ).resolves.toEqual({ messageCount: 1 });
 
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
     const slackPayload = JSON.parse(fetchMock.mock.calls[1][1].body);
     expect(slackPayload.text).toBe('2026년 8월 21일 기준 CareerGround 새 알림');
     expect(JSON.stringify(slackPayload)).toContain('신규 채용 알림 공고 · 1건');
@@ -256,13 +264,9 @@ describe('daily Slack digest', () => {
   it('allows a manual forced send on a public holiday', async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(
-        new globalThis.Response(JSON.stringify(payload), {
-          status: 200,
-          headers: { 'content-type': 'application/json' },
-        }),
-      )
-      .mockResolvedValueOnce(new globalThis.Response('ok', { status: 200 }));
+      .mockResolvedValueOnce(claimed())
+      .mockResolvedValueOnce(ok())
+      .mockResolvedValueOnce(ok());
 
     await expect(
       sendDailyDigest(
@@ -284,25 +288,23 @@ describe('daily Slack digest', () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
-        new globalThis.Response(
-          JSON.stringify({
-            ...payload,
-            snapshotCreatedAt,
-            jobs: [
-              {
-                company: '스냅샷 회사',
-                title: '신입 개발자',
-                deadlineAt: '2026-09-01T14:59:59.000Z',
-                rolling: 0,
-                sourceName: '공식 채용',
-                sourceUrl: 'https://example.com/jobs/snapshot',
-              },
-            ],
-          }),
-          { status: 200, headers: { 'content-type': 'application/json' } },
-        ),
+        claimed({
+          ...payload,
+          snapshotCreatedAt,
+          jobs: [
+            {
+              company: '스냅샷 회사',
+              title: '신입 개발자',
+              deadlineAt: '2026-09-01T14:59:59.000Z',
+              rolling: 0,
+              sourceName: '공식 채용',
+              sourceUrl: 'https://example.com/jobs/snapshot',
+            },
+          ],
+        }),
       )
-      .mockResolvedValueOnce(new globalThis.Response('ok', { status: 200 }));
+      .mockResolvedValueOnce(ok())
+      .mockResolvedValueOnce(ok());
 
     await expect(
       sendDailyDigest(
@@ -320,9 +322,60 @@ describe('daily Slack digest', () => {
       ),
     ).resolves.toEqual({ messageCount: 1 });
     const requested = new URL(String(fetchMock.mock.calls[0][0]));
-    expect(requested.searchParams.get('snapshotCreatedAt')).toBe(snapshotCreatedAt);
+    expect(requested.pathname).toBe('/api/v1/internal/slack-digest/claim');
+    const claimBody = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(claimBody).toEqual({ snapshotCreatedAt, jobsOnly: true });
     const slackPayload = JSON.parse(fetchMock.mock.calls[1][1].body);
     expect(slackPayload.text).toContain('final:latest CareerGround 채용 알림');
     expect(JSON.stringify(slackPayload)).not.toContain('오늘의 코딩 테스트');
+  });
+
+  it('skips a digest that the database already marked as sent', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new globalThis.Response(
+          JSON.stringify({ status: 'already-sent', deliveryKey: 'daily:2026-08-21' }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        ),
+      );
+
+    await expect(
+      sendDailyDigest(
+        {
+          CAREERGROUND_DIGEST_URL: 'https://careerground.example/api/v1/internal/slack-digest',
+          CAREERGROUND_DIGEST_TOKEN: 'service-token',
+          SLACK_WEBHOOK_URL: 'https://hooks.slack.com/services/T000/B000/secret',
+          BAEUMZIP_URL,
+        },
+        fetchMock,
+        BUSINESS_DAY,
+      ),
+    ).resolves.toMatchObject({ messageCount: 0, skipped: { reason: 'already-sent' } });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('marks an ambiguous Slack network failure as uncertain instead of retryable', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(claimed())
+      .mockRejectedValueOnce(new Error('network timeout'))
+      .mockResolvedValueOnce(ok());
+
+    await expect(
+      sendDailyDigest(
+        {
+          CAREERGROUND_DIGEST_URL: 'https://careerground.example/api/v1/internal/slack-digest',
+          CAREERGROUND_DIGEST_TOKEN: 'service-token',
+          SLACK_WEBHOOK_URL: 'https://hooks.slack.com/services/T000/B000/secret',
+          BAEUMZIP_URL,
+        },
+        fetchMock,
+        BUSINESS_DAY,
+      ),
+    ).rejects.toThrow('network timeout');
+    const failUrl = new URL(String(fetchMock.mock.calls[2][0]));
+    expect(failUrl.pathname).toBe('/api/v1/internal/slack-digest/fail');
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toMatchObject({ uncertain: true });
   });
 });

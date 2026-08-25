@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { LocalD1 } from './local-d1.js';
+import { EXPECTED_SCHEMA_VERSION } from './migration-authority.js';
 import worker from './worker.js';
 
 const context = { waitUntil: () => undefined, passThroughOnException: () => undefined };
@@ -124,9 +125,8 @@ describe('Sites worker schema readiness gate', () => {
         )
         .run();
       await db
-        .prepare(
-          "DELETE FROM app_schema_migrations WHERE version = '0023_purge_legacy_personal_data'",
-        )
+        .prepare('DELETE FROM app_schema_migrations WHERE version = ?')
+        .bind(EXPECTED_SCHEMA_VERSION)
         .run();
       db.resetPreparedSql();
 
@@ -163,9 +163,8 @@ describe('Sites worker schema readiness gate', () => {
     const db = new LocalD1();
     try {
       await db
-        .prepare(
-          "UPDATE app_schema_migrations SET checksum = 'sha256:invalid' WHERE version = '0023_purge_legacy_personal_data'",
-        )
+        .prepare("UPDATE app_schema_migrations SET checksum = 'sha256:invalid' WHERE version = ?")
+        .bind(EXPECTED_SCHEMA_VERSION)
         .run();
 
       const response = await worker.fetch(
