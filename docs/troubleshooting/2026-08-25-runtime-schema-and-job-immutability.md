@@ -3,8 +3,8 @@ title: 런타임 스키마 파괴 경로와 채용공고 불변성 복구
 date: 2026-08-25
 tags: [audit, d1, migration, jobs, data-safety]
 generatedByAI: false
-pr: pending
-commit: pending
+pr: 58
+commit: 192f06764926c319740aa171c2e8ae4be43ded66
 evidence: docs/evidence/stage2-data-safety-2026-08-25.json
 ---
 
