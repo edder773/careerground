@@ -1149,31 +1149,53 @@ async function slackDigest(db: D1Database, requestUrl: URL) {
   const challenges = await completeDailyChallenges(db, '', today, rows);
   const advancedChallenge = await slackLv3Challenge(db, today);
   const { start, end } = kstDayBounds(today);
+  const snapshotCreatedAtInput = cleanText(requestUrl.searchParams.get('snapshotCreatedAt'));
+  let snapshotCreatedAt: string | null = null;
+  if (snapshotCreatedAtInput) {
+    const parsed = new Date(snapshotCreatedAtInput);
+    if (Number.isNaN(parsed.getTime()) || parsed.toISOString() !== snapshotCreatedAtInput) {
+      throw new RouteError(
+        400,
+        '스냅샷 반영 시각은 밀리초와 Z가 포함된 ISO 8601 형식이어야 합니다.',
+        'INVALID_SNAPSHOT_CREATED_AT',
+      );
+    }
+    snapshotCreatedAt = snapshotCreatedAtInput;
+  }
   const jobs = await all<{
     company: string;
     title: string;
-    deadlineAt: string;
+    deadlineAt: string | null;
+    rolling: number | boolean;
     sourceName: string;
     sourceUrl: string;
   }>(
     db,
-    `SELECT company_name AS company, title, deadline_at AS deadlineAt,
-            source_name AS sourceName, source_url AS sourceUrl
-       FROM jobs
-      WHERE status = 'ACTIVE'
-        AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
-        AND rolling = 0
-        AND deadline_at IS NOT NULL
-        AND deadline_at > ?
-        AND created_at >= ? AND created_at < ?
-      ORDER BY deadline_at, company_name, title, id`,
-    nowIso(),
-    start,
-    end,
+    snapshotCreatedAt
+      ? `SELECT company_name AS company, title, deadline_at AS deadlineAt, rolling,
+                source_name AS sourceName, source_url AS sourceUrl
+           FROM jobs
+          WHERE status = 'ACTIVE'
+            AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
+            AND (deadline_at IS NULL OR deadline_at > ?)
+            AND created_at = ?
+          ORDER BY deadline_at IS NULL, deadline_at, company_name, title, id`
+      : `SELECT company_name AS company, title, deadline_at AS deadlineAt, rolling,
+                source_name AS sourceName, source_url AS sourceUrl
+           FROM jobs
+          WHERE status = 'ACTIVE'
+            AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
+            AND rolling = 0
+            AND deadline_at IS NOT NULL
+            AND deadline_at > ?
+            AND created_at >= ? AND created_at < ?
+          ORDER BY deadline_at, company_name, title, id`,
+    ...(snapshotCreatedAt ? [nowIso(), snapshotCreatedAt] : [nowIso(), start, end]),
   );
   return {
     date: today,
     generatedAt: nowIso(),
+    snapshotCreatedAt,
     siteUrl: new URL('/', requestUrl).toString(),
     challenges: [
       ...challenges

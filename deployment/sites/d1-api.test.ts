@@ -291,6 +291,38 @@ describe('Sites D1 API', () => {
       ],
     });
 
+    const snapshotDigest = await call(
+      `/api/v1/internal/slack-digest?snapshotCreatedAt=${encodeURIComponent(dayStart)}`,
+      { headers: { authorization: `Bearer ${token}` } },
+      {},
+      { DIGEST_API_TOKEN: token },
+    );
+    expect(snapshotDigest.response.status).toBe(200);
+    expect(snapshotDigest.body).toMatchObject({
+      snapshotCreatedAt: dayStart,
+      jobs: expect.arrayContaining([
+        expect.objectContaining({
+          company: '알림 대상 회사',
+          sourceUrl: 'https://example.test/jobs/digest-included',
+          rolling: 0,
+        }),
+        expect.objectContaining({
+          company: '상시 회사',
+          sourceUrl: 'https://example.test/jobs/digest-rolling',
+          rolling: 1,
+        }),
+      ]),
+    });
+
+    const invalidSnapshot = await call(
+      '/api/v1/internal/slack-digest?snapshotCreatedAt=2026-08-24',
+      { headers: { authorization: `Bearer ${token}` } },
+      {},
+      { DIGEST_API_TOKEN: token },
+    );
+    expect(invalidSnapshot.response.status).toBe(400);
+    expect(invalidSnapshot.body).toMatchObject({ code: 'INVALID_SNAPSHOT_CREATED_AT' });
+
     const siteDaily = await call('/api/v1/coding/daily-challenges', {}, memberHeaders);
     expect(siteDaily.response.status).toBe(200);
     expect(siteDaily.body).toHaveLength(3);
