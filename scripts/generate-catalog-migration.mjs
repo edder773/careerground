@@ -124,6 +124,7 @@ for (const [position, item] of problems.items.entries()) {
     item.sourceUrl,
     item.title,
     item.level,
+    item.track || 'ALGORITHM',
     JSON.stringify(item.tags),
     position,
     item.active,
@@ -131,11 +132,12 @@ for (const [position, item] of problems.items.entries()) {
     jobs.collectedAt,
   ];
   statements.push(`INSERT INTO coding_problems
-  (id, source_url, display_title, level, tags, position, active, created_at, updated_at)
+  (id, source_url, display_title, level, track, tags, position, active, created_at, updated_at)
 VALUES (${values.map(quote).join(', ')})
 ON CONFLICT(source_url) DO UPDATE SET
   display_title = excluded.display_title,
   level = excluded.level,
+  track = excluded.track,
   tags = excluded.tags,
   position = excluded.position,
   active = excluded.active,

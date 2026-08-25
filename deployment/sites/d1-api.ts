@@ -977,10 +977,32 @@ const dailyChallengeValue = (row: DailyChallengeRow) => ({
   },
 });
 
+const dailyChallengeRowMatchesSlot = (row: DailyChallengeRow) => {
+  if (row.levelSlot === 1) return row.track === 'ALGORITHM' && row.level === 1;
+  if (row.levelSlot === 2) return row.track === 'ALGORITHM' && row.level === 2;
+  if (row.levelSlot === 34) return row.track === 'SQL' && [3, 4].includes(row.level);
+  return false;
+};
+
 const hasEveryDailyChallenge = (rows: DailyChallengeRow[]) => {
-  const slots = new Set(rows.map((row) => Number(row.levelSlot)));
+  const slots = new Set(
+    rows.filter(dailyChallengeRowMatchesSlot).map((row) => Number(row.levelSlot)),
+  );
   return [1, 2, 34].every((levelSlot) => slots.has(levelSlot));
 };
+
+async function removeInvalidDailyChallengeRows(db: D1Database, rows: DailyChallengeRow[]) {
+  const invalidIds = rows.filter((row) => !dailyChallengeRowMatchesSlot(row)).map((row) => row.id);
+  if (!invalidIds.length) return rows;
+  const placeholders = invalidIds.map(() => '?').join(', ');
+  await db.batch([
+    db
+      .prepare(`DELETE FROM daily_challenge_participations WHERE challenge_id IN (${placeholders})`)
+      .bind(...invalidIds),
+    db.prepare(`DELETE FROM daily_challenges WHERE id IN (${placeholders})`).bind(...invalidIds),
+  ]);
+  return rows.filter(dailyChallengeRowMatchesSlot);
+}
 
 const seededCandidateIndex = (value: string, candidateCount: number) => {
   let seed = 0x811c9dc5;
@@ -1066,6 +1088,7 @@ async function completeDailyChallenges(
   rows: DailyChallengeRow[],
   setting?: DailyChallengeSettingRow,
 ) {
+  rows = await removeInvalidDailyChallengeRows(db, rows);
   if (!hasEveryDailyChallenge(rows)) {
     setting ??= (await first<DailyChallengeSettingRow>(db, dailyChallengeSettingSql)) || undefined;
     await selectMissingDailyChallenges(db, today, rows, setting);
@@ -1103,6 +1126,7 @@ const slackChallengeSql = `SELECT p.id AS problemId, p.source_url AS sourceUrl,
                               FROM daily_challenges dc
                               JOIN coding_problems p ON p.id = dc.problem_id AND p.active = 1
                              WHERE dc.kst_date = ? AND dc.level_slot = 3
+                               AND p.track = 'ALGORITHM' AND p.level = 3
                              LIMIT 1`;
 
 async function slackLv3Challenge(db: D1Database, today: string) {
@@ -3605,10 +3629,23 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     if (Number(participation?.count || 0) > 0)
       throw new RouteError(409, '참여 기록이 있어 재선정할 수 없습니다.');
     const challenge = await dailyChallenge(db, user.id);
+    const selectedProblem = await first<{ id: string; level: number; track: string }>(
+      db,
+      'SELECT id, level, track FROM coding_problems WHERE id = ? AND active = 1',
+      problemId,
+    );
+    if (!selectedProblem) throw new RouteError(404, '활성 문제를 찾을 수 없습니다.');
+    if (selectedProblem.track !== 'ALGORITHM' || selectedProblem.level !== challenge.levelSlot) {
+      throw new RouteError(
+        422,
+        `오늘의 Lv. ${challenge.levelSlot} 알고리즘 문제만 선택할 수 있습니다.`,
+        'VALIDATION_FAILED',
+      );
+    }
     await run(
       db,
       'UPDATE daily_challenges SET problem_id = ? WHERE id = ?',
-      problemId,
+      selectedProblem.id,
       challenge.id,
     );
     await audit(db, user.id, 'DAILY_CHALLENGE_RESELECTED', 'DailyChallenge', challenge.id, {
