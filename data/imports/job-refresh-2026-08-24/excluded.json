@@ -1,0 +1,150 @@
+{
+  "version": "1.0",
+  "asOfDate": "2026-08-24",
+  "timezone": "Asia/Seoul",
+  "generatedAt": "2026-08-24T08:26:14+09:00",
+  "items": [
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "159145",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/159145",
+      "deadlineAt": "2026-08-22T14:59:59.000Z",
+      "status": "EXPIRED",
+      "reason": "DEADLINE_PASSED",
+      "title": "데이터 엔지니어 인턴 모집",
+      "reasonCode": "DEADLINE_PASSED",
+      "reasonDetail": "명시 마감일이 기준 시각보다 과거다.",
+      "checkedAt": "2026-08-24T06:12:40+09:00"
+    },
+    {
+      "sourceName": "인디스워크",
+      "sourceId": "387549",
+      "sourceUrl": "https://inthiswork.com/archives/387549",
+      "deadlineAt": "2026-08-23T14:59:00.000Z",
+      "status": "EXPIRED",
+      "reason": "DEADLINE_PASSED",
+      "title": "2026 R&D Internship",
+      "reasonCode": "DEADLINE_PASSED",
+      "reasonDetail": "명시 마감일이 기준 시각보다 과거다.",
+      "checkedAt": "2026-08-24T06:12:40+09:00"
+    },
+    {
+      "sourceName": "Superookie",
+      "sourceId": "6a7d25abaf923602db79ab82",
+      "sourceUrl": "https://www.superookie.com/jobs/6a7d25abaf923602db79ab82",
+      "deadlineAt": "2026-08-23T14:59:00.000Z",
+      "status": "EXPIRED",
+      "reason": "DEADLINE_PASSED",
+      "title": "슈퍼드리머 8기 게임 클라이언트 개발자",
+      "reasonCode": "DEADLINE_PASSED",
+      "reasonDetail": "명시 마감일이 기준 시각보다 과거다.",
+      "checkedAt": "2026-08-24T06:12:40+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49706105",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49706105",
+      "deadlineAt": "2026-08-21T14:59:59.000Z",
+      "status": "EXPIRED",
+      "reason": "DEADLINE_PASSED",
+      "title": "제어 프로그램 개발 전문가 모십니다.",
+      "reasonCode": "DEADLINE_PASSED",
+      "reasonDetail": "명시 마감일이 기준 시각보다 과거다.",
+      "checkedAt": "2026-08-24T06:12:40+09:00"
+    },
+    {
+      "sourceName": "자소설닷컴",
+      "sourceId": "105567",
+      "sourceUrl": "https://jasoseol.com/recruit/105567",
+      "deadlineAt": "2026-08-23T14:59:59.000Z",
+      "status": "EXPIRED",
+      "reason": "DEADLINE_PASSED",
+      "title": "2026 FADU Junior Talent - Firmware Engineer",
+      "reasonCode": "DEADLINE_PASSED",
+      "reasonDetail": "명시 마감일이 기준 시각보다 과거다.",
+      "checkedAt": "2026-08-24T06:12:40+09:00"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49660820",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49660820",
+      "status": "REMOVED",
+      "reason": "APPLICATION_CLOSED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 잡코리아 상세가 접수 상태를 마감으로 표시하고 마감되었습니다를 명시하여 실제 지원 종료를 확인했다.",
+      "title": "2026년도 엔디소프트 개발부문 채용공고",
+      "reasonCode": "APPLICATION_CLOSED",
+      "reasonDetail": "현재 잡코리아 상세가 접수 상태를 마감으로 표시하고 마감되었습니다를 명시하여 실제 지원 종료를 확인했다."
+    },
+    {
+      "sourceName": "자소설닷컴",
+      "sourceId": "applied-materials-20260820",
+      "sourceUrl": "https://jasoseol.com/recruit",
+      "companyName": "어플라이드 머티어리얼즈 코리아",
+      "title": "2026년 8월 채용",
+      "reasonCode": "DEADLINE_PASSED",
+      "reasonDetail": "회사명 역검색에서 확인한 최신 2026년 8월 채용 일정은 2026-08-20 종료로 현재 활성 공고가 아니다.",
+      "checkedAt": "2026-08-24T06:12:40+09:00"
+    },
+    {
+      "sourceName": "인디스워크",
+      "sourceId": "389102",
+      "sourceUrl": "https://inthiswork.com/archives/389102",
+      "companyName": "마인드로직",
+      "title": "TTS AI Research Engineer",
+      "reasonCode": "CAREER_ONLY",
+      "reasonDetail": "현재 상세 자격요건이 TTS 연구개발 경험 3년 이상을 필수로 요구한다.",
+      "checkedAt": "2026-08-24T06:12:40+09:00"
+    },
+    {
+      "sourceName": "인디스워크",
+      "sourceId": "389065",
+      "sourceUrl": "https://inthiswork.com/archives/389065",
+      "companyName": "SFA",
+      "title": "Test Engineer",
+      "reasonCode": "QA_ONLY",
+      "reasonDetail": "검증 대상 역할이 테스트·QA 전용 직무다.",
+      "checkedAt": "2026-08-24T06:12:40+09:00"
+    },
+    {
+      "sourceName": "인디스워크",
+      "sourceId": "390391",
+      "sourceUrl": "https://inthiswork.com/archives/390391",
+      "companyName": "에임인텔리전스",
+      "title": "Member of Technical Staff",
+      "reasonCode": "SECURITY_ONLY",
+      "reasonDetail": "현재 상세가 AI 공격·방어와 취약점 평가 중심의 보안 전용 역할이다.",
+      "checkedAt": "2026-08-24T06:12:40+09:00"
+    },
+    {
+      "sourceName": "인디스워크",
+      "sourceId": "390425",
+      "sourceUrl": "https://inthiswork.com/archives/390425",
+      "companyName": "엔라이즈",
+      "title": "AI Product Builder",
+      "reasonCode": "NON_IT",
+      "reasonDetail": "개발 전담 엔지니어보다 신사업 기획·검증·사업 확장 역할이 중심이라 IT 직무 기준에서 제외했다.",
+      "checkedAt": "2026-08-24T06:12:40+09:00"
+    },
+    {
+      "sourceName": "인디스워크",
+      "sourceId": "385164",
+      "sourceUrl": "https://inthiswork.com/archives/385164",
+      "companyName": "한국자산평가",
+      "title": "금융공학연구소 신입/경력 채용",
+      "reasonCode": "SOURCE_REMOVED",
+      "reasonDetail": "회사 공식 채용 게시판을 현재 확인한 결과 조회 공고가 0건이어서 신규 활성 공고로 등록하지 않았다.",
+      "checkedAt": "2026-08-24T08:26:14+09:00"
+    },
+    {
+      "sourceName": "인디스워크",
+      "sourceId": "im-bank-2026",
+      "sourceUrl": "https://inthiswork.com/",
+      "companyName": "iM뱅크",
+      "title": "2026년 신입행원 채용",
+      "reasonCode": "NON_IT",
+      "reasonDetail": "현재 모집단위에서 별도 IT 개발·데이터 직무를 확인하지 못해 일반 은행 직무로 제외했다.",
+      "checkedAt": "2026-08-24T08:26:14+09:00"
+    }
+  ]
+}

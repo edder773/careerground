@@ -1,0 +1,43 @@
+{
+  "version": "1.0",
+  "asOfDate": "2026-08-21",
+  "timezone": "Asia/Seoul",
+  "reconciledAt": "2026-08-21T11:51:23+09:00",
+  "snapshotMode": "DELTA",
+  "comparison": {
+    "existingItems": 0,
+    "incomingItems": 29,
+    "matchedItems": 0,
+    "addedItems": 29,
+    "expiredByDeadlineItems": 0,
+    "removedItems": 0,
+    "retainedUnconfirmedItems": 0,
+    "retainedExistingRollingItems": 0,
+    "storedItemsAfter": 29,
+    "visibleItemsAfter": 29
+  },
+  "periodClassification": {
+    "fixedDeadline": 13,
+    "rolling": 4,
+    "deadlineUnknown": 12,
+    "rule": "명시 마감일은 deadlineAt, 명시적 상시·채용 시 마감만 rolling=true, 현재 상세·지원 링크가 있으나 둘 다 없는 경우 DEADLINE_UNKNOWN으로 저장한다."
+  },
+  "deactivations": [],
+  "removals": [],
+  "retentionVerification": [],
+  "rollingVerification": [],
+  "safety": {
+    "jobsDeleted": 0,
+    "savedJobsDeleted": 0,
+    "existingJobsMutated": 0,
+    "liveDatabaseRowsBefore": 76,
+    "liveVisibleRowsBefore": 66,
+    "userApprovedInthisworkRelaxation": true,
+    "omitted": [
+      {
+        "companyName": "ECOUNT",
+        "reason": "현재 목록 노출은 확인했지만 고유 상세 URL을 확보하지 못해 중복·추적 가능한 sourceUrl을 만들 수 없었다."
+      }
+    ]
+  }
+}

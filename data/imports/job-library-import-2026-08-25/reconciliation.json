@@ -1,0 +1,288 @@
+{
+  "version": "1.0",
+  "mode": "LIBRARY_ACTIVE_INSERT_ONLY",
+  "runAt": "2026-08-25T07:45:00+09:00",
+  "library": {
+    "fileName": "careerground-jobs-live-2026-08-24-final.json",
+    "actualLibraryFileName": "careerground-jobs-live-2026-08-24-latest-final.json",
+    "selectionReason": "USER_REQUESTED_EXPORTED_AT_2026-08-24T23:34:04+09:00",
+    "libraryFileId": "libfile_413dfb07182c819187b9f2c39afe84e4",
+    "exportedAt": "2026-08-24T23:34:04+09:00",
+    "sourceRows": 156
+  },
+  "comparison": {
+    "baselineRows": 120,
+    "matchedExistingRows": 120,
+    "newSourceRows": 36,
+    "addedActiveRows": 15,
+    "excludedNewNonActiveRows": 21,
+    "excludedStaleActiveRows": 3,
+    "conflictRows": 0,
+    "updatedExistingRows": 0,
+    "deletedRows": 0,
+    "storedRowsAfter": 135
+  },
+  "added": [
+    {
+      "id": "job-e21fadb4f26062a5a0dbb8d3",
+      "company_name": "㈜비즈웍스",
+      "title": "(신입) 웹개발자 / 앱개발자 채용 공고",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49810560"
+    },
+    {
+      "id": "job-3baca7a885b5db17e1905cbc",
+      "company_name": "㈜서우컴퍼니",
+      "title": "㈜서우컴퍼니 java .jsp신입 / 경력 개발자 모집",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49824425"
+    },
+    {
+      "id": "job-7a289d890dfa093e50490392",
+      "company_name": "㈜세명소프트",
+      "title": "[세명소프트] IT SI/SM 신입 개발자 채용(불광동 근무)",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49826447"
+    },
+    {
+      "id": "job-a2fa809167760ef332bb611f",
+      "company_name": "㈜에이블짐정보",
+      "title": "[신입/경력] JAVA/JSP 백엔드 웹프로그래머 정규직/프리랜서 채용",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49831037"
+    },
+    {
+      "id": "job-212d7f3115ecc34dad4a6110",
+      "company_name": "㈜오픈시스",
+      "title": "전자정부 자바웹프로그램 개발(신입 및 경력) 모십니다.",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49673101"
+    },
+    {
+      "id": "job-b63f6d92de595b8a56216da2",
+      "company_name": "㈜이에스티소프트",
+      "title": "[(주)이에스티소프트] IT 웹 개발자 신입/경력 채용",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49799973"
+    },
+    {
+      "id": "job-a42855b1aa1f994feb6a481e",
+      "company_name": "㈜커널스",
+      "title": "(주)커널스에서 JSP 개발자(신입/경력)를 모십니다.",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49623294"
+    },
+    {
+      "id": "job-dc3414e7836cbdd483b2c147",
+      "company_name": "㈜티젠소프트",
+      "title": "[2026년 개발팀 공채] JAVA, JSP 개발자 신입/경력 모집",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49579859"
+    },
+    {
+      "id": "job-d83230cc86caafdf6f41c431",
+      "company_name": "LG전자",
+      "title": "2026년 하반기 신입사원 채용 - SW·로봇 등 IT 직군",
+      "source_url": "https://careers.lg.com/apply/detail?id=1002085"
+    },
+    {
+      "id": "job-ba686c5d4e122b459b15208b",
+      "company_name": "NHN Cloud",
+      "title": "스토리지 엔진 개발",
+      "source_url": "https://careers.nhn.com/recruits/4021981752778171144"
+    },
+    {
+      "id": "job-e124115602975a1b56282e3d",
+      "company_name": "아이시",
+      "title": "[isee] 소프트웨어 개발자 모집 (앱·웹·ERP 개발) (신입)",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49819763"
+    },
+    {
+      "id": "job-e6922e3d8128c7b90c29b38a",
+      "company_name": "에이아이티스토리㈜",
+      "title": "에이아이티스토리 개발자 신입/경력 채용 (플랫폼 개발자)",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49654795"
+    },
+    {
+      "id": "job-25b895306f582d446440dcf5",
+      "company_name": "이너버스",
+      "title": "백엔드 개발자 (신입)",
+      "source_url": "https://jumpit.saramin.co.kr/position/54586009"
+    },
+    {
+      "id": "job-f7c92e448513418dd290267a",
+      "company_name": "정엔터시스템",
+      "title": "java, 풀스택 신입 웹개발자 찾습니다.",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49652870"
+    },
+    {
+      "id": "job-d90569227d3d63f1cb9f448c",
+      "company_name": "한국물가협회",
+      "title": "채용연계형 인턴사원 모집 - 전산 부문",
+      "source_url": "https://jasoseol.com/recruit/105765"
+    }
+  ],
+  "excluded": [
+    {
+      "id": "job-09cdc20d8b1ca33ee5630690",
+      "company_name": "LG AI Research",
+      "title": "Backend Engineer Internship",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4595851005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-3631ff0c3066edbe229126a9",
+      "company_name": "LG AI Research",
+      "title": "Data Engineer Internship - Physical AI",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4725957005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-af0de9234513e793c29b16b3",
+      "company_name": "LG AI Research",
+      "title": "Large Language Model 연구 및 개발 Internship",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4180455005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-717093891e348577fb04f976",
+      "company_name": "LG AI Research",
+      "title": "Materials Intelligence Lab Internship",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4204208005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-b2420db5ea570c366a605f74",
+      "company_name": "LG AI Research",
+      "title": "NLP 개발인턴",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4024293005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-740e28db3429ea37d2ca9bca",
+      "company_name": "LG AI Research",
+      "title": "Platform Engineer Internship",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4685111005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-9e0f22722f59ede41845929c",
+      "company_name": "LG AI Research",
+      "title": "Research Internship - Physical AI",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4725958005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-b29a804bf08de9606c7d754f",
+      "company_name": "LG AI Research",
+      "title": "Research Internship - Robot Foundation Model",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4693138005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-46f4c96f8f2972f7ec95443b",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist Internship (Agentic AI)",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4638356005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-d87a6777423b6c79306a0c44",
+      "company_name": "LG AI Research",
+      "title": "Research/Engineering Internship - Reinforcement Learning",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4708922005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-163bc43ce038e35767684b1f",
+      "company_name": "LG AI Research",
+      "title": "독자AI파운데이션 모델 개발 Internship (World Best LLM)",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4593631005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-f623ee54dc9640256c7e9ae9",
+      "company_name": "LG AI Research",
+      "title": "AI Software Engineer - Self-driving Laboratory",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4724188005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-72dd22d43c8b5863c538a4bc",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist - Chemical Agentic AI",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4623079005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-a7dacb266b63b7c98b048527",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist - Physical AI & Robot Foundation Models",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4708924005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-f4380421ea70d60c8d6e150a",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist/Engineer - EXAONE Lab",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4179238005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-ca90bf1d7ae1483ac616bd45",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist/Engineer - NLP",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4012547005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-824aa9009bac2db6b6267b1f",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist/Engineer - STT/TTS",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4012563005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-794c036754fb07c3c71a620e",
+      "company_name": "LG AI Research",
+      "title": "Superintelligence Lab — AI-Native Engineering Project",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4722545005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-544b749197f23879d49acb7a",
+      "company_name": "BNK시스템",
+      "title": "2026년도 OP직무 채용공고",
+      "source_url": "https://linkareer.com/activity/342490",
+      "status": "ACTIVE",
+      "reason": "STALE_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-61b64a7d9e463f90c466e081",
+      "company_name": "지비아이티",
+      "title": "[금융IT] [신입] 증권 업무 HTS 운영 및 개발자를 찾습니다.",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49751734",
+      "status": "ACTIVE",
+      "reason": "STALE_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-201df80a535f1a2412c32eb7",
+      "company_name": "크레셈",
+      "title": "제어기술팀 SW개발 신입 채용",
+      "source_url": "https://jumpit.saramin.co.kr/position/54552437",
+      "status": "ACTIVE",
+      "reason": "STALE_ACTIVE_EXCLUDED"
+    }
+  ],
+  "conflicts": []
+}

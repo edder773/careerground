@@ -1,0 +1,1042 @@
+{
+  "version": "1.0",
+  "asOfDate": "2026-08-24",
+  "timezone": "Asia/Seoul",
+  "reconciledAt": "2026-08-24T08:26:14+09:00",
+  "snapshotMode": "FULL_REVALIDATION",
+  "comparison": {
+    "existingItems": 95,
+    "incomingItems": 53,
+    "matchedItems": 43,
+    "addedItems": 10,
+    "expiredByDeadlineItems": 5,
+    "removedItems": 1,
+    "retainedUnconfirmedItems": 46,
+    "retainedExistingRollingItems": 18,
+    "storedItemsAfter": 105,
+    "visibleItemsAfter": 99
+  },
+  "policy": {
+    "incoming": "현재 원문·실제 지원 링크 또는 현재 상세 목록에서 IT 직무와 신입·인턴·경력무관 및 지원 가능 상태를 확인한 공고만 upsert한다.",
+    "missing": "접근 실패만으로 기존 공고를 제거하지 않고 비상시 공고는 retentionVerification, 상시 공고는 rollingVerification으로 유지한다.",
+    "deadline": "명시 마감일이 기준 시각보다 과거인 비상시 공고만 EXPIRED로 전환한다.",
+    "removal": "현재 상세가 지원 종료를 명확히 표시할 때만 REMOVED로 전환한다."
+  },
+  "collection": {
+    "startedAt": "2026-08-24T06:03:10+09:00",
+    "finishedAt": "2026-08-24T08:26:14+09:00",
+    "secondVerificationFinishedAt": "2026-08-24T08:26:14+09:00"
+  },
+  "concentrationReview": {
+    "thresholdPercent": 30,
+    "dominantSource": "JobKorea",
+    "visibleBaselineSharePercent": 31.6,
+    "conclusion": "15개 출처와 회사명 역검색을 병행하고 인디스워크 신입·인턴 및 IT 목록을 별도로 순회했다. 출처 편중은 신규 탐색 확대로 완화하되 기존 공고 제거 근거로 사용하지 않았다."
+  },
+  "deactivations": [
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "159145",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/159145",
+      "deadlineAt": "2026-08-22T14:59:59.000Z",
+      "status": "EXPIRED",
+      "reason": "DEADLINE_PASSED"
+    },
+    {
+      "sourceName": "인디스워크",
+      "sourceId": "387549",
+      "sourceUrl": "https://inthiswork.com/archives/387549",
+      "deadlineAt": "2026-08-23T14:59:00.000Z",
+      "status": "EXPIRED",
+      "reason": "DEADLINE_PASSED"
+    },
+    {
+      "sourceName": "Superookie",
+      "sourceId": "6a7d25abaf923602db79ab82",
+      "sourceUrl": "https://www.superookie.com/jobs/6a7d25abaf923602db79ab82",
+      "deadlineAt": "2026-08-23T14:59:00.000Z",
+      "status": "EXPIRED",
+      "reason": "DEADLINE_PASSED"
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49706105",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49706105",
+      "deadlineAt": "2026-08-21T14:59:59.000Z",
+      "status": "EXPIRED",
+      "reason": "DEADLINE_PASSED"
+    },
+    {
+      "sourceName": "자소설닷컴",
+      "sourceId": "105567",
+      "sourceUrl": "https://jasoseol.com/recruit/105567",
+      "deadlineAt": "2026-08-23T14:59:59.000Z",
+      "status": "EXPIRED",
+      "reason": "DEADLINE_PASSED"
+    }
+  ],
+  "removals": [
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49660820",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49660820",
+      "status": "REMOVED",
+      "reason": "APPLICATION_CLOSED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 잡코리아 상세가 접수 상태를 마감으로 표시하고 마감되었습니다를 명시하여 실제 지원 종료를 확인했다."
+    }
+  ],
+  "retentionVerification": [
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49757336",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49757336",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다 (기존 명시 마감일 2026-09-10T14:59:59.000Z)."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49757173",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49757173",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다 (기존 명시 마감일 2026-09-10T14:59:59.000Z)."
+    },
+    {
+      "sourceName": "한국예탁결제원 채용",
+      "sourceId": null,
+      "sourceUrl": "https://ksd-recruit.co.kr/",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다 (기존 명시 마감일 2026-09-01T00:00:00.000Z)."
+    },
+    {
+      "sourceName": "한국관세정보원 채용",
+      "sourceId": "14508",
+      "sourceUrl": "https://kcits.hubst.co.kr/applicantMain/goJobOpeningDetailPage.do?boardType=1&nextPage=&opnIdx=14508&orgIdx=5197&postIdx=",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다 (기존 명시 마감일 2026-08-26T09:00:00.000Z)."
+    },
+    {
+      "sourceName": "KCC Careers",
+      "sourceId": "14192",
+      "sourceUrl": "https://recruit.kccworld.co.kr/recruit/recruitMain?SEQ=14192&SiteType=A",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다 (기존 명시 마감일 2026-08-30T05:59:00.000Z)."
+    },
+    {
+      "sourceName": "NAVER Cloud Careers",
+      "sourceId": "30005293",
+      "sourceUrl": "https://recruit.navercloudcorp.com/rcrt/view.do?annoId=30005293&lang=ko",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다 (기존 명시 마감일 2026-08-26T09:00:00.000Z)."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "159184",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/159184",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다 (기존 명시 마감일 2026-09-19T14:59:59.000Z)."
+    },
+    {
+      "sourceName": "Pearl Abyss Careers",
+      "sourceId": "829",
+      "sourceUrl": "https://www.pearlabyss.com/Company/Careers/detail?_jobOpeningNo=829",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다 (기존 명시 마감일 2026-08-24T14:59:59.000Z)."
+    },
+    {
+      "sourceName": "Pearl Abyss Careers",
+      "sourceId": "830",
+      "sourceUrl": "https://www.pearlabyss.com/Company/Careers/detail?_jobOpeningNo=830",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다 (기존 명시 마감일 2026-08-24T14:59:59.000Z)."
+    },
+    {
+      "sourceName": "JOB-ALIO",
+      "sourceId": "303880",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=303880",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다 (기존 명시 마감일 2026-08-28T01:00:00.000Z)."
+    },
+    {
+      "sourceName": "스타픽시 스튜디오 Careers",
+      "sourceId": "ui-content-programmer",
+      "sourceUrl": "https://starpixie.studio/recruit/ui-content-programmer",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "159157",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/159157",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다 (기존 명시 마감일 2026-09-01T14:59:59.000Z)."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "159008",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/159008",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다 (기존 명시 마감일 2026-09-01T14:59:59.000Z)."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "158841",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/158841",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다 (기존 명시 마감일 2027-01-01T14:59:59.000Z)."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49758419",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49758419",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다 (기존 명시 마감일 2026-08-31T14:59:59.000Z)."
+    },
+    {
+      "sourceName": "Pearl Abyss Careers",
+      "sourceId": "831",
+      "sourceUrl": "https://www.pearlabyss.com/Company/Careers/detail?_jobOpeningNo=831",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다 (기존 명시 마감일 2026-08-24T14:59:59.000Z)."
+    },
+    {
+      "sourceName": "JobKorea",
+      "sourceId": "49576376",
+      "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/49576376",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다 (기존 명시 마감일 2026-09-11T14:59:59.000Z)."
+    },
+    {
+      "sourceName": "인디스워크",
+      "sourceId": "387559",
+      "sourceUrl": "https://inthiswork.com/archives/387559",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "LG AI Research Careers",
+      "sourceId": "250",
+      "sourceUrl": "https://www.lgresearch.ai/careers/view?seq=250",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세는 확인했지만 미래 마감일 또는 명시적인 상시·채용 시 마감 근거를 함께 확정하지 못해 운영 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "인디스워크",
+      "sourceId": "388295",
+      "sourceUrl": "https://inthiswork.com/archives/388295",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세는 확인했지만 미래 마감일 또는 명시적인 상시·채용 시 마감 근거를 함께 확정하지 못해 운영 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "인디스워크",
+      "sourceId": "388671",
+      "sourceUrl": "https://inthiswork.com/archives/388671",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세는 확인했지만 미래 마감일 또는 명시적인 상시·채용 시 마감 근거를 함께 확정하지 못해 운영 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "인디스워크",
+      "sourceId": "388409",
+      "sourceUrl": "https://inthiswork.com/archives/388409",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세는 확인했지만 미래 마감일 또는 명시적인 상시·채용 시 마감 근거를 함께 확정하지 못해 운영 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "Amazon Jobs",
+      "sourceId": "10469995",
+      "sourceUrl": "https://www.amazon.jobs/en/jobs/10469995/2026-career-enhanced-re-start-program-data-center-operation-trainee-dco-data-center-operations",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세는 확인했지만 미래 마감일 또는 명시적인 상시·채용 시 마감 근거를 함께 확정하지 못해 운영 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "인디스워크",
+      "sourceId": "387513",
+      "sourceUrl": "https://inthiswork.com/archives/387513",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세는 확인했지만 미래 마감일 또는 명시적인 상시·채용 시 마감 근거를 함께 확정하지 못해 운영 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "LG AI Research Careers",
+      "sourceId": "258",
+      "sourceUrl": "https://www.lgresearch.ai/careers/view?seq=258",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세는 확인했지만 미래 마감일 또는 명시적인 상시·채용 시 마감 근거를 함께 확정하지 못해 운영 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "인디스워크",
+      "sourceId": "387553",
+      "sourceUrl": "https://inthiswork.com/archives/387553",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세는 확인했지만 미래 마감일 또는 명시적인 상시·채용 시 마감 근거를 함께 확정하지 못해 운영 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "LG AI Research Careers",
+      "sourceId": "161",
+      "sourceUrl": "https://www.lgresearch.ai/careers/view?seq=161",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세는 확인했지만 미래 마감일 또는 명시적인 상시·채용 시 마감 근거를 함께 확정하지 못해 운영 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "인디스워크",
+      "sourceId": "387562",
+      "sourceUrl": "https://inthiswork.com/archives/387562",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세는 확인했지만 미래 마감일 또는 명시적인 상시·채용 시 마감 근거를 함께 확정하지 못해 운영 행을 변경 없이 유지한다."
+    }
+  ],
+  "rollingVerification": [
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156305",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156305",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "157754",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/157754",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156625",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156625",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156011",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156011",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156469",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156469",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "Coupang Careers",
+      "sourceId": "8121392",
+      "sourceUrl": "https://www.coupang.jobs/en/jobs/8121392/%EC%8B%A0%EC%9E%85%EC%B1%84%EC%9A%A9-back-end-engineer-eats-ads-engineering/",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156013",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156013",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156007",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156007",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156303",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156303",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "Dreamus Company Careers",
+      "sourceId": "227074",
+      "sourceUrl": "https://recruit.dreamuscompany.com/pages/careers_view.jsp?id=227074&jobName=All&title=",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "157706",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/157706",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "스타픽시 스튜디오 Careers",
+      "sourceId": "gameplay-programmer",
+      "sourceUrl": "https://starpixie.studio/recruit/gameplay-programmer",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "Superb AI Careers",
+      "sourceId": "MneaI5ph",
+      "sourceUrl": "https://careers.superb-ai.com/job_posting/MneaI5ph",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "디사일로 Careers",
+      "sourceId": "rJPrp0Dz",
+      "sourceUrl": "https://careers.desilo.ai/job_posting/rJPrp0Dz",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "158917",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/158917",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156014",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156014",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "RocketPunch",
+      "sourceId": "156008",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/156008",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    },
+    {
+      "sourceName": "Wanted",
+      "sourceId": "371789",
+      "sourceUrl": "https://www.wanted.co.kr/wd/371789",
+      "outcome": "RETAINED_UNCONFIRMED",
+      "checkedAt": "2026-08-24T06:12:40+09:00",
+      "evidence": "현재 상세 접근이 차단·제한되거나 지원 가능 상태를 끝까지 확인하지 못했다. 접근 실패만으로 제거하지 않고 기존 행을 변경 없이 유지한다."
+    }
+  ],
+  "sourceInvestigations": [
+    {
+      "source": "자소설닷컴",
+      "searchStartedAt": "2026-08-24T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-24T06:12:40+09:00",
+      "keywords": [
+        "신입 개발",
+        "인턴 IT",
+        "경력무관 데이터",
+        "회사명 역검색"
+      ],
+      "pagesChecked": 2,
+      "candidateCount": 2,
+      "detailChecked": 2,
+      "verifiedActive": 1,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 1,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 0,
+      "exhaustionStatus": "COMPLETED",
+      "limitationReason": null,
+      "highWatermark": {
+        "previous": null,
+        "observed": null,
+        "committed": false,
+        "reason": "전체 실행에서 접근 제한 출처가 남아 새 high-watermark를 전진시키지 않았다."
+      },
+      "rawCandidateCount": 2,
+      "decidedCandidateCount": 2
+    },
+    {
+      "source": "Saramin",
+      "searchStartedAt": "2026-08-24T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-24T06:12:40+09:00",
+      "keywords": [
+        "신입 개발",
+        "인턴 IT",
+        "경력무관 데이터",
+        "회사명 역검색"
+      ],
+      "pagesChecked": 2,
+      "candidateCount": 0,
+      "detailChecked": 0,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 0,
+      "exhaustionStatus": "COMPLETED",
+      "limitationReason": null,
+      "highWatermark": {
+        "previous": null,
+        "observed": null,
+        "committed": false,
+        "reason": "전체 실행에서 접근 제한 출처가 남아 새 high-watermark를 전진시키지 않았다."
+      },
+      "rawCandidateCount": 0,
+      "decidedCandidateCount": 0
+    },
+    {
+      "source": "JobKorea",
+      "searchStartedAt": "2026-08-24T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-24T06:12:40+09:00",
+      "keywords": [
+        "신입 개발",
+        "인턴 IT",
+        "경력무관 데이터",
+        "회사명 역검색"
+      ],
+      "pagesChecked": 2,
+      "candidateCount": 2,
+      "detailChecked": 2,
+      "verifiedActive": 2,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 4,
+      "exhaustionStatus": "PARTIAL",
+      "limitationReason": "일부 상세 페이지가 429·내부 오류·리디렉션 제한으로 현재 지원 상태를 확정하지 못했다.",
+      "highWatermark": {
+        "previous": null,
+        "observed": null,
+        "committed": false,
+        "reason": "해당 출처 최신 목록 또는 상세 접근이 불완전하여 기존 high-watermark를 보존했다."
+      },
+      "rawCandidateCount": 2,
+      "decidedCandidateCount": 2
+    },
+    {
+      "source": "Wanted",
+      "searchStartedAt": "2026-08-24T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-24T06:12:40+09:00",
+      "keywords": [
+        "신입 개발",
+        "인턴 IT",
+        "경력무관 데이터",
+        "회사명 역검색"
+      ],
+      "pagesChecked": 2,
+      "candidateCount": 0,
+      "detailChecked": 0,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 1,
+      "exhaustionStatus": "PARTIAL",
+      "limitationReason": "일부 상세 페이지가 429·내부 오류·리디렉션 제한으로 현재 지원 상태를 확정하지 못했다.",
+      "highWatermark": {
+        "previous": null,
+        "observed": null,
+        "committed": false,
+        "reason": "해당 출처 최신 목록 또는 상세 접근이 불완전하여 기존 high-watermark를 보존했다."
+      },
+      "rawCandidateCount": 0,
+      "decidedCandidateCount": 0
+    },
+    {
+      "source": "Jumpit",
+      "searchStartedAt": "2026-08-24T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-24T06:12:40+09:00",
+      "keywords": [
+        "신입 개발",
+        "인턴 IT",
+        "경력무관 데이터",
+        "회사명 역검색"
+      ],
+      "pagesChecked": 2,
+      "candidateCount": 0,
+      "detailChecked": 0,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 0,
+      "exhaustionStatus": "COMPLETED",
+      "limitationReason": null,
+      "highWatermark": {
+        "previous": null,
+        "observed": null,
+        "committed": false,
+        "reason": "전체 실행에서 접근 제한 출처가 남아 새 high-watermark를 전진시키지 않았다."
+      },
+      "rawCandidateCount": 0,
+      "decidedCandidateCount": 0
+    },
+    {
+      "source": "인디스워크",
+      "searchStartedAt": "2026-08-24T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-24T08:26:14+09:00",
+      "keywords": [
+        "신입 개발",
+        "인턴 IT",
+        "경력무관 데이터",
+        "회사명 역검색"
+      ],
+      "pagesChecked": 4,
+      "candidateCount": 20,
+      "detailChecked": 20,
+      "verifiedActive": 7,
+      "deadlineUnknown": 0,
+      "needsReview": 6,
+      "expired": 0,
+      "careerOnlyExcluded": 1,
+      "securityExcluded": 1,
+      "qualityExcluded": 1,
+      "nonItExcluded": 3,
+      "duplicate": 0,
+      "accessFailure": 3,
+      "exhaustionStatus": "INCOMPLETE",
+      "limitationReason": "최신 IT 목록·관련 공고·오늘 핫한 공고와 회사명 역검색을 점검했으나 전체 과거 페이지와 일부 429 상세는 완전 순회하지 못했다. 검증된 공고만 분리 배포한다.",
+      "highWatermark": {
+        "previous": null,
+        "observed": null,
+        "committed": false,
+        "reason": "해당 출처 최신 목록 또는 상세 접근이 불완전하여 기존 high-watermark를 보존했다."
+      },
+      "rawCandidateCount": 20,
+      "decidedCandidateCount": 20
+    },
+    {
+      "source": "RocketPunch",
+      "searchStartedAt": "2026-08-24T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-24T06:12:40+09:00",
+      "keywords": [
+        "신입 개발",
+        "인턴 IT",
+        "경력무관 데이터",
+        "회사명 역검색"
+      ],
+      "pagesChecked": 2,
+      "candidateCount": 0,
+      "detailChecked": 0,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 16,
+      "exhaustionStatus": "PARTIAL",
+      "limitationReason": "일부 상세 페이지가 429·내부 오류·리디렉션 제한으로 현재 지원 상태를 확정하지 못했다.",
+      "highWatermark": {
+        "previous": null,
+        "observed": null,
+        "committed": false,
+        "reason": "해당 출처 최신 목록 또는 상세 접근이 불완전하여 기존 high-watermark를 보존했다."
+      },
+      "rawCandidateCount": 0,
+      "decidedCandidateCount": 0
+    },
+    {
+      "source": "고용24",
+      "searchStartedAt": "2026-08-24T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-24T06:12:40+09:00",
+      "keywords": [
+        "신입 개발",
+        "인턴 IT",
+        "경력무관 데이터",
+        "회사명 역검색"
+      ],
+      "pagesChecked": 2,
+      "candidateCount": 0,
+      "detailChecked": 0,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 0,
+      "exhaustionStatus": "COMPLETED",
+      "limitationReason": null,
+      "highWatermark": {
+        "previous": null,
+        "observed": null,
+        "committed": false,
+        "reason": "전체 실행에서 접근 제한 출처가 남아 새 high-watermark를 전진시키지 않았다."
+      },
+      "rawCandidateCount": 0,
+      "decidedCandidateCount": 0
+    },
+    {
+      "source": "LinkedIn Korea",
+      "searchStartedAt": "2026-08-24T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-24T06:12:40+09:00",
+      "keywords": [
+        "신입 개발",
+        "인턴 IT",
+        "경력무관 데이터",
+        "회사명 역검색"
+      ],
+      "pagesChecked": 2,
+      "candidateCount": 0,
+      "detailChecked": 0,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 0,
+      "exhaustionStatus": "COMPLETED",
+      "limitationReason": null,
+      "highWatermark": {
+        "previous": null,
+        "observed": null,
+        "committed": false,
+        "reason": "전체 실행에서 접근 제한 출처가 남아 새 high-watermark를 전진시키지 않았다."
+      },
+      "rawCandidateCount": 0,
+      "decidedCandidateCount": 0
+    },
+    {
+      "source": "Superookie",
+      "searchStartedAt": "2026-08-24T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-24T06:12:40+09:00",
+      "keywords": [
+        "신입 개발",
+        "인턴 IT",
+        "경력무관 데이터",
+        "회사명 역검색"
+      ],
+      "pagesChecked": 2,
+      "candidateCount": 0,
+      "detailChecked": 0,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 0,
+      "exhaustionStatus": "COMPLETED",
+      "limitationReason": null,
+      "highWatermark": {
+        "previous": null,
+        "observed": null,
+        "committed": false,
+        "reason": "전체 실행에서 접근 제한 출처가 남아 새 high-watermark를 전진시키지 않았다."
+      },
+      "rawCandidateCount": 0,
+      "decidedCandidateCount": 0
+    },
+    {
+      "source": "Career",
+      "searchStartedAt": "2026-08-24T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-24T06:12:40+09:00",
+      "keywords": [
+        "신입 개발",
+        "인턴 IT",
+        "경력무관 데이터",
+        "회사명 역검색"
+      ],
+      "pagesChecked": 2,
+      "candidateCount": 0,
+      "detailChecked": 0,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 0,
+      "exhaustionStatus": "COMPLETED",
+      "limitationReason": null,
+      "highWatermark": {
+        "previous": null,
+        "observed": null,
+        "committed": false,
+        "reason": "전체 실행에서 접근 제한 출처가 남아 새 high-watermark를 전진시키지 않았다."
+      },
+      "rawCandidateCount": 0,
+      "decidedCandidateCount": 0
+    },
+    {
+      "source": "Incruit",
+      "searchStartedAt": "2026-08-24T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-24T06:12:40+09:00",
+      "keywords": [
+        "신입 개발",
+        "인턴 IT",
+        "경력무관 데이터",
+        "회사명 역검색"
+      ],
+      "pagesChecked": 2,
+      "candidateCount": 0,
+      "detailChecked": 0,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 0,
+      "exhaustionStatus": "COMPLETED",
+      "limitationReason": null,
+      "highWatermark": {
+        "previous": null,
+        "observed": null,
+        "committed": false,
+        "reason": "전체 실행에서 접근 제한 출처가 남아 새 high-watermark를 전진시키지 않았다."
+      },
+      "rawCandidateCount": 0,
+      "decidedCandidateCount": 0
+    },
+    {
+      "source": "Remember",
+      "searchStartedAt": "2026-08-24T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-24T06:12:40+09:00",
+      "keywords": [
+        "신입 개발",
+        "인턴 IT",
+        "경력무관 데이터",
+        "회사명 역검색"
+      ],
+      "pagesChecked": 2,
+      "candidateCount": 0,
+      "detailChecked": 0,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 0,
+      "exhaustionStatus": "COMPLETED",
+      "limitationReason": null,
+      "highWatermark": {
+        "previous": null,
+        "observed": null,
+        "committed": false,
+        "reason": "전체 실행에서 접근 제한 출처가 남아 새 high-watermark를 전진시키지 않았다."
+      },
+      "rawCandidateCount": 0,
+      "decidedCandidateCount": 0
+    },
+    {
+      "source": "Linkareer",
+      "searchStartedAt": "2026-08-24T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-24T06:12:40+09:00",
+      "keywords": [
+        "신입 개발",
+        "인턴 IT",
+        "경력무관 데이터",
+        "회사명 역검색"
+      ],
+      "pagesChecked": 2,
+      "candidateCount": 0,
+      "detailChecked": 0,
+      "verifiedActive": 0,
+      "deadlineUnknown": 0,
+      "needsReview": 0,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 0,
+      "exhaustionStatus": "COMPLETED",
+      "limitationReason": null,
+      "highWatermark": {
+        "previous": null,
+        "observed": null,
+        "committed": false,
+        "reason": "전체 실행에서 접근 제한 출처가 남아 새 high-watermark를 전진시키지 않았다."
+      },
+      "rawCandidateCount": 0,
+      "decidedCandidateCount": 0
+    },
+    {
+      "source": "공식·회사 채용",
+      "searchStartedAt": "2026-08-24T06:04:00+09:00",
+      "searchFinishedAt": "2026-08-24T08:26:14+09:00",
+      "keywords": [
+        "신입 개발",
+        "인턴 IT",
+        "경력무관 데이터",
+        "회사명 역검색"
+      ],
+      "pagesChecked": 2,
+      "candidateCount": 2,
+      "detailChecked": 2,
+      "verifiedActive": 1,
+      "deadlineUnknown": 0,
+      "needsReview": 1,
+      "expired": 0,
+      "careerOnlyExcluded": 0,
+      "securityExcluded": 0,
+      "qualityExcluded": 0,
+      "nonItExcluded": 0,
+      "duplicate": 0,
+      "accessFailure": 0,
+      "exhaustionStatus": "PARTIAL",
+      "limitationReason": "LG AI Research 신규 인턴은 공식 지원 폼이 열려 있으나 마감일 또는 상시채용 근거를 확정하지 못했다.",
+      "highWatermark": {
+        "previous": null,
+        "observed": null,
+        "committed": false,
+        "reason": "전체 실행에서 접근 제한 출처가 남아 새 high-watermark를 전진시키지 않았다."
+      },
+      "rawCandidateCount": 2,
+      "decidedCandidateCount": 2
+    }
+  ],
+  "companyBackstopReview": {
+    "targetCompanies": 15,
+    "checkedCompanies": 15,
+    "detailChecked": 15,
+    "activeCandidates": 5,
+    "uncertainCandidates": 6,
+    "decisions": [
+      {
+        "companyName": "한국무역보험공사",
+        "decision": "UNCERTAIN"
+      },
+      {
+        "companyName": "한국석유공사",
+        "decision": "ACTIVE_CANDIDATE"
+      },
+      {
+        "companyName": "iMBC",
+        "decision": "ACTIVE_CANDIDATE"
+      },
+      {
+        "companyName": "연합인포맥스",
+        "decision": "ACTIVE_CANDIDATE"
+      },
+      {
+        "companyName": "어플라이드 머티어리얼즈 코리아",
+        "decision": "EXCLUDED"
+      },
+      {
+        "companyName": "SK하이닉스",
+        "decision": "ACTIVE_CANDIDATE"
+      },
+      {
+        "companyName": "한화금융",
+        "decision": "ACTIVE_CANDIDATE"
+      },
+      {
+        "companyName": "신한투자증권",
+        "decision": "EXCLUDED"
+      },
+      {
+        "companyName": "iM뱅크",
+        "decision": "EXCLUDED"
+      },
+      {
+        "companyName": "한국자산평가",
+        "decision": "EXCLUDED"
+      },
+      {
+        "companyName": "드림텍",
+        "decision": "UNCERTAIN"
+      },
+      {
+        "companyName": "화승코퍼레이션",
+        "decision": "UNCERTAIN"
+      },
+      {
+        "companyName": "일동제약그룹",
+        "decision": "UNCERTAIN"
+      },
+      {
+        "companyName": "LG AI Research",
+        "decision": "UNCERTAIN"
+      },
+      {
+        "companyName": "뱅크샐러드",
+        "decision": "UNCERTAIN"
+      }
+    ]
+  }
+}

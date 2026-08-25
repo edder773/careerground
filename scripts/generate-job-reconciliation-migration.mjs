@@ -26,6 +26,7 @@ const allowedCompanySizes = new Set([
   'UNCLASSIFIED',
 ]);
 const allowedCareerScopes = new Set(['NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE']);
+const allowedIncomingStatuses = new Set(['ACTIVE', 'DEADLINE_UNKNOWN']);
 const allowedSnapshotModes = new Set(['DELTA', 'FULL_REVALIDATION']);
 const allowedRemovalReasons = new Set([
   'SOURCE_REMOVED',
@@ -109,7 +110,10 @@ function validateJob(item, location) {
   assertDate(item.collectedAt, `${location}.collectedAt`);
   assertDate(item.lastVerifiedAt, `${location}.lastVerifiedAt`);
   assertText(item.summary, `${location}.summary`, { min: 1, max: 600 });
-  requireCatalog(item.status === 'ACTIVE', `${location}.status must be ACTIVE.`);
+  requireCatalog(
+    allowedIncomingStatuses.has(item.status),
+    `${location}.status must be ACTIVE or DEADLINE_UNKNOWN.`,
+  );
 }
 
 function assertComparison(actual, expected, field) {

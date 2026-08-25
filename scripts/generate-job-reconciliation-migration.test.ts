@@ -40,6 +40,23 @@ describe('job catalog delta reconciliation', () => {
     expect(result.sql).not.toContain("SET status = 'REMOVED'");
   });
 
+  it('keeps a current posting visible when the application form is open but no deadline is shown', async () => {
+    const sources = await fixtures();
+    const incoming = JSON.parse(sources.incomingSource);
+    incoming.items[0].status = 'DEADLINE_UNKNOWN';
+    incoming.items[0].deadlineAt = null;
+    incoming.items[0].rolling = false;
+
+    const result = generateReconciliationSql({
+      ...sources,
+      incomingSource: JSON.stringify(incoming),
+    });
+
+    expect(result.sql).toContain("'DEADLINE_UNKNOWN'");
+    expect(result.sql).not.toContain('DELETE FROM jobs');
+    expect(result.sql).not.toContain('DELETE FROM saved_jobs');
+  });
+
   it('rejects an unverified removal caused only by snapshot absence', async () => {
     const sources = await fixtures();
     const existing = JSON.parse(sources.existingSource);
