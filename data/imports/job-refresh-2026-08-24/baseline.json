@@ -19,13 +19,7 @@
       "employmentType": "INTERN_TO_FULL_TIME",
       "region": "서울 성동구",
       "remote": false,
-      "techStack": [
-        "ROS",
-        "SLAM",
-        "VSLAM",
-        "LiDAR",
-        "IMU"
-      ],
+      "techStack": ["ROS", "SLAM", "VSLAM", "LiDAR", "IMU"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -95,13 +89,7 @@
       "employmentType": "FULL_TIME",
       "region": "대구 북구",
       "remote": false,
-      "techStack": [
-        "Java",
-        "JavaScript",
-        "jQuery",
-        "JSP",
-        "MES"
-      ],
+      "techStack": ["Java", "JavaScript", "jQuery", "JSP", "MES"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": "2026-09-09T14:59:59.000Z",
@@ -125,11 +113,7 @@
       "employmentType": "INTERN_OR_CONTRACT",
       "region": "미확인",
       "remote": false,
-      "techStack": [
-        "SQL",
-        "API",
-        "Database"
-      ],
+      "techStack": ["SQL", "API", "Database"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": "2026-08-22T14:59:59.000Z",
@@ -153,10 +137,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Java",
-        "Spring"
-      ],
+      "techStack": ["Java", "Spring"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": "2026-08-31T14:59:59.000Z",
@@ -204,14 +185,7 @@
       "employmentType": "INTERNSHIP",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Python",
-        "Linux",
-        "LLM",
-        "Data Engineering",
-        "Kubernetes",
-        "Airflow"
-      ],
+      "techStack": ["Python", "Linux", "LLM", "Data Engineering", "Kubernetes", "Airflow"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -235,9 +209,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "MDM"
-      ],
+      "techStack": ["MDM"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": "2026-10-05T14:59:59.000Z",
@@ -369,9 +341,7 @@
       "employmentType": "FULL_TIME",
       "region": "경기 안양",
       "remote": false,
-      "techStack": [
-        "Java"
-      ],
+      "techStack": ["Java"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": "2026-09-10T14:59:59.000Z",
@@ -453,11 +423,7 @@
       "employmentType": "INTERNSHIP",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Software Development",
-        "Deep Learning",
-        "Programming"
-      ],
+      "techStack": ["Software Development", "Deep Learning", "Programming"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -481,13 +447,7 @@
       "employmentType": "INTERNSHIP_OR_FULL_TIME",
       "region": "서울 관악",
       "remote": false,
-      "techStack": [
-        "AI Agent",
-        "LLM",
-        "RAG",
-        "Data Pipeline",
-        "Vector DB"
-      ],
+      "techStack": ["AI Agent", "LLM", "RAG", "Data Pipeline", "Vector DB"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -511,12 +471,7 @@
       "employmentType": "FULL_TIME",
       "region": "대한민국",
       "remote": false,
-      "techStack": [
-        "Network",
-        "Server",
-        "IT Infrastructure",
-        "Information Systems"
-      ],
+      "techStack": ["Network", "Server", "IT Infrastructure", "Information Systems"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -540,11 +495,7 @@
       "employmentType": "PERMANENT_CONTRACT",
       "region": "충남 천안·인천",
       "remote": false,
-      "techStack": [
-        "Information Systems",
-        "System Operations",
-        "IT Infrastructure"
-      ],
+      "techStack": ["Information Systems", "System Operations", "IT Infrastructure"],
       "publishedAt": "2026-08-11T15:00:00.000Z",
       "applicationStartAt": "2026-08-12T01:00:00.000Z",
       "deadlineAt": "2026-08-26T09:00:00.000Z",
@@ -616,15 +567,7 @@
       "employmentType": "INTERNSHIP",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Python",
-        "LLM",
-        "RAG",
-        "FastAPI",
-        "Django",
-        "SQL",
-        "Docker"
-      ],
+      "techStack": ["Python", "LLM", "RAG", "FastAPI", "Django", "SQL", "Docker"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": "2026-08-23T14:59:00.000Z",
@@ -708,13 +651,7 @@
       "employmentType": "INTERNSHIP",
       "region": "경기 성남",
       "remote": false,
-      "techStack": [
-        "Python",
-        "PyTorch",
-        "TensorFlow",
-        "LLM",
-        "Data Pipeline"
-      ],
+      "techStack": ["Python", "PyTorch", "TensorFlow", "LLM", "Data Pipeline"],
       "publishedAt": "2026-08-17T15:00:00.000Z",
       "applicationStartAt": "2026-08-17T15:00:00.000Z",
       "deadlineAt": "2026-08-26T09:00:00.000Z",
@@ -786,12 +723,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Java",
-        "AWS",
-        "Kafka",
-        "EMR"
-      ],
+      "techStack": ["Java", "AWS", "Kafka", "EMR"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -815,10 +747,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Information Technology",
-        "Financial IT"
-      ],
+      "techStack": ["Information Technology", "Financial IT"],
       "publishedAt": "2026-08-17T15:00:00.000Z",
       "applicationStartAt": "2026-08-18T15:00:00.000Z",
       "deadlineAt": "2026-09-07T03:00:00.000Z",
@@ -842,10 +771,7 @@
       "employmentType": "FULL_TIME",
       "region": "울산·전국",
       "remote": false,
-      "techStack": [
-        "IT",
-        "Information Systems"
-      ],
+      "techStack": ["IT", "Information Systems"],
       "publishedAt": "2026-08-12T15:00:00.000Z",
       "applicationStartAt": "2026-08-12T15:00:00.000Z",
       "deadlineAt": "2026-08-28T14:59:59.000Z",
@@ -869,9 +795,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Web Development"
-      ],
+      "techStack": ["Web Development"],
       "publishedAt": "2026-08-17T15:00:00.000Z",
       "applicationStartAt": "2026-08-17T15:00:00.000Z",
       "deadlineAt": "2026-08-28T14:59:59.000Z",
@@ -895,12 +819,7 @@
       "employmentType": "INTERN_TO_FULL_TIME",
       "region": "서울 성동구",
       "remote": false,
-      "techStack": [
-        "Python",
-        "Reinforcement Learning",
-        "Isaac Sim",
-        "MuJoCo"
-      ],
+      "techStack": ["Python", "Reinforcement Learning", "Isaac Sim", "MuJoCo"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -1006,12 +925,7 @@
       "employmentType": "TRAINEE_CONTRACT",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Linux",
-        "Server",
-        "Network",
-        "Data Center"
-      ],
+      "techStack": ["Linux", "Server", "Network", "Data Center"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -1116,9 +1030,7 @@
       "employmentType": "FULL_TIME",
       "region": "경기 이천시",
       "remote": false,
-      "techStack": [
-        "C#"
-      ],
+      "techStack": ["C#"],
       "publishedAt": null,
       "applicationStartAt": "2026-08-04T15:00:00.000Z",
       "deadlineAt": "2026-09-04T14:59:59.000Z",
@@ -1166,13 +1078,7 @@
       "employmentType": "CONTRACT",
       "region": "서울 강남구 도곡동",
       "remote": true,
-      "techStack": [
-        "LLM",
-        "TypeScript",
-        "Node.js",
-        "API",
-        "LLM-as-Judge"
-      ],
+      "techStack": ["LLM", "TypeScript", "Node.js", "API", "LLM-as-Judge"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": "2026-09-14T14:59:59.000Z",
@@ -1196,10 +1102,7 @@
       "employmentType": "INTERNSHIP",
       "region": "경기 과천",
       "remote": false,
-      "techStack": [
-        "Game Development",
-        "Programming"
-      ],
+      "techStack": ["Game Development", "Programming"],
       "publishedAt": "2026-08-09T15:00:00.000Z",
       "applicationStartAt": "2026-08-09T15:00:00.000Z",
       "deadlineAt": "2026-08-24T14:59:59.000Z",
@@ -1223,10 +1126,7 @@
       "employmentType": "INTERNSHIP",
       "region": "경기 과천",
       "remote": false,
-      "techStack": [
-        "Mobile Platform",
-        "Programming"
-      ],
+      "techStack": ["Mobile Platform", "Programming"],
       "publishedAt": "2026-08-09T15:00:00.000Z",
       "applicationStartAt": "2026-08-09T15:00:00.000Z",
       "deadlineAt": "2026-08-24T14:59:59.000Z",
@@ -1321,12 +1221,7 @@
       "employmentType": "FULL_TIME",
       "region": "전남 나주·제주·충북 청주·경기 의왕",
       "remote": false,
-      "techStack": [
-        "Software Engineering",
-        "Information Systems",
-        "Network",
-        "AI/AX"
-      ],
+      "techStack": ["Software Engineering", "Information Systems", "Network", "AI/AX"],
       "publishedAt": "2026-08-12T15:00:00.000Z",
       "applicationStartAt": "2026-08-12T15:00:00.000Z",
       "deadlineAt": "2026-08-28T01:00:00.000Z",
@@ -1350,12 +1245,7 @@
       "employmentType": "INTERNSHIP",
       "region": "서울 성동",
       "remote": false,
-      "techStack": [
-        "SaaS",
-        "Web Development",
-        "Cloud",
-        "Container"
-      ],
+      "techStack": ["SaaS", "Web Development", "Cloud", "Container"],
       "publishedAt": "2026-08-18T15:00:00.000Z",
       "applicationStartAt": "2026-08-18T15:00:00.000Z",
       "deadlineAt": "2026-09-01T14:59:59.000Z",
@@ -1379,12 +1269,7 @@
       "employmentType": "FULL_TIME",
       "region": "경기",
       "remote": false,
-      "techStack": [
-        "Lua",
-        "TypeScript",
-        "Python",
-        "Game UI"
-      ],
+      "techStack": ["Lua", "TypeScript", "Python", "Game UI"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -1432,16 +1317,7 @@
       "employmentType": "UNCONFIRMED",
       "region": "경기 성남시",
       "remote": false,
-      "techStack": [
-        "Kotlin",
-        "Spring Boot",
-        "Java",
-        "MySQL",
-        "Redis",
-        "MongoDB",
-        "Git",
-        "Jira"
-      ],
+      "techStack": ["Kotlin", "Spring Boot", "Java", "MySQL", "Redis", "MongoDB", "Git", "Jira"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -1530,10 +1406,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울 종로",
       "remote": false,
-      "techStack": [
-        "Information Technology",
-        "Financial IT"
-      ],
+      "techStack": ["Information Technology", "Financial IT"],
       "publishedAt": "2026-08-12T15:00:00.000Z",
       "applicationStartAt": "2026-08-12T15:00:00.000Z",
       "deadlineAt": "2026-09-04T14:59:59.000Z",
@@ -1652,11 +1525,7 @@
       "employmentType": "FULL_TIME",
       "region": "이천·분당·서울·용인·청주",
       "remote": false,
-      "techStack": [
-        "System Architecture",
-        "Software Solution",
-        "IT"
-      ],
+      "techStack": ["System Architecture", "Software Solution", "IT"],
       "publishedAt": "2026-08-19T15:00:00.000Z",
       "applicationStartAt": "2026-08-19T15:00:00.000Z",
       "deadlineAt": "2026-08-26T08:00:00.000Z",
@@ -1680,12 +1549,7 @@
       "employmentType": "INTERN_TO_FULL_TIME",
       "region": "미확인",
       "remote": false,
-      "techStack": [
-        "AI Agent",
-        "MCP",
-        "Frontend",
-        "Backend"
-      ],
+      "techStack": ["AI Agent", "MCP", "Frontend", "Backend"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -1742,12 +1606,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울 서초구",
       "remote": false,
-      "techStack": [
-        "Web Development",
-        "DBA",
-        "DBE",
-        "Data Analysis"
-      ],
+      "techStack": ["Web Development", "DBA", "DBE", "Data Analysis"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": "2026-10-19T14:59:59.000Z",
@@ -1805,12 +1664,7 @@
       "employmentType": "FULL_TIME",
       "region": "경기",
       "remote": false,
-      "techStack": [
-        "Lua",
-        "Node.js",
-        "Redis",
-        "PostgreSQL"
-      ],
+      "techStack": ["Lua", "Node.js", "Redis", "PostgreSQL"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -1858,10 +1712,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Software Development",
-        "IT"
-      ],
+      "techStack": ["Software Development", "IT"],
       "publishedAt": null,
       "applicationStartAt": "2026-08-19T16:00:00.000Z",
       "deadlineAt": "2026-08-30T05:59:00.000Z",
@@ -1914,11 +1765,7 @@
       "employmentType": "FULL_TIME_OR_FREELANCE",
       "region": "서울 성북구",
       "remote": true,
-      "techStack": [
-        "반응형웹",
-        "웹개발",
-        "Shopify"
-      ],
+      "techStack": ["반응형웹", "웹개발", "Shopify"],
       "publishedAt": null,
       "applicationStartAt": "2026-08-12T15:00:00.000Z",
       "deadlineAt": "2026-09-12T14:59:59.000Z",
@@ -1990,13 +1837,7 @@
       "employmentType": "INTERNSHIP",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "AWS",
-        "Cloud",
-        "Linux",
-        "Network",
-        "Infrastructure"
-      ],
+      "techStack": ["AWS", "Cloud", "Linux", "Network", "Infrastructure"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -2044,12 +1885,7 @@
       "employmentType": "INTERNSHIP",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "C++",
-        "Python",
-        "System Software",
-        "Homomorphic Encryption"
-      ],
+      "techStack": ["C++", "Python", "System Software", "Homomorphic Encryption"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -2073,9 +1909,7 @@
       "employmentType": "FULL_TIME_OR_CONTRACT",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "React"
-      ],
+      "techStack": ["React"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": "2026-08-26T14:59:59.000Z",
@@ -2123,12 +1957,7 @@
       "employmentType": "INTERNSHIP",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "PyTorch",
-        "Keras",
-        "TensorFlow",
-        "Protein AI"
-      ],
+      "techStack": ["PyTorch", "Keras", "TensorFlow", "Protein AI"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -2152,11 +1981,7 @@
       "employmentType": "FULL_TIME",
       "region": "경기 성남",
       "remote": false,
-      "techStack": [
-        "Firmware",
-        "C",
-        "Embedded Software"
-      ],
+      "techStack": ["Firmware", "C", "Embedded Software"],
       "publishedAt": null,
       "applicationStartAt": "2026-08-09T15:00:00.000Z",
       "deadlineAt": "2026-08-23T14:59:59.000Z",
@@ -2180,14 +2005,7 @@
       "employmentType": "INTERN_TO_FULL_TIME",
       "region": "미확인",
       "remote": false,
-      "techStack": [
-        "ChatGPT",
-        "Claude",
-        "Microservices",
-        "JavaScript",
-        "TypeScript",
-        "Git"
-      ],
+      "techStack": ["ChatGPT", "Claude", "Microservices", "JavaScript", "TypeScript", "Git"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -2211,11 +2029,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울 강남구",
       "remote": false,
-      "techStack": [
-        "AI",
-        "Robotics",
-        "Machine Learning"
-      ],
+      "techStack": ["AI", "Robotics", "Machine Learning"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": "2026-09-19T14:59:59.000Z",
@@ -2239,11 +2053,7 @@
       "employmentType": "INTERNSHIP",
       "region": "경기 과천",
       "remote": false,
-      "techStack": [
-        "Build System",
-        "DevOps",
-        "Programming"
-      ],
+      "techStack": ["Build System", "DevOps", "Programming"],
       "publishedAt": "2026-08-09T15:00:00.000Z",
       "applicationStartAt": "2026-08-09T15:00:00.000Z",
       "deadlineAt": "2026-08-24T14:59:59.000Z",
@@ -2291,13 +2101,7 @@
       "employmentType": "FULL_TIME_OR_CONTRACT",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Tailwind CSS",
-        "Vite",
-        "i18next",
-        "Zod",
-        "Nanostores"
-      ],
+      "techStack": ["Tailwind CSS", "Vite", "i18next", "Zod", "Nanostores"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": "2026-09-08T14:59:59.000Z",
@@ -2321,13 +2125,7 @@
       "employmentType": "INTERNSHIP",
       "region": "대한민국",
       "remote": true,
-      "techStack": [
-        "TypeScript",
-        "Python",
-        "Next.js",
-        "Full Stack",
-        "RAG"
-      ],
+      "techStack": ["TypeScript", "Python", "Next.js", "Full Stack", "RAG"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -2351,13 +2149,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "C",
-        "C++",
-        "Deep Learning",
-        "Machine Learning",
-        "LLM"
-      ],
+      "techStack": ["C", "C++", "Deep Learning", "Machine Learning", "LLM"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": "2026-09-11T14:59:59.000Z",
@@ -2381,14 +2173,7 @@
       "employmentType": "INTERNSHIP",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "NLP",
-        "LLM",
-        "RAG",
-        "Python",
-        "PyTorch",
-        "TensorFlow"
-      ],
+      "techStack": ["NLP", "LLM", "RAG", "Python", "PyTorch", "TensorFlow"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -2412,12 +2197,7 @@
       "employmentType": "INTERNSHIP",
       "region": "대한민국",
       "remote": true,
-      "techStack": [
-        "LLM",
-        "Post-training",
-        "Machine Learning",
-        "Python"
-      ],
+      "techStack": ["LLM", "Post-training", "Machine Learning", "Python"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -2465,9 +2245,7 @@
       "employmentType": "FULL_TIME",
       "region": "제주 제주시",
       "remote": false,
-      "techStack": [
-        "NestJS"
-      ],
+      "techStack": ["NestJS"],
       "publishedAt": null,
       "applicationStartAt": "2026-08-13T15:00:00.000Z",
       "deadlineAt": "2026-09-13T14:59:59.000Z",
@@ -2491,15 +2269,7 @@
       "employmentType": "INTERN_TO_FULL_TIME",
       "region": "미확인",
       "remote": false,
-      "techStack": [
-        "Next.js",
-        "AWS",
-        "React Query",
-        "Zustand",
-        "Recoil",
-        "REST API",
-        "GraphQL"
-      ],
+      "techStack": ["Next.js", "AWS", "React Query", "Zustand", "Recoil", "REST API", "GraphQL"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -2523,11 +2293,7 @@
       "employmentType": "FULL_TIME",
       "region": "대구",
       "remote": false,
-      "techStack": [
-        "DBA",
-        "Database",
-        "SQL"
-      ],
+      "techStack": ["DBA", "Database", "SQL"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -2551,11 +2317,7 @@
       "employmentType": "FULL_TIME",
       "region": "서울",
       "remote": false,
-      "techStack": [
-        "Java",
-        "Spring",
-        "Spring Boot"
-      ],
+      "techStack": ["Java", "Spring", "Spring Boot"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": "2026-08-29T14:59:59.000Z",
@@ -2579,11 +2341,7 @@
       "employmentType": "FULL_TIME",
       "region": "강원 원주시",
       "remote": false,
-      "techStack": [
-        "Information Systems",
-        "Software Architecture",
-        "ICT"
-      ],
+      "techStack": ["Information Systems", "Software Architecture", "ICT"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": "2026-09-02T14:59:59.000Z",
@@ -2607,13 +2365,7 @@
       "employmentType": "INTERNSHIP",
       "region": "대한민국",
       "remote": true,
-      "techStack": [
-        "DevOps",
-        "CI/CD",
-        "Cloud",
-        "Database",
-        "Monitoring"
-      ],
+      "techStack": ["DevOps", "CI/CD", "Cloud", "Database", "Monitoring"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -2670,13 +2422,7 @@
       "employmentType": "INTERN_TO_FULL_TIME",
       "region": "서울 성동구",
       "remote": false,
-      "techStack": [
-        "Kotlin",
-        "Android",
-        "Jetpack Compose",
-        "Coroutines",
-        "Flow"
-      ],
+      "techStack": ["Kotlin", "Android", "Jetpack Compose", "Coroutines", "Flow"],
       "publishedAt": null,
       "applicationStartAt": null,
       "deadlineAt": null,
@@ -2726,4 +2472,3 @@
     }
   ]
 }
-
