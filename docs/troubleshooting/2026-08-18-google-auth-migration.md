@@ -6,6 +6,10 @@ generatedByAI: false
 evidence: docs/evidence/google-auth-2026-08-18.json
 ---
 
+> 2026-08-25 후속 감사에서 요청 경로의 자동 purge가 안전하지 않은 것으로 판정되어 제거됐다.
+> 현재 readiness는 읽기 전용 검사만 수행하며 불일치 시 `DB_SCHEMA_NOT_READY` 503을 반환한다.
+> 최신 정책과 검증은 [런타임 스키마 파괴 경로와 채용공고 불변성 복구](./2026-08-25-runtime-schema-and-job-immutability.md)를 따른다.
+
 # OpenAI 전달 헤더에서 Google 검증 세션으로 인증 경계를 교체한 과정
 
 ## 문제와 영향

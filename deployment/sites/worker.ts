@@ -61,13 +61,13 @@ async function serveApi(request: Request, env: SitesEnv) {
     try {
       await ensureRuntimeSchema(env.DB);
     } catch (error) {
-      console.error('D1 runtime schema initialization failed', {
+      console.error('D1 runtime schema readiness check failed', {
         message: error instanceof Error ? error.message : String(error),
       });
       return json(
         {
-          code: 'DB_SCHEMA_INITIALIZATION_FAILED',
-          message: '데이터베이스 스키마를 준비하지 못했습니다. 잠시 후 다시 시도해주세요.',
+          code: 'DB_SCHEMA_NOT_READY',
+          message: '데이터베이스 migration 적용 상태를 확인해주세요.',
         },
         503,
       );

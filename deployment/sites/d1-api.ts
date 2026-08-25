@@ -211,6 +211,55 @@ async function audit(
   );
 }
 
+async function prepareUserInsert(
+  db: D1Database,
+  values: {
+    id: string;
+    email: string;
+    displayName: string;
+    role: 'ADMIN' | 'MEMBER';
+    timestamp: string;
+  },
+): Promise<D1PreparedStatement> {
+  const legacyIdentityColumn = await first<{ count: number }>(
+    db,
+    `SELECT COUNT(*) AS count
+       FROM pragma_table_info('users')
+      WHERE name = 'site_user_id'`,
+  );
+  if (Number(legacyIdentityColumn?.count || 0) === 1) {
+    return db
+      .prepare(
+        `INSERT INTO users
+           (id, site_user_id, email, display_name, role, preferred_language, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, 'javascript', ?, ?)`,
+      )
+      .bind(
+        values.id,
+        values.id,
+        values.email,
+        values.displayName,
+        values.role,
+        values.timestamp,
+        values.timestamp,
+      );
+  }
+  return db
+    .prepare(
+      `INSERT INTO users
+         (id, email, display_name, role, preferred_language, created_at, updated_at)
+       VALUES (?, ?, ?, ?, 'javascript', ?, ?)`,
+    )
+    .bind(
+      values.id,
+      values.email,
+      values.displayName,
+      values.role,
+      values.timestamp,
+      values.timestamp,
+    );
+}
+
 async function resolveGoogleUser(identity: GoogleIdentity, env: D1Env): Promise<UserRow> {
   const db = env.DB;
   let row = await first<UserRow>(
@@ -249,14 +298,15 @@ async function resolveGoogleUser(identity: GoogleIdentity, env: D1Env): Promise<
     if (capacity?.allowed !== 1) {
       throw new RouteError(403, '현재 활성 사용자 한도에 도달했습니다.', 'USER_LIMIT_REACHED');
     }
+    const userInsert = await prepareUserInsert(db, {
+      id,
+      email: identity.email,
+      displayName: identity.displayName,
+      role,
+      timestamp,
+    });
     await db.batch([
-      db
-        .prepare(
-          `INSERT INTO users
-             (id, email, display_name, role, preferred_language, created_at, updated_at)
-           VALUES (?, ?, ?, ?, 'javascript', ?, ?)`,
-        )
-        .bind(id, identity.email, identity.displayName, role, timestamp, timestamp),
+      userInsert,
       db
         .prepare(
           `INSERT INTO auth_identities
@@ -563,12 +613,13 @@ const dashboardStatement = (
     .prepare(
       `SELECT
          (SELECT COUNT(*) FROM jobs
-           WHERE status = 'ACTIVE' AND created_at >= ?) AS recentJobs,
+           WHERE status = 'ACTIVE' AND created_at >= ?
+             AND (rolling = 1 OR deadline_at IS NULL OR deadline_at >= ?)) AS recentJobs,
          (SELECT COUNT(*) FROM saved_jobs sj JOIN jobs j ON j.id = sj.job_id
            WHERE sj.user_id = ${ownerSql} AND j.status = 'ACTIVE'
              AND j.deadline_at BETWEEN ? AND ?) AS expiringJobs`,
     )
-    .bind(range.weekAgo, ownerValue, range.now, range.weekAhead);
+    .bind(range.weekAgo, range.now, ownerValue, range.now, range.weekAhead);
 
 const dashboardValue = (result: BatchResult | undefined) => {
   const row = batchRows<DashboardRow>(result)[0];
@@ -641,14 +692,7 @@ export async function runScheduledMaintenance(env: D1Env) {
   if (lease?.ownerId !== ownerId) return { acquired: false, expiredJobs: 0, notifications: 0 };
   let notifications = 0;
   try {
-    const [expired] = await db.batch([
-      db
-        .prepare(
-          `UPDATE jobs SET status = 'EXPIRED', updated_at = ?
-            WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND rolling = 0
-              AND deadline_at IS NOT NULL AND deadline_at < ?`,
-        )
-        .bind(startedAt, startedAt),
+    await db.batch([
       db
         .prepare('DELETE FROM request_rate_limits WHERE window_start < ?')
         .bind(Math.floor(Date.now() / 60_000) - 2),
@@ -657,7 +701,7 @@ export async function runScheduledMaintenance(env: D1Env) {
     notifications += await ensureDeadlineNotifications(db);
     return {
       acquired: true,
-      expiredJobs: Number(expired.meta?.changes || 0),
+      expiredJobs: 0,
       notifications,
       completedAt: nowIso(),
     };
@@ -1565,6 +1609,9 @@ type JobReadPlan = {
   value(results: BatchResult[]): unknown;
 };
 
+const visibleJobDeadlineClause = (alias: string) =>
+  `(${alias}.rolling = 1 OR ${alias}.deadline_at IS NULL OR ${alias}.deadline_at >= ?)`;
+
 function calendarJobPlan(
   db: D1Database,
   owner: ReadOwner,
@@ -1606,13 +1653,14 @@ function calendarJobPlan(
       LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ${readOwnerSql(owner)}
      WHERE j.status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
        AND j.career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
+       AND ${visibleJobDeadlineClause('j')}
        AND ${scheduleClause}
        ${filters.length ? `AND ${filters.join(' AND ')}` : ''}
      LIMIT 1001`;
   const statement = (indexName: string, scheduleClause: string, ...scheduleValues: unknown[]) =>
     db
       .prepare(select(indexName, scheduleClause))
-      .bind(owner.value, ...scheduleValues, ...filterValues);
+      .bind(owner.value, nowIso(), ...scheduleValues, ...filterValues);
   const statements = [
     statement('idx_jobs_calendar_deadline', 'j.deadline_at >= ? AND j.deadline_at < ?', from, to),
     statement(
@@ -1652,8 +1700,9 @@ function jobListPlan(db: D1Database, owner: ReadOwner, url: URL): JobReadPlan {
   const clauses = [
     "j.status IN ('ACTIVE', 'DEADLINE_UNKNOWN')",
     "j.career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')",
+    visibleJobDeadlineClause('j'),
   ];
-  const values: unknown[] = [];
+  const values: unknown[] = [nowIso()];
   const companySizes = [...new Set(url.searchParams.getAll('companySize').filter(Boolean))].slice(
     0,
     100,
@@ -1831,22 +1880,27 @@ async function jobDetail(db: D1Database, userId: string, jobId: string) {
        FROM jobs j
        LEFT JOIN saved_jobs sj ON sj.job_id = j.id AND sj.user_id = ?
       WHERE j.id = ? AND j.status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
-        AND j.career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
+        AND j.career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
+        AND ${visibleJobDeadlineClause('j')}`,
     userId,
     jobId,
+    nowIso(),
   );
   if (!row) throw new RouteError(404, '채용공고를 찾을 수 없습니다.');
   return serializeJobRows([row])[0];
 }
 
 const jobCategoriesStatement = (db: D1Database) =>
-  db.prepare(
-    `SELECT DISTINCT category
+  db
+    .prepare(
+      `SELECT DISTINCT category
        FROM jobs INDEXED BY idx_jobs_active_category
       WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
         AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
+        AND ${visibleJobDeadlineClause('jobs')}
       ORDER BY category LIMIT 100`,
-  );
+    )
+    .bind(nowIso());
 
 const jobCategoryValues = (result: BatchResult | undefined) =>
   batchRows<{ category: string }>(result).map((row) => row.category);
@@ -2385,21 +2439,24 @@ async function analyzeJobImport(db: D1Database, input: unknown) {
   const seenUrls = new Set<string>();
   const seenFingerprints = new Set<string>();
   const rows = normalized.map((row) => {
-    let outcome: 'CREATE' | 'UPDATE' | 'REVIEW' | 'REJECT' | 'DUPLICATE';
+    let outcome: 'CREATE' | 'REVIEW' | 'REJECT' | 'DUPLICATE';
     let reason: string;
-    if (row.item.careerScope === 'CAREER_ONLY') {
+    if (row.item.status !== 'ACTIVE') {
+      outcome = 'REJECT';
+      reason = '신규 ACTIVE 공고만 등록할 수 있음';
+    } else if (row.item.careerScope === 'CAREER_ONLY') {
       outcome = 'REJECT';
       reason = '경력직 전용 공고';
     } else if (seenUrls.has(row.canonicalUrl) || seenFingerprints.has(row.fingerprint)) {
       outcome = 'DUPLICATE';
       reason = '입력 package 내부 중복';
     } else if (existingByUrl.has(row.canonicalUrl)) {
-      outcome = 'UPDATE';
-      reason = '기존 canonical URL 갱신';
+      outcome = 'DUPLICATE';
+      reason = '기존 공고는 변경하지 않음';
     } else if (existingFingerprints.has(row.fingerprint)) {
       outcome = 'REVIEW';
       reason = 'URL은 다르지만 fingerprint가 같은 공고';
-    } else if (row.item.companySize === 'UNCLASSIFIED' || row.item.status === 'NEEDS_REVIEW') {
+    } else if (row.item.companySize === 'UNCLASSIFIED') {
       outcome = 'REVIEW';
       reason = '회사 규모 또는 공고 분류 검토 필요';
     } else {
@@ -2415,7 +2472,7 @@ async function analyzeJobImport(db: D1Database, input: unknown) {
   const counts = {
     original: rows.length,
     create: rows.filter((row) => row.outcome === 'CREATE').length,
-    update: rows.filter((row) => row.outcome === 'UPDATE').length,
+    update: 0,
     duplicate: rows.filter((row) => row.outcome === 'DUPLICATE').length,
     rejected: rows.filter((row) => row.outcome === 'REJECT').length,
     review: rows.filter((row) => row.outcome === 'REVIEW').length,
@@ -2428,29 +2485,6 @@ async function analyzeJobImport(db: D1Database, input: unknown) {
     title: string;
     sourceUrl: string;
   }> = [];
-  for (const sourceName of body.snapshot?.sources || []) {
-    const observedUrls = new Set(
-      normalized.filter((row) => row.item.sourceName === sourceName).map((row) => row.canonicalUrl),
-    );
-    const existing = await all<{
-      id: string;
-      sourceName: string;
-      companyName: string;
-      title: string;
-      sourceUrl: string;
-    }>(
-      db,
-      `SELECT id, source_name AS sourceName, company_name AS companyName, title, source_url AS sourceUrl
-         FROM jobs
-        WHERE source_name = ? AND status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
-          AND last_verified_at < ?
-        ORDER BY company_name, title`,
-      sourceName,
-      body.collectedAt,
-    );
-    removalCandidates.push(...existing.filter((job) => !observedUrls.has(job.sourceUrl)));
-  }
-  counts.removal = removalCandidates.length;
   return { body, rows, counts, removalCandidates };
 }
 
@@ -2490,42 +2524,21 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
       'IMPORT_REVIEW_ACK_REQUIRED',
     );
   }
-  if (
-    analyzed.removalCandidates.length > 0 &&
-    (loaded.acknowledgment.acknowledgeRemovals !== true ||
-      int(loaded.acknowledgment.removalCount, -1) !== analyzed.removalCandidates.length)
-  ) {
-    throw new RouteError(
-      409,
-      'FULL snapshot 제거 대상을 별도로 확인해주세요.',
-      'IMPORT_REMOVAL_ACK_REQUIRED',
-      { removalCount: analyzed.removalCandidates.length },
-    );
-  }
-  if (analyzed.removalCandidates.length > Math.max(100, analyzed.rows.length)) {
-    throw new RouteError(
-      409,
-      '제거 대상이 안전 임계치를 초과했습니다. source snapshot을 분할해 다시 검토해주세요.',
-      'IMPORT_REMOVAL_THRESHOLD_EXCEEDED',
-      { removalCount: analyzed.removalCandidates.length, importedCount: analyzed.rows.length },
-    );
-  }
   const timestamp = nowIso();
   const batchId = newId();
+  const acceptedRows = analyzed.rows
+    .filter((row) => row.outcome === 'CREATE' && row.item.status === 'ACTIVE')
+    .map((row) => ({ ...row, persistedId: newId() }));
   const batch = {
     id: batchId,
     createdAt: timestamp,
     originalCount: analyzed.counts.original,
-    rejectedCount: analyzed.counts.rejected,
+    rejectedCount: analyzed.counts.original - acceptedRows.length,
   };
-  const acceptedRows = analyzed.rows
-    .filter((row) => !['REJECT', 'DUPLICATE'].includes(row.outcome))
-    .map((row) => ({ ...row, persistedId: row.existingId || newId() }));
-  const snapshotSources = analyzed.body.snapshot?.sources || [];
   const result = {
     batch,
     counts: analyzed.counts,
-    snapshot: { mode: analyzed.body.snapshot?.mode || 'DELTA', sources: snapshotSources },
+    snapshot: { mode: 'INSERT_ONLY', sources: [] },
     idempotent: false,
   };
   const statements = acceptedRows.map((row) => {
@@ -2539,20 +2552,7 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
               deadline_at, rolling, summary, status, fingerprint, collected_at, last_verified_at,
               created_at, updated_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-           ON CONFLICT(source_url) DO UPDATE SET
-             company_name = excluded.company_name, company_size = excluded.company_size,
-             company_size_evidence = excluded.company_size_evidence,
-             source_name = excluded.source_name, source_posting_id = excluded.source_posting_id,
-             title = excluded.title, category = excluded.category,
-             career_scope = excluded.career_scope, career_evidence = excluded.career_evidence,
-             employment_type = excluded.employment_type, region = excluded.region,
-             remote = excluded.remote, tech_stack = excluded.tech_stack,
-             published_at = excluded.published_at,
-             application_start_at = excluded.application_start_at,
-             deadline_at = excluded.deadline_at, rolling = excluded.rolling,
-             summary = excluded.summary, status = excluded.status,
-             fingerprint = excluded.fingerprint, collected_at = excluded.collected_at,
-             last_verified_at = excluded.last_verified_at, updated_at = excluded.updated_at`,
+           ON CONFLICT(source_url) DO NOTHING`,
       )
       .bind(
         row.persistedId,
@@ -2575,7 +2575,7 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
         item.deadlineAt || null,
         item.rolling ? 1 : 0,
         item.summary,
-        row.outcome === 'REVIEW' ? 'NEEDS_REVIEW' : item.status,
+        'ACTIVE',
         row.fingerprint,
         item.collectedAt,
         item.lastVerifiedAt,
@@ -2594,52 +2594,12 @@ async function commitJobImport(db: D1Database, user: UserRow, input: unknown) {
         batchId,
         loaded.preview.checksum,
         analyzed.counts.original,
-        analyzed.counts.rejected,
+        batch.rejectedCount,
         JSON.stringify(result),
         timestamp,
         timestamp,
       ),
   );
-  for (const sourceName of snapshotSources) {
-    const observed = acceptedRows.filter((row) => row.item.sourceName === sourceName);
-    const snapshotId = newId();
-    const removalCount = analyzed.removalCandidates.filter(
-      (row) => row.sourceName === sourceName,
-    ).length;
-    statements.push(
-      db
-        .prepare(
-          `INSERT INTO job_source_snapshots
-             (id, source_name, collected_at, observed_count, expired_count, import_batch_id, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        )
-        .bind(
-          snapshotId,
-          sourceName,
-          analyzed.body.collectedAt,
-          observed.length,
-          removalCount,
-          batchId,
-          timestamp,
-        ),
-      ...observed.map((row) =>
-        db
-          .prepare('INSERT INTO job_source_snapshot_items (snapshot_id, job_id) VALUES (?, ?)')
-          .bind(snapshotId, row.persistedId),
-      ),
-      db
-        .prepare(
-          `UPDATE jobs SET status = 'REMOVED', updated_at = ?
-            WHERE source_name = ? AND status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
-              AND last_verified_at < ?
-              AND NOT EXISTS (
-                SELECT 1 FROM job_source_snapshot_items snapshot_item
-                 WHERE snapshot_item.snapshot_id = ? AND snapshot_item.job_id = jobs.id
-              )`,
-        )
-        .bind(timestamp, sourceName, analyzed.body.collectedAt, snapshotId),
-    );
-  }
   statements.push(
     db
       .prepare('UPDATE import_previews SET consumed_at = ? WHERE token = ? AND consumed_at IS NULL')
@@ -3369,10 +3329,20 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
               rank
          FROM workspace_search
         WHERE workspace_search MATCH ? AND (owner_id = '' OR owner_id = ?)
+          AND (
+            kind <> 'jobs' OR EXISTS (
+              SELECT 1 FROM jobs j
+               WHERE j.id = workspace_search.entity_id
+                 AND j.status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
+                 AND j.career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
+                 AND ${visibleJobDeadlineClause('j')}
+            )
+          )
           ${cursor ? 'AND (rank > ? OR (rank = ? AND rowid > ?))' : ''}
         ORDER BY rank ASC LIMIT ?`,
       match,
       user.id,
+      nowIso(),
       ...(cursor ? [cursorRank, cursorRank, cursorRowid] : []),
       limit + 1,
     );
@@ -4399,10 +4369,14 @@ export async function handleD1Api(request: Request, env: D1Env) {
         ? await first<{ jobs: number; problems: number; learning: number; searchRows: number }>(
             env.DB,
             `SELECT
-               (SELECT COUNT(*) FROM jobs WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN')) AS jobs,
+               (SELECT COUNT(*) FROM jobs
+                 WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
+                   AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
+                   AND ${visibleJobDeadlineClause('jobs')}) AS jobs,
                (SELECT COUNT(*) FROM coding_problems WHERE active = 1) AS problems,
                (SELECT COUNT(*) FROM learning_units WHERE published = 1) AS learning,
                (SELECT COUNT(*) FROM workspace_search) AS searchRows`,
+            nowIso(),
           )
         : null;
       const ready = schema.ready && Boolean(canary);

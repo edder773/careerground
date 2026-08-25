@@ -103,3 +103,84 @@ describe('Sites worker Google session bootstrap', () => {
     expect(legacy.status).toBe(401);
   });
 });
+
+describe('Sites worker schema readiness gate', () => {
+  it('returns 503 for an invalid migration ledger without changing user data', async () => {
+    const db = new LocalD1();
+    try {
+      await db
+        .prepare(
+          `INSERT INTO users
+             (id, site_user_id, email, display_name, role, preferred_language, created_at, updated_at)
+           VALUES (?, ?, ?, ?, 'MEMBER', 'javascript', ?, ?)`,
+        )
+        .bind(
+          'worker-schema-sentinel',
+          'worker-schema-sentinel',
+          'worker-schema-sentinel@example.test',
+          'Schema Sentinel',
+          '2026-08-25',
+          '2026-08-25',
+        )
+        .run();
+      await db
+        .prepare(
+          "DELETE FROM app_schema_migrations WHERE version = '0023_purge_legacy_personal_data'",
+        )
+        .run();
+      db.resetPreparedSql();
+
+      const response = await worker.fetch(
+        new Request('https://careerground.example/api/v1/jobs'),
+        {
+          DB: db,
+          ASSETS: { fetch: async () => new Response(null, { status: 404 }) },
+        },
+        context,
+      );
+
+      expect(response.status).toBe(503);
+      expect(await response.json()).toMatchObject({ code: 'DB_SCHEMA_NOT_READY' });
+      const sentinel = await db
+        .prepare(
+          "SELECT display_name AS displayName FROM users WHERE id = 'worker-schema-sentinel'",
+        )
+        .first<{ displayName: string }>();
+      expect(sentinel).toEqual({ displayName: 'Schema Sentinel' });
+      expect(
+        db.preparedSql.some((sql) =>
+          /DELETE FROM (users|saved_jobs|collections|learning_progress|notifications|auth_sessions)/i.test(
+            sql,
+          ),
+        ),
+      ).toBe(false);
+    } finally {
+      db.close();
+    }
+  });
+
+  it('returns 503 when the expected migration checksum does not match', async () => {
+    const db = new LocalD1();
+    try {
+      await db
+        .prepare(
+          "UPDATE app_schema_migrations SET checksum = 'sha256:invalid' WHERE version = '0023_purge_legacy_personal_data'",
+        )
+        .run();
+
+      const response = await worker.fetch(
+        new Request('https://careerground.example/api/v1/health/ready'),
+        {
+          DB: db,
+          ASSETS: { fetch: async () => new Response(null, { status: 404 }) },
+        },
+        context,
+      );
+
+      expect(response.status).toBe(503);
+      expect(await response.json()).toMatchObject({ code: 'DB_SCHEMA_NOT_READY' });
+    } finally {
+      db.close();
+    }
+  });
+});

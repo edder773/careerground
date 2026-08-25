@@ -41,6 +41,20 @@ describe('Sites D1 API', () => {
 
   afterEach(() => db.close());
 
+  async function visibleJobCount() {
+    const row = await db
+      .prepare(
+        `SELECT COUNT(*) AS count
+           FROM jobs
+          WHERE status IN ('ACTIVE', 'DEADLINE_UNKNOWN')
+            AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
+            AND (rolling = 1 OR deadline_at IS NULL OR deadline_at >= ?)`,
+      )
+      .bind(new Date().toISOString())
+      .first<{ count: number }>();
+    return Number(row?.count || 0);
+  }
+
   async function call(
     path: string,
     init: RequestInit = {},
@@ -602,9 +616,10 @@ describe('Sites D1 API', () => {
     expect(sqlProblemCount?.count).toBe(66);
     expect(dummyCount?.count).toBe(0);
 
+    const visibleCount = await visibleJobCount();
     const jobs = await call('/api/v1/jobs?sort=new');
     expect(jobs.response.status).toBe(200);
-    expect(jobs.body).toHaveLength(119);
+    expect(jobs.body).toHaveLength(visibleCount);
     expect(jobs.body).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -650,12 +665,13 @@ describe('Sites D1 API', () => {
 
   it('serves the job catalog and page bootstrap with one D1 dispatch each', async () => {
     await call('/api/v1/auth/me', {}, memberHeaders);
+    const visibleCount = await visibleJobCount();
 
     db.resetQueryCount();
     db.resetBatchCount();
     const catalog = await call('/api/v1/jobs?sort=new&page=cursor&limit=40', {}, memberHeaders);
     expect(catalog.response.status).toBe(200);
-    expect(catalog.body).toMatchObject({ items: expect.any(Array), total: 119 });
+    expect(catalog.body).toMatchObject({ items: expect.any(Array), total: visibleCount });
     expect(db.getQueryCount()).toBe(4);
     expect(db.getBatchCount()).toBe(1);
     expect(
@@ -678,7 +694,7 @@ describe('Sites D1 API', () => {
       user: { email: 'member@example.test' },
       unreadCount: expect.any(Number),
       categories: expect.arrayContaining(['AI_ML']),
-      data: { items: expect.any(Array), total: 119 },
+      data: { items: expect.any(Array), total: visibleCount },
     });
     expect(db.getQueryCount()).toBe(6);
     expect(db.getBatchCount()).toBe(1);
@@ -691,12 +707,13 @@ describe('Sites D1 API', () => {
       categories: expect.arrayContaining(['AI_ML', 'WEB_DEVELOPMENT']),
       data: expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]),
     });
-    expect(fullCatalog.body.data as unknown[]).toHaveLength(119);
+    expect(fullCatalog.body.data as unknown[]).toHaveLength(visibleCount);
     expect(db.getQueryCount()).toBe(4);
     expect(db.getBatchCount()).toBe(1);
   });
 
   it('returns the welcome unread count when job bootstrap provisions a new user', async () => {
+    const visibleCount = await visibleJobCount();
     const newcomer = {
       ...memberHeaders,
       'x-test-google-sub': 'job-bootstrap-newcomer',
@@ -708,7 +725,7 @@ describe('Sites D1 API', () => {
       newcomer,
     );
     expect(bootstrap.response.status).toBe(200);
-    expect(bootstrap.body).toMatchObject({ unreadCount: 1, data: { total: 119 } });
+    expect(bootstrap.body).toMatchObject({ unreadCount: 1, data: { total: visibleCount } });
   });
 
   it('serves the high-traffic read routes in one D1 dispatch each', async () => {
@@ -767,6 +784,7 @@ describe('Sites D1 API', () => {
   });
 
   it('returns stable cursor pages and totals for large shared catalogs', async () => {
+    const visibleCount = await visibleJobCount();
     const firstProblems = await call(
       '/api/v1/coding/problems?track=ALGORITHM&page=cursor&limit=25',
     );
@@ -794,7 +812,7 @@ describe('Sites D1 API', () => {
       total: number;
     };
     expect(jobPage.items).toHaveLength(10);
-    expect(jobPage.total).toBe(119);
+    expect(jobPage.total).toBe(visibleCount);
     expect(jobPage.nextCursor).toBeTruthy();
     const nextJobs = await call(
       `/api/v1/jobs?sort=new&page=cursor&limit=10&cursor=${encodeURIComponent(jobPage.nextCursor)}`,
@@ -1357,7 +1375,7 @@ describe('Sites D1 API', () => {
     expect(afterMaintenance?.count).toBe(1);
   });
 
-  it('runs scheduled expiry without creating review notifications under a single lease', async () => {
+  it('keeps jobs immutable during scheduled maintenance and hides past fixed deadlines', async () => {
     await call('/api/v1/auth/me');
     const user = await db
       .prepare(
@@ -1377,11 +1395,10 @@ describe('Sites D1 API', () => {
       )
       .bind('scheduled-progress', user!.id, unit!.id, timestamp, timestamp, timestamp, timestamp)
       .run();
+    const expiredJob = await db.prepare('SELECT id FROM jobs LIMIT 1').first<{ id: string }>();
     await db
-      .prepare(
-        "UPDATE jobs SET deadline_at = ?, rolling = 0, status = 'ACTIVE' WHERE id = (SELECT id FROM jobs LIMIT 1)",
-      )
-      .bind(new Date(Date.now() - 86_400_000).toISOString())
+      .prepare("UPDATE jobs SET deadline_at = ?, rolling = 0, status = 'ACTIVE' WHERE id = ?")
+      .bind(new Date(Date.now() - 86_400_000).toISOString(), expiredJob!.id)
       .run();
     await db
       .prepare(
@@ -1393,8 +1410,17 @@ describe('Sites D1 API', () => {
 
     const result = await runScheduledMaintenance({ DB: db });
     expect(result).toMatchObject({ acquired: true });
-    expect(result.expiredJobs).toBeGreaterThan(0);
+    expect(result.expiredJobs).toBe(0);
     expect(result.notifications).toBe(0);
+    const persistedJob = await db
+      .prepare('SELECT status FROM jobs WHERE id = ?')
+      .bind(expiredJob!.id)
+      .first<{ status: string }>();
+    expect(persistedJob?.status).toBe('ACTIVE');
+    const visibleJobs = await call('/api/v1/jobs?catalog=true');
+    expect(
+      (visibleJobs.body as Array<{ id: string }>).some((job) => job.id === expiredJob!.id),
+    ).toBe(false);
     const reviewNotifications = await db
       .prepare("SELECT COUNT(*) AS count FROM notifications WHERE type = 'LEARNING_REVIEW'")
       .first<{ count: number }>();
@@ -1639,7 +1665,63 @@ describe('Sites D1 API', () => {
     expect(retried.body).toMatchObject({ idempotent: true });
   });
 
-  it('reconciles a declared full source snapshot and marks disappeared jobs removed', async () => {
+  it('persists only new ACTIVE rows from an administrator job import', async () => {
+    const timestamp = new Date().toISOString();
+    const item = (suffix: string, status: string, companySize = 'SMALL') => ({
+      sourceName: 'insert-only-fixture',
+      sourceUrl: `https://example.test/jobs/insert-only-${suffix}`,
+      companyName: '삽입 전용 회사',
+      title: `신입 개발자 ${suffix}`,
+      category: '백엔드',
+      careerScope: 'NEW_GRAD_ONLY',
+      careerEvidence: '신입 지원 가능',
+      companySize,
+      employmentType: 'FULL_TIME',
+      region: '서울',
+      remote: false,
+      techStack: ['TypeScript'],
+      rolling: true,
+      collectedAt: timestamp,
+      lastVerifiedAt: timestamp,
+      summary: 'INSERT-only 정책 회귀 테스트',
+      status,
+    });
+    const payload = {
+      version: '1.0',
+      collectedAt: timestamp,
+      sourceCount: 1,
+      items: [
+        item('active', 'ACTIVE'),
+        item('unknown', 'DEADLINE_UNKNOWN'),
+        item('expired', 'EXPIRED'),
+        item('review', 'NEEDS_REVIEW'),
+        item('unclassified', 'ACTIVE', 'UNCLASSIFIED'),
+      ],
+    };
+    const preview = await call('/api/v1/jobs/import/preview', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    expect(preview.response.status).toBe(200);
+    expect(preview.body).toMatchObject({
+      counts: { create: 1, rejected: 3, review: 1, update: 0, removal: 0 },
+      removalCandidates: [],
+    });
+
+    const committed = await call('/api/v1/jobs/import/commit', {
+      method: 'POST',
+      body: JSON.stringify(importApproval(preview.body, payload.items.length)),
+    });
+    expect(committed.response.status).toBe(200);
+    expect(committed.body).toMatchObject({ snapshot: { mode: 'INSERT_ONLY', sources: [] } });
+
+    const rows = await db
+      .prepare("SELECT status FROM jobs WHERE source_name = 'insert-only-fixture'")
+      .all<{ status: string }>();
+    expect(rows.results).toEqual([{ status: 'ACTIVE' }]);
+  });
+
+  it('treats full source packages as insert-only and preserves existing jobs', async () => {
     const secondTimestamp = new Date().toISOString();
     const firstTimestamp = new Date(Date.parse(secondTimestamp) - 1_000).toISOString();
     const item = (sourceUrl: string, title: string, timestamp: string) => ({
@@ -1685,20 +1767,26 @@ describe('Sites D1 API', () => {
       item('https://example.test/jobs/snapshot-removed', '사라질 공고', firstTimestamp),
     ]);
     await commit(secondTimestamp, [
-      item('https://example.test/jobs/snapshot-kept', '계속 게시되는 공고', secondTimestamp),
+      item('https://example.test/jobs/snapshot-kept', '기존 제목 수정 시도', secondTimestamp),
     ]);
-    const latestSnapshot = await db
+    const snapshotCount = await db
       .prepare(
-        "SELECT expired_count AS expiredCount FROM job_source_snapshots WHERE source_name = 'snapshot-fixture' ORDER BY collected_at DESC LIMIT 1",
+        "SELECT COUNT(*) AS count FROM job_source_snapshots WHERE source_name = 'snapshot-fixture'",
       )
-      .first<{ expiredCount: number }>();
-    expect(latestSnapshot?.expiredCount).toBe(1);
+      .first<{ count: number }>();
+    expect(snapshotCount?.count).toBe(0);
     const disappeared = await db
       .prepare(
         "SELECT status FROM jobs WHERE source_url = 'https://example.test/jobs/snapshot-removed'",
       )
       .first<{ status: string }>();
-    expect(disappeared?.status).toBe('REMOVED');
+    expect(disappeared?.status).toBe('ACTIVE');
+    const kept = await db
+      .prepare(
+        "SELECT title FROM jobs WHERE source_url = 'https://example.test/jobs/snapshot-kept'",
+      )
+      .first<{ title: string }>();
+    expect(kept?.title).toBe('계속 게시되는 공고');
   });
 
   it('redacts hidden replies in the API response', async () => {

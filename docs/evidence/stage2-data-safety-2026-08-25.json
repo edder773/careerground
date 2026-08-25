@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-08-25T07:13:00Z",
+  "baselineCommit": "754d2a404c4330365b2d12f995c9b6e0e3f5ba3c",
+  "environment": {
+    "node": "26.7.0",
+    "pnpm": "11.21.0",
+    "database": "isolated LocalD1 with repository migrations and seed",
+    "timezone": "Asia/Seoul"
+  },
+  "staticComparison": {
+    "runtimePersonalDataDeleteStatements": {
+      "before": 22,
+      "after": 0
+    },
+    "existingJobMutationPaths": {
+      "before": 3,
+      "after": 0,
+      "beforeKinds": ["source URL upsert", "snapshot removal", "scheduled expiry"]
+    }
+  },
+  "behavior": {
+    "schemaLedgerMissing": "503 DB_SCHEMA_NOT_READY; sentinel preserved",
+    "schemaChecksumMismatch": "503 DB_SCHEMA_NOT_READY",
+    "jobImport": "new classified ACTIVE rows only; existing and omitted rows unchanged",
+    "scheduledExpiry": "database status unchanged; past fixed deadline hidden at read time",
+    "visibleSeedJobsAtCapture": {
+      "beforeDerivedDeadlineRule": 119,
+      "afterDerivedDeadlineRule": 114,
+      "pastFixedDeadlineRowsExcluded": 5
+    }
+  },
+  "validation": {
+    "formatCheck": "passed",
+    "lint": "passed",
+    "typecheck": "passed",
+    "unitIntegration": {
+      "files": 38,
+      "tests": 152,
+      "status": "passed"
+    },
+    "playwright": {
+      "tests": 56,
+      "projects": ["chromium", "chromium-mobile-375", "firefox", "webkit"],
+      "status": "passed",
+      "duration": "1.2m"
+    },
+    "performanceBudget": {
+      "status": "passed",
+      "failures": 0,
+      "jobsCursorP95Ms": 5.65,
+      "searchP95Ms": 40.59
+    },
+    "recoveryDrill": {
+      "status": "passed",
+      "snapshotPages": 461,
+      "snapshotDurationMs": 2.93,
+      "restoreDurationMs": 2.28,
+      "foreignKeyViolations": 0,
+      "fixtureChecksumMatched": true
+    },
+    "productionBuild": "passed",
+    "sitesBuild": "passed"
+  },
+  "limitations": [
+    "The Sites connector did not expose a production D1 export operation.",
+    "The first Playwright invocation was blocked by sandbox EPERM on localhost; the approved rerun passed."
+  ]
+}
