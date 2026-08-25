@@ -291,6 +291,38 @@ describe('Sites D1 API', () => {
       ],
     });
 
+    const snapshotDigest = await call(
+      `/api/v1/internal/slack-digest?snapshotCreatedAt=${encodeURIComponent(dayStart)}`,
+      { headers: { authorization: `Bearer ${token}` } },
+      {},
+      { DIGEST_API_TOKEN: token },
+    );
+    expect(snapshotDigest.response.status).toBe(200);
+    expect(snapshotDigest.body).toMatchObject({
+      snapshotCreatedAt: dayStart,
+      jobs: expect.arrayContaining([
+        expect.objectContaining({
+          company: '알림 대상 회사',
+          sourceUrl: 'https://example.test/jobs/digest-included',
+          rolling: 0,
+        }),
+        expect.objectContaining({
+          company: '상시 회사',
+          sourceUrl: 'https://example.test/jobs/digest-rolling',
+          rolling: 1,
+        }),
+      ]),
+    });
+
+    const invalidSnapshot = await call(
+      '/api/v1/internal/slack-digest?snapshotCreatedAt=2026-08-24',
+      { headers: { authorization: `Bearer ${token}` } },
+      {},
+      { DIGEST_API_TOKEN: token },
+    );
+    expect(invalidSnapshot.response.status).toBe(400);
+    expect(invalidSnapshot.body).toMatchObject({ code: 'INVALID_SNAPSHOT_CREATED_AT' });
+
     const siteDaily = await call('/api/v1/coding/daily-challenges', {}, memberHeaders);
     expect(siteDaily.response.status).toBe(200);
     expect(siteDaily.body).toHaveLength(3);
@@ -512,8 +544,8 @@ describe('Sites D1 API', () => {
       )
       .first<{ count: number }>();
 
-    expect(jobCount?.count).toBe(115);
-    expect(currentJobCount?.count).toBe(102);
+    expect(jobCount?.count).toBe(135);
+    expect(currentJobCount?.count).toBe(122);
     expect(expiredJobCount?.count).toBe(13);
     expect(problemCount?.count).toBe(427);
     expect(sqlProblemCount?.count).toBe(62);
@@ -521,7 +553,7 @@ describe('Sites D1 API', () => {
 
     const jobs = await call('/api/v1/jobs?sort=new');
     expect(jobs.response.status).toBe(200);
-    expect(jobs.body).toHaveLength(99);
+    expect(jobs.body).toHaveLength(119);
     expect(jobs.body).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -572,7 +604,7 @@ describe('Sites D1 API', () => {
     db.resetBatchCount();
     const catalog = await call('/api/v1/jobs?sort=new&page=cursor&limit=40', {}, memberHeaders);
     expect(catalog.response.status).toBe(200);
-    expect(catalog.body).toMatchObject({ items: expect.any(Array), total: 99 });
+    expect(catalog.body).toMatchObject({ items: expect.any(Array), total: 119 });
     expect(db.getQueryCount()).toBe(4);
     expect(db.getBatchCount()).toBe(1);
     expect(
@@ -595,7 +627,7 @@ describe('Sites D1 API', () => {
       user: { email: 'member@example.test' },
       unreadCount: expect.any(Number),
       categories: expect.arrayContaining(['AI_ML']),
-      data: { items: expect.any(Array), total: 99 },
+      data: { items: expect.any(Array), total: 119 },
     });
     expect(db.getQueryCount()).toBe(6);
     expect(db.getBatchCount()).toBe(1);
@@ -608,7 +640,7 @@ describe('Sites D1 API', () => {
       categories: expect.arrayContaining(['AI_ML', 'WEB_DEVELOPMENT']),
       data: expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]),
     });
-    expect(fullCatalog.body.data as unknown[]).toHaveLength(99);
+    expect(fullCatalog.body.data as unknown[]).toHaveLength(119);
     expect(db.getQueryCount()).toBe(4);
     expect(db.getBatchCount()).toBe(1);
   });
@@ -625,7 +657,7 @@ describe('Sites D1 API', () => {
       newcomer,
     );
     expect(bootstrap.response.status).toBe(200);
-    expect(bootstrap.body).toMatchObject({ unreadCount: 1, data: { total: 99 } });
+    expect(bootstrap.body).toMatchObject({ unreadCount: 1, data: { total: 119 } });
   });
 
   it('serves the high-traffic read routes in one D1 dispatch each', async () => {
@@ -711,7 +743,7 @@ describe('Sites D1 API', () => {
       total: number;
     };
     expect(jobPage.items).toHaveLength(10);
-    expect(jobPage.total).toBe(99);
+    expect(jobPage.total).toBe(119);
     expect(jobPage.nextCursor).toBeTruthy();
     const nextJobs = await call(
       `/api/v1/jobs?sort=new&page=cursor&limit=10&cursor=${encodeURIComponent(jobPage.nextCursor)}`,

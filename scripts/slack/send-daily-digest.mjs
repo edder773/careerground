@@ -24,6 +24,20 @@ const deadlineLabel = (value) => {
   }).format(date);
 };
 
+const snapshotLabel = (value) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) throw new Error('스냅샷 반영 시각이 올바르지 않습니다.');
+  return new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(date);
+};
+
 const digestDateLabel = (value) => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value))) {
     throw new Error('알림 기준일이 올바르지 않습니다.');
@@ -47,11 +61,17 @@ const challengeText = (challenge) => {
   ].join('\n');
 };
 
-const jobText = (job) =>
-  [
+const jobText = (job) => {
+  const availability = job.deadlineAt
+    ? `마감 ${deadlineLabel(job.deadlineAt)}`
+    : job.rolling
+      ? '채용 시 마감'
+      : '마감일 미정';
+  return [
     `• *${slackUrl(job.sourceUrl, `${job.company} — ${job.title}`)}*`,
-    `  마감 ${deadlineLabel(job.deadlineAt)} · ${escapeSlackText(job.sourceName)}`,
+    `  ${availability} · ${escapeSlackText(job.sourceName)}`,
   ].join('\n');
+};
 
 const packSectionText = (entries) => {
   const sections = [];
@@ -127,6 +147,34 @@ const buildDigestMessage = ({ date, siteUrl, challenges, jobs }, { baeumzipUrl }
   };
 };
 
+const buildJobsOnlyMessage = ({ siteUrl, jobs, snapshotCreatedAt }, { baeumzipUrl }) => {
+  if (!snapshotCreatedAt) throw new Error('채용공고 재전송에는 스냅샷 반영 시각이 필요합니다.');
+  if (jobs.length === 0) throw new Error('해당 스냅샷에서 재전송할 ACTIVE 채용공고가 없습니다.');
+  const label = snapshotLabel(snapshotCreatedAt);
+  return {
+    text: `${label} final:latest CareerGround 채용 알림`,
+    blocks: [
+      {
+        type: 'header',
+        text: { type: 'plain_text', text: `${label} final:latest 반영`, emoji: true },
+      },
+      section(`💼 *신규 채용 알림 공고 · ${jobs.length}건*`),
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'mrkdwn',
+            text: '해당 스냅샷에서 운영 DB에 새롭게 반영된 현재 ACTIVE 공고입니다.',
+          },
+        ],
+      },
+      ...packSectionText(jobs.map(jobText)).map(section),
+      { type: 'divider' },
+      serviceLinks({ careergroundUrl: siteUrl, baeumzipUrl }),
+    ],
+  };
+};
+
 const validateDigestPayload = (payload) => {
   if (!payload || !Array.isArray(payload.challenges) || !Array.isArray(payload.jobs)) {
     throw new Error('CareerGround 알림 응답 형식이 올바르지 않습니다.');
@@ -149,9 +197,13 @@ const validateDigestPayload = (payload) => {
   }
 };
 
-export function formatSlackMessages(payload, { baeumzipUrl }) {
+export function formatSlackMessages(payload, { baeumzipUrl, jobsOnly = false }) {
   validateDigestPayload(payload);
-  return [buildDigestMessage(payload, { baeumzipUrl })];
+  return [
+    jobsOnly
+      ? buildJobsOnlyMessage(payload, { baeumzipUrl })
+      : buildDigestMessage(payload, { baeumzipUrl }),
+  ];
 }
 
 const forceSendEnabled = (value) => ['1', 'true'].includes(String(value).toLowerCase());
@@ -180,14 +232,22 @@ export async function sendDailyDigest(
     throw new Error('Slack 공식 Incoming Webhook 주소가 필요합니다.');
   }
 
-  const digestResponse = await fetchImpl(digestUrl, {
+  const digestRequestUrl = new URL(digestUrl);
+  const snapshotCreatedAt = String(env.SLACK_DIGEST_SNAPSHOT_CREATED_AT || '').trim();
+  const jobsOnly = forceSendEnabled(env.SLACK_DIGEST_JOBS_ONLY);
+  if (snapshotCreatedAt) digestRequestUrl.searchParams.set('snapshotCreatedAt', snapshotCreatedAt);
+  if (jobsOnly && !snapshotCreatedAt) {
+    throw new Error('채용공고만 재전송하려면 SLACK_DIGEST_SNAPSHOT_CREATED_AT이 필요합니다.');
+  }
+
+  const digestResponse = await fetchImpl(snapshotCreatedAt ? digestRequestUrl : digestUrl, {
     headers: { authorization: `Bearer ${digestToken}` },
     signal: globalThis.AbortSignal.timeout(15_000),
   });
   if (!digestResponse.ok) {
     throw new Error(`CareerGround 알림 API 오류: HTTP ${digestResponse.status}`);
   }
-  const messages = formatSlackMessages(await digestResponse.json(), { baeumzipUrl });
+  const messages = formatSlackMessages(await digestResponse.json(), { baeumzipUrl, jobsOnly });
   for (const message of messages) {
     const slackResponse = await fetchImpl(webhook, {
       method: 'POST',

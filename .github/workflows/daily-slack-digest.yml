@@ -2,7 +2,7 @@ name: Daily CareerGround Slack digest
 
 on:
   schedule:
-    - cron: '0 8 * * 1-5'
+    - cron: '1 8 * * 1-5'
       timezone: 'Asia/Seoul'
   workflow_dispatch:
     inputs:
@@ -10,6 +10,14 @@ on:
         description: '주말·공휴일에도 강제로 전송'
         type: boolean
         default: true
+      snapshot_created_at:
+        description: '특정 import 스냅샷의 created_at(ISO 8601)을 재전송'
+        type: string
+        default: ''
+      jobs_only:
+        description: '스냅샷의 채용공고만 재전송'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -34,4 +42,6 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           BAEUMZIP_URL: https://www.baeumzip.site/
           SLACK_DIGEST_FORCE_SEND: ${{ github.event_name == 'workflow_dispatch' && inputs.force || false }}
+          SLACK_DIGEST_SNAPSHOT_CREATED_AT: ${{ github.event_name == 'workflow_dispatch' && inputs.snapshot_created_at || '' }}
+          SLACK_DIGEST_JOBS_ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.jobs_only || false }}
         run: node scripts/slack/send-daily-digest.mjs
