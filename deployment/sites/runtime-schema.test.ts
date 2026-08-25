@@ -11,7 +11,6 @@ describe('Sites runtime schema', () => {
 
   beforeEach(async () => {
     db = new LocalD1();
-    await run(db, "DELETE FROM app_schema_migrations WHERE version = '0022_google_auth'");
     await run(
       db,
       "DELETE FROM app_schema_migrations WHERE version = '0023_purge_legacy_personal_data'",
@@ -45,74 +44,47 @@ describe('Sites runtime schema', () => {
         updated_at text NOT NULL
       )`,
     );
+    await run(
+      db,
+      `INSERT INTO users
+        (id, site_user_id, email, display_name, role, is_active, preferred_language,
+         ranking_opt_in, comment_notifications, deadline_notifications, review_notifications,
+         created_at, updated_at)
+       VALUES ('runtime-schema-sentinel', 'runtime-schema-sentinel', 'sentinel@example.test',
+               'Sentinel', 'MEMBER', 1,
+               'javascript', 1, 1, 1, 1, '2026-08-25', '2026-08-25')`,
+    );
+    await run(
+      db,
+      `INSERT INTO saved_jobs
+        (id, user_id, job_id, status, bookmarked, memo, created_at, updated_at)
+       SELECT 'runtime-schema-saved-job', 'runtime-schema-sentinel', id, 'INTERESTED', 1, '',
+              '2026-08-25', '2026-08-25' FROM jobs LIMIT 1`,
+    );
   });
 
   afterEach(() => db.close());
 
-  it('upgrades the legacy production shape and backfills searchable shared data idempotently', async () => {
-    await ensureRuntimeSchema(db);
-    const tables = await all<{ name: string }>(
-      db,
-      `SELECT name FROM sqlite_schema
-       WHERE type IN ('table', 'view') AND name IN (
-         'workspace_search', 'job_source_snapshot_items', 'job_source_snapshots',
-         'job_tech_stacks', 'learning_question_attempts', 'learning_review_events',
-         'scheduler_leases', 'auth_identities', 'auth_sessions'
-       )`,
-    );
-    expect(new Set(tables.map((table) => table.name))).toEqual(
-      new Set([
-        'workspace_search',
-        'job_source_snapshot_items',
-        'job_source_snapshots',
-        'job_tech_stacks',
-        'learning_question_attempts',
-        'learning_review_events',
-        'scheduler_leases',
-        'auth_identities',
-        'auth_sessions',
-      ]),
-    );
-
-    const progressColumns = await all<{ name: string }>(db, 'PRAGMA table_info(learning_progress)');
-    expect(progressColumns.map((column) => column.name)).toEqual(
-      expect.arrayContaining(['review_version', 'completed_at', 'mastered_at']),
-    );
-    const jobColumns = await all<{ name: string }>(db, 'PRAGMA table_info(jobs)');
-    expect(jobColumns.map((column) => column.name)).toEqual(
-      expect.arrayContaining(['published_at', 'application_start_at']),
-    );
-    const userColumns = await all<{ name: string }>(db, 'PRAGMA table_info(users)');
-    expect(userColumns.some((column) => column.name === 'site_user_id')).toBe(false);
-
-    const removedNotes = await first<{ tables: number; items: number; constraints: number }>(
+  it('fails closed on a missing migration ledger without changing sentinel data', async () => {
+    const before = await first<{ users: number; savedJobs: number }>(
       db,
       `SELECT
-         (SELECT COUNT(*) FROM sqlite_schema
-           WHERE type = 'table' AND name IN ('notes', 'note_revisions')) AS tables,
-         (SELECT COUNT(*) FROM collection_items WHERE item_type = 'NOTE') AS items,
-         (SELECT COUNT(*) FROM sqlite_schema
-           WHERE type = 'table' AND name = 'collection_items' AND sql LIKE '%''NOTE''%') AS constraints`,
+         (SELECT COUNT(*) FROM users WHERE id = 'runtime-schema-sentinel') AS users,
+         (SELECT COUNT(*) FROM saved_jobs WHERE id = 'runtime-schema-saved-job') AS savedJobs`,
     );
-    expect(removedNotes).toEqual({ tables: 0, items: 0, constraints: 0 });
 
-    const searchCountBefore = await first<{ count: number }>(
-      db,
-      'SELECT COUNT(*) AS count FROM workspace_search',
-    );
-    expect(Number(searchCountBefore?.count)).toBeGreaterThan(0);
-    const jobResults = await all<{ kind: string }>(
-      db,
-      `SELECT kind FROM workspace_search WHERE workspace_search MATCH '"엑스와이지"*'`,
-    );
-    expect(jobResults.some((result) => result.kind === 'jobs')).toBe(true);
+    await expect(ensureRuntimeSchema(db)).rejects.toThrow(/D1 schema is not ready/);
 
-    await ensureRuntimeSchema(db);
-    const searchCountAfter = await first<{ count: number }>(
+    const after = await first<{ users: number; savedJobs: number; workspaceSearch: number }>(
       db,
-      'SELECT COUNT(*) AS count FROM workspace_search',
+      `SELECT
+         (SELECT COUNT(*) FROM users WHERE id = 'runtime-schema-sentinel') AS users,
+         (SELECT COUNT(*) FROM saved_jobs WHERE id = 'runtime-schema-saved-job') AS savedJobs,
+         (SELECT COUNT(*) FROM sqlite_schema
+           WHERE type = 'table' AND name = 'workspace_search') AS workspaceSearch`,
     );
-    expect(searchCountAfter?.count).toBe(searchCountBefore?.count);
+    expect(before).toEqual({ users: 1, savedJobs: 1 });
+    expect(after).toEqual({ users: 1, savedJobs: 1, workspaceSearch: 0 });
   });
 });
 
@@ -379,7 +351,7 @@ describe('Sites production migration baseline', () => {
         personalPurgeChecksum:
           'sha256:33d7868739506072fe37c9ba0f19a863fc1343c53c31e45b79390acfaa1b9f6f',
         authTables: 2,
-        legacyIdentityColumns: 0,
+        legacyIdentityColumns: 1,
         users: 0,
         personalRows: 0,
       });

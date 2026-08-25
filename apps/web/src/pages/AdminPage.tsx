@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  AlertTriangle,
   Download,
   FileJson,
   History,
@@ -72,13 +71,6 @@ type ImportPreview = {
   flashcardCount?: number;
   questionCount?: number;
   snapshot?: { mode: 'FULL'; sources: string[] } | null;
-  removalCandidates?: Array<{
-    id: string;
-    sourceName: string;
-    companyName: string;
-    title: string;
-    sourceUrl: string;
-  }>;
 };
 type ActivePreview = {
   kind: 'jobs' | 'learning';
@@ -135,7 +127,6 @@ export function AdminPage() {
   const [problemTags, setProblemTags] = useState('');
   const [previewPage, setPreviewPage] = useState(0);
   const [reviewAcknowledged, setReviewAcknowledged] = useState(false);
-  const [removalAcknowledged, setRemovalAcknowledged] = useState(false);
   useEffect(() => {
     if (!dailySetting.data) return;
     setLevels(dailySetting.data.allowedLevels);
@@ -157,8 +148,6 @@ export function AdminPage() {
               preview.kind === 'jobs'
                 ? preview.data.rows?.length || 0
                 : preview.data.unitCount || 0,
-            acknowledgeRemovals: removalAcknowledged,
-            removalCount: preview.data.removalCandidates?.length || 0,
           }),
         });
       }
@@ -183,7 +172,6 @@ export function AdminPage() {
         });
         setPreviewPage(0);
         setReviewAcknowledged(false);
-        setRemovalAcknowledged(false);
       }
     },
   });
@@ -236,7 +224,6 @@ export function AdminPage() {
       setPreview({ kind: 'jobs', source: 'file', signature, data });
       setPreviewPage(0);
       setReviewAcknowledged(false);
-      setRemovalAcknowledged(false);
     },
   });
   const commitFilePreview = useMutation({
@@ -251,8 +238,6 @@ export function AdminPage() {
           checksum: preview.data.checksum,
           acknowledgeAllRows: reviewAcknowledged,
           reviewedRowCount: preview.data.rows?.length || 0,
-          acknowledgeRemovals: removalAcknowledged,
-          removalCount: preview.data.removalCandidates?.length || 0,
         }),
       });
     },
@@ -592,6 +577,7 @@ export function AdminPage() {
               <FileJson />
               <h3>신입 IT 채용공고 JSON</h3>
             </header>
+            <p>검증된 신규 ACTIVE 공고만 추가하며 기존 공고와 누락 공고는 변경하지 않습니다.</p>
             <textarea
               value={jobPayload}
               onChange={(event) => {
@@ -628,8 +614,7 @@ export function AdminPage() {
                   preview?.kind !== 'jobs' ||
                   preview.source !== 'text' ||
                   preview.signature !== jobPayload ||
-                  !reviewAcknowledged ||
-                  (Boolean(preview.data.removalCandidates?.length) && !removalAcknowledged)
+                  !reviewAcknowledged
                 }
                 onClick={() => importMutation.mutate({ type: 'jobs', commit: true })}
               >
@@ -650,8 +635,7 @@ export function AdminPage() {
                   preview?.kind !== 'jobs' ||
                   preview.source !== 'file' ||
                   preview.signature !== `${jobFile.name}:${jobFile.size}:${jobFile.lastModified}` ||
-                  !reviewAcknowledged ||
-                  (Boolean(preview.data.removalCandidates?.length) && !removalAcknowledged)
+                  !reviewAcknowledged
                 }
                 onClick={() => commitFilePreview.mutate()}
               >
@@ -783,35 +767,6 @@ export function AdminPage() {
                   </button>
                 </nav>
               </>
-            )}
-            {(preview.data.removalCandidates?.length || 0) > 0 && (
-              <section className="import-removal-warning" role="alert">
-                <AlertTriangle />
-                <div>
-                  <strong>
-                    FULL snapshot 제거 대상 {preview.data.removalCandidates?.length}건
-                  </strong>
-                  <p>승인하면 아래 공고가 REMOVED 상태로 바뀝니다.</p>
-                  <ul>
-                    {preview.data.removalCandidates?.slice(0, 20).map((job) => (
-                      <li key={job.id}>
-                        {job.sourceName} · {job.companyName} · {job.title}
-                      </li>
-                    ))}
-                  </ul>
-                  {(preview.data.removalCandidates?.length || 0) > 20 && (
-                    <small>나머지는 전체 diff 다운로드에서 확인할 수 있습니다.</small>
-                  )}
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={removalAcknowledged}
-                      onChange={(event) => setRemovalAcknowledged(event.target.checked)}
-                    />
-                    제거 대상 전체를 별도로 확인했습니다.
-                  </label>
-                </div>
-              </section>
             )}
             {preview.data.source && (
               <p>

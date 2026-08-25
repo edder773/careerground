@@ -41,6 +41,17 @@
 
 `status`: `ACTIVE`, `DEADLINE_UNKNOWN`, `EXPIRED`, `REMOVED`, `NEEDS_REVIEW`.
 
+## 운영 반영 정책
+
+입력 schema는 조사·검토를 위해 위 상태들을 표현할 수 있지만 운영 `jobs`에 새로 저장하는 상태는
+`ACTIVE`뿐이다. 관리자 preview는 기존 URL·fingerprint 중복, 미분류 회사, 비ACTIVE 행의 제외
+사유를 보여주며 commit은 다음 규칙을 강제한다.
+
+- `CREATE`로 판정된 신규 `ACTIVE` 행만 `INSERT`한다.
+- 동일 `source_url`은 `ON CONFLICT DO NOTHING`으로 처리하고 기존 행을 갱신하지 않는다.
+- FULL snapshot에서 누락된 기존 공고도 `REMOVED`로 바꾸거나 삭제하지 않는다.
+- 기존 공고의 정정·상태 전환은 이 import endpoint의 책임이 아니다.
+
 CSV는 item 필드를 header로 사용한다. `techStack`은 `TypeScript|PostgreSQL`, boolean은 `true`/`false`다. JSON envelope의 `sourceCount`는 CSV sourceName 고유 수로 계산한다.
 
 중복 순서는 canonical URL, source ID, 정규화 회사+제목+마감일 fingerprint다. 유사도 후보는 자동 삭제하지 않는다.
