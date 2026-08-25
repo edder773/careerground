@@ -357,7 +357,15 @@ export class CodingService implements OnApplicationBootstrap {
       where: { kstDate_levelSlot: { kstDate, levelSlot } },
       include: { problem: true },
     });
-    if (existing) return existing;
+    if (
+      existing &&
+      existing.problem.active !== false &&
+      existing.problem.track === track &&
+      levels.includes(existing.problem.level)
+    ) {
+      return existing;
+    }
+    if (existing) await this.prisma.dailyChallenge.delete({ where: { id: existing.id } });
     const candidatesForWindow = async (days: number) => {
       const cutoff = new Date(kstDate.getTime() - days * 86_400_000);
       const recent = await this.prisma.dailyChallenge.findMany({
@@ -482,7 +490,12 @@ export class CodingService implements OnApplicationBootstrap {
     if (current._count.participations > 0)
       throw new BadRequestException('참여 기록이 생긴 뒤에는 오늘의 문제를 재선정할 수 없습니다.');
     const next = await this.prisma.codingProblem.findFirst({
-      where: { id: problemId, active: true, level: current.levelSlot },
+      where: {
+        id: problemId,
+        active: true,
+        track: 'ALGORITHM',
+        level: current.levelSlot,
+      },
     });
     if (!next)
       throw new NotFoundException(`활성 Lv. ${current.levelSlot} 문제를 찾을 수 없습니다.`);

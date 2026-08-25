@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const apiPort = Number(process.env.PLAYWRIGHT_API_PORT || 4000);
+const webPort = Number(process.env.PLAYWRIGHT_WEB_PORT || 5173);
+
 export default defineConfig({
   testDir: './e2e',
   snapshotPathTemplate: '{testDir}/snapshots/{arg}-{projectName}{ext}',
@@ -11,7 +14,7 @@ export default defineConfig({
     ? [['line'], ['html', { outputFolder: 'playwright-report', open: 'never' }]]
     : [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
   use: {
-    baseURL: 'http://127.0.0.1:5173',
+    baseURL: `http://127.0.0.1:${webPort}`,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -40,8 +43,8 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'node --import tsx deployment/sites/local-d1-server.ts',
-      url: 'http://127.0.0.1:4000/api/v1/health/ready',
+      command: `PORT=${apiPort} node --import tsx deployment/sites/local-d1-server.ts`,
+      url: `http://127.0.0.1:${apiPort}/api/v1/health/ready`,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
       env: {
@@ -50,14 +53,14 @@ export default defineConfig({
       },
     },
     {
-      command: 'pnpm --filter @careerground/web dev',
-      url: 'http://127.0.0.1:5173',
+      command: `pnpm --filter @careerground/web exec vite --host 127.0.0.1 --port ${webPort}`,
+      url: `http://127.0.0.1:${webPort}`,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
       env: {
         ...process.env,
         VITE_API_URL: '/api/v1',
-        VITE_API_PROXY_ORIGIN: 'http://127.0.0.1:4000',
+        VITE_API_PROXY_ORIGIN: `http://127.0.0.1:${apiPort}`,
       },
     },
   ],

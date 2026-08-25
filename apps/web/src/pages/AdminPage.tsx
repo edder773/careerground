@@ -112,7 +112,7 @@ export function AdminPage() {
   });
   const problems = useQuery({
     queryKey: ['admin-coding-problems'],
-    queryFn: () => api<CodingProblem[]>('/coding/problems'),
+    queryFn: () => api<CodingProblem[]>('/coding/problems?track=ALGORITHM&level=1'),
   });
   const challenge = useQuery({
     queryKey: ['daily-challenge'],

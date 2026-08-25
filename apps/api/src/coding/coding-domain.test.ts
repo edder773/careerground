@@ -188,6 +188,31 @@ describe('coding policies', () => {
     expect(recentFilter.where.kstDate.gte.toISOString()).toBe('2026-07-13T00:00:00.000Z');
   });
 
+  it('rejects a SQL problem when an admin reselects the Lv. 1 algorithm slot', async () => {
+    const problemQuery = vi.fn(async () => null);
+    const prisma = {
+      dailyChallenge: {
+        findUnique: async () => ({
+          id: 'challenge-1',
+          levelSlot: 1,
+          problemId: 'algorithm-1',
+          problem: { id: 'algorithm-1', level: 1, track: 'ALGORITHM' },
+          _count: { participations: 0 },
+        }),
+      },
+      codingProblem: { findFirst: problemQuery },
+    };
+    const service = new CodingService(prisma as never, {} as never);
+    const today = kstCalendarDate(new Date()).toISOString().slice(0, 10);
+
+    await expect(
+      service.reselectTodayChallenge('admin-user', 'sql-level-one', today),
+    ).rejects.toThrow('활성 Lv. 1 문제를 찾을 수 없습니다.');
+    expect(problemQuery).toHaveBeenCalledWith({
+      where: { id: 'sql-level-one', active: true, track: 'ALGORITHM', level: 1 },
+    });
+  });
+
   it('relaxes only the repeat window when an ADMIN explicitly allows it and records an audit', async () => {
     const levelOne = {
       id: 'problem-relaxed-1',

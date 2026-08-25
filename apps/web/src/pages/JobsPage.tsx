@@ -759,7 +759,7 @@ export function JobsPage() {
     const sizes = new Set(companySizes);
     const selected = new Set(selectedCategories);
     const terms = search.normalize('NFKC').toLocaleLowerCase('ko-KR').split(/\s+/).filter(Boolean);
-    const companyTerms = companySearch
+    const companyTerms = companySearchInput
       .normalize('NFKC')
       .toLocaleLowerCase('ko-KR')
       .split(/\s+/)
@@ -777,7 +777,7 @@ export function JobsPage() {
         (job) => !terms.length || terms.every((term) => searchableJobText(job).includes(term)),
       )
       .sort(compareJobs(sort));
-  }, [catalog, companySearch, companySizes, savedOnly, search, selectedCategories, sort]);
+  }, [catalog, companySearchInput, companySizes, savedOnly, search, selectedCategories, sort]);
   const calendarJobs = useMemo(() => {
     const from = Date.parse(bounds.from);
     const to = Date.parse(bounds.to);
@@ -785,7 +785,7 @@ export function JobsPage() {
   }, [bounds.from, bounds.to, filteredJobs]);
   useEffect(
     () => setVisibleCount(JOB_PAGE_SIZE),
-    [companySearch, companySizes, savedOnly, search, selectedCategories, sort],
+    [companySearchInput, companySizes, savedOnly, search, selectedCategories, sort],
   );
   const jobRows = viewMode === 'calendar' ? calendarJobs : filteredJobs.slice(0, visibleCount);
   const jobTotal = viewMode === 'calendar' ? calendarJobs.length : filteredJobs.length;

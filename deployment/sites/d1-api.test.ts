@@ -333,6 +333,57 @@ describe('Sites D1 API', () => {
     ]);
   });
 
+  it('repairs an SQL problem stored in an algorithm slot and blocks SQL manual reselection', async () => {
+    const today = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date());
+    const invalidProblemId = 'problem-programmers-133025';
+    await db.prepare('DELETE FROM daily_challenges WHERE kst_date = ?').bind(today).run();
+    await db
+      .prepare("UPDATE coding_problems SET track = 'SQL' WHERE id = ?")
+      .bind(invalidProblemId)
+      .run();
+    await db
+      .prepare(
+        `INSERT INTO daily_challenges (id, kst_date, level_slot, problem_id, created_at)
+         VALUES ('invalid-sql-level-one', ?, 1, ?, ?)`,
+      )
+      .bind(today, invalidProblemId, new Date().toISOString())
+      .run();
+
+    const repaired = await call('/api/v1/coding/daily-challenges');
+    expect(repaired.response.status).toBe(200);
+    expect(repaired.body).toEqual([
+      expect.objectContaining({
+        levelSlot: 1,
+        problem: expect.objectContaining({ level: 1, track: 'ALGORITHM' }),
+      }),
+      expect.objectContaining({
+        levelSlot: 2,
+        problem: expect.objectContaining({ level: 2, track: 'ALGORITHM' }),
+      }),
+      expect.objectContaining({
+        levelSlot: 34,
+        problem: expect.objectContaining({ track: 'SQL' }),
+      }),
+    ]);
+    const invalidRows = await db
+      .prepare('SELECT id FROM daily_challenges WHERE id = ?')
+      .bind('invalid-sql-level-one')
+      .all();
+    expect(invalidRows.results).toHaveLength(0);
+
+    const rejected = await call('/api/v1/coding/daily-challenge/reselect', {
+      method: 'POST',
+      body: JSON.stringify({ problemId: invalidProblemId, confirmKstDate: today }),
+    });
+    expect(rejected.response.status).toBe(422);
+    expect(rejected.body).toMatchObject({ code: 'VALIDATION_FAILED' });
+  });
+
   it('rate limits each user and normalized route with Retry-After', async () => {
     const env = { RATE_LIMIT_READS_PER_MINUTE: '2' };
     expect((await call('/api/v1/auth/me', {}, adminHeaders, env)).response.status).toBe(200);
@@ -548,7 +599,7 @@ describe('Sites D1 API', () => {
     expect(currentJobCount?.count).toBe(122);
     expect(expiredJobCount?.count).toBe(13);
     expect(problemCount?.count).toBe(427);
-    expect(sqlProblemCount?.count).toBe(62);
+    expect(sqlProblemCount?.count).toBe(66);
     expect(dummyCount?.count).toBe(0);
 
     const jobs = await call('/api/v1/jobs?sort=new');
@@ -725,7 +776,7 @@ describe('Sites D1 API', () => {
       total: number;
     };
     expect(problemPage.items).toHaveLength(25);
-    expect(problemPage.total).toBe(365);
+    expect(problemPage.total).toBe(361);
     expect(problemPage.nextCursor).toBeTruthy();
     const nextProblems = await call(
       `/api/v1/coding/problems?track=ALGORITHM&page=cursor&limit=25&cursor=${encodeURIComponent(problemPage.nextCursor)}`,
@@ -1031,7 +1082,7 @@ describe('Sites D1 API', () => {
 
     const sqlProblems = await call('/api/v1/coding/problems?track=SQL');
     const sqlRows = sqlProblems.body as unknown as Array<{ track: string }>;
-    expect(sqlRows).toHaveLength(62);
+    expect(sqlRows).toHaveLength(66);
     expect(sqlRows.every((problem) => problem.track === 'SQL')).toBe(true);
     const challenge = await call('/api/v1/coding/daily-challenge');
     const daily = challenge.body as unknown as { id: string; problem: { id: string } };
