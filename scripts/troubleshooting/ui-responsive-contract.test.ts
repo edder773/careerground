@@ -4,7 +4,16 @@ import { describe, expect, it } from 'vitest';
 
 const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
 const normalizedSource = (path: string) => readFileSync(path, 'utf8').replaceAll('\r\n', '\n');
-const css = normalizedSource(`${repositoryRoot}apps/web/src/styles.css`);
+const css = [
+  'foundation.css',
+  'workspace.css',
+  'workflows.css',
+  'jobs.css',
+  'learning-library.css',
+  'final-overrides.css',
+]
+  .map((file) => normalizedSource(`${repositoryRoot}apps/web/src/styles/${file}`))
+  .join('\n');
 const home = normalizedSource(`${repositoryRoot}apps/web/src/pages/HomePage.tsx`);
 const homeCss = normalizedSource(`${repositoryRoot}apps/web/src/styles/home.css`);
 const jobs = normalizedSource(`${repositoryRoot}apps/web/src/pages/JobsPage.tsx`);

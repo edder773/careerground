@@ -1,0 +1,332 @@
+.settings-page {
+  max-width: 1180px;
+}
+
+.settings-heading {
+  margin-bottom: 24px;
+}
+
+.settings-grid {
+  grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+  align-items: start;
+  gap: 18px;
+}
+
+.settings-side-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.settings-form-actions {
+  margin-top: 18px;
+  padding: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  background: #f7f8fa;
+  border: 1px solid #e2e4e9;
+  border-radius: 14px;
+}
+
+.settings-form-actions .form-error {
+  width: 100%;
+}
+
+.settings-card {
+  gap: 18px;
+  padding: 22px;
+  background: white;
+  border-color: #e1e3e8;
+  border-radius: 18px;
+  box-shadow: 0 8px 26px rgba(45, 49, 62, 0.035);
+}
+
+.settings-card-header h2 {
+  color: #2d333c;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.settings-card-header p {
+  margin-top: 4px;
+}
+
+.settings-card-header .outline-button {
+  min-height: 38px;
+  padding: 0 13px;
+  flex: 0 0 auto;
+}
+
+.settings-profile-summary {
+  margin: 0;
+  display: grid;
+  border-top: 1px solid #e7e8ec;
+}
+
+.settings-profile-summary > div {
+  min-height: 58px;
+  padding: 11px 2px;
+  display: grid;
+  grid-template-columns: minmax(120px, 0.42fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid #eceef1;
+}
+
+.settings-profile-summary dt {
+  color: #5f6672;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.settings-profile-summary dd {
+  margin: 0;
+  overflow: hidden;
+  color: #2d333d;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+}
+
+.settings-edit-fields {
+  display: grid;
+  gap: 14px;
+}
+
+.settings-edit-fields > label {
+  display: grid;
+  gap: 7px;
+  color: #333942;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.settings-edit-fields input,
+.settings-edit-fields select {
+  min-height: 42px;
+  padding: 0 11px;
+  color: #2d333b;
+  background: white;
+  border: 1px solid #cfd3dc;
+  border-radius: 10px;
+}
+
+.settings-edit-fields input:disabled {
+  color: #666d77;
+  background: #f3f4f6;
+}
+
+.settings-edit-fields small {
+  color: #7a808a;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.notification-edit-list,
+.notification-preference-list {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.notification-edit-list .check-label,
+.notification-preference-list li {
+  min-height: 48px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #f7f8fa;
+  border: 1px solid #e6e8ed;
+  border-radius: 11px;
+  font-size: 12px;
+}
+
+.notification-edit-list .check-label {
+  justify-content: flex-start;
+}
+
+.notification-edit-list input {
+  width: 18px;
+  height: 18px;
+  accent-color: #5867bd;
+}
+
+.notification-preference-list {
+  padding: 0;
+  list-style: none;
+}
+
+.notification-preference-list strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #7a8089;
+  font-size: 11px;
+}
+
+.notification-preference-list strong.enabled {
+  color: #3c568f;
+}
+
+.notification-preference-list svg {
+  width: 15px;
+}
+
+.account-card {
+  gap: 14px;
+}
+
+.account-logout-button {
+  min-height: 42px;
+  padding: 0 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  color: #8f3d49;
+  background: #fff7f8;
+  border: 1px solid #efd8dc;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.account-logout-button:hover {
+  background: #fff0f2;
+  border-color: #e9c1c8;
+}
+
+.account-logout-button svg {
+  width: 16px;
+}
+
+@media (max-width: 1180px) {
+  .finder-home .today-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .finder-home .today-strip > .today-feature {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 900px) {
+  .settings-page {
+    max-width: none;
+  }
+
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jobs-page .job-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .jobs-page .job-actions .folder-save {
+    min-width: 0;
+  }
+
+  .jobs-page .job-actions .application-status,
+  .jobs-page .job-actions .application-memo {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .finder-home .today-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .finder-home .today-strip > .today-feature {
+    grid-column: 1 / -1;
+    min-height: 0;
+  }
+
+  .finder-home .today-strip > .today-summary-link {
+    min-height: 96px;
+    padding: 12px 10px;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .today-summary-link > svg {
+    width: 30px;
+    height: 30px;
+    padding: 7px;
+    border-radius: 9px;
+  }
+
+  .today-summary-link strong {
+    margin-bottom: 3px;
+    font-size: 21px;
+  }
+
+  .today-summary-link span {
+    font-size: 10px;
+  }
+
+  .virtual-folders {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-card {
+    padding: 18px;
+  }
+
+  .settings-profile-summary > div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .jobs-page .job-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .jobs-page .job-actions .application-status,
+  .jobs-page .job-actions .application-memo {
+    grid-column: auto;
+  }
+}
+
+/* Keep all three daily recommendations readable as one vertical list. */
+.finder-home .today-feature .today-problem-list {
+  grid-template-columns: 1fr;
+}
+
+.finder-home .today-feature .today-problem-list a {
+  min-height: 42px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: 1fr;
+  align-items: center;
+}
+
+.finder-home .today-feature .today-problem-list small,
+.finder-home .today-feature .today-problem-list strong,
+.finder-home .today-feature .today-problem-list b {
+  grid-row: 1;
+  margin: 0;
+}
+
+.finder-home .today-feature .today-problem-list strong {
+  grid-column: 2;
+  overflow: visible;
+  font-size: clamp(10px, 0.85vw, 12px);
+  line-height: 1.25;
+  text-overflow: clip;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.finder-home .today-feature .today-problem-list b {
+  grid-column: 3;
+}

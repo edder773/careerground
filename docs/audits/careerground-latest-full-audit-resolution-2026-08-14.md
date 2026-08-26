@@ -79,8 +79,9 @@ mutation을 개별 Zod schema로 바꾼 것은 아니므로 장기적으로 gene
 - `OPS-007`, `OPS-008`, `OPS-009`, `API-002`: Worker/D1을 canonical로 유지한다. D1 API의 인증,
   일일 문제·Slack, import와 공통 계약을 독립 모듈로 분리해 메인 라우터를 177,482B에서
   126,401B로 줄였다. 이어서 Nest/Prisma/PostgreSQL reference source, Docker backend와 자동 생성
-  OpenAPI client를 제거하고 Worker/D1 schema·seed·import만 남기는 구조 테스트를 추가했다. 대형
-  page/CSS 추가 분할은 별도 구조 변경이다.
+  OpenAPI client를 제거하고 Worker/D1 schema·seed·import만 남기는 구조 테스트를 추가했다. 웹에서는
+  가장 큰 `JobsPage`의 도메인 계산과 제어 컴포넌트를 feature 모듈로 분리하고, 7,711줄 전역 CSS를
+  동일 checksum·cascade 순서의 6개 모듈로 분리해 대형 page/CSS 구조 후속도 완료했다.
 - `OPS-014`, `OPS-015`: 운영 synthetic이 cold-start와 warm p95, schema/canary, 인증·보안 경계를
   구조화 JSON으로 보관한다. 실패 incident는 중복 없이 갱신되고 복구 시 닫힌다. 브라우저 RUM과
   외부 paging 연동은 아직 없다.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import styles from '../styles.css?raw';
+import styles from './foundation.css?raw';
 
 describe('coding problem scope tabs layout', () => {
   it('keeps the desktop tabs readable at 1440x900', () => {
