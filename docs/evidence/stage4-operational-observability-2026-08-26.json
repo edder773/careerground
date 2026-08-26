@@ -54,7 +54,7 @@
       "lint": "pass",
       "typecheck": "pass",
       "unitIntegrationFiles": 40,
-      "unitIntegrationTests": 166,
+      "unitIntegrationTests": 167,
       "e2eTests": 56,
       "productionBuild": "pass",
       "performanceBudgetFailures": 0,
@@ -66,6 +66,12 @@
       "recoveryChecksumMatched": true,
       "firstE2eAttempt": "sandbox-localhost-bind-EPERM",
       "authorizedE2eRerun": "56/56 passed"
+    },
+    "securityCiFinding": {
+      "rule": "Incomplete URL substring sanitization",
+      "severity": "high",
+      "resolution": "parse CSP directives and require an exact source token",
+      "regressionFixture": "malicious host containing the Google URL string is rejected"
     },
     "slackRequests": 0
   },

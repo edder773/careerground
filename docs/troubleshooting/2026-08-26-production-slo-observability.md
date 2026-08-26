@@ -104,6 +104,9 @@ incident를 닫는다. 모니터 자체가 같은 장애 이슈를 반복 생성
 
 - 정적 응답에 보안 헤더가 없어도 올바른 CSP·referrer meta가 있으면 통과한다.
 - 정적 CSP fallback 누락, catalog canary 0, cold/warm budget 초과를 각각 실패로 판정한다.
+- 첫 PR CodeQL은 Google script URL을 문자열 부분 일치로 검사한 코드를 high severity
+  `Incomplete URL substring sanitization`으로 차단했다. CSP를 directive별 source token으로 파싱해
+  정확히 일치시키고, 악성 host 뒤에 Google URL 문자열을 붙인 회귀 fixture가 실패하는지 검증했다.
 - 한 endpoint가 timeout이어도 인증 경계 등 나머지 증거를 계속 수집한다.
 - 준비된 D1 binding의 readiness가 schema inventory를 다시 실행하지 않고 canary query 1개만
   실행하는지 검사한다.
@@ -113,7 +116,7 @@ incident를 닫는다. 모니터 자체가 같은 장애 이슈를 반복 생성
 
 검증 과정에서 Slack digest API나 webhook은 호출하지 않는다.
 
-최종 로컬 검증은 format, lint, typecheck, 40개 파일의 unit/integration 166개, production build,
+최종 로컬 검증은 format, lint, typecheck, 40개 파일의 unit/integration 167개, production build,
 bundle budget, 성능 budget, 복구 drill을 통과했다. Playwright는 Chromium·375px mobile
 Chromium·Firefox·WebKit에서 56개가 통과했다. 첫 E2E 시도는 sandbox의 로컬
 `127.0.0.1:4000` bind 제한으로 앱 기동 전에 `EPERM`이 발생했고, 로컬 포트 권한으로 같은 명령을

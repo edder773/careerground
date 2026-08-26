@@ -90,6 +90,24 @@ describe('production SLO checker', () => {
     );
   });
 
+  it('requires the Google script origin as an exact CSP source token', async () => {
+    const html = staticHtml.replace(
+      'https://accounts.google.com/gsi/client',
+      'https://malicious.example/https://accounts.google.com/gsi/client',
+    );
+    const report = await runProductionSlo({
+      request: requestFixture({ html }),
+      readinessSamples: 2,
+    });
+
+    expect(report.passed).toBe(false);
+    expect(
+      report.failures.some((failure) =>
+        failure.startsWith('static-security.content-security-policy:'),
+      ),
+    ).toBe(true);
+  });
+
   it('rejects empty catalog canaries and readiness latency over budget', async () => {
     const report = await runProductionSlo({
       request: requestFixture({

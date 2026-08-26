@@ -30,6 +30,14 @@ const metaContent = (html, attribute, value) => {
   return '';
 };
 
+const cspSources = (policy, directiveName) => {
+  const directive = policy
+    .split(';')
+    .map((value) => value.trim().split(/\s+/))
+    .find(([name]) => name?.toLowerCase() === directiveName.toLowerCase());
+  return directive?.slice(1) || [];
+};
+
 const nearestRankPercentile = (values, percentile) => {
   if (!values.length) return null;
   const sorted = [...values].sort((left, right) => left - right);
@@ -135,11 +143,14 @@ export async function runProductionSlo({
 
   if (readinessHeaders) {
     const contentSecurityPolicy = readinessHeaders.get('content-security-policy') || '';
+    const apiDefaultSources = cspSources(contentSecurityPolicy, 'default-src');
+    const apiFrameAncestors = cspSources(contentSecurityPolicy, 'frame-ancestors');
+    const apiObjectSources = cspSources(contentSecurityPolicy, 'object-src');
     record(
       'api-security.content-security-policy',
-      contentSecurityPolicy.includes("default-src 'self'") &&
-        contentSecurityPolicy.includes("frame-ancestors 'none'") &&
-        contentSecurityPolicy.includes("object-src 'none'"),
+      apiDefaultSources.includes("'self'") &&
+        apiFrameAncestors.includes("'none'") &&
+        apiObjectSources.includes("'none'"),
       contentSecurityPolicy || 'missing header',
     );
     record(
@@ -184,11 +195,14 @@ export async function runProductionSlo({
     );
     record('static-root.mount', html.includes('<div id="root"></div>'), 'React mount node');
     const csp = metaContent(html, 'http-equiv', 'Content-Security-Policy');
+    const staticDefaultSources = cspSources(csp, 'default-src');
+    const staticObjectSources = cspSources(csp, 'object-src');
+    const staticScriptSources = cspSources(csp, 'script-src');
     record(
       'static-security.content-security-policy',
-      csp.includes("default-src 'self'") &&
-        csp.includes("object-src 'none'") &&
-        csp.includes('https://accounts.google.com/gsi/client'),
+      staticDefaultSources.includes("'self'") &&
+        staticObjectSources.includes("'none'") &&
+        staticScriptSources.includes('https://accounts.google.com/gsi/client'),
       csp || 'missing CSP meta policy',
     );
     const referrerPolicy = metaContent(html, 'name', 'referrer');
