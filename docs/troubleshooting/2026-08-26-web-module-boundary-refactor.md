@@ -3,8 +3,8 @@ title: 대형 채용 화면과 전역 CSS의 동작 보존형 분리
 date: 2026-08-26
 tags: [audit, frontend, react, css, maintainability]
 generatedByAI: false
-pr: pending
-commit: pending
+pr: 65
+commit: d4e3355b2e5ca5645c4ac5cc1cabd1664a151446
 evidence: docs/evidence/stage7-web-module-boundaries-2026-08-26.json
 ---
 
