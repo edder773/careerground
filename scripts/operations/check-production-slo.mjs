@@ -38,6 +38,24 @@ const cspSources = (policy, directiveName) => {
   return directive?.slice(1) || [];
 };
 
+const isGoogleIdentityScriptSource = (value) => {
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === 'https:' &&
+      url.hostname === 'accounts.google.com' &&
+      url.port === '' &&
+      url.username === '' &&
+      url.password === '' &&
+      url.pathname === '/gsi/client' &&
+      url.search === '' &&
+      url.hash === ''
+    );
+  } catch {
+    return false;
+  }
+};
+
 const nearestRankPercentile = (values, percentile) => {
   if (!values.length) return null;
   const sorted = [...values].sort((left, right) => left - right);
@@ -202,7 +220,7 @@ export async function runProductionSlo({
       'static-security.content-security-policy',
       staticDefaultSources.includes("'self'") &&
         staticObjectSources.includes("'none'") &&
-        staticScriptSources.includes('https://accounts.google.com/gsi/client'),
+        staticScriptSources.some(isGoogleIdentityScriptSource),
       csp || 'missing CSP meta policy',
     );
     const referrerPolicy = metaContent(html, 'name', 'referrer');
