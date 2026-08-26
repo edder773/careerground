@@ -311,6 +311,8 @@ describe('Sites production migration baseline', () => {
                   WHERE version = '0033_fix_sql_problem_classification_20260825') AS sqlClassificationChecksum,
                 (SELECT checksum FROM app_schema_migrations
                   WHERE version = '0034_migration_authority_and_delivery_integrity') AS authorityChecksum,
+                (SELECT checksum FROM app_schema_migrations
+                  WHERE version = '0035_sync_validator_jobs_20260825') AS validatorSyncChecksum,
                  (SELECT checksum FROM app_schema_migrations
                    WHERE version = '0029_expand_learning_catalog_20260821') AS learningCatalogChecksum,
                  (SELECT checksum FROM app_schema_migrations
@@ -365,16 +367,16 @@ describe('Sites production migration baseline', () => {
         categoryIndex: 1,
         removedNoteTables: 0,
         noteItems: 0,
-        jobs: 135,
-        visibleJobs: 119,
+        jobs: 168,
+        visibleJobs: 150,
         reviewJobs: 0,
         savedJobs: 0,
         jobItems: 0,
         jobDeadlineNotifications: 0,
-        jobSearchRows: 119,
+        jobSearchRows: 150,
         jobTechRows: expect.any(Number),
         orphanTechRows: 0,
-        jobImportBatches: 8,
+        jobImportBatches: 9,
         checksum: 'sha256:86c1de85559a9b51e959bf7c423ad8a9e9afd3586ad672c2ec32da009057fe4b',
         replacementChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
         reconciliationChecksum: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
@@ -388,6 +390,8 @@ describe('Sites production migration baseline', () => {
           'sha256:58d3ad7e8869e5cc94e9f4a5ed53b5c368dc2b67994ce35e0043f8ecc4e95dd2',
         authorityChecksum:
           'sha256:f67834f4d70094941c682f94ad726066d4ffeb7f9380d7cbf5c18783191eee56',
+        validatorSyncChecksum:
+          'sha256:7e913c674f3d5d358c6cdef78703f1f9f91a68122c4fd52fbcb457c2092e3754',
         learningCatalogChecksum:
           'sha256:316d21648a83120d94234a8c64f355728dd9b9ea298dd2a302254bffe8f9a958',
         googleChecksum: 'sha256:d453c92ca558c68ae6efc1e9f6ef86e49a93422442aa0ad3bdc17de76e509f2d',

@@ -50,7 +50,7 @@
 - `CREATE`로 판정된 신규 `ACTIVE` 행만 `INSERT`한다.
 - 동일 `source_url`은 `ON CONFLICT DO NOTHING`으로 처리하고 기존 행을 갱신하지 않는다.
 - FULL snapshot에서 누락된 기존 공고도 `REMOVED`로 바꾸거나 삭제하지 않는다.
-- 기존 공고의 정정·상태 전환은 이 import endpoint의 책임이 아니다.
+- 기존 공고의 정정·상태 전환은 이 import endpoint의 책임이 아니다. 별도 `채용 공고 검증기 동기화`만 같은 날짜의 병합 감사 파일에 현재 증거가 있고 `finalRecheckStatus=CONFIRMED`인 허용 필드 변경을 before 값 조건부 UPDATE로 적용할 수 있다. 이 경로도 `jobs` DELETE와 모든 `saved_jobs` 변경을 금지한다.
 
 CSV는 item 필드를 header로 사용한다. `techStack`은 `TypeScript|PostgreSQL`, boolean은 `true`/`false`다. JSON envelope의 `sourceCount`는 CSV sourceName 고유 수로 계산한다.
 

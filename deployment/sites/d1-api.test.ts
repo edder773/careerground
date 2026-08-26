@@ -160,7 +160,7 @@ describe('Sites D1 API', () => {
     expect(legacyOnly.status).toBe(401);
   });
 
-  it("protects the Slack digest and returns only today's dated new-grad jobs", async () => {
+  it('protects the Slack digest and includes jobs added after the previous delivery window', async () => {
     const token = 'test-digest-token';
     const today = new Intl.DateTimeFormat('en-CA', {
       timeZone: 'Asia/Seoul',
@@ -168,7 +168,7 @@ describe('Sites D1 API', () => {
       month: '2-digit',
       day: '2-digit',
     }).format(new Date());
-    const dayStart = new Date(`${today}T00:00:00+09:00`).toISOString();
+    const recentCreatedAt = new Date(Date.now() - 12 * 60 * 60 * 1_000).toISOString();
     const deadline = new Date(Date.now() + 7 * 86_400_000).toISOString();
     const timestamp = new Date().toISOString();
 
@@ -192,7 +192,7 @@ describe('Sites D1 API', () => {
         'https://example.test/jobs/digest-included',
         0,
         deadline,
-        dayStart,
+        recentCreatedAt,
         jobRows.results[0]!.id,
       )
       .run();
@@ -209,7 +209,7 @@ describe('Sites D1 API', () => {
         '상시 신입 개발자',
         'https://example.test/jobs/digest-rolling',
         deadline,
-        dayStart,
+        recentCreatedAt,
         jobRows.results[1]!.id,
       )
       .run();
@@ -306,14 +306,14 @@ describe('Sites D1 API', () => {
     });
 
     const snapshotDigest = await call(
-      `/api/v1/internal/slack-digest?snapshotCreatedAt=${encodeURIComponent(dayStart)}`,
+      `/api/v1/internal/slack-digest?snapshotCreatedAt=${encodeURIComponent(recentCreatedAt)}`,
       { headers: { authorization: `Bearer ${token}` } },
       {},
       { DIGEST_API_TOKEN: token },
     );
     expect(snapshotDigest.response.status).toBe(200);
     expect(snapshotDigest.body).toMatchObject({
-      snapshotCreatedAt: dayStart,
+      snapshotCreatedAt: recentCreatedAt,
       jobs: expect.arrayContaining([
         expect.objectContaining({
           company: '알림 대상 회사',
@@ -709,9 +709,9 @@ describe('Sites D1 API', () => {
       )
       .first<{ count: number }>();
 
-    expect(jobCount?.count).toBe(135);
-    expect(currentJobCount?.count).toBe(122);
-    expect(expiredJobCount?.count).toBe(13);
+    expect(jobCount?.count).toBe(168);
+    expect(currentJobCount?.count).toBe(153);
+    expect(expiredJobCount?.count).toBe(15);
     expect(problemCount?.count).toBe(427);
     expect(sqlProblemCount?.count).toBe(66);
     expect(dummyCount?.count).toBe(0);

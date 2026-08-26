@@ -132,7 +132,7 @@ const buildDigestMessage = ({ date, siteUrl, challenges, jobs }, { baeumzipUrl }
         elements: [
           {
             type: 'mrkdwn',
-            text: `${dateLabel}에 새롭게 등록된 마감일 확정 공고입니다.`,
+            text: '직전 일일 알림 이후 새롭게 등록된 마감일 확정 공고입니다.',
           },
         ],
       },
