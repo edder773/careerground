@@ -3,8 +3,8 @@ title: 미사용 NestJS·Prisma 백엔드 제거와 D1 단일화
 date: 2026-08-26
 tags: [audit, architecture, dependencies, d1, worker]
 generatedByAI: false
-pr: pending
-commit: pending
+pr: 63
+commit: 676071ff339b3e1db72a32e9015ceab480e9ef1b
 evidence: docs/evidence/stage6-single-d1-backend-2026-08-26.json
 ---
 
