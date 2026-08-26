@@ -3,8 +3,8 @@ title: 운영 SLO 정적 헤더 오탐과 readiness 중복 조회
 date: 2026-08-26
 tags: [audit, operations, slo, sites, d1, observability]
 generatedByAI: false
-pr: pending
-commit: pending
+pr: 60
+commit: 400b8ca8b79246b8530dfa19a906699aab584c52
 evidence: docs/evidence/stage4-operational-observability-2026-08-26.json
 ---
 
