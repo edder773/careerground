@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: production-slo-smoke
@@ -17,40 +18,113 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Check public site, security, API boundaries and D1 readiness
-        shell: bash
-        run: |
-          base='https://careerground-workspace.edder773.chatgpt.site'
-          live="$(curl --silent --show-error --fail --max-time 10 "$base/api/v1/health/live")"
-          printf '%s' "$live" | jq -e '.status == "ok" and .database == "d1"'
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
 
-          result="$(curl --silent --show-error --fail --max-time 10 \
-            --write-out $'\n%{http_code} %{time_total}' \
-            "$base/api/v1/health/ready")"
-          body="$(printf '%s\n' "$result" | head -n 1)"
-          metrics="$(printf '%s\n' "$result" | tail -n 1)"
-          status="$(printf '%s' "$metrics" | cut -d' ' -f1)"
-          seconds="$(printf '%s' "$metrics" | cut -d' ' -f2)"
-          test "$status" = "200"
-          printf '%s' "$body" | jq -e '
-            .status == "ok" and .database == "d1" and
-            .schema.ready == true and
-            (.schema.expectedVersion == .schema.appliedVersion) and
-            (.canary.jobs | type == "number") and
-            (.canary.problems | type == "number") and
-            (.canary.learning | type == "number") and
-            (.canary.searchRows | type == "number")
-          '
-          awk -v actual="$seconds" 'BEGIN { if (actual > 2.5) exit 1 }'
+      - name: Check production contracts, security boundaries and D1 readiness
+        id: slo
+        continue-on-error: true
+        env:
+          SLO_BASE_URL: https://careerground-workspace.edder773.chatgpt.site
+          SLO_OUTPUT_FILE: work/operations/production-slo.json
+          SLO_READINESS_SAMPLES: '5'
+          SLO_READINESS_COLD_START_BUDGET_MS: '5000'
+          SLO_READINESS_WARM_P95_BUDGET_MS: '2500'
+        run: node scripts/operations/check-production-slo.mjs
 
-          headers="$(curl --silent --show-error --fail --max-time 10 --head "$base/")"
-          printf '%s' "$headers" | grep -qi '^content-security-policy:'
-          printf '%s' "$headers" | grep -qi '^x-content-type-options: nosniff'
-          curl --silent --show-error --fail --max-time 10 "$base/" | grep -q '<div id="root"></div>'
-          curl --silent --show-error --fail --max-time 10 "$base/favicon.svg" >/dev/null
+      - name: Upload structured SLO evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: production-slo-${{ github.run_id }}
+          path: work/operations/production-slo.json
+          if-no-files-found: error
+          retention-days: 30
 
-          auth_status="$(curl --silent --show-error --max-time 10 --output /tmp/auth-body \
-            --write-out '%{http_code}' "$base/api/v1/auth/me")"
-          test "$auth_status" = '401'
-          jq -e '.code == "UNAUTHORIZED"' /tmp/auth-body
-          printf 'health_status=%s latency_seconds=%s\n' "$status" "$seconds"
+      - name: Open or update the production incident
+        if: steps.slo.outcome == 'failure'
+        uses: actions/github-script@v8
+        env:
+          INCIDENT_TITLE: '[운영 경보] Production SLO smoke 실패'
+          REPORT_PATH: work/operations/production-slo.json
+        with:
+          script: |
+            const fs = require('fs');
+            const title = process.env.INCIDENT_TITLE;
+            const report = JSON.parse(fs.readFileSync(process.env.REPORT_PATH, 'utf8'));
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              ...context.repo,
+              state: 'open',
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
+            const failures = report.failures.map((failure) => `- ${failure}`).join('\n');
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              '운영 SLO 점검이 실패했습니다. 같은 장애가 열려 있으면 새 이슈를 만들지 않고 이력을 누적합니다.',
+              '',
+              `- 감지 시각: ${report.generatedAt}`,
+              `- 기준 커밋: \`${context.sha}\``,
+              `- 실행: ${runUrl}`,
+              `- readiness cold start: ${report.latency.readinessColdStartMs ?? '측정 실패'} ms`,
+              `- readiness warm p95: ${report.latency.readinessWarmP95Ms ?? '측정 실패'} ms`,
+              `- schema: \`${report.schema?.appliedVersion ?? '확인 실패'}\``,
+              '',
+              '실패 항목:',
+              failures || '- 구조화 결과를 확인하세요.',
+              '',
+              `원본 JSON은 실행의 \`production-slo-${context.runId}\` 아티팩트에 30일간 보관됩니다.`,
+            ].join('\n');
+            if (existing) {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: existing.number,
+                body,
+              });
+              core.notice(`Updated incident #${existing.number}`);
+            } else {
+              const created = await github.rest.issues.create({
+                ...context.repo,
+                title,
+                body,
+              });
+              core.notice(`Opened incident #${created.data.number}`);
+            }
+
+      - name: Close the incident after recovery
+        if: steps.slo.outcome == 'success'
+        uses: actions/github-script@v8
+        env:
+          INCIDENT_TITLE: '[운영 경보] Production SLO smoke 실패'
+        with:
+          script: |
+            const title = process.env.INCIDENT_TITLE;
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              ...context.repo,
+              state: 'open',
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
+            if (!existing) {
+              core.notice('No open production incident to close.');
+              return;
+            }
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: existing.number,
+              body: `운영 SLO 점검이 정상화되었습니다.\n\n- 복구 확인: ${new Date().toISOString()}\n- 실행: ${runUrl}\n- 기준 커밋: \`${context.sha}\``,
+            });
+            await github.rest.issues.update({
+              ...context.repo,
+              issue_number: existing.number,
+              state: 'closed',
+              state_reason: 'completed',
+            });
+            core.notice(`Closed recovered incident #${existing.number}`);
+
+      - name: Fail when the production SLO is breached
+        if: steps.slo.outcome == 'failure'
+        run: exit 1

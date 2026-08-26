@@ -1,0 +1,78 @@
+{
+  "capturedAt": "2026-08-26T00:35:23.524Z",
+  "environment": "production-read-only",
+  "baseline": {
+    "recentScheduledRunsInspected": 8,
+    "recentScheduledRunFailures": 8,
+    "failureCause": "static asset response headers were required even though Sites served the policy through HTML meta",
+    "readinessSamplesMs": [3317.7, 731.9, 714.3, 724.9, 818.5],
+    "readinessD1QueriesInPreparedIsolate": 4
+  },
+  "predeployValidation": {
+    "passed": true,
+    "checksPassed": 24,
+    "checksTotal": 24,
+    "readinessSamplesMs": [1256, 710.5, 705.5, 717.2, 716.6],
+    "readinessColdStartMs": 1256,
+    "readinessColdStartBudgetMs": 5000,
+    "readinessWarmP95Ms": 717.2,
+    "readinessWarmP95BudgetMs": 2500,
+    "readinessD1QueriesInPreparedIsolate": 1,
+    "schemaExpectedVersion": "0035_sync_validator_jobs_20260825",
+    "schemaAppliedVersion": "0035_sync_validator_jobs_20260825",
+    "canary": {
+      "jobs": 147,
+      "problems": 427,
+      "learning": 102,
+      "searchRows": 679
+    },
+    "staticPolicy": {
+      "contentSecurityPolicyMeta": true,
+      "referrerPolicyMeta": true
+    },
+    "apiPolicy": {
+      "contentSecurityPolicyHeader": true,
+      "contentTypeOptionsHeader": true,
+      "frameOptionsHeader": true,
+      "permissionsPolicyHeader": true,
+      "referrerPolicyHeader": true,
+      "requestIdHeader": true,
+      "serverTimingHeader": true
+    },
+    "anonymousAuthStatus": 401,
+    "webBundle": {
+      "initialRouteGzipBytes": 147773,
+      "initialRouteBudgetBytes": 180000,
+      "largestJavaScriptGzipBytes": 95410,
+      "javascriptBudgetBytes": 110000,
+      "largestCssGzipBytes": 22548,
+      "cssBudgetBytes": 30000,
+      "failures": 0
+    },
+    "localValidation": {
+      "format": "pass",
+      "lint": "pass",
+      "typecheck": "pass",
+      "unitIntegrationFiles": 40,
+      "unitIntegrationTests": 166,
+      "e2eTests": 56,
+      "productionBuild": "pass",
+      "performanceBudgetFailures": 0,
+      "jobsCursorP95Ms": 4.72,
+      "searchP95Ms": 39.81,
+      "recoverySnapshotBytes": 1908736,
+      "recoveryRestoreMs": 2.05,
+      "recoveryForeignKeyViolations": 0,
+      "recoveryChecksumMatched": true,
+      "firstE2eAttempt": "sandbox-localhost-bind-EPERM",
+      "authorizedE2eRerun": "56/56 passed"
+    },
+    "slackRequests": 0
+  },
+  "postdeployValidation": null,
+  "notes": [
+    "Production values are external round-trip samples and not browser RUM.",
+    "No authenticated Google synthetic account was used.",
+    "No Slack digest endpoint or webhook was called."
+  ]
+}

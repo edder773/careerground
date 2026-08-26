@@ -4,7 +4,26 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { all, first, run } from './d1.js';
 import { LocalD1 } from './local-d1.js';
-import { ensureRuntimeSchema } from './runtime-schema.js';
+import { ensureRuntimeSchema, readRuntimeSchema } from './runtime-schema.js';
+
+describe('Sites runtime schema cache', () => {
+  it('reuses the same read-only inspection within a Worker database binding', async () => {
+    const db = new LocalD1();
+    try {
+      db.resetQueryCount();
+      const firstState = await readRuntimeSchema(db);
+      const firstQueryCount = db.getQueryCount();
+      const secondState = await readRuntimeSchema(db);
+
+      expect(firstState.ready).toBe(true);
+      expect(secondState).toBe(firstState);
+      expect(firstQueryCount).toBeGreaterThan(0);
+      expect(db.getQueryCount()).toBe(firstQueryCount);
+    } finally {
+      db.close();
+    }
+  });
+});
 
 describe('Sites runtime schema', () => {
   let db: LocalD1;
