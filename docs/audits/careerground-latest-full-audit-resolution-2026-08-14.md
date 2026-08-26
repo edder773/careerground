@@ -12,16 +12,16 @@
 
 ## P0 처리
 
-| ID        | 상태      | 조치와 남은 경계                                                                                                                                                                                           |
-| --------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| OPS-001   | 외부 검증 | 로컬 격리 snapshot/restore, checksum/FK/integrity drill과 runbook은 구현. Sites가 운영 D1 export/restore를 제공하지 않아 운영 RTO/RPO는 미검증.                                                            |
-| OPS-002   | 구현      | schema version/column/index/trigger/FTS readiness와 배포 후 canary를 추가.                                                                                                                                 |
-| OPS-003   | 부분 완화 | `app_schema_migrations` ledger와 0016 checksum을 권위로 추가. 기존 운영 D1은 runtime으로 0015 상당 상태까지 생성됐으므로 배포 archive는 0016 이후 forward migration만 싣고 전체 source history는 보존한다. |
-| CODE-001  | 구현      | `userId + v2 + problemId` 초안 namespace, 계정 전환 격리 테스트.                                                                                                                                           |
-| LEARN-001 | 구현      | question type/choices migration, import, API와 객관식 UI/채점 연결.                                                                                                                                        |
-| NOTE-001  | 구현      | user/note/baseRevision 초안과 409 conflict diff/retry.                                                                                                                                                     |
-| ADMIN-001 | 구현      | 전체 preview pagination, JSON diff download, reviewed row count와 전체 검토 확인.                                                                                                                          |
-| ADMIN-002 | 부분 완화 | 제거 전체 목록, 별도 확인, 건수 대조, 서버 임계치 차단. 조직의 독립된 2인 승인 주체는 Sites 권한 모델에 없어 동일 관리자 이중 확인으로 구현.                                                               |
+| ID        | 상태      | 조치와 남은 경계                                                                                                                                      |
+| --------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OPS-001   | 외부 검증 | 로컬 격리 snapshot/restore, checksum/FK/integrity drill과 runbook은 구현. Sites가 운영 D1 export/restore를 제공하지 않아 운영 RTO/RPO는 미검증.       |
+| OPS-002   | 구현      | schema version/column/index/trigger/FTS readiness와 배포 후 canary를 추가.                                                                            |
+| OPS-003   | 구현      | `migration-authority.ts`가 archive 목록과 최신 version/checksum의 단일 권위다. build·stage·runtime이 같은 목록을 사용하고 누락·미등록 SQL을 거부한다. |
+| CODE-001  | 구현      | `userId + v2 + problemId` 초안 namespace, 계정 전환 격리 테스트.                                                                                      |
+| LEARN-001 | 구현      | question type/choices migration, import, API와 객관식 UI/채점 연결.                                                                                   |
+| NOTE-001  | 구현      | user/note/baseRevision 초안과 409 conflict diff/retry.                                                                                                |
+| ADMIN-001 | 구현      | 전체 preview pagination, JSON diff download, reviewed row count와 전체 검토 확인.                                                                     |
+| ADMIN-002 | 부분 완화 | 제거 전체 목록, 별도 확인, 건수 대조, 서버 임계치 차단. 조직의 독립된 2인 승인 주체는 Sites 권한 모델에 없어 동일 관리자 이중 확인으로 구현.          |
 
 ## P1 코드 조치
 
@@ -74,12 +74,16 @@ mutation을 개별 Zod schema로 바꾼 것은 아니므로 장기적으로 gene
 
 아래는 이번 배포의 핵심 기능을 막지는 않지만 감사의 완료 조건 전체를 충족했다고 주장하지 않는다.
 
-- `OPS-004`: liveness는 runtime DDL을 우회하고 isolate 중복 실행은 제거했지만, Sites migration apply
-  부재 때문에 첫 API 요청의 additive fallback은 남아 있다.
+- `OPS-004`: 요청 경로의 runtime DDL과 데이터 정리를 제거했다. 요청은 migration 원장과 schema를
+  읽기 전용으로 검사하며 불일치하면 503으로 닫힌다.
 - `OPS-007`, `OPS-008`, `OPS-009`, `API-002`: Worker/D1을 canonical로 유지하지만 Nest/Prisma
   reference 제거, 127 KB router 분해, 대형 page/CSS 분할은 별도 구조 변경이다.
-- `OPS-014`, `OPS-015`, `PERF-003`, `PERF-004`, `PERF-007`, `PERF-008`: request timing,
-  합성 budget과 관리자 health는 있지만 외부 alert/RUM/materialized ranking/browser long-task 수집은 없다.
+- `OPS-014`, `OPS-015`: 운영 synthetic이 cold-start와 warm p95, schema/canary, 인증·보안 경계를
+  구조화 JSON으로 보관한다. 실패 incident는 중복 없이 갱신되고 복구 시 닫힌다. 브라우저 RUM과
+  외부 paging 연동은 아직 없다.
+- `PERF-007`: 운영 웹의 개별 JS/CSS gzip과 초기 route gzip 예산을 build 뒤 CI gate로 적용했다.
+- `PERF-003`, `PERF-004`, `PERF-008`: API 합성 budget은 유지하지만 materialized ranking과
+  브라우저 long-task 수집은 별도 후속이다.
 - `AUTH-004`, `AUTH-005`: 가입 상한은 원자화했지만 운영 필수 env fail-closed와 IdP 이름의
   사용자 수정 여부 추적 column은 별도 schema 정책이 필요하다.
 - `NOTIF-011`, `NOTIF-012`, `DB-013`: unread GET의 write는 제거했지만 인증 rate-limit hot table과
@@ -96,7 +100,8 @@ mutation을 개별 Zod schema로 바꾼 것은 아니므로 장기적으로 gene
 - `QA-012`: API/Worker 응답의 CSP, referrer, permissions, frame, nosniff 정책과 자동 검사는 구현했다.
   다만 Sites 정적 asset cache가 Worker를 우회하는 HTML 응답에는 header가 붙지 않아 CSP/referrer를
   HTML meta fallback으로도 적용했다. `X-Frame-Options`와 `Permissions-Policy` 같은 header-only 정책을
-  정적 응답에 강제하는 기능은 현재 Sites 설정 surface에 없다.
+  정적 응답에 강제하는 기능은 현재 Sites 설정 surface에 없다. 운영 SLO 검사는 이 전달 경계를
+  구분해 정적 meta와 API header를 각각 검증한다.
 
 ## 현재 환경에서 실행할 수 없는 검증
 
@@ -104,7 +109,7 @@ mutation을 개별 Zod schema로 바꾼 것은 아니므로 장기적으로 gene
 | ---------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | OPS-001          | Sites connector에 운영 D1 export/restore operation 없음                       | `pnpm recovery:drill`, checksum/FK/integrity, `docs/operations/backup-restore.md` |
 | OPS-011          | Sites connector에 cron registration/last-run API 없음                         | Worker `scheduled()`, lease/dedupe와 producer 회귀 테스트                         |
-| AUTH-001, QA-009 | 테스트 계정의 실제 OpenAI handshake/운영 authenticated synthetic session 없음 | auth boundary 401, mock session E2E, 운영 공개 화면 canary                        |
+| AUTH-001, QA-009 | 테스트 계정의 실제 Google handshake/운영 authenticated synthetic session 없음 | auth boundary 401, mock session E2E, 운영 공개 화면 canary                        |
 | QA-001, QA-002   | NVDA/VoiceOver/TalkBack 및 실기기 한글 IME 장비 없음                          | axe, keyboard, 200% reflow, Chromium/Firefox/WebKit, 320/375 px tests             |
 
 ## 릴리스 판정

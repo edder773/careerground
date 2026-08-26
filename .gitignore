@@ -13,6 +13,7 @@ test-results/
 !.env.sites
 uploads/
 tmp/
+work/
 .cache/
 apps/api/src/generated/prisma/
 docs/assets/troubleshooting/*/

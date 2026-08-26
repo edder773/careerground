@@ -37,4 +37,5 @@ jobs:
       - run: pnpm performance:budget
       - run: pnpm recovery:drill
       - run: pnpm build
+      - run: pnpm bundle:budget
       - run: pnpm sites:build

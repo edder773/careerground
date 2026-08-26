@@ -19,7 +19,7 @@
     "format:check": "prettier --check .",
     "workspace:prepare": "pnpm --filter @careerground/contracts build && pnpm --filter @careerground/ui build && pnpm db:generate",
     "typecheck": "pnpm workspace:prepare && pnpm -r --if-present typecheck && pnpm sites:typecheck",
-    "test": "pnpm workspace:prepare && pnpm -r --if-present test && vitest run scripts/troubleshooting scripts/slack scripts/learning-catalog deployment/sites",
+    "test": "pnpm workspace:prepare && pnpm -r --if-present test && vitest run scripts/troubleshooting scripts/slack scripts/learning-catalog scripts/operations scripts/performance deployment/sites",
     "test:e2e": "pnpm workspace:prepare && playwright test",
     "test:e2e:visual": "pnpm workspace:prepare && playwright test e2e/visual.spec.ts",
     "api:generate": "openapi-typescript http://127.0.0.1:4000/api/openapi.json -o apps/web/src/generated/openapi.ts",
@@ -47,11 +47,13 @@
     "evidence:optimize-images": "node --import tsx scripts/troubleshooting/optimize-images.ts",
     "learning:optimize-images": "node scripts/optimize-learning-images.mjs",
     "performance:budget": "node scripts/performance/check-budgets.mjs",
+    "bundle:budget": "node scripts/performance/check-web-bundle-budgets.mjs",
+    "slo:check": "node scripts/operations/check-production-slo.mjs",
     "recovery:drill": "node --import tsx scripts/data-integrity/restore-drill.mjs",
     "prepare": "husky"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
+    "*.{ts,tsx,js,jsx,mjs,cjs}": [
       "eslint --fix",
       "prettier --write"
     ],

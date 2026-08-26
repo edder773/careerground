@@ -25,6 +25,7 @@ pnpm typecheck
 pnpm test
 pnpm test:e2e
 pnpm build
+pnpm bundle:budget
 pnpm sites:build
 ```
 
@@ -46,8 +47,13 @@ E2E는 `deployment/sites/local-d1-server.ts`가 메모리 D1 fixture를 직접 �
    - `deployment/sites/migration-authority.ts`에 등록된 `0025` 이후 순방향 migration만 존재
 6. **같은 commit SHA와 archive**를 새 Sites version으로 저장한다.
 7. visibility를 `public`으로 지정해 운영 배포한다.
-8. 배포 상태가 완료될 때까지 확인하고 `/api/v1/health/ready`가 `200`, `database: d1`을 반환하는지 검사한다.
+8. 배포 상태가 완료될 때까지 확인하고 `pnpm slo:check`로 schema/canary, cold-start와 warm p95,
+   정적·API 보안 정책, 비로그인 인증 경계를 함께 검사한다.
 9. 로그인 사용자로 홈·채용·코딩·학습의 공통 데이터와 폴더의 사용자별 격리를 smoke test한다.
+
+정기 점검은 `.github/workflows/production-smoke.yml`이 같은 검사기를 실행한다. 실패 JSON은 30일
+artifact로 남고 하나의 열린 incident에 이력이 누적되며, 복구 실행이 incident를 자동으로 닫는다.
+배포 검증 과정은 Slack digest endpoint나 webhook을 호출하지 않는다.
 
 소스 commit만 저장하고 archive를 생략하면 플랫폼이 모노레포의 일반 `build`를 다시 선택하여 Worker와 migration을 누락할 수 있다. 따라서 소스와 archive의 SHA 일치와 archive migration 목록 검사는 배포 불변식이다. 새 Sites 프로젝트는 기존 runtime baseline이 없으므로 이 0025 이후 staging 규칙 대신 0000부터 전체 migration을 적용하는 별도 bootstrap이 필요하다.
 

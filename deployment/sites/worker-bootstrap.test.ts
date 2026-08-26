@@ -83,6 +83,27 @@ describe('Sites worker Google session bootstrap', () => {
     ).toBe(false);
   });
 
+  it('does not repeat the schema inventory inside the readiness route', async () => {
+    db.resetQueryCount();
+    db.resetPreparedSql();
+
+    const response = await worker.fetch(
+      new Request('https://careerground.example/api/v1/health/ready'),
+      env(),
+      context,
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      status: 'ok',
+      database: 'd1',
+      schema: { ready: true, expectedVersion: EXPECTED_SCHEMA_VERSION },
+    });
+    expect(db.getQueryCount()).toBe(1);
+    expect(db.preparedSql).toHaveLength(1);
+    expect(db.preparedSql[0]).toContain('SELECT COUNT(*) FROM jobs');
+  });
+
   it('does not accept anonymous or legacy OpenAI identity headers', async () => {
     const anonymous = await worker.fetch(
       new Request('https://careerground.example/api/v1/jobs'),

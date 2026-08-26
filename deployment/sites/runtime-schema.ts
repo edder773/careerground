@@ -1,7 +1,7 @@
 import { first, type D1Database } from './d1.js';
 import { EXPECTED_SCHEMA_CHECKSUM, EXPECTED_SCHEMA_VERSION } from './migration-authority.js';
 
-const schemaPromises = new WeakMap<D1Database, Promise<void>>();
+const schemaPromises = new WeakMap<D1Database, Promise<RuntimeSchemaState>>();
 export { EXPECTED_SCHEMA_CHECKSUM, EXPECTED_SCHEMA_VERSION };
 
 export type RuntimeSchemaState = {
@@ -173,21 +173,25 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
   };
 }
 
-export async function ensureRuntimeSchema(db: D1Database) {
+export async function readRuntimeSchema(db: D1Database) {
   let promise = schemaPromises.get(db);
   if (!promise) {
-    promise = inspectRuntimeSchema(db).then((state) => {
-      if (state.ready) return;
-      throw new Error(
-        `D1 schema is not ready: expected=${state.expectedVersion} applied=${state.appliedVersion || 'none'}`,
-      );
-    });
+    promise = inspectRuntimeSchema(db);
     schemaPromises.set(db, promise);
   }
   try {
-    await promise;
+    return await promise;
   } catch (error) {
     schemaPromises.delete(db);
     throw error;
   }
+}
+
+export async function ensureRuntimeSchema(db: D1Database) {
+  const state = await readRuntimeSchema(db);
+  if (state.ready) return state;
+  schemaPromises.delete(db);
+  throw new Error(
+    `D1 schema is not ready: expected=${state.expectedVersion} applied=${state.appliedVersion || 'none'}`,
+  );
 }

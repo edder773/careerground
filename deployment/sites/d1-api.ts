@@ -25,7 +25,7 @@ import {
   sha256,
   sourceText,
 } from './domain.js';
-import { inspectRuntimeSchema } from './runtime-schema.js';
+import { readRuntimeSchema } from './runtime-schema.js';
 import {
   clearSessionCookie,
   GOOGLE_CLIENT_ID,
@@ -4516,7 +4516,7 @@ export async function handleD1Api(request: Request, env: D1Env) {
       );
     }
     if (url.pathname === '/api/v1/health' || url.pathname === '/api/v1/health/ready') {
-      const schema = await inspectRuntimeSchema(env.DB);
+      const schema = await readRuntimeSchema(env.DB);
       const canary = schema.ready
         ? await first<{ jobs: number; problems: number; learning: number; searchRows: number }>(
             env.DB,
