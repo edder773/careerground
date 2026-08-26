@@ -4,7 +4,7 @@
 
 CareerGround의 현재 운영 기준 백엔드는 **Sites Worker + D1**이다. `.openai/hosting.json`이 D1을 `DB`로 바인딩하며, Worker는 `/api/v1/**` 요청을 `handleD1Api`로만 전달한다. `API_ORIGIN` 프록시 분기는 제거했다. D1 바인딩이 없으면 다른 백엔드로 묵시적으로 우회하지 않고 `503 D1_NOT_CONFIGURED`를 반환한다.
 
-2026-08-13 작업 환경에는 관리되는 PostgreSQL 인스턴스, 운영 접속 자격증명, 전환 창구가 없었다. 이 상태에서 감사 보고서의 권장안만 따라 PostgreSQL을 강제하면 현재 배포를 중단시키므로, 감사 작업 프롬프트의 “PostgreSQL 운영 인프라가 없는 경우” 절차에 따라 D1을 임시 기준 경로로 확정했다.
+2026-08-13 작업 환경에는 관리되는 PostgreSQL 인스턴스, 운영 접속 자격증명, 전환 창구가 없었다. 이 상태에서 감사 보고서의 권장안만 따라 PostgreSQL을 강제하면 현재 배포를 중단시키므로, 감사 작업 프롬프트의 “PostgreSQL 운영 인프라가 없는 경우” 절차에 따라 D1을 기준 경로로 확정했다. 2026-08-26에는 운영과 무관한 NestJS/Prisma reference 앱도 제거해 저장소 수준의 단일 백엔드 경계를 완성했다.
 
 ## 경계와 책임
 
@@ -12,9 +12,8 @@ CareerGround의 현재 운영 기준 백엔드는 **Sites Worker + D1**이다. `
 - `deployment/sites/d1-api.ts`: 현재 운영 비즈니스 API
 - `deployment/sites/domain.ts`, `packages/contracts`: import·수정 요청의 공통 검증과 원문 보존 규칙
 - `db/schema.ts`, `drizzle/**`: D1 스키마와 순방향 migration
-- `apps/api/**`: PostgreSQL 전환을 위한 폐기 예정(reference-only) 구현. Sites 배포나 E2E의 런타임 경로가 아니다.
 
-동일 엔드포인트를 런타임에서 선택하는 설정은 두지 않는다. Nest 코드는 개발 참고와 향후 데이터 이전 도구에만 남겨 두고, 운영 결함 수정은 D1 경로와 공유 계약에 우선 반영한다.
+동일 엔드포인트를 런타임이나 source tree에서 선택하는 설정은 두지 않는다. 운영 결함 수정, import, seed, migration과 테스트는 D1 경로와 공유 계약에만 반영한다. PostgreSQL 전환이 실제로 승인되기 전에는 별도 서버 구현을 미리 유지하지 않는다.
 
 ## PostgreSQL 전환 조건
 
@@ -26,4 +25,4 @@ CareerGround의 현재 운영 기준 백엔드는 **Sites Worker + D1**이다. `
 4. 쓰기 동결 또는 change-data-capture 전략, 전환 실패 시 D1 복귀 절차를 승인한다.
 5. 1440×900과 375×812의 핵심 흐름 및 Chromium/Firefox/WebKit E2E를 통과한다.
 
-전환이 끝나면 D1 비즈니스 핸들러를 제거하고 Worker는 인증 경계를 검증한 단일 프록시만 담당하도록 다시 설계한다. 전환 전에는 두 쓰기 경로를 동시에 열지 않는다.
+전환 RFC가 승인되면 별도 branch에서 데이터 이전 도구와 새 서버를 함께 만들고 shadow traffic으로 계약을 검증한다. 전환이 끝나면 D1 비즈니스 핸들러를 제거하고 Worker는 인증 경계를 검증한 단일 프록시만 담당하도록 다시 설계한다. 전환 전에는 두 쓰기 경로를 동시에 열지 않는다.

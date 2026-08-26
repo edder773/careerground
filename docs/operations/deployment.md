@@ -2,7 +2,7 @@
 
 ## 기준 경로
 
-현재 CareerGround의 유일한 운영 경로는 **OpenAI Sites Worker + D1**이다. Docker, PostgreSQL, `API_ORIGIN`, 공유 인증 secret은 Sites 배포에 사용하지 않는다. Nest/Prisma 앱은 향후 전환 검토를 위한 reference-only 코드이며 운영 트래픽을 받지 않는다.
+현재 CareerGround의 유일한 백엔드와 운영 경로는 **OpenAI Sites Worker + D1**이다. Docker, PostgreSQL, Prisma, NestJS, `API_ORIGIN`, 공유 인증 secret은 저장소와 배포 경로에 두지 않는다.
 
 ```mermaid
 flowchart LR
@@ -70,6 +70,6 @@ artifact로 남고 하나의 열린 incident에 이력이 누적되며, 복구 �
 
 ## migration과 rollback
 
-D1 migration은 기존 파일을 수정하지 않고 새 순방향 SQL만 `drizzle/`에 추가한다. 운영 적용이 끝난 과거 SQL은 `drizzle-history/`에 보존하며 배포 archive에는 포함하지 않는다. 운영 archive의 유일한 순서·포함 권위는 `deployment/sites/migration-authority.ts`다. 새 SQL을 추가할 때 이 목록과 최신 expected version/checksum을 함께 갱신해야 하며, build와 staging은 누락되거나 목록에 없는 SQL을 거부한다. `db/schema.ts`와 Prisma schema는 운영 migration을 실행하는 권위가 아니라 타입·reference 용도다.
+D1 migration은 기존 파일을 수정하지 않고 새 순방향 SQL만 `drizzle/`에 추가한다. 운영 적용이 끝난 과거 SQL은 `drizzle-history/`에 보존하며 배포 archive에는 포함하지 않는다. 운영 archive의 유일한 순서·포함 권위는 `deployment/sites/migration-authority.ts`다. 새 SQL을 추가할 때 이 목록과 최신 expected version/checksum을 함께 갱신해야 하며, build와 staging은 누락되거나 목록에 없는 SQL을 거부한다. `db/schema.ts`는 Drizzle 타입과 신규 migration 생성의 단일 schema 정의다.
 
 배포 전 export를 확보하고, migration 이후 원장 version/checksum, canonical job key 중복, Slack delivery 상태, 공통·개인 데이터 집계를 비교한다. 애플리케이션 rollback은 이전 정상 Sites version을 다시 배포하되, 이미 적용된 스키마는 되돌리지 않고 호환 가능한 forward-fix migration을 만든다. 상세 절차는 `docs/operations/backup-restore.md`를 따른다.

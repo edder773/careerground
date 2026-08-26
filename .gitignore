@@ -15,7 +15,6 @@ uploads/
 tmp/
 work/
 .cache/
-apps/api/src/generated/prisma/
 docs/assets/troubleshooting/*/
 docs/evidence/*/
 !docs/assets/troubleshooting/current/

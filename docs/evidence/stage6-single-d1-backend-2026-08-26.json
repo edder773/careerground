@@ -1,0 +1,89 @@
+{
+  "capturedAt": "2026-08-26T02:34:47Z",
+  "environment": "local-node-24.19.0-pnpm-11.21.0",
+  "scope": "Retire the non-runtime NestJS, Prisma, PostgreSQL and Docker backend while preserving the canonical Sites Worker and D1 behavior",
+  "baseline": {
+    "gitCommit": "fe10e24a61dab5cbecd8e9d2355047e12e420cae",
+    "workspaceProjects": 8,
+    "retiredApi": {
+      "path": "apps/api",
+      "trackedFiles": 56,
+      "trackedLines": 5783,
+      "trackedBytes": 201581
+    },
+    "lockfile": {
+      "lines": 10419,
+      "bytes": 361026
+    },
+    "unitIntegration": {
+      "files": 41,
+      "tests": 171,
+      "contracts": 10,
+      "referenceApi": 34,
+      "web": 31,
+      "rootAndD1": 96,
+      "result": "pass"
+    }
+  },
+  "after": {
+    "workspaceProjects": 7,
+    "retiredApi": {
+      "trackedFiles": 0,
+      "trackedLines": 0,
+      "trackedBytes": 0
+    },
+    "lockfile": {
+      "lines": 5869,
+      "bytes": 203257,
+      "lineReduction": 4550,
+      "lineReductionPercent": 43.67,
+      "byteReduction": 157769,
+      "byteReductionPercent": 43.7,
+      "nestjsPackageKeys": 0,
+      "prismaPackageKeys": 0
+    },
+    "removedArtifacts": [
+      "apps/api",
+      "apps/web/src/generated",
+      "apps/web/Dockerfile",
+      "docker-compose.yml"
+    ],
+    "canonicalDataPaths": {
+      "schema": "db/schema.ts",
+      "migrations": "drizzle plus deployment/sites/migration-authority.ts",
+      "localSeed": "deployment/sites/d1.ts",
+      "adminImport": "deployment/sites/d1-imports.ts"
+    },
+    "validation": {
+      "frozenInstall": "pass",
+      "format": "pass",
+      "lint": "pass",
+      "typecheck": "pass",
+      "d1SchemaDrift": 0,
+      "unitIntegrationFiles": 33,
+      "unitIntegrationTests": 138,
+      "contractsTests": 10,
+      "webTests": 31,
+      "rootAndD1Tests": 97,
+      "moduleBoundaryTests": 5,
+      "productionBuild": "pass",
+      "bundleBudgetFailures": 0,
+      "initialRouteGzipBytes": 147773,
+      "largestJavaScriptGzipBytes": 95410,
+      "largestCssGzipBytes": 22548,
+      "performanceBudgetFailures": 0,
+      "recoveryForeignKeyViolations": 0,
+      "recoveryChecksumMatched": true,
+      "knownHighVulnerabilities": 0,
+      "e2eTests": 56,
+      "productionSloChecks": null
+    },
+    "slackRequests": 0
+  },
+  "interpretation": [
+    "The 34 removed tests exercised the retired PostgreSQL reference implementation, not the production Worker and D1 runtime.",
+    "The canonical root and D1 suite increased from 96 to 97 tests because the workspace retirement invariant was added.",
+    "The lockfile reduction also removes unused auto-installed optional database peers, so it is a dependency-surface measurement rather than a runtime speed measurement.",
+    "No D1 schema, public API route, browser behavior or Slack delivery behavior changed in this stage."
+  ]
+}
