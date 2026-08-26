@@ -10,7 +10,7 @@
 
 자동화 테스트의 로컬 D1 서버만 `AUTH_TEST_MODE=true`로 `/api/v1/auth/test`를 활성화한다. E2E helper가 합성 Google subject와 `example.test` 이메일로 세션 쿠키를 발급받는다. 운영 Worker에는 이 변수를 설정하지 않으며 실제 사용자 데이터로 테스트 endpoint를 실행하지 않는다.
 
-Nest/Prisma/PostgreSQL 앱은 reference-only다. 해당 경로를 별도로 연구할 때만 전용 role/database와 `DATABASE_URL`을 구성하며, 현재 Sites 운영과 일반 로컬 개발에는 사용하지 않는다.
+로컬 API와 E2E는 운영과 같은 Worker/D1 handler를 사용한다. 별도의 PostgreSQL, Prisma client 생성 또는 Docker 서비스는 없다.
 
 `pnpm dev`는 웹 5173, D1 API 4000을 사용한다. docs는 별도로 `pnpm docs:dev`(5174)를 실행한다.
 
@@ -20,7 +20,6 @@ E2E는 매 실행 새 메모리 D1에 저장소의 순방향 migration과 공통
 
 ## 문제 해결
 
-- Prisma `P3014`: 개발 role에 shadow database 생성 권한이 없다.
 - Google 인증 401: OAuth 클라이언트에 현재 origin이 등록됐는지와 ID 토큰 `aud`가 `GOOGLE_CLIENT_ID`와 같은지 확인한다.
 - 로컬 인증 401: local D1 server에만 `AUTH_TEST_MODE=true`가 설정됐는지 확인한다.
 - PDF가 수동 처리 상태: OCR이나 안전한 텍스트 추출이 설정되지 않은 정상 상태다. 구조화 학습 package import를 사용한다.

@@ -8,7 +8,7 @@
 - pnpm 11.21.0 (`packageManager`, `pnpm-lock.yaml`)
 - React 19.2.8, Vite 8.2.1, TypeScript 6.0.3
 - 운영: OpenAI Sites Worker + D1
-- Reference-only: NestJS 11.1.29, Prisma 7.9.1, PostgreSQL 17+
+- 데이터 모델·migration: Drizzle ORM 0.45.2, SQLite/D1 순방향 SQL
 - Vitest, Testing Library, Playwright, axe-core
 
 ## 빠른 시작
@@ -31,36 +31,26 @@ pnpm dev
 
 ```bash
 pnpm dev                 # web + 메모리 D1 API 동시 실행, Docker 불필요
-pnpm build               # contracts/ui/api/web/docs production build
+pnpm build               # contracts/ui/web/docs/Sites production build
 pnpm lint
 pnpm typecheck
 pnpm test                # unit/component/provider mock
 pnpm test:e2e            # 격리된 메모리 D1 + 공통 seed Playwright
-pnpm db:migrate          # reference-only PostgreSQL 경로
-pnpm db:deploy           # reference-only PostgreSQL 경로
-pnpm db:seed             # reference-only PostgreSQL 경로
-pnpm db:reset            # reference-only PostgreSQL 경로
-pnpm jobs:import ./jobs.json           # dry-run
-pnpm jobs:import ./jobs.json --commit  # ADMIN으로 transaction 승인
-pnpm learning:import ./learning.json
-pnpm learning:import ./learning.json --commit
+pnpm db:d1:generate      # db/schema.ts 변경으로 D1 migration 생성
+pnpm jobs:catalog:refresh <baseline.json> <input.json> <output.sql>
+pnpm learning:catalog:generate
 pnpm docs:dev
 pnpm docs:build
 ```
-
-DB를 reset하면 로컬 데이터가 삭제되므로 대상 DB URL을 확인한 뒤 실행한다. 운영에서는 `db:reset`을 사용하지 않고 `db:deploy`만 사용한다.
 
 ## 환경 변수
 
 전체 목록과 안전한 placeholder는 `.env.example`에 있다. 핵심 변수는 다음과 같다.
 
-- `DATABASE_URL`: PostgreSQL 연결 문자열
-- `WEB_ORIGIN`: CORS 허용 웹 origin 하나
 - `GOOGLE_CLIENT_ID`: Google 웹 OAuth 클라이언트 ID. 운영 Worker에는 코드 기본값과 동일한 값을 선택적으로 명시한다.
 - `ADMIN_EMAILS`: Google 로그인 후 ADMIN으로 승격할 이메일 allowlist
 - `AUTH_TEST_MODE`: 로컬 D1/E2E 전용 테스트 로그인 endpoint 활성화. 운영에는 설정하지 않는다.
 - `MAX_ACTIVE_USERS`: 기본 10
-- `INTERNAL_SERVICE_SECRET`: daily challenge ensure endpoint 보호
 - `DIGEST_API_TOKEN`: GitHub Actions의 Slack 일일 요약 전용 API 인증 토큰. 운영 Worker와 GitHub secret `CAREERGROUND_DIGEST_TOKEN`에 같은 값을 저장한다.
 - `OPENAI_API_KEY`, `OPENAI_TROUBLESHOOTING_MODEL`: 선택형 트러블슈팅 문서 보강에만 사용하며, 없어도 변경 파일·테스트 결과 기반 기록은 생성됨
 
@@ -68,7 +58,7 @@ DB를 reset하면 로컬 데이터가 삭제되므로 대상 DB URL을 확인한
 
 ## 데이터 가져오기
 
-관리자 UI와 CLI 모두 preview/dry-run을 먼저 제공한다. 동일 checksum은 idempotent하게 기존 batch를 반환한다. 경력직 전용 공고는 거절 보고서에 남고 사용자 목록에는 들어가지 않는다. 회사 규모가 미분류인 항목은 `NEEDS_REVIEW`가 된다.
+관리자 UI가 D1 preview/dry-run과 승인 commit을 제공한다. 동일 checksum은 idempotent하게 기존 batch를 반환한다. 경력직 전용 공고는 거절 보고서에 남고 사용자 목록에는 들어가지 않는다. 회사 규모가 미분류인 항목은 `NEEDS_REVIEW`가 된다. 저장소의 catalog 생성기는 검증된 JSON을 새 순방향 D1 migration으로 만들며 운영 데이터 변경은 Sites 배포를 통해서만 적용한다.
 
 - 채용 스키마: `docs/operations/job-import-schema.md`
 - ChatGPT Work 수집 프롬프트: `docs/operations/job-collection-work-prompt.md`
@@ -76,7 +66,7 @@ DB를 reset하면 로컬 데이터가 삭제되므로 대상 DB URL을 확인한
 
 ## 오늘의 문제와 cron
 
-Nest scheduler가 `Asia/Seoul` 오전 07:00에 실행한다. 프로세스 중단을 보완하기 위해 startup, 조회 시 lazy ensure, `POST /api/v1/internal/daily-challenge/ensure`가 같은 idempotent 로직을 사용한다. 배포 scheduler는 `x-internal-secret`에 `INTERNAL_SERVICE_SECRET`을 전달한다.
+오늘의 문제는 인증된 사용자의 첫 조회 또는 Slack digest claim 시 D1에서 idempotent하게 준비된다. Worker scheduled handler는 만료 세션·rate-limit 정리와 공고 마감 알림을 lease로 단일 실행한다. Slack 요약은 GitHub Actions가 `Asia/Seoul` 평일 오전 08:01에 실행하고 국내 공휴일은 발송기에서 건너뛴다.
 
 ## 화면 방향
 
@@ -100,9 +90,7 @@ pnpm troubleshoot:validate --file docs/troubleshooting/2026-08-12-pr-123-evidenc
 
 ## 배포
 
-`apps/web/Dockerfile`, `apps/api/Dockerfile`은 multi-stage production image다. API readiness는 `/api/v1/health/ready`, 웹 health는 `/`로 확인한다. 상세 절차는 `docs/operations/deployment.md`를 따른다. 문서 앱은 GitHub Pages workflow가 배포한다.
-
-OpenAI Sites용 `pnpm sites:build`는 같은 React production build와 SPA fallback Worker를 `dist`에 만든다. 운영 Sites에서는 `DB` 논리 바인딩으로 전용 D1을 프로비저닝하고 `drizzle/` 마이그레이션을 적용한다. `/api/v1/auth/google`만 Google ID 토큰을 받아 세션을 만들며, health를 제외한 나머지 `/api/v1/*`는 유효한 D1 세션 쿠키가 있어야 접근할 수 있다. 최초 Google 사용자는 기본 `MEMBER`이고 `ADMIN_EMAILS`에 포함된 검증 이메일만 `ADMIN`이 된다.
+`pnpm sites:build`는 React production build와 SPA fallback Worker를 `dist`에 만든다. 운영 Sites에서는 `DB` 논리 바인딩으로 전용 D1을 프로비저닝하고 `drizzle/` migration을 적용한다. `/api/v1/auth/google`만 Google ID 토큰을 받아 세션을 만들며, health를 제외한 나머지 `/api/v1/*`는 유효한 D1 세션 쿠키가 있어야 접근할 수 있다. 최초 Google 사용자는 기본 `MEMBER`이고 `ADMIN_EMAILS`에 포함된 검증 이메일만 `ADMIN`이 된다. 상세 절차는 `docs/operations/deployment.md`를 따른다.
 
 ## 저장소 운영
 
@@ -116,4 +104,4 @@ OpenAI Sites용 `pnpm sites:build`는 같은 React production build와 SPA fallb
 - 프로덕션 S3 adapter와 실제 학습 AI worker는 환경별 자격증명·인프라가 필요한 feature flag 경계까지 구현되어 있다. 로컬 storage와 구조화 package import는 완전 동작한다.
 - 이메일/푸시는 범위 밖이며 모든 알림은 인앱이다.
 - 코드 실행과 정답 판정은 제공하지 않는다. 프로그래머스에서 수행한다.
-- 검색은 10명 규모를 전제로 PostgreSQL `contains`/index를 사용한다. 별도 검색엔진과 Redis는 없다.
+- 검색은 10명 규모를 전제로 D1 FTS5와 보조 index를 사용한다. 별도 검색엔진과 Redis는 없다.

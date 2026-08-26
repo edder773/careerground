@@ -1,6 +1,6 @@
 # 데이터 모델
 
-운영 Sites/D1 정의는 `db/schema.ts`, 순방향 migration은 `drizzle/`이 단일 진실 공급원이다. Nest/Prisma 모델은 reference-only이며 운영 트래픽을 받지 않는다.
+운영 Sites/D1 정의는 `db/schema.ts`, 순방향 migration은 `drizzle/`이 단일 진실 공급원이다. 별도 ORM schema나 PostgreSQL 모델은 두지 않는다.
 
 ```mermaid
 erDiagram
@@ -23,7 +23,7 @@ erDiagram
   User ||--o{ AuthSession : owns
 ```
 
-주요 식별자는 UUID다. 시간은 UTC timestamp로 저장하며 `DailyChallenge.kstDate`만 KST calendar date 의미를 갖는 PostgreSQL `date`다. soft delete가 필요한 사용자 소유 콘텐츠에는 `deletedAt`이 있다.
+주요 식별자는 UUID다. 시간은 ISO 8601 UTC text로 저장하며 `DailyChallenge.kstDate`만 `YYYY-MM-DD` KST calendar date 의미를 갖는다. soft delete가 필요한 사용자 소유 콘텐츠에는 `deletedAt`이 있다.
 
 무결성 예:
 
