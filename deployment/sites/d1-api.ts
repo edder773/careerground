@@ -911,11 +911,25 @@ const kstDate = () =>
     day: '2-digit',
   }).format(new Date());
 
-const kstDayBounds = (date: string) => {
-  const start = new Date(`${date}T00:00:00+09:00`);
-  const end = new Date(start.getTime() + 86_400_000);
-  return { start: start.toISOString(), end: end.toISOString() };
-};
+const DAILY_DIGEST_FALLBACK_WINDOW_MS = 86_400_000;
+
+async function dailyDigestWindowStart(db: D1Database, generatedAt: string) {
+  const previous = await first<{ completedAt: string | null }>(
+    db,
+    `SELECT completed_at AS completedAt
+       FROM slack_digest_deliveries
+      WHERE delivery_mode = 'DAILY' AND status = 'SENT' AND completed_at IS NOT NULL
+      ORDER BY completed_at DESC
+      LIMIT 1`,
+  );
+  const completedAt = cleanText(previous?.completedAt);
+  const completedTime = completedAt ? new Date(completedAt).getTime() : Number.NaN;
+  const generatedTime = new Date(generatedAt).getTime();
+  if (Number.isFinite(completedTime) && completedTime < generatedTime) {
+    return new Date(completedTime).toISOString();
+  }
+  return new Date(generatedTime - DAILY_DIGEST_FALLBACK_WINDOW_MS).toISOString();
+}
 
 async function secureTokenMatch(actual: string, expected: string) {
   const [actualHash, expectedHash] = await Promise.all([sha256(actual), sha256(expected)]);
@@ -1214,10 +1228,10 @@ async function slackLv3Challenge(db: D1Database, today: string) {
 
 async function slackDigest(db: D1Database, requestUrl: URL) {
   const today = kstDate();
+  const generatedAt = nowIso();
   const rows = await dailyChallengeRows(db, '', today);
   const challenges = await completeDailyChallenges(db, '', today, rows);
   const advancedChallenge = await slackLv3Challenge(db, today);
-  const { start, end } = kstDayBounds(today);
   const snapshotCreatedAtInput = cleanText(requestUrl.searchParams.get('snapshotCreatedAt'));
   let snapshotCreatedAt: string | null = null;
   if (snapshotCreatedAtInput) {
@@ -1231,6 +1245,7 @@ async function slackDigest(db: D1Database, requestUrl: URL) {
     }
     snapshotCreatedAt = snapshotCreatedAtInput;
   }
+  const windowStartedAt = snapshotCreatedAt ? null : await dailyDigestWindowStart(db, generatedAt);
   const jobs = await all<{
     company: string;
     title: string;
@@ -1257,13 +1272,16 @@ async function slackDigest(db: D1Database, requestUrl: URL) {
             AND rolling = 0
             AND deadline_at IS NOT NULL
             AND deadline_at > ?
-            AND created_at >= ? AND created_at < ?
+            AND created_at > ? AND created_at <= ?
           ORDER BY deadline_at, company_name, title, id`,
-    ...(snapshotCreatedAt ? [nowIso(), snapshotCreatedAt] : [nowIso(), start, end]),
+    ...(snapshotCreatedAt
+      ? [generatedAt, snapshotCreatedAt]
+      : [generatedAt, windowStartedAt, generatedAt]),
   );
   return {
     date: today,
-    generatedAt: nowIso(),
+    generatedAt,
+    windowStartedAt,
     snapshotCreatedAt,
     siteUrl: new URL('/', requestUrl).toString(),
     challenges: [

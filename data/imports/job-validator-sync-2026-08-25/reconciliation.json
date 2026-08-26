@@ -1,0 +1,552 @@
+{
+  "version": "1.0",
+  "mode": "VALIDATOR_CONFIRMED_SYNC",
+  "runAt": "2026-08-25T23:45:10+09:00",
+  "library": {
+    "fileName": "careerground-jobs-live-2026-08-25-final.json",
+    "libraryFileId": "libfile_fa0c4acd93dc81918f4876f594696131",
+    "exportedAt": "2026-08-25T22:28:34+09:00",
+    "sha256": "f059a369ad91af5c2de430dbccd8cb691344a8e5f6377875828eb0adb054253d",
+    "sourceRows": 195
+  },
+  "audit": {
+    "fileName": "careerground-merge-audit-2026-08-25.json",
+    "auditFileId": "libfile_94ea12674c6c819192d44b0bdbdbd34c",
+    "runGroupKey": "2026-08-25:d158c4d6466708d8",
+    "sha256": "3ccc97844d32284a0639f4b5423fb45531ab042d6b7df70234e6ed3312e45b58",
+    "qualityGate": "PASS"
+  },
+  "precisionRule": {
+    "maxSameSecondSkewMs": 999,
+    "appliedRows": 33,
+    "reason": "Library exportedAt is serialized to seconds while verifier timestamps retain milliseconds."
+  },
+  "comparison": {
+    "baselineRows": 135,
+    "matchedExistingRows": 135,
+    "newSourceRows": 60,
+    "addedActiveRows": 33,
+    "excludedNewNonActiveRows": 27,
+    "excludedStaleActiveRows": 0,
+    "conflictRows": 0,
+    "updatedExistingRows": 5,
+    "auditRowsNotLive": 3,
+    "deletedRows": 0,
+    "storedRowsAfter": 168
+  },
+  "added": [
+    {
+      "id": "job-14ed8e261f8c11978fc0f585",
+      "company_name": "㈜비아이매트릭스",
+      "title": "2026년 비아이매트릭스 하반기 신입 채용",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49843194"
+    },
+    {
+      "id": "job-10a83b5429f848785bbb829a",
+      "company_name": "㈜이노디스",
+      "title": "[이노디스] 웹개발 신입 채용",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49666437"
+    },
+    {
+      "id": "job-af155fb882d36114570fdc03",
+      "company_name": "EY한영",
+      "title": "Data Architect & Engineering 인턴",
+      "source_url": "https://inthiswork.com/archives/388855"
+    },
+    {
+      "id": "job-053177243bc041c512635e03",
+      "company_name": "KRAFTON",
+      "title": "[Game Research & Insights Dept.] Jr. 시선 데이터 분석 연구원 (경력무관 / 인턴)",
+      "source_url": "https://job-boards.greenhouse.io/krafton/jobs/8729078002"
+    },
+    {
+      "id": "job-28532ab0d580b3b16607dd5e",
+      "company_name": "KT",
+      "title": "2026년 대졸신입 채용 - NW 인프라운용",
+      "source_url": "https://jasoseol.com/recruit/105776"
+    },
+    {
+      "id": "job-54e8787caab2d8ca537595df",
+      "company_name": "TNH",
+      "title": "백엔드 개발자 (신입)",
+      "source_url": "https://jumpit.saramin.co.kr/position/54813669"
+    },
+    {
+      "id": "job-ba33033724e754dc37bbadb2",
+      "company_name": "The·K한국교직원공제회",
+      "title": "2026년도 신입직원 채용공고 - IT(금융개발)",
+      "source_url": "https://ktcu.applyin.co.kr/jobs/22909"
+    },
+    {
+      "id": "job-93cc868d1cb03d66e9fc19f4",
+      "company_name": "넥슨컴퍼니",
+      "title": "2026 넥토리얼 for Game Programmer",
+      "source_url": "https://careers.nexon.com/recruit/10221"
+    },
+    {
+      "id": "job-7c22f7b16cb81e8b068c5b5e",
+      "company_name": "노타(Nota)",
+      "title": "[Solution] AI Data Engineer Intern (체험형)",
+      "source_url": "https://career.nota.ai/ko/o/234147"
+    },
+    {
+      "id": "job-b353cdc8d0f6e50406bf6b32",
+      "company_name": "노타(Nota)",
+      "title": "[인턴] [Solution] AI Software Engineer",
+      "source_url": "https://www.wanted.co.kr/wd/341292"
+    },
+    {
+      "id": "job-dc745920200369562102d779",
+      "company_name": "뉴로코어",
+      "title": "Python Backend Engineer (신입)",
+      "source_url": "https://career.rememberapp.co.kr/job/posting/335774"
+    },
+    {
+      "id": "job-8b8ea8810591e289a28be80b",
+      "company_name": "레드블루",
+      "title": "[바디코디] Backend Engineer (신입·주니어)",
+      "source_url": "https://www.wanted.co.kr/wd/375632"
+    },
+    {
+      "id": "job-ea9e8a12b33aac8455b1ba69",
+      "company_name": "모플",
+      "title": "[인턴] AI 수요예측 서비스 Software Engineer",
+      "source_url": "https://www.wanted.co.kr/wd/371152"
+    },
+    {
+      "id": "job-30787b903290914609b066b2",
+      "company_name": "미래에셋자산운용",
+      "title": "OMS 개발 채용연계형 인턴",
+      "source_url": "https://career.miraeasset.com/job_posting/HGxXbnaC"
+    },
+    {
+      "id": "job-b75a8d19a9e1d445fae3497f",
+      "company_name": "버즈빌",
+      "title": "Backend Engineer",
+      "source_url": "https://career.rememberapp.co.kr/job/posting/334344"
+    },
+    {
+      "id": "job-e7d8c102efeef115d2a28f85",
+      "company_name": "보스반도체",
+      "title": "ML Systems Runtime Engineer [신입/병특]",
+      "source_url": "https://jumpit.saramin.co.kr/position/54709573"
+    },
+    {
+      "id": "job-0eda73f5384c142344a2461f",
+      "company_name": "비큐에이아이",
+      "title": "[인턴] AI개발자",
+      "source_url": "https://www.wanted.co.kr/wd/369323"
+    },
+    {
+      "id": "job-eda3ed9c8f9a7426b18bc229",
+      "company_name": "슈퍼센트",
+      "title": "[대규모 채용] 메타옵스 클라이언트 개발자(전환형 인턴)",
+      "source_url": "https://supercent.career.greetinghr.com/ko/o/170938"
+    },
+    {
+      "id": "job-d8d68779ea9f5528f3e5a60d",
+      "company_name": "슈퍼센트",
+      "title": "게임 클라이언트 개발자(신입)",
+      "source_url": "https://supercent.career.greetinghr.com/ko/o/170970"
+    },
+    {
+      "id": "job-324497f595af7c061930ba2a",
+      "company_name": "슈퍼센트",
+      "title": "게임 클라이언트 개발자(전환형 인턴)",
+      "source_url": "https://supercent.career.greetinghr.com/ko/o/171008"
+    },
+    {
+      "id": "job-d28220485c582ac52228cd7a",
+      "company_name": "슈퍼센트",
+      "title": "플랫폼 개발자(전환형 인턴)",
+      "source_url": "https://supercent.career.greetinghr.com/ko/o/170915"
+    },
+    {
+      "id": "job-6423005bcc22bbb91481f17f",
+      "company_name": "심넷",
+      "title": "IT·데이터 분석 신입",
+      "source_url": "https://www.saramin.co.kr/zf_user/jobs/relay/view?rec_idx=54808213"
+    },
+    {
+      "id": "job-724c71a22e12a309a54d80d8",
+      "company_name": "아이쓰리시스템",
+      "title": "SW 개발자 채용 (신입/경력)",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49827531"
+    },
+    {
+      "id": "job-d326b7faf737a8bbe38efd4e",
+      "company_name": "위미르",
+      "title": "백엔드 개발자 신입",
+      "source_url": "https://www.saramin.co.kr/zf_user/jobs/relay/view?rec_idx=54488548"
+    },
+    {
+      "id": "job-ccb46e45a7ad4161d62072de",
+      "company_name": "으뜸",
+      "title": "응용 소프트웨어 개발",
+      "source_url": "https://lab.incruit.com/jobs/2608200000293"
+    },
+    {
+      "id": "job-85ed6d0b485367c6b8f692cf",
+      "company_name": "제네시스네스트",
+      "title": "프론트엔드 개발자",
+      "source_url": "https://career.rememberapp.co.kr/job/posting/330737"
+    },
+    {
+      "id": "job-a4e8c7b60e998dac2674136d",
+      "company_name": "채널코퍼레이션",
+      "title": "Applied AI Engineer",
+      "source_url": "https://career.rememberapp.co.kr/job/posting/321069"
+    },
+    {
+      "id": "job-ff4bcad4ecf6da5dfd36c2ec",
+      "company_name": "컷백(Cutback)",
+      "title": "[인턴] AI Engineer",
+      "source_url": "https://www.wanted.co.kr/wd/324408"
+    },
+    {
+      "id": "job-7c651d33e050b16674f8e845",
+      "company_name": "케이존",
+      "title": "Backend Engineer (신입~3년차)",
+      "source_url": "https://www.wanted.co.kr/wd/381213"
+    },
+    {
+      "id": "job-3e4768b139030d5106c377b2",
+      "company_name": "코싸인온㈜",
+      "title": "Software Infrastructure Engineer 모집",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49583445"
+    },
+    {
+      "id": "job-c240476cc7fa5e1d56dacd9f",
+      "company_name": "하이퍼엑셀",
+      "title": "Device Driver Engineer (신입/경력)",
+      "source_url": "https://career.rememberapp.co.kr/job/posting/335828"
+    },
+    {
+      "id": "job-cdf95b1fad4e393fe562d3d2",
+      "company_name": "한국산업단지공단",
+      "title": "2026년 하반기 신입직원 및 경력직원 채용 - 컴퓨터·정보(4급 신입-일반)",
+      "source_url": "https://www.ncs.go.kr/blind/bl04/RecrtNotifDetail.do?recrtNo=20260821100437"
+    },
+    {
+      "id": "job-28fc242e85989bf5a513521a",
+      "company_name": "한화비전",
+      "title": "AI 연구원",
+      "source_url": "https://hanwhavision.ninehire.site/job_posting/zyigl8iW"
+    }
+  ],
+  "updated": [
+    {
+      "id": "job-cea1ba1532476101d85d44d8",
+      "company_name": "다우데이타",
+      "title": "2026년 3분기 신입/경력사원 모집 - IT기획운영팀 IT 운영(인턴)",
+      "source_url": "https://jasoseol.com/recruit/105528",
+      "before": {
+        "status": "ACTIVE",
+        "last_verified_at": "2026-08-23T21:12:40.000Z",
+        "updated_at": "2026-08-23T21:12:40.000Z"
+      },
+      "after": {
+        "status": "EXPIRED",
+        "last_verified_at": "2026-08-25T12:12:35.000Z",
+        "updated_at": "2026-08-25T12:12:35.000Z"
+      },
+      "auditDecisions": ["EXPIRED_CONFIRMED"]
+    },
+    {
+      "id": "job-856b65c06063f216d97cfb80",
+      "company_name": "스타픽시 스튜디오",
+      "title": "UI 컨텐츠 프로그래머",
+      "source_url": "https://starpixie.studio/recruit/ui-content-programmer",
+      "before": {
+        "summary": "게임 UI를 구현하는 신입 정규직으로 현재 공식 지원 링크는 열려 있으나 별도 마감일 또는 상시 문구가 없어 마감일 미정으로 구분했다.",
+        "last_verified_at": "2026-08-21T02:51:23.000Z",
+        "updated_at": "2026-08-21T02:51:23.000Z"
+      },
+      "after": {
+        "summary": "게임 UI를 구현하는 신입 정규직으로 공식 지원 페이지는 열려 있으나 현재 확인 가능한 마감일·상시 문구가 없어 마감일 미정으로 구분했다.",
+        "last_verified_at": "2026-08-25T12:04:39.000Z",
+        "updated_at": "2026-08-25T12:04:39.000Z"
+      },
+      "auditDecisions": ["DEADLINE_UNKNOWN_CONFIRMED", "DEADLINE_UNKNOWN_CONFIRMED"]
+    },
+    {
+      "id": "job-b63f6d92de595b8a56216da2",
+      "company_name": "㈜이에스티소프트",
+      "title": "[(주)이에스티소프트] IT 웹 개발자 신입/경력 채용",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49799973",
+      "before": {
+        "last_verified_at": "2026-08-24T14:34:04.000Z",
+        "status": "ACTIVE",
+        "updated_at": "2026-08-24T14:34:04.000Z"
+      },
+      "after": {
+        "last_verified_at": "2026-08-25T12:15:12Z",
+        "status": "EXPIRED",
+        "updated_at": "2026-08-25T12:15:12Z"
+      },
+      "auditDecisions": ["EXPIRED_CONFIRMED"]
+    },
+    {
+      "id": "job-292d372adafc184df16346ee",
+      "company_name": "넛지헬스케어",
+      "title": "[캐시워크] 백엔드 개발 채용전환형 인턴",
+      "source_url": "https://www.rocketpunch.com/jobs/156011",
+      "before": {
+        "deadline_at": null,
+        "rolling": 1,
+        "last_verified_at": "2026-08-20T00:52:55.000Z",
+        "updated_at": "2026-08-20T00:52:55.000Z"
+      },
+      "after": {
+        "deadline_at": "2026-10-20T14:59:00.000Z",
+        "rolling": 0,
+        "last_verified_at": "2026-08-25T12:04:39.000Z",
+        "updated_at": "2026-08-25T12:04:39.000Z"
+      },
+      "auditDecisions": ["ACTIVE_CONFIRMED"]
+    },
+    {
+      "id": "job-e124115602975a1b56282e3d",
+      "company_name": "아이시",
+      "title": "[isee] 소프트웨어 개발자 모집 (앱·웹·ERP 개발) (신입)",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49819763",
+      "before": {
+        "deadline_at": "2026-10-19T14:59:59.000Z",
+        "rolling": 0,
+        "last_verified_at": "2026-08-24T14:34:04.000Z",
+        "updated_at": "2026-08-24T14:34:04.000Z"
+      },
+      "after": {
+        "deadline_at": null,
+        "rolling": 1,
+        "last_verified_at": "2026-08-25T12:15:12Z",
+        "updated_at": "2026-08-25T12:15:12Z"
+      },
+      "auditDecisions": ["ACTIVE_CONFIRMED"]
+    }
+  ],
+  "excluded": [
+    {
+      "id": "job-09cdc20d8b1ca33ee5630690",
+      "company_name": "LG AI Research",
+      "title": "Backend Engineer Internship",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4595851005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-3631ff0c3066edbe229126a9",
+      "company_name": "LG AI Research",
+      "title": "Data Engineer Internship - Physical AI",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4725957005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-af0de9234513e793c29b16b3",
+      "company_name": "LG AI Research",
+      "title": "Large Language Model 연구 및 개발 Internship",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4180455005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-717093891e348577fb04f976",
+      "company_name": "LG AI Research",
+      "title": "Materials Intelligence Lab Internship",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4204208005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-b2420db5ea570c366a605f74",
+      "company_name": "LG AI Research",
+      "title": "NLP 개발인턴",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4024293005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-740e28db3429ea37d2ca9bca",
+      "company_name": "LG AI Research",
+      "title": "Platform Engineer Internship",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4685111005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-9e0f22722f59ede41845929c",
+      "company_name": "LG AI Research",
+      "title": "Research Internship - Physical AI",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4725958005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-b29a804bf08de9606c7d754f",
+      "company_name": "LG AI Research",
+      "title": "Research Internship - Robot Foundation Model",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4693138005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-46f4c96f8f2972f7ec95443b",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist Internship (Agentic AI)",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4638356005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-d87a6777423b6c79306a0c44",
+      "company_name": "LG AI Research",
+      "title": "Research/Engineering Internship - Reinforcement Learning",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4708922005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-163bc43ce038e35767684b1f",
+      "company_name": "LG AI Research",
+      "title": "독자AI파운데이션 모델 개발 Internship (World Best LLM)",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4593631005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-f623ee54dc9640256c7e9ae9",
+      "company_name": "LG AI Research",
+      "title": "AI Software Engineer - Self-driving Laboratory",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4724188005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-72dd22d43c8b5863c538a4bc",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist - Chemical Agentic AI",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4623079005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-a7dacb266b63b7c98b048527",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist - Physical AI & Robot Foundation Models",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4708924005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-f4380421ea70d60c8d6e150a",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist/Engineer - EXAONE Lab",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4179238005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-ca90bf1d7ae1483ac616bd45",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist/Engineer - NLP",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4012547005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-824aa9009bac2db6b6267b1f",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist/Engineer - STT/TTS",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4012563005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-794c036754fb07c3c71a620e",
+      "company_name": "LG AI Research",
+      "title": "Superintelligence Lab — AI-Native Engineering Project",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4722545005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-544b749197f23879d49acb7a",
+      "company_name": "BNK시스템",
+      "title": "2026년도 OP직무 채용공고",
+      "source_url": "https://linkareer.com/activity/342490",
+      "status": "EXPIRED",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-61b64a7d9e463f90c466e081",
+      "company_name": "지비아이티",
+      "title": "[금융IT] [신입] 증권 업무 HTS 운영 및 개발자를 찾습니다.",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49751734",
+      "status": "EXPIRED",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-201df80a535f1a2412c32eb7",
+      "company_name": "크레셈",
+      "title": "제어기술팀 SW개발 신입 채용",
+      "source_url": "https://jumpit.saramin.co.kr/position/54552437",
+      "status": "EXPIRED",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-3ab15746467e982b91ba1361",
+      "company_name": "42dot",
+      "title": "[MS/PhD Intern] AI Engineer (정규직 전환형)",
+      "source_url": "https://42dot.ai/en/careers/open-roles/c4af7536-c24f-4754-9fe9-d92d237403f3",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-1cb6233012476bf5b583d735",
+      "company_name": "FuriosaAI",
+      "title": "Algorithm - AI Research Engineer Intern",
+      "source_url": "https://furiosa.ai/career/algorithm-ai-research-engineer-intern-4005768201",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-df78a17bfcca7501a37ed974",
+      "company_name": "IBM",
+      "title": "2026 IBM Consulting Internship – Application Developer (AI Ops)",
+      "source_url": "https://careers.ibm.com/pt_BR/careers/JobDetail/2026-IBM-Consulting-Internship-Application-Developer-AI-Ops/127005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-c7faee9494d10ae3704ef210",
+      "company_name": "Moloco",
+      "title": "Machine Learning Engineer Intern (3-month internship)",
+      "source_url": "https://job-boards.greenhouse.io/moloco/jobs/7635045003",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-879220c74cab81f74a5392eb",
+      "company_name": "Qualcomm Korea",
+      "title": "Intern - Generative AI model personalization and efficient fine-tuning",
+      "source_url": "https://kr.linkedin.com/jobs/view/intern-deep-learning-researcher-at-qualcomm-4432928554",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-bf5c85f1d22098f758076fdf",
+      "company_name": "Qualcomm Korea",
+      "title": "Intern- Deep Learning R&D for Automated Driving",
+      "source_url": "https://kr.linkedin.com/jobs/view/intern-deep-learning-r-d-for-automated-driving-at-qualcomm-4327652815",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    }
+  ],
+  "auditRowsNotLive": [
+    "job-201df80a535f1a2412c32eb7",
+    "job-544b749197f23879d49acb7a",
+    "job-61b64a7d9e463f90c466e081"
+  ],
+  "conflicts": []
+}

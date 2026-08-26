@@ -124,6 +124,7 @@ describe('daily Slack digest', () => {
     expect(rendered.match(/🔥|💼/gu)).toHaveLength(2);
     expect(rendered).toContain('🔥 *오늘의 코딩 테스트*');
     expect(rendered).toContain('💼 *신규 채용 알림 공고 · 40건*');
+    expect(rendered).toContain('직전 일일 알림 이후 새롭게 등록된 마감일 확정 공고입니다.');
     expect(rendered).toContain('배움집');
     const blocks = messages[0].blocks;
     const jobsHeadingIndex = blocks.findIndex(
