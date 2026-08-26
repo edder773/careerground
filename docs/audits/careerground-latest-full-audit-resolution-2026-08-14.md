@@ -76,8 +76,10 @@ mutation을 개별 Zod schema로 바꾼 것은 아니므로 장기적으로 gene
 
 - `OPS-004`: 요청 경로의 runtime DDL과 데이터 정리를 제거했다. 요청은 migration 원장과 schema를
   읽기 전용으로 검사하며 불일치하면 503으로 닫힌다.
-- `OPS-007`, `OPS-008`, `OPS-009`, `API-002`: Worker/D1을 canonical로 유지하지만 Nest/Prisma
-  reference 제거, 127 KB router 분해, 대형 page/CSS 분할은 별도 구조 변경이다.
+- `OPS-007`, `OPS-008`, `OPS-009`, `API-002`: Worker/D1을 canonical로 유지한다. D1 API의 인증,
+  일일 문제·Slack, import와 공통 계약을 독립 모듈로 분리해 메인 라우터를 177,482B에서
+  126,401B로 줄였고 운영 Worker가 Nest/Prisma reference를 import하지 않는 구조 테스트를 추가했다.
+  Nest/Prisma source 자체 제거와 대형 page/CSS 추가 분할은 별도 구조 변경이다.
 - `OPS-014`, `OPS-015`: 운영 synthetic이 cold-start와 warm p95, schema/canary, 인증·보안 경계를
   구조화 JSON으로 보관한다. 실패 incident는 중복 없이 갱신되고 복구 시 닫힌다. 브라우저 RUM과
   외부 paging 연동은 아직 없다.
