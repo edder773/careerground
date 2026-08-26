@@ -46,6 +46,7 @@ generatedByAI: false
 | 08-25 | [런타임 스키마 파괴 경로와 채용공고 불변성 복구](./2026-08-25-runtime-schema-and-job-immutability.md)         | #58            | runtime DELETE 22→0, jobs 변경 경로 3→0   |
 | 08-25 | [Migration 권위 불일치와 Slack 중복 발송 차단](./2026-08-25-migration-authority-and-slack-idempotency.md)     | 이번 변경      | migration 권위 3→1, 중복 claim 차단       |
 | 08-26 | [운영 SLO 정적 헤더 오탐과 readiness 중복 조회](./2026-08-26-production-slo-observability.md)                 | #60            | 연속 오탐 8회 분석, readiness query 4→1   |
+| 08-26 | [D1 API 거대 라우터의 도메인 경계 분리](./2026-08-26-d1-api-module-boundaries.md)                             | #62            | 메인 라우터 28.78% 축소, 경계 테스트 4개  |
 
 Dependabot PR #4는 pnpm 11/Node 24를 지원하는 `pnpm/action-setup@6` 갱신이며 별도 장애가 없어 Sites runtime 문서의 도구 체인 맥락에 포함했다. PR #3 이전의 닫힌 #1/#2는 구현이 병합되지 않았으므로 운영 변경 기록에 포함하지 않았다.
 

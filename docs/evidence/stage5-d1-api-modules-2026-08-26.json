@@ -1,0 +1,86 @@
+{
+  "capturedAt": "2026-08-26T01:52:39Z",
+  "environment": "local-node-24.19.0-pnpm-11.21.0",
+  "scope": "D1 API module boundary refactor without route, schema or query-policy changes",
+  "baseline": {
+    "gitCommit": "1628e0cc4ad9f27402d99a417351672565d07ea4",
+    "routeOrchestrator": {
+      "path": "deployment/sites/d1-api.ts",
+      "lines": 4744,
+      "bytes": 177482
+    },
+    "targetedRegression": {
+      "files": 2,
+      "tests": 56,
+      "result": "pass"
+    }
+  },
+  "after": {
+    "routeOrchestrator": {
+      "path": "deployment/sites/d1-api.ts",
+      "lines": 3306,
+      "bytes": 126401,
+      "lineReduction": 1438,
+      "lineReductionPercent": 30.31,
+      "byteReduction": 51081,
+      "byteReductionPercent": 28.78
+    },
+    "extractedModules": [
+      {
+        "path": "deployment/sites/d1-api-contract.ts",
+        "lines": 53,
+        "bytes": 1273
+      },
+      {
+        "path": "deployment/sites/d1-api-utils.ts",
+        "lines": 73,
+        "bytes": 2539
+      },
+      {
+        "path": "deployment/sites/d1-auth.ts",
+        "lines": 382,
+        "bytes": 12020
+      },
+      {
+        "path": "deployment/sites/d1-daily-challenges.ts",
+        "lines": 561,
+        "bytes": 21902
+      },
+      {
+        "path": "deployment/sites/d1-imports.ts",
+        "lines": 490,
+        "bytes": 16555
+      }
+    ],
+    "moduleBoundaryTests": 4,
+    "targetedRegression": {
+      "files": 2,
+      "tests": 56,
+      "result": "pass"
+    },
+    "validation": {
+      "format": "pass",
+      "lint": "pass",
+      "typecheck": "pass",
+      "unitIntegrationFiles": 41,
+      "unitIntegrationTests": 171,
+      "productionBuild": "pass",
+      "bundleBudgetFailures": 0,
+      "initialRouteGzipBytes": 147773,
+      "performanceBudgetFailures": 0,
+      "jobsCursorP95Ms": 4.3,
+      "searchP95Ms": 32.33,
+      "recoveryForeignKeyViolations": 0,
+      "recoveryChecksumMatched": true,
+      "e2eTests": 56,
+      "productionSloChecks": null
+    },
+    "slackRequests": 0
+  },
+  "interpretation": [
+    "The source-size reduction measures the orchestration file, not the total amount of source code.",
+    "No runtime performance improvement is claimed from this structural refactor.",
+    "The Nest and Prisma reference application remains in the monorepo, but the production Worker boundary test rejects imports from it.",
+    "The refactor does not change D1 schema, SQL text, public routes or Slack delivery behavior."
+  ]
+}
