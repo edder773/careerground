@@ -51,6 +51,20 @@ const requestFixture = ({ ready = healthyReady, html = staticHtml, readinessMs =
     if (path === '/api/v1/auth/me') {
       return { response: jsonResponse({ code: 'UNAUTHORIZED' }, { status: 401 }), durationMs: 90 };
     }
+    if (path === '/api/v1/auth/config') {
+      return {
+        response: jsonResponse({
+          provider: 'GOOGLE',
+          clientId: '790295034558-q9a41jpu912age0eo0dpdu5pcdh1ipo5.apps.googleusercontent.com',
+          identityScriptUrl: 'https://accounts.google.com/gsi/client',
+          jwksUrl: 'https://www.googleapis.com/oauth2/v3/certs',
+        }),
+        durationMs: 30,
+      };
+    }
+    if (url === 'https://www.googleapis.com/oauth2/v3/certs') {
+      return { response: jsonResponse({ keys: [{ kid: 'google-key-1' }] }), durationMs: 40 };
+    }
     if (path === '/favicon.svg') {
       return { response: new globalThis.Response('<svg/>', { status: 200 }), durationMs: 20 };
     }
@@ -71,7 +85,7 @@ describe('production SLO checker', () => {
     expect(report.latency.readinessColdStartMs).toBe(110);
     expect(report.latency.readinessWarmP95Ms).toBe(140);
     expect(report.schema?.appliedVersion).toBe('0035_sync_validator_jobs_20260825');
-    expect(request).toHaveBeenCalledTimes(7);
+    expect(request).toHaveBeenCalledTimes(9);
     expect(formatSloSummary(report)).toContain('Result: **PASS**');
   });
 
@@ -143,5 +157,37 @@ describe('production SLO checker', () => {
     expect(report.passed).toBe(false);
     expect(report.failures).toContain('static-favicon.request: network timeout');
     expect(report.checks.some((check) => check.id === 'auth-boundary.contract')).toBe(true);
+  });
+
+  it('fails when the deployed Google client configuration or provider keys are unavailable', async () => {
+    const fixture = requestFixture();
+    const request = vi.fn(async (url, init) => {
+      const path = new globalThis.URL(url).pathname;
+      if (path === '/api/v1/auth/config') {
+        return {
+          response: jsonResponse({
+            provider: 'GOOGLE',
+            clientId: 'wrong-client.apps.googleusercontent.com',
+            identityScriptUrl: 'https://accounts.google.com/gsi/client',
+            jwksUrl: 'https://www.googleapis.com/oauth2/v3/certs',
+          }),
+          durationMs: 30,
+        };
+      }
+      if (url === 'https://www.googleapis.com/oauth2/v3/certs') {
+        return { response: jsonResponse({ keys: [] }), durationMs: 40 };
+      }
+      return fixture(url, init);
+    });
+
+    const report = await runProductionSlo({ request, readinessSamples: 1 });
+
+    expect(report.passed).toBe(false);
+    expect(
+      report.failures.some((failure) => failure.startsWith('google-auth.config-contract:')),
+    ).toBe(true);
+    expect(
+      report.failures.some((failure) => failure.startsWith('google-auth.jwks-contract:')),
+    ).toBe(true);
   });
 });

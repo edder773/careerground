@@ -1,0 +1,69 @@
+{
+  "schema": "careerground-operations-hardening-evidence/v1",
+  "capturedAt": "2026-08-26T06:37:36.155Z",
+  "baseline": {
+    "dailyDigestExpectedKst": "08:01",
+    "recentScheduledRuns": [
+      {
+        "runId": 32673657622,
+        "expectedAt": "2026-08-23T23:01:00.000Z",
+        "observedAt": "2026-08-23T23:27:25.000Z",
+        "delayMinutes": 26.42
+      },
+      {
+        "runId": 32788847328,
+        "expectedAt": "2026-08-24T23:01:00.000Z",
+        "observedAt": "2026-08-24T23:19:54.000Z",
+        "delayMinutes": 18.9
+      },
+      {
+        "runId": 32910482908,
+        "expectedAt": "2026-08-25T23:01:00.000Z",
+        "observedAt": "2026-08-25T23:22:39.000Z",
+        "delayMinutes": 21.65
+      }
+    ],
+    "medianDelayMinutes": 21.65,
+    "sloScheduleMinutes": 360,
+    "automaticScheduleDelayIncident": false,
+    "scheduledRecoveryDrill": false
+  },
+  "after": {
+    "scheduleDelayBudgetMinutes": 15,
+    "automaticScheduleDelayIncident": true,
+    "sloScheduleMinutes": 60,
+    "theoreticalMaximumDetectionIntervalReductionPercent": 83.33,
+    "googleAuthChecks": [
+      "public provider configuration",
+      "expected OAuth client ID",
+      "Google Identity script URL",
+      "Google public JWKS reachability and non-empty key set"
+    ],
+    "scheduledRecoveryDrill": {
+      "schedule": "Monday 04:41 Asia/Seoul",
+      "artifactRetentionDays": 30,
+      "scope": "local D1-compatible SQLite snapshot and isolated restore"
+    }
+  },
+  "recoveryDrill": {
+    "status": "pass",
+    "snapshot": {
+      "bytes": 2011136,
+      "pages": 491,
+      "durationMs": 2.47
+    },
+    "restore": {
+      "pages": 491,
+      "durationMs": 2.23,
+      "rpoMutations": 0
+    },
+    "foreignKeyViolations": 0,
+    "countMismatch": [],
+    "fixtureChecksumMatched": true
+  },
+  "limitations": [
+    "The Sites connector does not expose production D1 export or restore operations.",
+    "No controlled Google account is stored in CI, so the real Google consent and account handshake remains a manual check.",
+    "GitHub Actions queue delay is detected and reported but cannot be eliminated by repository code."
+  ]
+}

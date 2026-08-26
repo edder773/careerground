@@ -1,0 +1,119 @@
+name: D1 recovery drill
+
+on:
+  schedule:
+    - cron: '41 4 * * 1'
+      timezone: 'Asia/Seoul'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: d1-recovery-drill
+  cancel-in-progress: true
+
+jobs:
+  recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.21.0
+          run_install: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Restore an isolated D1-compatible snapshot
+        id: recovery
+        continue-on-error: true
+        env:
+          RECOVERY_OUTPUT_FILE: work/operations/recovery-drill.json
+        run: pnpm recovery:drill
+
+      - name: Upload redacted recovery evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v6
+        with:
+          name: recovery-drill-${{ github.run_id }}
+          path: work/operations/recovery-drill.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Open or update the recovery incident
+        if: always() && steps.recovery.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/github-script@v8
+        env:
+          INCIDENT_TITLE: '[운영 경보] D1 복구 훈련 실패'
+          REPORT_PATH: work/operations/recovery-drill.json
+        with:
+          script: |
+            const fs = require('fs');
+            const title = process.env.INCIDENT_TITLE;
+            const report = fs.existsSync(process.env.REPORT_PATH)
+              ? JSON.parse(fs.readFileSync(process.env.REPORT_PATH, 'utf8'))
+              : {};
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              ...context.repo,
+              state: 'open',
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              '개인정보가 없는 격리 D1 호환 snapshot 복구 훈련이 실패했습니다.',
+              '',
+              `- 감지 시각: ${report.checkedAt || new Date().toISOString()}`,
+              `- 실행: ${runUrl}`,
+              `- 상태: ${report.status || 'report unavailable'}`,
+              `- FK 위반: ${report.integrity?.foreignKeyViolationsAfter ?? '측정 실패'}`,
+              `- 건수 불일치: ${(report.integrity?.countMismatch || []).join(', ') || '없음'}`,
+              '',
+              `원본 JSON은 실행의 \`recovery-drill-${context.runId}\` 아티팩트에 30일간 보관됩니다.`,
+            ].join('\n');
+            if (existing) {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: existing.number, body });
+            } else {
+              await github.rest.issues.create({ ...context.repo, title, body });
+            }
+
+      - name: Close the recovery incident after a successful drill
+        if: always() && steps.recovery.outcome == 'success'
+        continue-on-error: true
+        uses: actions/github-script@v8
+        env:
+          INCIDENT_TITLE: '[운영 경보] D1 복구 훈련 실패'
+        with:
+          script: |
+            const title = process.env.INCIDENT_TITLE;
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              ...context.repo,
+              state: 'open',
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
+            if (!existing) return;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: existing.number,
+              body: `격리 복구 훈련이 정상화되었습니다.\n\n- 확인: ${new Date().toISOString()}\n- 실행: ${runUrl}`,
+            });
+            await github.rest.issues.update({
+              ...context.repo,
+              issue_number: existing.number,
+              state: 'closed',
+              state_reason: 'completed',
+            });
+
+      - name: Fail when the recovery drill fails
+        if: always() && steps.recovery.outcome == 'failure'
+        run: exit 1

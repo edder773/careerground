@@ -21,6 +21,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: daily-careerground-slack-digest
@@ -35,7 +36,97 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version-file: '.node-version'
+
+      - name: Measure the 08:01 KST schedule delay
+        id: schedule_delay
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SCHEDULE_EXPECTED_HOUR: '8'
+          SCHEDULE_EXPECTED_MINUTE: '1'
+          SCHEDULE_DELAY_BUDGET_MINUTES: '15'
+          SCHEDULE_DELAY_OUTPUT_FILE: work/operations/daily-schedule-delay.json
+        run: node scripts/operations/check-schedule-delay.mjs
+
+      - name: Upload schedule delay evidence
+        if: github.event_name == 'schedule' && always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v6
+        with:
+          name: daily-schedule-delay-${{ github.run_id }}
+          path: work/operations/daily-schedule-delay.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Open or update the schedule delay incident
+        if: always() && github.event_name == 'schedule' && steps.schedule_delay.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/github-script@v8
+        env:
+          INCIDENT_TITLE: '[운영 경보] Daily Slack digest 예약 지연'
+          REPORT_PATH: work/operations/daily-schedule-delay.json
+        with:
+          script: |
+            const fs = require('fs');
+            const title = process.env.INCIDENT_TITLE;
+            const report = fs.existsSync(process.env.REPORT_PATH)
+              ? JSON.parse(fs.readFileSync(process.env.REPORT_PATH, 'utf8'))
+              : {};
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              ...context.repo,
+              state: 'open',
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              '오전 8시 1분 KST 예약 실행이 허용 지연 시간을 넘겼습니다. 메시지 전송은 계속 시도합니다.',
+              '',
+              `- 예정 시각: ${report.expectedAt || '측정 실패'}`,
+              `- 감지 시각: ${report.observedAt || new Date().toISOString()}`,
+              `- 지연: ${report.delayMinutes ?? '측정 실패'}분 (기준 ${report.thresholdMinutes ?? 15}분)`,
+              `- 실행: ${runUrl}`,
+              '',
+              `원본 JSON은 실행의 \`daily-schedule-delay-${context.runId}\` 아티팩트에 30일간 보관됩니다.`,
+            ].join('\n');
+            if (existing) {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: existing.number, body });
+            } else {
+              await github.rest.issues.create({ ...context.repo, title, body });
+            }
+
+      - name: Close the schedule delay incident after an on-time start
+        if: always() && github.event_name == 'schedule' && steps.schedule_delay.outcome == 'success'
+        continue-on-error: true
+        uses: actions/github-script@v8
+        env:
+          INCIDENT_TITLE: '[운영 경보] Daily Slack digest 예약 지연'
+        with:
+          script: |
+            const title = process.env.INCIDENT_TITLE;
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              ...context.repo,
+              state: 'open',
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
+            if (!existing) return;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: existing.number,
+              body: `예약 실행이 15분 이내로 정상화되었습니다.\n\n- 확인: ${new Date().toISOString()}\n- 실행: ${runUrl}`,
+            });
+            await github.rest.issues.update({
+              ...context.repo,
+              issue_number: existing.number,
+              state: 'closed',
+              state_reason: 'completed',
+            });
+
       - name: Send CareerGround digest
+        id: digest
+        continue-on-error: true
         env:
           CAREERGROUND_DIGEST_URL: https://careerground-workspace.edder773.chatgpt.site/api/v1/internal/slack-digest
           CAREERGROUND_DIGEST_TOKEN: ${{ secrets.CAREERGROUND_DIGEST_TOKEN }}
@@ -45,3 +136,67 @@ jobs:
           SLACK_DIGEST_SNAPSHOT_CREATED_AT: ${{ github.event_name == 'workflow_dispatch' && inputs.snapshot_created_at || '' }}
           SLACK_DIGEST_JOBS_ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.jobs_only || false }}
         run: node scripts/slack/send-daily-digest.mjs
+
+      - name: Open or update the digest delivery incident
+        if: always() && steps.digest.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/github-script@v8
+        env:
+          INCIDENT_TITLE: '[운영 경보] Daily Slack digest 전송 실패'
+        with:
+          script: |
+            const title = process.env.INCIDENT_TITLE;
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              ...context.repo,
+              state: 'open',
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              'CareerGround 일일 요약 전송이 실패했습니다. 민감한 token과 webhook 원문은 기록하지 않습니다.',
+              '',
+              `- 감지 시각: ${new Date().toISOString()}`,
+              `- 기준 커밋: \`${context.sha}\``,
+              `- 실행: ${runUrl}`,
+              '',
+              'Slack 4xx, digest API 인증, 또는 UNCERTAIN delivery 상태를 실행 로그의 상태 코드로 확인하세요.',
+            ].join('\n');
+            if (existing) {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: existing.number, body });
+            } else {
+              await github.rest.issues.create({ ...context.repo, title, body });
+            }
+
+      - name: Close the digest delivery incident after recovery
+        if: always() && steps.digest.outcome == 'success'
+        continue-on-error: true
+        uses: actions/github-script@v8
+        env:
+          INCIDENT_TITLE: '[운영 경보] Daily Slack digest 전송 실패'
+        with:
+          script: |
+            const title = process.env.INCIDENT_TITLE;
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              ...context.repo,
+              state: 'open',
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
+            if (!existing) return;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: existing.number,
+              body: `일일 요약 전송이 정상화되었습니다.\n\n- 확인: ${new Date().toISOString()}\n- 실행: ${runUrl}`,
+            });
+            await github.rest.issues.update({
+              ...context.repo,
+              issue_number: existing.number,
+              state: 'closed',
+              state_reason: 'completed',
+            });
+
+      - name: Fail when digest delivery fails
+        if: always() && steps.digest.outcome == 'failure'
+        run: exit 1

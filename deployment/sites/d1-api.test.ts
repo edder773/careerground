@@ -108,6 +108,30 @@ describe('Sites D1 API', () => {
     expect(health.response.headers.get('server-timing')).toMatch(/^app;dur=\d+\.\d$/);
     expect(Number(health.response.headers.get('x-response-time-ms'))).toBeGreaterThanOrEqual(0);
 
+    const authConfig = await call(
+      '/api/v1/auth/config',
+      {},
+      {},
+      {
+        GOOGLE_CLIENT_ID: 'operations-client.apps.googleusercontent.com',
+      },
+    );
+    expect(authConfig.response.status).toBe(200);
+    expect(authConfig.body).toEqual({
+      provider: 'GOOGLE',
+      clientId: 'operations-client.apps.googleusercontent.com',
+      identityScriptUrl: 'https://accounts.google.com/gsi/client',
+      jwksUrl: 'https://www.googleapis.com/oauth2/v3/certs',
+    });
+
+    const authConfigMutation = await call(
+      '/api/v1/auth/config',
+      { method: 'POST', body: '{}' },
+      {},
+    );
+    expect(authConfigMutation.response.status).toBe(405);
+    expect(authConfigMutation.response.headers.get('allow')).toBe('GET');
+
     const member = await call('/api/v1/auth/me', {}, memberHeaders);
     expect(member.body).toMatchObject({ user: { role: 'MEMBER', onboardingCompleted: false } });
 

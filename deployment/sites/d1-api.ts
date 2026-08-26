@@ -65,7 +65,12 @@ import {
   type CursorPage,
 } from './d1-api-utils.js';
 import { readRuntimeSchema } from './runtime-schema.js';
-import { GOOGLE_CLIENT_ID, verifyGoogleCredential, type GoogleIdentity } from './google-auth.js';
+import {
+  GOOGLE_CLIENT_ID,
+  GOOGLE_JWKS_URL,
+  verifyGoogleCredential,
+  type GoogleIdentity,
+} from './google-auth.js';
 
 const codeLanguages = new Set(['python', 'java', 'javascript', 'cpp']);
 const solutionLanguages = new Set([...codeLanguages, 'sql']);
@@ -3116,6 +3121,25 @@ export async function handleD1Api(request: Request, env: D1Env) {
         responseJson(
           { status: ready ? 'ok' : 'not-ready', database: 'd1', schema, canary },
           ready ? 200 : 503,
+          requestId,
+        ),
+      );
+    }
+    if (url.pathname === '/api/v1/auth/config') {
+      if (request.method !== 'GET') {
+        throw new RouteError(405, 'GET 요청만 허용됩니다.', 'METHOD_NOT_ALLOWED', undefined, {
+          allow: 'GET',
+        });
+      }
+      return finish(
+        responseJson(
+          {
+            provider: 'GOOGLE',
+            clientId: env.GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID,
+            identityScriptUrl: 'https://accounts.google.com/gsi/client',
+            jwksUrl: GOOGLE_JWKS_URL,
+          },
+          200,
           requestId,
         ),
       );

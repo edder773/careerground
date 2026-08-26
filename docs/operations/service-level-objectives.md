@@ -1,7 +1,7 @@
 # 운영 서비스 수준 목표
 
 CareerGround 운영 기준은 Sites Worker + D1 단일 경로다. GitHub Actions의
-`Production SLO smoke`가 6시간마다 운영 경계를 확인한다. 실패하면 같은 제목의 열린 GitHub
+`Production SLO smoke`가 매시간 운영 경계를 확인한다. 실패하면 같은 제목의 열린 GitHub
 incident를 새로 만들거나 갱신하고, 정상화된 첫 실행이 해당 incident를 닫는다. 같은 장애로
 이슈를 계속 늘리지 않는다.
 
@@ -13,6 +13,7 @@ incident를 새로 만들거나 갱신하고, 정상화된 첫 실행이 해당 
 | 정적 보안 정책         | CSP·referrer fallback     | 배포 HTML의 `meta` 정책                                   |
 | API 보안·관측 헤더     | 필수 정책·request ID 존재 | CSP, frame, permissions, nosniff, referrer, server-timing |
 | 비로그인 개인 API 경계 | 항상 거부                 | `/auth/me` HTTP 401 + `UNAUTHORIZED` 계약                 |
+| Google 인증 구성       | 공급자·client·JWKS 정상   | `/auth/config` 계약 + Google 공개 JWKS key 1개 이상       |
 | 합성 API p95           | endpoint별 150~250ms 이하 | `pnpm performance:budget`                                 |
 | cursor 응답 크기       | 40~80KB 이하              | `pnpm performance:budget`                                 |
 | 운영 웹 초기 gzip      | 180KB 이하                | `pnpm bundle:budget`                                      |
@@ -36,5 +37,10 @@ pnpm slo:check
 ```
 
 외부 왕복 측정은 실행 runner와 edge 위치의 영향을 받는다. 첫 표본은 cold-start 경계로 분리하고,
-후속 표본만 warm p95로 계산한다. 브라우저 LCP·INP·CLS와 실제 로그인 synthetic은 이 검사 범위가
-아니므로 별도의 RUM 또는 통제된 테스트 계정이 마련되기 전까지 완료로 주장하지 않는다.
+후속 표본만 warm p95로 계산한다. 브라우저 LCP·INP·CLS와 실제 Google 계정으로 동의 화면을
+통과하는 synthetic은 이 검사 범위가 아니다. 대신 공개 client 설정, Google Identity script 허용
+정책, Google JWKS 도달성, 비로그인 세션 경계를 매시간 검사한다. 통제된 테스트 계정이 마련되기
+전까지 실제 계정 로그인 자동화를 완료로 주장하지 않는다.
+
+점검 주기를 6시간에서 1시간으로 줄여 예약 점검 기준 최악 감지 간격을 360분에서 60분으로
+줄였다. 이는 구성상 83.33% 감소이며 GitHub Actions queue 지연은 별도 변수다.
