@@ -3,8 +3,8 @@ title: D1 API 거대 라우터의 도메인 경계 분리
 date: 2026-08-26
 tags: [audit, architecture, d1, worker, refactor]
 generatedByAI: false
-pr: pending
-commit: pending
+pr: 62
+commit: 2c20460e905b16f54ef68cd08eb081d6ca398db4
 evidence: docs/evidence/stage5-d1-api-modules-2026-08-26.json
 ---
 
