@@ -30,7 +30,7 @@ type GoogleTokenPayload = {
 type GoogleJsonWebKey = JsonWebKey & { kid?: string; kty?: string };
 type JsonWebKeySet = { keys?: GoogleJsonWebKey[] };
 
-const GOOGLE_JWKS_URL = 'https://www.googleapis.com/oauth2/v3/certs';
+export const GOOGLE_JWKS_URL = 'https://www.googleapis.com/oauth2/v3/certs';
 const GOOGLE_ISSUERS = new Set(['accounts.google.com', 'https://accounts.google.com']);
 const CLOCK_SKEW_SECONDS = 60;
 let cachedKeys: { expiresAt: number; keys: GoogleJsonWebKey[] } | null = null;

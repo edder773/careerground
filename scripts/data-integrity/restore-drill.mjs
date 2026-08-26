@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto';
+import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { mkdtemp, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import process from 'node:process';
 import { backup, DatabaseSync } from 'node:sqlite';
 import { performance } from 'node:perf_hooks';
@@ -189,7 +190,29 @@ try {
       'This drill validates the application schema and D1-compatible SQLite recovery path without copying production personal data.',
     ],
   };
-  process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+  const serialized = `${JSON.stringify(report, null, 2)}\n`;
+  process.stdout.write(serialized);
+  if (process.env.RECOVERY_OUTPUT_FILE) {
+    const outputPath = resolve(process.env.RECOVERY_OUTPUT_FILE);
+    mkdirSync(dirname(outputPath), { recursive: true });
+    writeFileSync(outputPath, serialized, 'utf8');
+  }
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    appendFileSync(
+      process.env.GITHUB_STEP_SUMMARY,
+      [
+        '## D1-compatible recovery drill',
+        '',
+        `- Result: **${report.status.toUpperCase()}**`,
+        `- Snapshot: ${report.snapshot.pages} pages / ${report.snapshot.bytes} bytes / ${report.snapshot.durationMs} ms`,
+        `- Restore: ${report.restore.pages} pages / ${report.restore.durationMs} ms`,
+        `- RPO mutation: ${report.restore.rpoMutations}`,
+        `- Foreign key violations: ${report.integrity.foreignKeyViolationsAfter}`,
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+  }
   if (!passed) process.exitCode = 1;
 } finally {
   await rm(workingDirectory, { recursive: true, force: true });

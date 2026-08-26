@@ -6,6 +6,9 @@ import { pathToFileURL, URL } from 'node:url';
 
 const DEFAULT_BASE_URL = 'https://careerground-workspace.edder773.chatgpt.site';
 const DEFAULT_OUTPUT = 'work/operations/production-slo.json';
+const GOOGLE_CLIENT_ID = '790295034558-q9a41jpu912age0eo0dpdu5pcdh1ipo5.apps.googleusercontent.com';
+const GOOGLE_IDENTITY_SCRIPT_URL = 'https://accounts.google.com/gsi/client';
+const GOOGLE_JWKS_URL = 'https://www.googleapis.com/oauth2/v3/certs';
 
 const timedRequest = async (url, init = {}) => {
   const startedAt = performance.now();
@@ -86,7 +89,8 @@ export async function runProductionSlo({
   };
   const perform = async (id, path, init) => {
     try {
-      return await request(`${normalizedBase}${path}`, init);
+      const target = path.startsWith('https://') ? path : `${normalizedBase}${path}`;
+      return await request(target, init);
     } catch (error) {
       record(id, false, error instanceof Error ? error.message : String(error));
       return null;
@@ -252,6 +256,39 @@ export async function runProductionSlo({
       'auth-boundary.contract',
       payload?.code === 'UNAUTHORIZED',
       `code=${payload?.code || 'invalid'}`,
+    );
+  }
+
+  const authConfigResult = await perform('google-auth.config-request', '/api/v1/auth/config');
+  if (authConfigResult) {
+    const payload = await safeJson(authConfigResult.response);
+    record(
+      'google-auth.config-status',
+      authConfigResult.response.status === 200,
+      `HTTP ${authConfigResult.response.status}`,
+    );
+    record(
+      'google-auth.config-contract',
+      payload?.provider === 'GOOGLE' &&
+        payload?.clientId === GOOGLE_CLIENT_ID &&
+        payload?.identityScriptUrl === GOOGLE_IDENTITY_SCRIPT_URL &&
+        payload?.jwksUrl === GOOGLE_JWKS_URL,
+      `provider=${payload?.provider || 'invalid'} client=${payload?.clientId === GOOGLE_CLIENT_ID ? 'expected' : 'invalid'}`,
+    );
+  }
+
+  const googleKeysResult = await perform('google-auth.jwks-request', GOOGLE_JWKS_URL);
+  if (googleKeysResult) {
+    const payload = await safeJson(googleKeysResult.response);
+    record(
+      'google-auth.jwks-status',
+      googleKeysResult.response.status === 200,
+      `HTTP ${googleKeysResult.response.status}`,
+    );
+    record(
+      'google-auth.jwks-contract',
+      Array.isArray(payload?.keys) && payload.keys.length > 0,
+      `keys=${Array.isArray(payload?.keys) ? payload.keys.length : 'invalid'}`,
     );
   }
 

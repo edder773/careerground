@@ -37,10 +37,14 @@ pnpm recovery:drill
 이 명령은 전체 migration/seed를 적용한 원본에 비식별 사용자·폴더 fixture를 추가한 뒤,
 Node SQLite backup API로 snapshot을 만들고 다시 별도 DB로 복원한다. 복원 전후 테이블 건수,
 민감 원문 대신 SHA-256, `integrity_check`, `foreign_key_check`를 비교하고 임시 파일은 즉시
-삭제한다. 최신 2026-08-14 실행은 316 pages/1,294,336 bytes를 1.60 ms에 snapshot하고 1.32 ms에 복원했으며,
+삭제한다. 최신 2026-08-26 실행은 491 pages/2,011,136 bytes를 2.47 ms에 snapshot하고 2.23 ms에 복원했으며,
 RPO mutation 0, FK 위반 0, 건수 차이 0으로 통과했다. 원본 결과는
-`docs/evidence/recovery-drill-2026-08-14.json`에 있다. 이 시간은 로컬 합성 측정이며 운영 RTO가
-아니다.
+`docs/evidence/operations-hardening-2026-08-26.json`에 있다. 이 시간은 로컬 합성 측정이며 운영
+RTO가 아니다.
+
+`.github/workflows/recovery-drill.yml`은 매주 월요일 오전 4시 41분 KST에 같은 격리 복구를
+수행하고 개인정보가 없는 구조화 결과만 30일간 artifact로 보관한다. 실패하면
+`[운영 경보] D1 복구 훈련 실패` 이슈를 하나만 열거나 갱신하고, 다음 성공 시 자동으로 닫는다.
 
 현재 설치된 Sites connector는 운영 DB export/restore 작업을 노출하지 않는다. 따라서 운영
 개인 데이터를 우회 추출하지 않았으며, 관리면에서 export 기능이 제공될 때 위 절차의 1~7을

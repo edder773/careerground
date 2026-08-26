@@ -2,6 +2,11 @@
 
 CareerGround는 GitHub Actions에서 평일 오전 8시 1분(Asia/Seoul, 대한민국 공휴일 제외)에 운영 Sites API를 조회하고 Slack Incoming Webhook으로 요약을 전송한다. 실행 장비가 GitHub이므로 개인 Mac이 꺼져 있어도 동작한다.
 
+GitHub Actions 예약 실행은 정확한 시각을 보장하지 않으므로 실제 시작 시각을 08:01과 비교한다.
+15분을 초과하면 메시지 전송은 계속 시도하되 `[운영 경보] Daily Slack digest 예약 지연` 이슈를
+하나만 열거나 갱신한다. 이후 15분 이내에 시작한 첫 예약 실행이 이슈를 자동으로 닫는다. 측정
+JSON은 `daily-schedule-delay-<run id>` artifact로 30일간 보관한다.
+
 ## 전송 내용
 
 - 오늘의 코딩 테스트 4개(Lv.1·Lv.2 알고리즘, 도전 Lv.3 알고리즘, SQL Lv.3~4)와 각 프로그래머스 원문 링크
@@ -35,6 +40,8 @@ GitHub 저장소의 **Actions → Daily CareerGround Slack digest → Run workfl
 3. 코딩 문제 링크는 프로그래머스 원문으로, 채용 링크는 각 채용 원문으로 이동한다.
 
 실패 시 Actions 로그의 HTTP 상태와 오류 코드만 확인한다. secret 원문을 출력하는 진단 코드는 추가하지 않는다.
+전송 실패는 `[운영 경보] Daily Slack digest 전송 실패` 이슈로 누적되고 다음 성공 시 자동으로
+닫힌다. 수동 실행도 전송 실패 감시 대상이지만 예약 지연 계산에서는 제외한다.
 
 발송 전에 Sites API가 `daily:YYYY-MM-DD` 또는 `snapshot:<createdAt>:jobs` 키를 D1에 원자적으로 claim한다. Slack이 명시적으로 거부한 경우만 `FAILED`로 기록해 재시도를 허용한다. 네트워크 timeout처럼 Slack 수신 여부를 알 수 없는 경우는 `UNCERTAIN`으로 기록하고 자동 재전송을 막는다. Slack 전송 성공 뒤 완료 API가 실패하더라도 기존 claim이 남으므로 다음 실행에서 같은 메시지를 다시 보내지 않는다.
 
@@ -46,5 +53,6 @@ GitHub 저장소의 **Actions → Daily CareerGround Slack digest → Run workfl
 | 채용 섹션 없음                    | 정상일 수 있음. 당일 신규 비상시 공고가 없으면 코딩 문제만 전송 |
 | `delivery-blocked`                | 이전 실행이 `CLAIMED` 또는 `UNCERTAIN`인지 운영 원장을 확인     |
 | `already-sent`                    | 같은 기준일·스냅샷이 이미 전송된 정상적인 중복 차단             |
+| 예약 실행 15분 초과               | schedule delay artifact와 GitHub Actions queue 상태를 확인      |
 
 구현은 [daily-slack-digest.yml](../../.github/workflows/daily-slack-digest.yml), [send-daily-digest.mjs](../../scripts/slack/send-daily-digest.mjs), Sites의 `/api/v1/internal/slack-digest/claim`, `/complete`, `/fail`에 있다.
