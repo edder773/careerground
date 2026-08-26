@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import styles from '../styles.css?raw';
+import styles from './foundation.css?raw';
 
 describe('learning modal readability contract', () => {
   it('uses a large desktop reading surface and legible type', () => {

@@ -1,0 +1,112 @@
+{
+  "capturedAt": "2026-08-26T05:05:27Z",
+  "environment": "local-node-24.19.0-pnpm-11.21.0",
+  "scope": "Split the largest React page and monolithic global stylesheet without changing browser, API, D1, or Slack behavior",
+  "baseline": {
+    "gitCommit": "f7581d1a2ef9e3bbc1cfec81ed65631a076bb195",
+    "jobsPage": {
+      "path": "apps/web/src/pages/JobsPage.tsx",
+      "lines": 1393,
+      "bytes": 53451
+    },
+    "globalStylesheet": {
+      "path": "apps/web/src/styles.css",
+      "lines": 7711,
+      "bytes": 133317,
+      "sha256": "80492ba28b5382a4385f7d92bcce2d2d8a225c0847e78ca094b5cf06fafe5a2f",
+      "whitespaceNormalizedSha256": "0b3bbea2a7e46e6cec63bd129d81407489f0ca0abf50d0fd4caafb054a0d72c5"
+    },
+    "webTests": {
+      "files": 15,
+      "tests": 31,
+      "result": "pass"
+    },
+    "initialRouteGzipBytes": 147773
+  },
+  "after": {
+    "jobsPage": {
+      "path": "apps/web/src/pages/JobsPage.tsx",
+      "lines": 791,
+      "bytes": 31985,
+      "lineReduction": 602,
+      "lineReductionPercent": 43.22,
+      "byteReduction": 21466,
+      "byteReductionPercent": 40.16
+    },
+    "extractedJobModules": [
+      {
+        "path": "apps/web/src/features/jobs/JobControls.tsx",
+        "lines": 419,
+        "bytes": 14683
+      },
+      {
+        "path": "apps/web/src/features/jobs/job-domain.ts",
+        "lines": 238,
+        "bytes": 8019
+      }
+    ],
+    "stylesheetManifest": {
+      "path": "apps/web/src/styles.css",
+      "lines": 6,
+      "bytes": 213
+    },
+    "stylesheetModules": [
+      { "path": "apps/web/src/styles/foundation.css", "lines": 3247, "bytes": 58041 },
+      { "path": "apps/web/src/styles/workspace.css", "lines": 1443, "bytes": 23471 },
+      { "path": "apps/web/src/styles/workflows.css", "lines": 727, "bytes": 11743 },
+      { "path": "apps/web/src/styles/jobs.css", "lines": 1637, "bytes": 28461 },
+      {
+        "path": "apps/web/src/styles/learning-library.css",
+        "lines": 321,
+        "bytes": 5673
+      },
+      {
+        "path": "apps/web/src/styles/final-overrides.css",
+        "lines": 332,
+        "bytes": 5924
+      }
+    ],
+    "stylesheetContent": {
+      "concatenatedLines": 7707,
+      "largestModuleLines": 3247,
+      "largestModuleReductionPercent": 57.89,
+      "concatenatedSha256": "9ca914b98fa772c6545e1f0053b796b89b35846ed4ed6461b7ff5df238396f1f",
+      "whitespaceNormalizedSha256": "0b3bbea2a7e46e6cec63bd129d81407489f0ca0abf50d0fd4caafb054a0d72c5",
+      "whitespaceNormalizedMatchesBaseline": true
+    },
+    "validation": {
+      "format": "pass",
+      "lint": "pass",
+      "typecheck": "pass",
+      "webTypecheck": "pass",
+      "webTestFiles": 16,
+      "webTests": 33,
+      "structuralBoundaryTests": 2,
+      "unitIntegrationFiles": 34,
+      "unitIntegrationTests": 140,
+      "contractsTests": 10,
+      "rootAndD1Tests": 97,
+      "d1SchemaDrift": 0,
+      "productionBuild": "pass",
+      "sitesWebBuild": "pass",
+      "bundleBudgetFailures": 0,
+      "initialRouteGzipBytes": 147769,
+      "largestJavaScriptGzipBytes": 95410,
+      "largestCssGzipBytes": 22548,
+      "performanceBudgetFailures": 0,
+      "jobsCursorP95Ms": 5.74,
+      "searchP95Ms": 33.16,
+      "recoveryForeignKeyViolations": 0,
+      "recoveryChecksumMatched": true,
+      "knownHighVulnerabilities": 0,
+      "e2eTests": 56
+    },
+    "slackRequests": 0
+  },
+  "interpretation": [
+    "The stylesheet modules preserve rule order and have the same whitespace-normalized SHA-256 as the former global stylesheet; formatting removes four trailing blank lines at split boundaries.",
+    "The JobsPage reduction measures the route orchestrator; total source grows slightly because explicit imports and module exports replace implicit same-file access.",
+    "The four-byte initial-route gzip difference is not treated as a runtime performance improvement.",
+    "No D1 schema, public API route, visual design, browser interaction, or Slack delivery payload changes in this stage."
+  ]
+}

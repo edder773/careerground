@@ -1,0 +1,1637 @@
+.jobs-heading {
+  align-items: flex-end;
+}
+
+.jobs-view-switch {
+  padding: 4px;
+  display: inline-flex;
+  gap: 3px;
+  background: #eef0f4;
+  border: 1px solid #e1e4e9;
+  border-radius: 12px;
+}
+
+.jobs-view-switch button {
+  min-width: 76px;
+  height: 34px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #59616a;
+  background: transparent;
+  border: 0;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.jobs-view-switch button.active {
+  color: #4e5db4;
+  background: white;
+  box-shadow: 0 3px 10px rgba(60, 67, 92, 0.1);
+}
+
+.jobs-view-switch svg {
+  width: 15px;
+}
+
+.multi-filter-root {
+  position: relative;
+}
+
+.job-filter-trigger {
+  min-height: 40px;
+  padding: 0 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #414957;
+  background: #fff;
+  border: 1px solid #d9dde4;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.job-filter-trigger > svg {
+  width: 16px;
+  color: #5665b9;
+}
+
+.job-filter-trigger > strong {
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  display: inline-grid;
+  place-items: center;
+  color: #fff;
+  background: #5867b9;
+  border-radius: 999px;
+  font-size: 9px;
+}
+
+.job-filter-trigger[data-state='open'] {
+  border-color: #7783c6;
+  box-shadow: 0 0 0 3px rgba(86, 101, 185, 0.14);
+}
+
+.job-filter-overlay {
+  position: fixed;
+  z-index: 109;
+  inset: 0;
+  background: rgba(24, 29, 39, 0.34);
+  backdrop-filter: blur(2px);
+  animation: filter-overlay-in 130ms ease-out;
+}
+
+.job-filter-panel {
+  position: fixed;
+  z-index: 110;
+  top: 84px;
+  left: 0;
+  right: 0;
+  width: min(760px, calc(100vw - 72px));
+  margin: 0 auto;
+  max-height: min(640px, calc(100dvh - 180px));
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  background: #fff;
+  border: 1px solid #dfe2e7;
+  border-radius: 15px;
+  box-shadow: 0 22px 60px rgba(32, 38, 52, 0.2);
+  animation: filter-menu-in 130ms ease-out;
+}
+
+.job-filter-panel > header,
+.job-filter-panel > footer {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.job-filter-panel > header {
+  border-bottom: 1px solid #e7e9ed;
+}
+
+.job-filter-panel > header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.job-filter-panel > header strong {
+  color: #2f3640;
+  font-size: 14px;
+}
+
+.job-filter-panel > header span {
+  color: #737b85;
+  font-size: 10px;
+}
+
+.job-filter-panel > header button {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  color: #656d76;
+  background: #f3f4f6;
+  border: 0;
+  border-radius: 50%;
+}
+
+.job-filter-panel > header button svg {
+  width: 15px;
+}
+
+.job-filter-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 15px 16px;
+  display: grid;
+  gap: 18px;
+}
+
+.job-filter-panel fieldset {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+
+.job-filter-panel legend {
+  margin-bottom: 9px;
+  color: #343c46;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.job-filter-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.job-filter-options label {
+  min-width: 0;
+  min-height: 36px;
+  padding: 7px 9px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #454d57;
+  background: #f8f9fa;
+  border: 1px solid #e6e8eb;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.job-filter-options label:has(input:checked) {
+  color: #4957a2;
+  background: #f0f2fb;
+  border-color: #c7cdec;
+}
+
+.job-filter-options input:checked + .multi-filter-check {
+  color: #fff;
+  background: #5867b9;
+  border-color: #5867b9;
+}
+
+.job-filter-options input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.job-filter-options label:focus-within {
+  outline: 3px solid rgba(86, 101, 185, 0.2);
+  outline-offset: 1px;
+}
+
+.job-filter-options label > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.job-filter-panel > footer {
+  justify-content: flex-end;
+  background: #fafafa;
+  border-top: 1px solid #e7e9ed;
+}
+
+.job-filter-panel > footer button {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.job-filter-clear {
+  color: #59616b;
+  background: #fff;
+  border: 1px solid #dfe2e6;
+}
+
+.job-filter-clear:disabled {
+  opacity: 0.45;
+}
+
+.job-filter-done {
+  color: #fff;
+  background: #5867b9;
+  border: 1px solid #5867b9;
+}
+
+.job-filter-chip {
+  min-height: 32px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #4f5da9;
+  background: #f0f2fb;
+  border: 1px solid #d9ddf2;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.job-filter-chip svg {
+  width: 12px;
+}
+
+.jobs-list-tools {
+  min-height: 48px;
+  margin-bottom: 10px;
+  padding: 7px 9px 7px 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid #e1e4e9;
+  border-radius: 12px;
+}
+
+.jobs-list-tools > strong {
+  margin-right: auto;
+  color: #3f4751;
+  font-size: 12px;
+}
+
+.jobs-sort-buttons,
+.jobs-font-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.jobs-sort-buttons > svg {
+  width: 15px;
+  margin-right: 3px;
+  color: #707985;
+}
+
+.jobs-font-buttons > span {
+  margin-right: 4px;
+  color: #616871;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.jobs-sort-buttons button,
+.jobs-font-buttons button {
+  min-height: 32px;
+  padding: 0 9px;
+  color: #616a74;
+  background: #f6f7f8;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.jobs-sort-buttons button.active,
+.jobs-font-buttons button.active {
+  color: #4c5bab;
+  background: #eef0fb;
+  border-color: #d5daf2;
+}
+
+.multi-filter-trigger {
+  min-width: 132px;
+  min-height: 38px;
+  padding: 6px 9px 6px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #444c55;
+  text-align: left;
+  background: #f7f8f9;
+  border: 1px solid #dfe2e6;
+  border-radius: 9px;
+}
+
+.multi-filter-trigger > span {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.multi-filter-trigger small {
+  color: #858c94;
+  font-size: 7px;
+  font-weight: 750;
+}
+
+.multi-filter-trigger strong {
+  overflow: hidden;
+  max-width: 180px;
+  color: #404751;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.multi-filter-trigger > svg {
+  width: 13px;
+  flex: 0 0 auto;
+  color: #707780;
+}
+
+.multi-filter-trigger[data-state='open'] {
+  background: #fff;
+  border-color: #7783c6;
+  box-shadow: 0 0 0 3px rgba(86, 101, 185, 0.14);
+}
+
+.multi-filter-menu {
+  position: absolute;
+  z-index: 110;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 220px;
+  max-height: min(280px, calc(100dvh - 190px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #dfe2e7;
+  border-radius: 11px;
+  box-shadow: 0 16px 44px rgba(32, 38, 52, 0.17);
+  animation: filter-menu-in 130ms ease-out;
+}
+
+.multi-filter-menu [role='menuitemcheckbox'],
+.multi-filter-clear {
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #424a53;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  font-size: 9px;
+  font-weight: 700;
+  outline: 0;
+  user-select: none;
+}
+
+.multi-filter-menu [role='menuitemcheckbox']:hover,
+.multi-filter-menu [role='menuitemcheckbox']:focus-visible,
+.multi-filter-clear:hover,
+.multi-filter-clear:focus-visible {
+  background: #f0f2f8;
+}
+
+.multi-filter-label {
+  display: block;
+  padding: 5px 8px 7px;
+  color: #7d848d;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.multi-filter-check {
+  width: 17px;
+  height: 17px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 0;
+  color: white;
+  background: #fff;
+  border: 1px solid #cfd4da;
+  border-radius: 5px;
+}
+
+.multi-filter-option[data-state='checked'] .multi-filter-check {
+  background: #5867b9;
+  border-color: #5867b9;
+}
+
+.multi-filter-check svg {
+  width: 12px;
+  height: 12px;
+  display: block;
+  flex: 0 0 12px;
+  margin: 0;
+}
+
+.multi-filter-menu [role='separator'] {
+  height: 1px;
+  margin: 5px 3px;
+  background: #e7e9ec;
+}
+
+.multi-filter-clear {
+  color: #5966ae;
+  justify-content: center;
+}
+
+@keyframes filter-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.98);
+  }
+}
+
+@keyframes filter-overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.jobs-refreshing {
+  margin-left: auto;
+  color: #6c737c;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.job-source {
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 12px;
+  padding: 9px 11px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  color: #5e6870;
+  background: #f5f6f8;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 9px;
+}
+
+.job-source-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.job-source-name svg {
+  width: 13px;
+  height: 13px;
+  color: #5362b8;
+}
+
+.job-source-name > span {
+  color: #8a9098;
+  font-size: 8px;
+  font-weight: 750;
+}
+
+.job-source-name strong {
+  color: #363c45;
+  font-size: 9px;
+}
+
+.job-source-host {
+  overflow: hidden;
+  max-width: 210px;
+  color: #5362b8;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.job-source-latest {
+  padding-left: 10px;
+  border-left: 1px solid #d9dce2;
+  white-space: nowrap;
+}
+
+.job-source.compact {
+  margin-top: 10px;
+  padding: 7px 9px;
+  background: white;
+}
+
+.job-card-schedule {
+  margin: 11px 0 3px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.job-card-schedule > div {
+  position: relative;
+  min-width: 0;
+  padding: 10px 11px;
+  display: grid;
+  gap: 3px;
+  background: #f7f8f9;
+  border: 1px solid #e5e8eb;
+  border-left-width: 4px;
+  border-radius: 9px;
+}
+
+.job-card-schedule .schedule-application {
+  border-left-color: #3d79cf;
+}
+
+.job-card-schedule .schedule-published {
+  background: #f7f4fc;
+  border-color: #e6def3;
+  border-left-color: #8065b8;
+}
+
+.job-card-schedule .schedule-deadline {
+  background: #fff7f7;
+  border-color: #efd9dc;
+  border-left-color: #d05f68;
+}
+
+.job-card-schedule .schedule-rolling {
+  background: #f2f9f5;
+  border-color: #d8ebe1;
+  border-left-color: #31906b;
+}
+
+.job-card-schedule .urgent {
+  background: #fff0f1;
+  border-color: #e9bbc0;
+  border-left-color: #be3f4b;
+}
+
+.job-card-schedule span {
+  color: #717a84;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.job-card-schedule strong {
+  overflow: hidden;
+  color: #343c45;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.job-card-schedule b {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  padding: 3px 5px;
+  color: #a53d47;
+  background: #fff;
+  border: 1px solid #e7c7ca;
+  border-radius: 5px;
+  font-size: 9px;
+}
+
+/* Recruitment typography starts larger and can be increased per device. */
+.jobs-page {
+  --jobs-xs: 10px;
+  --jobs-sm: 12px;
+  --jobs-md: 14px;
+  --jobs-lg: 18px;
+  --jobs-xl: 24px;
+}
+
+.jobs-page[data-font-size='large'] {
+  --jobs-xs: 11px;
+  --jobs-sm: 13px;
+  --jobs-md: 15px;
+  --jobs-lg: 20px;
+  --jobs-xl: 26px;
+}
+
+.jobs-page[data-font-size='largest'] {
+  --jobs-xs: 12px;
+  --jobs-sm: 14px;
+  --jobs-md: 16px;
+  --jobs-lg: 22px;
+  --jobs-xl: 28px;
+}
+
+.jobs-page .jobs-heading p,
+.jobs-page .job-main > p {
+  font-size: var(--jobs-sm);
+}
+
+.jobs-page .jobs-view-switch button,
+.jobs-page .job-filter-trigger,
+.jobs-page .job-filter-chip,
+.jobs-page .jobs-list-tools,
+.jobs-page .jobs-sort-buttons button,
+.jobs-page .jobs-font-buttons button,
+.jobs-page .job-actions button,
+.jobs-page .job-actions a,
+.jobs-page .job-details span,
+.jobs-page .job-source,
+.jobs-page .job-source-name strong,
+.jobs-page .job-source-name > span,
+.jobs-page .job-source-latest {
+  font-size: var(--jobs-xs);
+}
+
+.jobs-page .job-meta span,
+.jobs-page .job-card-schedule span,
+.jobs-page .calendar-weekdays span,
+.jobs-page .calendar-day > time,
+.jobs-page .job-calendar-legend span,
+.jobs-page .job-calendar-header span {
+  font-size: var(--jobs-xs);
+}
+
+.jobs-page .job-main h2 {
+  font-size: var(--jobs-lg);
+}
+
+.jobs-page .job-main > strong,
+.jobs-page .job-card-schedule strong,
+.jobs-page .job-calendar-header button,
+.jobs-page .rolling-job-summary strong,
+.jobs-page .rolling-job-summary small {
+  font-size: var(--jobs-sm);
+}
+
+.jobs-page .job-calendar-header h2 {
+  font-size: var(--jobs-xl);
+}
+
+.jobs-page .calendar-job,
+.jobs-page .calendar-job strong {
+  font-size: var(--jobs-xs);
+}
+
+.jobs-page .calendar-job span,
+.jobs-page .calendar-more {
+  font-size: max(9px, var(--jobs-xs));
+}
+
+.job-calendar-panel {
+  overflow: hidden;
+  background: white;
+  border: 1px solid #e2e4e8;
+  border-radius: 22px;
+  box-shadow: 0 14px 38px rgba(48, 53, 69, 0.06);
+}
+
+.job-calendar-header {
+  padding: 20px 22px 15px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.job-calendar-header span {
+  color: #616871;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.job-calendar-header h2 {
+  margin: 3px 0 0;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+
+.job-calendar-header nav {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.job-calendar-header button {
+  min-width: 34px;
+  height: 32px;
+  padding: 0 10px;
+  display: grid;
+  place-items: center;
+  color: #59616a;
+  background: #f6f7f8;
+  border: 1px solid #e3e5e8;
+  border-radius: 9px;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.job-calendar-header button:hover {
+  color: #4e5db4;
+  background: #eef0fa;
+}
+
+.job-calendar-header button svg {
+  width: 15px;
+}
+
+.job-calendar-legend {
+  padding: 0 22px 14px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.job-calendar-legend span,
+.job-modal-schedule span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #5d6670;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.job-calendar-legend span::before,
+.job-modal-schedule span::before {
+  width: 8px;
+  height: 8px;
+  border-radius: 3px;
+  content: '';
+}
+
+.job-calendar-legend .schedule-published::before,
+.job-modal-schedule .schedule-published span::before {
+  background: #8065b8;
+}
+
+.job-calendar-legend .schedule-application::before,
+.job-modal-schedule .schedule-application span::before {
+  background: #3d79cf;
+}
+
+.job-calendar-legend .schedule-deadline::before,
+.job-modal-schedule .schedule-deadline span::before {
+  background: #d05f68;
+}
+
+.job-calendar-legend .schedule-rolling::before,
+.job-modal-schedule .schedule-rolling span::before {
+  background: #31906b;
+}
+
+.rolling-job-summary {
+  margin: 0 22px 15px;
+  padding: 13px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #f2f8f5;
+  border: 1px solid #d9ebe2;
+  border-radius: 12px;
+}
+
+.rolling-job-summary > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 2px 8px;
+}
+
+.rolling-job-summary .schedule-rolling {
+  grid-row: 1 / 3;
+  padding: 5px 7px;
+  color: #247052;
+  background: #dff1e8;
+  border-radius: 7px;
+  font-size: 8px;
+  font-weight: 850;
+}
+
+.rolling-job-summary strong {
+  color: #285f4c;
+  font-size: 10px;
+}
+
+.rolling-job-summary small {
+  color: #53665e;
+  font-size: 8px;
+}
+
+.rolling-job-summary > button {
+  min-height: 36px;
+  padding: 0 12px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: white;
+  background: #2d7b5e;
+  border: 1px solid #2d7b5e;
+  border-radius: 9px;
+  box-shadow: 0 1px 2px rgba(26, 75, 56, 0.12);
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.rolling-job-summary > button:hover {
+  background: #24684f;
+}
+
+.rolling-job-summary > button svg {
+  width: 12px;
+}
+
+.calendar-scroll-hint {
+  display: none;
+}
+
+.job-calendar-scroll {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+
+.job-calendar {
+  min-width: 760px;
+}
+
+.calendar-weekdays,
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendar-weekdays {
+  padding: 0 12px;
+  color: #777e87;
+  background: #fafafb;
+  border-top: 1px solid #eceef1;
+  border-bottom: 1px solid #e5e7ea;
+}
+
+.calendar-weekdays span {
+  padding: 9px 10px;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.calendar-weekdays span:first-child {
+  color: #c56464;
+}
+
+.calendar-weekdays span:last-child {
+  color: #526eb6;
+}
+
+.calendar-grid {
+  padding: 0 12px 12px;
+  background: #fafafb;
+}
+
+.calendar-week {
+  display: contents;
+}
+
+.calendar-day {
+  min-width: 0;
+  min-height: 110px;
+  padding: 8px;
+  background: white;
+  border-right: 1px solid #e7e9ed;
+  border-bottom: 1px solid #e7e9ed;
+}
+
+.calendar-day:focus-visible {
+  position: relative;
+  z-index: 2;
+  outline: 3px solid rgba(83, 101, 191, 0.34);
+  outline-offset: -3px;
+}
+
+.calendar-day:nth-child(7n + 1) {
+  border-left: 1px solid #e7e9ed;
+}
+
+.calendar-day > time {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  color: #535a63;
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.calendar-day.outside {
+  background: #f8f8f9;
+}
+
+.calendar-day.outside > time {
+  color: #666d75;
+}
+
+.calendar-day.today > time {
+  color: white;
+  background: #5866bb;
+}
+
+.calendar-events {
+  margin-top: 4px;
+  display: grid;
+  gap: 3px;
+}
+
+.calendar-job {
+  min-width: 0;
+  height: 24px;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #3f4b69;
+  background: #edf0fb;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  font-size: 8px;
+  text-align: left;
+}
+
+.calendar-job strong,
+.calendar-job span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-job strong {
+  flex: 0 1 auto;
+  font-size: 8px;
+}
+
+.calendar-job span {
+  flex: 0 0 auto;
+  font-size: 7px;
+  font-weight: 850;
+}
+
+.calendar-job.schedule-published {
+  color: #654394;
+  background: #f0eafa;
+  border-left: 3px solid #8065b8;
+}
+
+.calendar-job.schedule-application {
+  color: #285a9c;
+  background: #e7f0fc;
+  border-left: 3px solid #3d79cf;
+}
+
+.calendar-job.schedule-deadline {
+  color: #983f49;
+  background: #fbecee;
+  border-left: 3px solid #d05f68;
+}
+
+.calendar-job:hover,
+.calendar-job.selected {
+  border-color: #6976c7;
+  box-shadow: inset 0 0 0 1px rgba(82, 96, 183, 0.12);
+}
+
+.calendar-more {
+  min-height: 23px;
+  padding: 2px 6px;
+  color: #5362ad;
+  background: transparent;
+  border: 1px dashed #c9cee4;
+  border-radius: 6px;
+  font-size: 8px;
+  font-weight: 800;
+  text-align: left;
+}
+
+.calendar-more:hover {
+  background: #f0f2fb;
+  border-style: solid;
+}
+
+.calendar-empty {
+  margin: 16px;
+  padding: 17px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  color: #6d747c;
+  background: #f7f7f8;
+  border-radius: 12px;
+}
+
+.calendar-empty svg {
+  width: 21px;
+  color: #6673c5;
+}
+
+.calendar-empty div {
+  display: grid;
+  gap: 2px;
+  font-size: 9px;
+}
+
+.calendar-empty strong {
+  color: #424951;
+  font-size: 10px;
+}
+
+.calendar-job-detail {
+  margin: 16px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  gap: 13px;
+  background: #f5f6f8;
+  border: 1px solid #e3e5e9;
+  border-radius: 15px;
+}
+
+.calendar-job-detail .company-tile {
+  width: 46px;
+  height: 46px;
+}
+
+.calendar-detail-deadline {
+  color: #5564bb;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.calendar-job-detail h3 {
+  margin: 3px 0 1px;
+  font-size: 15px;
+}
+
+.calendar-job-detail > div:nth-child(2) > strong {
+  font-size: 10px;
+}
+
+.calendar-job-detail p {
+  margin: 7px 0 0;
+  color: #687078;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.calendar-detail-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.calendar-detail-actions button,
+.calendar-detail-actions a {
+  min-width: 118px;
+  height: 34px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: #5362b8;
+  background: white;
+  border: 1px solid #dfe2e7;
+  border-radius: 9px;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.calendar-detail-actions svg {
+  width: 13px;
+}
+
+.job-modal-backdrop {
+  position: fixed;
+  z-index: 80;
+  inset: 0;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  background: rgba(33, 38, 51, 0.42);
+  backdrop-filter: blur(6px);
+}
+
+.job-detail-modal {
+  position: fixed;
+  z-index: 81;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(590px, 100%);
+  max-height: min(760px, calc(100vh - 48px));
+  overflow-y: auto;
+  background: white;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 22px;
+  box-shadow: 0 30px 80px rgba(25, 31, 48, 0.26);
+}
+
+.job-detail-modal > header {
+  padding: 20px 22px;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #eceef1;
+}
+
+.job-detail-modal .company-tile {
+  width: 48px;
+  height: 48px;
+}
+
+.job-detail-modal header span {
+  color: #777f88;
+  font-size: 8px;
+  font-weight: 750;
+}
+
+.job-detail-modal header h2 {
+  margin: 3px 0 0;
+  font-size: 18px;
+}
+
+.job-modal-close {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: #5f6670;
+  background: #f4f5f6;
+  border: 0;
+  border-radius: 50%;
+}
+
+.job-modal-close svg {
+  width: 17px;
+}
+
+.job-modal-body {
+  padding: 22px;
+}
+
+.job-modal-title > span {
+  color: #5969bc;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.job-modal-title h3 {
+  margin: 6px 0 8px;
+  font-size: 21px;
+  line-height: 1.35;
+}
+
+.job-modal-title p {
+  margin: 0;
+  color: #687179;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.job-modal-schedule {
+  margin: 18px 0 13px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.job-modal-schedule > div {
+  padding: 12px;
+  display: grid;
+  gap: 5px;
+  background: #f7f8f9;
+  border: 1px solid #e8eaed;
+  border-radius: 11px;
+}
+
+.job-modal-schedule strong {
+  color: #394149;
+  font-size: 11px;
+}
+
+.job-modal-meta {
+  margin-bottom: 13px;
+  display: flex;
+  gap: 12px;
+  color: #667176;
+  font-size: 9px;
+}
+
+.job-modal-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.job-modal-meta svg {
+  width: 13px;
+}
+
+.job-detail-modal footer {
+  padding: 15px 22px 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid #eceef1;
+}
+
+.job-detail-modal footer button,
+.job-detail-modal footer a {
+  min-height: 37px;
+  padding: 0 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: #5261b6;
+  background: white;
+  border: 1px solid #dfe2e7;
+  border-radius: 9px;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.job-detail-modal footer a {
+  color: white;
+  background: #5968bd;
+  border-color: #5968bd;
+}
+
+.job-detail-modal footer svg {
+  width: 13px;
+}
+
+.schedule-dialog-overlay {
+  position: fixed;
+  z-index: 88;
+  inset: 0;
+  background: rgba(31, 36, 48, 0.46);
+  backdrop-filter: blur(7px);
+  animation: dialog-fade-in 150ms ease-out;
+}
+
+.schedule-list-dialog {
+  position: fixed;
+  z-index: 89;
+  top: 50%;
+  left: 50%;
+  width: min(620px, calc(100vw - 48px));
+  max-height: min(720px, calc(100vh - 48px));
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  background: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 18px;
+  box-shadow: 0 30px 85px rgba(25, 31, 48, 0.28);
+  transform: translate(-50%, -50%);
+  animation: dialog-scale-in 170ms ease-out;
+}
+
+.schedule-list-dialog > header {
+  padding: 19px 20px 16px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  background: #fff;
+  border-bottom: 1px solid #e8eaed;
+}
+
+.schedule-list-dialog h2 {
+  margin: 0;
+  color: #282e35;
+  font-size: 18px;
+  letter-spacing: -0.025em;
+}
+
+.schedule-list-dialog header p {
+  margin: 5px 0 0;
+  color: #747b84;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.schedule-dialog-list {
+  overflow-y: auto;
+  padding: 10px;
+  display: grid;
+  gap: 6px;
+  background: #fafafa;
+}
+
+.schedule-list-item {
+  min-height: 66px;
+  padding: 10px 11px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  color: #313841;
+  text-align: left;
+  background: #fff;
+  border: 1px solid #e2e5e8;
+  border-radius: 11px;
+  box-shadow: 0 1px 2px rgba(31, 36, 48, 0.03);
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.schedule-list-item:hover {
+  border-color: #bfc6df;
+  box-shadow: 0 7px 18px rgba(45, 53, 82, 0.08);
+  transform: translateY(-1px);
+}
+
+.schedule-list-item:focus-visible,
+.rolling-job-summary > button:focus-visible,
+.calendar-more:focus-visible {
+  outline: 3px solid rgba(86, 101, 185, 0.24);
+  outline-offset: 2px;
+}
+
+.schedule-list-badge {
+  min-width: 42px;
+  padding: 5px 7px;
+  border-radius: 7px;
+  font-size: 7px;
+  font-weight: 850;
+  text-align: center;
+}
+
+.schedule-list-badge.schedule-published {
+  color: #654394;
+  background: #f0eafa;
+}
+
+.schedule-list-badge.schedule-application {
+  color: #285a9c;
+  background: #e7f0fc;
+}
+
+.schedule-list-badge.schedule-deadline {
+  color: #983f49;
+  background: #fbecee;
+}
+
+.schedule-list-badge.schedule-rolling {
+  color: #247052;
+  background: #dff1e8;
+}
+
+.schedule-list-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.schedule-list-copy strong {
+  color: #5963a7;
+  font-size: 8px;
+}
+
+.schedule-list-copy b {
+  overflow: hidden;
+  color: #313740;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.schedule-list-copy small {
+  overflow: hidden;
+  color: #7a818a;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.schedule-list-item > svg {
+  width: 14px;
+  color: #9096a0;
+}
+
+@keyframes dialog-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes dialog-scale-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.98);
+  }
+}
+
+@media (max-width: 900px) {
+  .jobs-heading {
+    align-items: flex-start;
+  }
+
+  .calendar-scroll-hint {
+    margin: 0;
+    padding: 7px 18px;
+    display: block;
+    color: #777e87;
+    background: #fafafb;
+    border-top: 1px solid #eceef1;
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 640px) {
+  .jobs-view-switch {
+    width: 100%;
+  }
+
+  .jobs-view-switch button {
+    flex: 1;
+  }
+
+  .job-filter-panel {
+    top: 12px;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    width: auto;
+    margin: 0;
+    max-height: none;
+  }
+
+  .job-filter-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .jobs-list-tools {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .jobs-list-tools > strong {
+    width: 100%;
+  }
+
+  .jobs-sort-buttons,
+  .jobs-font-buttons {
+    width: 100%;
+  }
+
+  .jobs-sort-buttons button,
+  .jobs-font-buttons button {
+    flex: 1;
+  }
+
+  .job-card-schedule {
+    grid-template-columns: 1fr;
+  }
+
+  .job-source {
+    width: 100%;
+  }
+
+  .job-source-latest {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .job-calendar-header {
+    padding: 16px;
+  }
+
+  .job-calendar-legend {
+    padding: 0 16px 12px;
+  }
+
+  .rolling-job-summary {
+    margin: 0 16px 12px;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .rolling-job-summary > button {
+    width: 100%;
+  }
+
+  .job-calendar-header h2 {
+    font-size: 19px;
+  }
+
+  .job-calendar {
+    min-width: 720px;
+  }
+
+  .calendar-day {
+    min-height: 102px;
+  }
+
+  .job-modal-backdrop {
+    padding: 12px;
+  }
+
+  .job-detail-modal {
+    max-height: calc(100vh - 24px);
+    border-radius: 18px;
+  }
+
+  .job-detail-modal > header,
+  .job-modal-body,
+  .job-detail-modal footer {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .job-modal-title h3 {
+    font-size: 18px;
+  }
+
+  .job-modal-schedule {
+    grid-template-columns: 1fr;
+  }
+
+  .job-detail-modal footer {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .job-detail-modal footer button,
+  .job-detail-modal footer a {
+    width: 100%;
+  }
+
+  .schedule-list-dialog {
+    width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+    border-radius: 15px;
+  }
+
+  .schedule-list-dialog > header {
+    padding: 16px;
+  }
+
+  .schedule-dialog-list {
+    padding: 8px;
+  }
+
+  .schedule-list-item {
+    min-height: 72px;
+  }
+}
+
+/* Final responsive overrides for the three-track daily set and compact learning library. */
+.certification-link {
+  color: #303641;
+  background: #e5e7eb;
+  border-color: #d5d8de;
+}
+
+.certification-link:hover {
+  color: #222833;
+  background: #dcdfe4;
+}
+
+.certification-link small,
+.certification-link > svg:last-child {
+  color: #555e6a;
+}
+
+.daily-challenge-grid,
+.today-problem-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}

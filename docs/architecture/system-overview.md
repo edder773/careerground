@@ -26,6 +26,15 @@ flowchart LR
 - import 승인은 checksum과 batch report를 남기는 D1 batch다.
 - 별도 queue나 Redis 없이 D1 unique index, compare-and-swap, lease와 idempotency key를 사용한다.
 
+## 웹 모듈 경계
+
+- `pages`는 route 상태, query와 mutation orchestration을 소유한다.
+- 기능별 순수 계산과 표시 제어는 `features/<domain>`에 둔다. 채용은 `features/jobs`가 날짜·필터
+  domain과 필터·상세 dialog를 소유한다.
+- `styles.css`는 전역 cascade 순서를 고정하는 import manifest이며 실제 규칙은 `styles`의 기능별
+  파일에 둔다. 구조 테스트가 route 900줄, CSS module 3,500줄 한도를 막는다.
+- 화면 동작을 바꾸지 않는 CSS 분리는 연결한 원문의 checksum과 브라우저 회귀로 검증한다.
+
 ## 주요 흐름
 
 ```mermaid
