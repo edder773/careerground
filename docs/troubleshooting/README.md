@@ -50,7 +50,7 @@ generatedByAI: false
 | 08-26 | [미사용 NestJS·Prisma 백엔드 제거와 D1 단일화](./2026-08-26-single-d1-backend-retirement.md)                  | [#63](https://github.com/edder773/careerground/pull/63) | API 5,783줄 제거, lockfile 43.70% 축소    |
 | 08-26 | [대형 채용 화면과 전역 CSS의 동작 보존형 분리](./2026-08-26-web-module-boundary-refactor.md)                  | [#65](https://github.com/edder773/careerground/pull/65) | JobsPage 43.22%, 최대 CSS 57.89% 축소     |
 | 08-27 | [Slack 08:01 예약 누락과 채용 갱신 순서 보강](./2026-08-27-slack-schedule-fallback-and-import-readiness.md)   | 이번 변경                                               | 예약 1→3, 준비 전 claim 1→0               |
-| 08-27 | [GitHub·Sites 소스 분기와 운영 schema 오탐 제거](./2026-08-27-production-source-schema-parity.md)             | 이번 변경                                               | source 0035→0036, 운영 점검 28/28         |
+| 08-27 | [GitHub·Sites 소스 분기와 운영 schema 오탐 제거](./2026-08-27-production-source-schema-parity.md)             | #70                                                     | source 0035→0036, 운영 점검 28/28         |
 
 Dependabot PR #4는 pnpm 11/Node 24를 지원하는 `pnpm/action-setup@6` 갱신이며 별도 장애가 없어 Sites runtime 문서의 도구 체인 맥락에 포함했다. PR #3 이전의 닫힌 #1/#2는 구현이 병합되지 않았으므로 운영 변경 기록에 포함하지 않았다.
 
