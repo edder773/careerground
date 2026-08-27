@@ -1,6 +1,8 @@
 {
   "capturedAt": "2026-08-27T04:07:17Z",
   "scope": "GitHub source, Sites source, and production D1 schema authority",
+  "remediationCommit": "9f70424e4e9323ad754db16af80e8537009d82f3",
+  "pullRequest": 70,
   "baseline": {
     "githubMainCommit": "acde9f9b31154fb57adb2bf3fc51865b5ff40d8c",
     "githubExpectedSchemaVersion": "0035_sync_validator_jobs_20260825",

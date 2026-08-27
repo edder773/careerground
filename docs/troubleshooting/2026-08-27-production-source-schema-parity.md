@@ -3,8 +3,8 @@ title: GitHub·Sites 소스 분기와 운영 schema 오탐 제거
 date: 2026-08-27
 tags: [sites, github, d1, migration, monitoring, deployment]
 generatedByAI: false
-pr: pending
-commit: pending
+pr: 70
+commit: 9f70424e4e9323ad754db16af80e8537009d82f3
 evidence: docs/evidence/production-source-schema-parity-2026-08-27.json
 ---
 
