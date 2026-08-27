@@ -1,0 +1,108 @@
+{
+  "schema": "careerground-slack-schedule-resilience-evidence/v1",
+  "capturedAt": "2026-08-27T02:45:00.000Z",
+  "incident": {
+    "expectedAt": "2026-08-26T23:01:00.000Z",
+    "expectedAtKst": "2026-08-27T08:01:00+09:00",
+    "githubIncident": {
+      "title": "Incident with Actions and Pull Requests",
+      "startedAt": "2026-08-26T22:56:31.000Z",
+      "leadTimeBeforeExpectedSeconds": 269,
+      "source": "https://www.githubstatus.com/api/v2/incidents.json"
+    },
+    "scheduledRunCreated": false,
+    "scheduledRunQueryScope": "Daily CareerGround Slack digest workflow runs for 2026-08-27 KST",
+    "manualRecovery": {
+      "runId": 33026292638,
+      "startedAtKst": "2026-08-27T09:16:00+09:00",
+      "durationSeconds": 11,
+      "conclusion": "success",
+      "deliveryKey": "daily:2026-08-27",
+      "deliveryStatus": "SENT"
+    },
+    "jobsImport": {
+      "batchId": "catalog-jobs-20260826-validator-confirmed",
+      "committedAtKst": "2026-08-27T08:28:52+09:00",
+      "addedActiveRows": 10,
+      "updatedExistingRows": 4,
+      "eligibleFixedDeadlineRowsSent": 4
+    }
+  },
+  "priorBaseline": {
+    "source": "docs/evidence/operations-hardening-2026-08-26.json",
+    "scheduledRuns": 3,
+    "delayMinutes": [26.42, 18.9, 21.65],
+    "medianDelayMinutes": 21.65,
+    "scheduleTriggers": 1,
+    "workflowCanDetectMissingOwnRun": false
+  },
+  "after": {
+    "scheduleTriggers": 3,
+    "scheduleKst": ["08:01", "08:31", "09:17"],
+    "freshImportGatedTriggers": ["08:01", "08:31"],
+    "finalUngatedRecoveryTrigger": "09:17",
+    "deliveryKeyPerKstDay": 1,
+    "claimRowsCreatedBeforeFreshImport": 0,
+    "readinessIncident": "[운영 경보] 채용 DB 갱신 지연"
+  },
+  "regression": {
+    "command": "pnpm vitest run scripts/slack/send-daily-digest.test.mjs deployment/sites/d1-api.test.ts scripts/operations/check-schedule-delay.test.mjs",
+    "before": { "testFilesPassed": 3, "testsPassed": 60, "durationSeconds": 5.2 },
+    "after": { "testFilesPassed": 3, "testsPassed": 63, "durationSeconds": 5.35 },
+    "fullUnitIntegration": {
+      "workspaceTestFilesPassed": 35,
+      "testsPassed": 148,
+      "status": "pass"
+    },
+    "e2e": {
+      "initial": {
+        "passed": 52,
+        "failed": 4,
+        "cause": "The visual test searched for a fixed NAVER fixture whose local posting had expired relative to the current clock."
+      },
+      "fix": "Search by the company name from the first currently visible ACTIVE job card.",
+      "targetedAfter": { "passed": 4, "failed": 0 },
+      "fullAfter": { "passed": 56, "failed": 0 }
+    },
+    "checks": {
+      "format": "pass",
+      "lint": "pass",
+      "typecheck": "pass",
+      "productionBuild": "pass"
+    },
+    "operationalChecks": {
+      "bundleBudget": {
+        "status": "pass",
+        "initialRouteGzipBytes": 147350,
+        "largestJavaScriptGzipBytes": 95339,
+        "largestCssGzipBytes": 22572,
+        "failures": 0
+      },
+      "performanceBudget": {
+        "status": "pass",
+        "jobsCursorP95Ms": 5.81,
+        "searchP95Ms": 41.58,
+        "failures": 0,
+        "runtime": "LocalD1 synthetic fixture"
+      },
+      "recoveryDrill": {
+        "status": "pass",
+        "snapshotBytes": 2015232,
+        "restoreDurationMs": 5.45,
+        "foreignKeyViolations": 0,
+        "countMismatch": 0,
+        "fixtureChecksumMatched": true
+      }
+    },
+    "liveSlackMessagesDuringValidation": 0
+  },
+  "limitations": [
+    "GitHub Actions documents that scheduled events may be delayed or dropped during high load; repository code cannot guarantee exact wall-clock execution.",
+    "A workflow-internal monitor cannot report a schedule event for which no run was created.",
+    "The final 09:17 fallback prioritizes delivering coding challenges even when no same-day jobs import was committed; later jobs remain eligible for the next daily window."
+  ],
+  "sources": [
+    "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule",
+    "https://www.githubstatus.com/api/v2/incidents.json"
+  ]
+}

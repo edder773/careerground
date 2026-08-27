@@ -1,3 +1,4 @@
+import { appendFileSync } from 'node:fs';
 import process from 'node:process';
 import { URL, pathToFileURL } from 'node:url';
 import { getKoreanDispatchDecision } from './korean-business-day.mjs';
@@ -235,6 +236,7 @@ export async function sendDailyDigest(
   const digestRequestUrl = new URL(digestUrl);
   const snapshotCreatedAt = String(env.SLACK_DIGEST_SNAPSHOT_CREATED_AT || '').trim();
   const jobsOnly = forceSendEnabled(env.SLACK_DIGEST_JOBS_ONLY);
+  const requireFreshJobs = forceSendEnabled(env.SLACK_DIGEST_REQUIRE_FRESH_JOBS);
   if (jobsOnly && !snapshotCreatedAt) {
     throw new Error('채용공고만 재전송하려면 SLACK_DIGEST_SNAPSHOT_CREATED_AT이 필요합니다.');
   }
@@ -245,10 +247,12 @@ export async function sendDailyDigest(
     authorization: `Bearer ${digestToken}`,
     'content-type': 'application/json',
   };
+  const claimInput = { snapshotCreatedAt: snapshotCreatedAt || undefined, jobsOnly };
+  if (requireFreshJobs) claimInput.requireFreshJobs = true;
   const digestResponse = await fetchImpl(digestRequestUrl, {
     method: 'POST',
     headers: apiHeaders,
-    body: JSON.stringify({ snapshotCreatedAt: snapshotCreatedAt || undefined, jobsOnly }),
+    body: JSON.stringify(claimInput),
     signal: globalThis.AbortSignal.timeout(15_000),
   });
   if (!digestResponse.ok) {
@@ -256,10 +260,16 @@ export async function sendDailyDigest(
   }
   const claim = await digestResponse.json();
   if (claim.status !== 'claimed') {
+    const reason =
+      claim.status === 'already-sent'
+        ? 'already-sent'
+        : claim.status === 'not-ready'
+          ? 'job-import-not-ready'
+          : 'delivery-blocked';
     return {
       messageCount: 0,
       skipped: {
-        reason: claim.status === 'already-sent' ? 'already-sent' : 'delivery-blocked',
+        reason,
         dateKey: String(claim.deliveryKey || ''),
       },
     };
@@ -305,9 +315,23 @@ export async function sendDailyDigest(
   return { messageCount: messages.length };
 }
 
+export const digestResultStatus = ({ messageCount, skipped }) =>
+  messageCount > 0 ? 'sent' : String(skipped?.reason || 'unknown');
+
+export function writeGithubOutputs(result, outputPath = process.env.GITHUB_OUTPUT) {
+  if (!outputPath) return;
+  appendFileSync(
+    outputPath,
+    `delivery_status=${digestResultStatus(result)}\nmessage_count=${Number(result.messageCount || 0)}\n`,
+    'utf8',
+  );
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   sendDailyDigest()
-    .then(({ messageCount, skipped }) => {
+    .then((deliveryResult) => {
+      writeGithubOutputs(deliveryResult);
+      const { messageCount, skipped } = deliveryResult;
       const result = skipped
         ? `Slack digest skipped: ${skipped.reason} (${skipped.dateKey})`
         : `Slack digest sent: ${messageCount}`;
