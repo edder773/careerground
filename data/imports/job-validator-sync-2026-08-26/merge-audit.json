@@ -1,0 +1,1126 @@
+{
+  "version": "1.0",
+  "artifactType": "CAREERGROUND_MERGE_AUDIT",
+  "asOfDate": "2026-08-26",
+  "timezone": "Asia/Seoul",
+  "runGroupKey": "2026-08-26:f059a369ad91af5c",
+  "executionMode": "RECOVERY_MERGE_USER_AUTHORIZED",
+  "snapshotCutoffAt": "2026-08-26T23:49:28+09:00",
+  "timestamps": {
+    "mergeStartedAt": "2026-08-27T07:44:28+09:00",
+    "crossPartitionDedupCompletedAt": "2026-08-27T07:44:28+09:00",
+    "finalVerificationCompletedAt": "2026-08-27T07:44:28+09:00",
+    "filesGeneratedAt": "2026-08-27T07:44:28+09:00"
+  },
+  "baseline": {
+    "inputFileName": "careerground-jobs-live-2026-08-25-final.json",
+    "canonicalFileName": "careerground-jobs-live-2026-08-25-final.json",
+    "exportedAt": "2026-08-25T22:28:34+09:00",
+    "rowCount": 195,
+    "statusCounts": {
+      "EXPIRED": 18,
+      "ACTIVE": 131,
+      "DEADLINE_UNKNOWN": 33,
+      "REMOVED": 13
+    },
+    "expectedSha256": "f059a369ad91af5c2de430dbccd8cb691344a8e5f6377875828eb0adb054253d",
+    "calculatedRawBytesSha256": "f059a369ad91af5c2de430dbccd8cb691344a8e5f6377875828eb0adb054253d",
+    "hashMatched": true,
+    "structureChecks": {
+      "jsonParse": true,
+      "rowCountMatchesItems": true,
+      "statusCountsMatchItems": true,
+      "columnsMatchAllItems": true,
+      "duplicateIdsAbsent": true,
+      "duplicateSourceUrlsAbsent": true,
+      "duplicateFingerprintsAbsent": true
+    }
+  },
+  "overrides": [
+    {
+      "overrideCode": "BASELINE_FILENAME_ALIAS_OVERRIDE",
+      "authorizedBy": "USER",
+      "scope": "THIS_RECOVERY_RUN_ONLY",
+      "originalFileNames": [
+        "careerground-jobs-live-2026-08-25-final.json",
+        "careerground-jobs-live-2026-08-25-final(2).json"
+      ],
+      "canonicalFileName": "careerground-jobs-live-2026-08-25-final.json",
+      "reason": "다운로드 복사 접미사만 다르고 SHA-256, exportedAt, rowCount, runGroupKey가 동일함."
+    },
+    {
+      "overrideCode": "PARTITION_LIBRARY_CONTENT_USER_AUTHORIZATION",
+      "authorizedBy": "USER",
+      "scope": "SELECTED_2026_08_26_PARTITIONS_ONLY",
+      "reason": "사용자가 선택된 PARTITION 1·2·3 파일이 정확한 입력임을 재확인하고 병합 진행을 지시함.",
+      "limitation": "파티션 원본 bytes는 활성 런타임에 직접 마운트되지 않아 독립 SHA-256 계산은 수행하지 못함."
+    },
+    {
+      "overrideCode": "RECOVERY_SNAPSHOT_ASOF_OVERRIDE",
+      "authorizedBy": "USER_CONTEXT_AND_RECOVERY_SEMANTICS",
+      "scope": "FINAL_EXPORTED_AT_AND_NEW_ITEM_TIMESTAMPS",
+      "reason": "실행일은 2026-08-27이지만 2026-08-26 파티션 결과의 역사 스냅샷을 복구하므로 최신 파티션 완료 시각을 스냅샷 기준으로 사용함.",
+      "snapshotCutoffAt": "2026-08-26T23:49:28+09:00"
+    },
+    {
+      "overrideCode": "CONSERVATIVE_EXISTING_ITEM_PRESERVATION",
+      "scope": "EXISTING_ITEMS_WITHOUT_FULLY_RECONSTRUCTED_CHANGED_PAYLOAD",
+      "reason": "파티션 원본 전체가 로컬에 없어 164개 proposed_item의 사소한 timestamp 갱신을 모두 독립 재구성하지 않고, 완전 재구성된 4개 상태 변경 외 기존 item을 기준선 그대로 보존함.",
+      "effect": "기존 공고의 임의 삭제나 근거 없는 필드 변경을 방지함."
+    },
+    {
+      "overrideCode": "POST_CUTOFF_STATUS_POLICY",
+      "scope": "CURRENT_WEB_OBSERVATIONS_AFTER_2026_08_26_CUTOFF",
+      "reason": "현재 웹 상태가 닫힘이어도 마감 시각이 8월 26일 스냅샷 이후인지 불명확하면 과거 스냅샷을 소급 변경하지 않음. 스냅샷 이전 종료가 명시된 미리디만 제외함."
+    }
+  ],
+  "partitionInputs": [
+    {
+      "partitionId": 1,
+      "fileName": "careerground-partition-1-2026-08-26(1).json",
+      "fileLibraryReference": "file_000000002978820cba060b32904214e8",
+      "rawBytesSha256": null,
+      "rawBytesMaterializedInActiveRuntime": false,
+      "contentVerificationMode": "FILE_LIBRARY_INDEXED_CONTENT_PLUS_USER_AUTHORIZATION",
+      "filesGeneratedAt": "2026-08-26T23:06:16+09:00",
+      "asOfDate": "2026-08-26",
+      "runGroupKey": "2026-08-26:f059a369ad91af5c",
+      "baselineFileNameOriginal": "careerground-jobs-live-2026-08-25-final.json",
+      "baselineFileNameCanonical": "careerground-jobs-live-2026-08-25-final.json",
+      "baselineSha256": "f059a369ad91af5c2de430dbccd8cb691344a8e5f6377875828eb0adb054253d",
+      "assignedDiscoverySources": ["JobKorea", "Wanted", "Catch", "Superookie", "Career", "Work24"],
+      "existingDecisionCount": 64,
+      "rawNewCandidateCount": 4,
+      "newDecisionCounts": {
+        "ACTIVE_CANDIDATE": 1,
+        "DUPLICATE": 1,
+        "EXCLUDED": 2
+      },
+      "qualityGateOverall": "PASS_WITH_PARTIAL_SOURCE_COVERAGE",
+      "blockingErrors": []
+    },
+    {
+      "partitionId": 2,
+      "fileName": "careerground-partition-2-2026-08-26.json",
+      "fileLibraryReference": "file_000000000f388209bd03caf57af57a92",
+      "rawBytesSha256": null,
+      "rawBytesMaterializedInActiveRuntime": false,
+      "contentVerificationMode": "FILE_LIBRARY_INDEXED_CONTENT_PLUS_USER_AUTHORIZATION",
+      "filesGeneratedAt": "2026-08-26T23:04:23+09:00",
+      "asOfDate": "2026-08-26",
+      "runGroupKey": "2026-08-26:f059a369ad91af5c",
+      "baselineFileNameOriginal": "careerground-jobs-live-2026-08-25-final(2).json",
+      "baselineFileNameCanonical": "careerground-jobs-live-2026-08-25-final.json",
+      "baselineSha256": "f059a369ad91af5c2de430dbccd8cb691344a8e5f6377875828eb0adb054253d",
+      "assignedDiscoverySources": [
+        "Saramin",
+        "Jumpit",
+        "Inthiswork",
+        "Remember Career",
+        "RocketPunch",
+        "Incruit"
+      ],
+      "existingDecisionCount": 43,
+      "rawNewCandidateCount": 20,
+      "newDecisionCounts": {
+        "ACTIVE_CANDIDATE": 12,
+        "DEADLINE_UNKNOWN_CANDIDATE": 2,
+        "EXCLUDED": 4,
+        "UNCERTAIN": 2
+      },
+      "qualityGateOverall": "PASS_WITH_PARTIAL_SOURCE_COVERAGE",
+      "blockingErrors": []
+    },
+    {
+      "partitionId": 3,
+      "fileName": "careerground-partition-3-2026-08-26.json",
+      "fileLibraryReference": "file_00000000fa7c82119acc83f6c9f980f4",
+      "rawBytesSha256": null,
+      "rawBytesMaterializedInActiveRuntime": false,
+      "contentVerificationMode": "FILE_LIBRARY_INDEXED_CONTENT_PLUS_USER_AUTHORIZATION",
+      "filesGeneratedAt": "2026-08-26T23:49:28+09:00",
+      "asOfDate": "2026-08-26",
+      "runGroupKey": "2026-08-26:f059a369ad91af5c",
+      "baselineFileNameOriginal": "careerground-jobs-live-2026-08-25-final.json",
+      "baselineFileNameCanonical": "careerground-jobs-live-2026-08-25-final.json",
+      "baselineSha256": "f059a369ad91af5c2de430dbccd8cb691344a8e5f6377875828eb0adb054253d",
+      "assignedDiscoverySources": [
+        "LinkedIn Korea",
+        "Jasoseol",
+        "Linkareer",
+        "JOB-ALIO",
+        "NCS Fair Recruitment"
+      ],
+      "existingDecisionCount": 57,
+      "rawNewCandidateCount": 9,
+      "newDecisionCounts": {
+        "ACTIVE_CANDIDATE": 1,
+        "DEADLINE_UNKNOWN_CANDIDATE": 2,
+        "EXCLUDED": 4,
+        "UNCERTAIN": 2
+      },
+      "qualityGateOverall": "PASS_WITH_COVERAGE_LIMITATIONS",
+      "blockingErrors": []
+    }
+  ],
+  "sourceCoverage": [
+    {
+      "partitionId": 1,
+      "source": "JobKorea",
+      "status": "PARTIAL",
+      "overlapDays": 7,
+      "rawCandidateCount": 2,
+      "finalActive": 0,
+      "finalDeadlineUnknown": 0,
+      "excluded": 1,
+      "uncertain": 0,
+      "duplicates": 1,
+      "limitationReason": "7일 전체 목록의 명시적 끝까지 전수 확인하지 못함."
+    },
+    {
+      "partitionId": 1,
+      "source": "Wanted",
+      "status": "PARTIAL",
+      "overlapDays": 7,
+      "rawCandidateCount": 1,
+      "finalActive": 1,
+      "finalDeadlineUnknown": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "duplicates": 0,
+      "limitationReason": "7일 전체 신입·인턴 최신 목록 끝을 완전히 확정하지 못함."
+    },
+    {
+      "partitionId": 1,
+      "source": "Catch",
+      "status": "PARTIAL",
+      "overlapDays": 7,
+      "rawCandidateCount": 0,
+      "finalActive": 0,
+      "finalDeadlineUnknown": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "duplicates": 0,
+      "limitationReason": "직무·모집구분별 전체 최신 목록 끝을 전수 확정하지 못함."
+    },
+    {
+      "partitionId": 1,
+      "source": "Superookie",
+      "status": "PARTIAL",
+      "overlapDays": 7,
+      "rawCandidateCount": 1,
+      "finalActive": 0,
+      "finalDeadlineUnknown": 0,
+      "excluded": 1,
+      "uncertain": 0,
+      "duplicates": 0,
+      "limitationReason": "최신 채용의 7일 전체 목록 끝을 전수 확정하지 못함."
+    },
+    {
+      "partitionId": 1,
+      "source": "Career",
+      "status": "PARTIAL",
+      "overlapDays": 7,
+      "rawCandidateCount": 0,
+      "finalActive": 0,
+      "finalDeadlineUnknown": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "duplicates": 0,
+      "limitationReason": "검색조건별 마지막 페이지까지 전수 확인하지 못함."
+    },
+    {
+      "partitionId": 1,
+      "source": "Work24",
+      "status": "PARTIAL",
+      "overlapDays": 7,
+      "rawCandidateCount": 0,
+      "finalActive": 0,
+      "finalDeadlineUnknown": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "duplicates": 0,
+      "limitationReason": "일반 채용 영역의 전체 결과와 검색조건별 끝을 전수 확정하지 못함."
+    },
+    {
+      "partitionId": 2,
+      "source": "Saramin",
+      "status": "PARTIAL",
+      "overlapDays": 7,
+      "rawCandidateCount": 2,
+      "finalActive": 2,
+      "finalDeadlineUnknown": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "duplicates": 0,
+      "limitationReason": "검색조건별 전체 마지막 페이지까지 전수 확인하지 못함."
+    },
+    {
+      "partitionId": 2,
+      "source": "Jumpit",
+      "status": "PARTIAL",
+      "overlapDays": 7,
+      "rawCandidateCount": 7,
+      "finalActive": 3,
+      "finalDeadlineUnknown": 0,
+      "excluded": 3,
+      "uncertain": 1,
+      "duplicates": 0,
+      "limitationReason": "검색조건별 전체 마지막 페이지까지 전수 확인하지 못함."
+    },
+    {
+      "partitionId": 2,
+      "source": "Inthiswork",
+      "status": "PARTIAL",
+      "overlapDays": 7,
+      "rawCandidateCount": 6,
+      "finalActive": 2,
+      "finalDeadlineUnknown": 2,
+      "excluded": 0,
+      "uncertain": 2,
+      "duplicates": 0,
+      "limitationReason": "목록의 명시적 마지막 페이지와 일부 상세 자격조건을 완전 소진하지 못함."
+    },
+    {
+      "partitionId": 2,
+      "source": "Remember Career",
+      "status": "PARTIAL",
+      "overlapDays": 7,
+      "rawCandidateCount": 5,
+      "finalActive": 3,
+      "finalDeadlineUnknown": 0,
+      "excluded": 2,
+      "uncertain": 0,
+      "duplicates": 0,
+      "limitationReason": "전체 최신 목록 끝을 전수 확정하지 못함."
+    },
+    {
+      "partitionId": 2,
+      "source": "RocketPunch",
+      "status": "PARTIAL",
+      "overlapDays": 7,
+      "rawCandidateCount": 0,
+      "finalActive": 0,
+      "finalDeadlineUnknown": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "duplicates": 0,
+      "limitationReason": "전체 최신 목록의 명시적 끝을 전수 확인하지 못함."
+    },
+    {
+      "partitionId": 2,
+      "source": "Incruit",
+      "status": "PARTIAL",
+      "overlapDays": 7,
+      "rawCandidateCount": 0,
+      "finalActive": 0,
+      "finalDeadlineUnknown": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "duplicates": 0,
+      "limitationReason": "전체 최신 목록의 명시적 끝을 전수 확인하지 못함."
+    },
+    {
+      "partitionId": 3,
+      "source": "LinkedIn Korea",
+      "status": "PARTIAL",
+      "overlapDays": 7,
+      "rawCandidateCount": 7,
+      "finalActive": 0,
+      "finalDeadlineUnknown": 2,
+      "excluded": 3,
+      "uncertain": 2,
+      "duplicates": 0,
+      "limitationReason": "모든 키워드 조합과 전체 7일 구간의 명시적 마지막 결과까지 소진하지 못함."
+    },
+    {
+      "partitionId": 3,
+      "source": "Jasoseol",
+      "status": "PARTIAL",
+      "overlapDays": 7,
+      "rawCandidateCount": 1,
+      "crossValidatedCandidateCount": 1,
+      "finalActive": 0,
+      "finalDeadlineUnknown": 0,
+      "excluded": 1,
+      "uncertain": 0,
+      "duplicates": 0,
+      "limitationReason": "현재 채용 캘린더와 주요 통합채용을 확인했으나 모든 필터 조합의 마지막 페이지까지 전수 확인하지 못함."
+    },
+    {
+      "partitionId": 3,
+      "source": "Linkareer",
+      "status": "PARTIAL",
+      "overlapDays": 7,
+      "rawCandidateCount": 0,
+      "finalActive": 0,
+      "finalDeadlineUnknown": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "duplicates": 0,
+      "limitationReason": "검색 결과의 최신성과 목록 종료 지점을 충분히 확정하지 못함."
+    },
+    {
+      "partitionId": 3,
+      "source": "JOB-ALIO",
+      "status": "PARTIAL",
+      "overlapDays": 7,
+      "rawCandidateCount": 1,
+      "finalActive": 1,
+      "finalDeadlineUnknown": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "duplicates": 0,
+      "limitationReason": "KTL 공고는 공식 상세와 지원처까지 확인했으나 모든 검색조건의 마지막 페이지까지 전수 확인하지 못함."
+    },
+    {
+      "partitionId": 3,
+      "source": "NCS Fair Recruitment",
+      "status": "PARTIAL",
+      "overlapDays": 7,
+      "rawCandidateCount": 0,
+      "crossValidationCount": 1,
+      "finalActive": 0,
+      "finalDeadlineUnknown": 0,
+      "excluded": 0,
+      "uncertain": 0,
+      "duplicates": 0,
+      "limitationReason": "공공기관 후보 교차검증에 활용했으나 모든 키워드 조합과 최신 목록 끝까지 전수 확인하지 못함."
+    }
+  ],
+  "sourceCoverageSummary": {
+    "COMPLETED": 0,
+    "PARTIAL": 17,
+    "BLOCKED": 0,
+    "NO_ACCESS": 0
+  },
+  "existingCoverage": {
+    "expectedTargetCount": 164,
+    "decisionCount": 164,
+    "byPartition": {
+      "1": 64,
+      "2": 43,
+      "3": 57
+    },
+    "missingIds": [],
+    "duplicateDecisionIds": [],
+    "ownershipMismatches": [],
+    "passed": true,
+    "verificationMode": "PARTITION_QUALITY_GATE_ASSERTION_PLUS_USER_AUTHORIZATION"
+  },
+  "existingDecisionSummary": {
+    "partitionReportedTotal": 164,
+    "fullyReconstructedStatusChangesApplied": 4,
+    "baselineItemsPreservedWithoutReconstructedFieldChange": 160,
+    "appliedResultingStatusCounts": {
+      "EXPIRED": 21,
+      "ACTIVE": 127,
+      "REMOVED": 14,
+      "DEADLINE_UNKNOWN": 33
+    }
+  },
+  "existingStatusChanges": [
+    {
+      "partitionId": 1,
+      "id": "job-35b9be034d8ba7236ef2a07e",
+      "company_name": "한국관세정보원",
+      "title": "2026년도 제2차 직원 채용 - 전산설비·전산OP(신입)",
+      "previous_status": "ACTIVE",
+      "resulting_status": "EXPIRED",
+      "decision": "EXPIRED_CONFIRMED",
+      "changed_fields": ["status", "last_verified_at", "updated_at"],
+      "deadline_at": "2026-08-26T09:00:00.000Z",
+      "reason_codes": [
+        "FIXED_DEADLINE_PASSED",
+        "CURRENT_CLOSURE_CONFIRMED",
+        "SECOND_PASS_CONFIRMED"
+      ],
+      "evidence": [
+        {
+          "url": "https://kcits.hubst.co.kr/applicantMain/goJobOpeningDetailPage.do?boardType=1&nextPage=&opnIdx=14508&orgIdx=5197&postIdx=",
+          "fact": "접수기간이 2026-08-26 18:00 KST에 종료되고 전산설비·전산OP는 신입 모집 단위임.",
+          "checkedAt": "2026-08-27T07:30:00+09:00",
+          "verificationMode": "CURRENT_OFFICIAL_DETAIL_AND_FIXED_DEADLINE"
+        }
+      ],
+      "finalRecheckStatus": "CONFIRMED"
+    },
+    {
+      "partitionId": 2,
+      "id": "job-45f7898244ff71abe006c11a",
+      "company_name": "NAVER Cloud",
+      "title": "LLM 평가 및 학습 데이터 파이프라인 개발 (체험형 인턴)",
+      "previous_status": "ACTIVE",
+      "resulting_status": "EXPIRED",
+      "decision": "EXPIRED_CONFIRMED",
+      "changed_fields": ["status", "last_verified_at", "updated_at"],
+      "deadline_at": "2026-08-26T09:00:00.000Z",
+      "reason_codes": [
+        "FIXED_DEADLINE_PASSED",
+        "CURRENT_TIME_AFTER_DEADLINE",
+        "SECOND_PASS_CONFIRMED"
+      ],
+      "evidence": [
+        {
+          "url": "https://recruit.navercloudcorp.com/rcrt/view.do?annoId=30005293&lang=ko",
+          "fact": "기준선의 고정 마감 2026-08-26 18:00 KST가 파티션 실행 시각보다 과거였고 2차 확인에서 동일 판정됨.",
+          "checkedAt": "2026-08-26T22:59:58+09:00",
+          "verificationMode": "PARTITION_SECOND_PASS_AND_FIXED_DEADLINE"
+        }
+      ],
+      "finalRecheckStatus": "CONFIRMED"
+    },
+    {
+      "partitionId": 2,
+      "id": "job-491449af5c4ada4dd7a1671f",
+      "company_name": "㈜제로데이 시큐리티",
+      "title": "[학원수료환영] 웹(Web) 개발자 모집합니다..",
+      "previous_status": "ACTIVE",
+      "resulting_status": "REMOVED",
+      "decision": "REMOVED_CONFIRMED",
+      "changed_fields": ["summary", "status", "last_verified_at", "updated_at"],
+      "deadline_at": "2026-08-27T14:59:59.000Z",
+      "reason_codes": ["CURRENT_DETAIL_CLOSED", "EARLY_CLOSURE_CONFIRMED", "SECOND_PASS_CONFIRMED"],
+      "evidence": [
+        {
+          "url": "https://m.jobkorea.co.kr/Recruit/GI_Read/49761888",
+          "fact": "파티션 2차 확인에서 상세가 마감 상태로 표시되어 고정 미래 마감보다 앞선 조기마감으로 판정됨.",
+          "checkedAt": "2026-08-26T22:59:58+09:00",
+          "verificationMode": "PARTITION_SECOND_PASS_CURRENT_DETAIL"
+        }
+      ],
+      "finalRecheckStatus": "CONFIRMED"
+    },
+    {
+      "partitionId": 1,
+      "id": "job-a01145b7998cfa5061a6b281",
+      "company_name": "SK하이닉스",
+      "title": "['26년 하반기] Talent hy-way 기술사무직 신입",
+      "previous_status": "ACTIVE",
+      "resulting_status": "EXPIRED",
+      "decision": "EXPIRED_CONFIRMED",
+      "changed_fields": ["status", "last_verified_at", "updated_at"],
+      "deadline_at": "2026-08-26T08:00:00.000Z",
+      "reason_codes": [
+        "FIXED_DEADLINE_PASSED",
+        "CURRENT_CLOSURE_CONFIRMED",
+        "SECOND_PASS_CONFIRMED"
+      ],
+      "evidence": [
+        {
+          "url": "https://www.skcareers.com/Recruit/Detail/R261762",
+          "fact": "지원 마감은 2026-08-26 17:00 KST이며 현재 공식 상세에 Application closed로 표시됨.",
+          "checkedAt": "2026-08-27T07:30:00+09:00",
+          "verificationMode": "CURRENT_OFFICIAL_DETAIL_AND_FIXED_DEADLINE"
+        }
+      ],
+      "finalRecheckStatus": "CONFIRMED"
+    }
+  ],
+  "existingOtherFieldChanges": [],
+  "existingFinalRecheckFailed": [],
+  "newCandidateSummary": {
+    "rawTotal": 33,
+    "preFinalAccepted": 18,
+    "finalAccepted": 16,
+    "finalActive": 12,
+    "finalDeadlineUnknown": 4,
+    "excluded": 11,
+    "uncertain": 5,
+    "duplicates": 1,
+    "byPartition": {
+      "1": {
+        "raw": 4,
+        "preFinalAccepted": 1,
+        "finalAccepted": 1,
+        "excluded": 2,
+        "uncertain": 0,
+        "duplicates": 1
+      },
+      "2": {
+        "raw": 20,
+        "preFinalAccepted": 14,
+        "finalAccepted": 12,
+        "excluded": 5,
+        "uncertain": 3,
+        "duplicates": 0
+      },
+      "3": {
+        "raw": 9,
+        "preFinalAccepted": 3,
+        "finalAccepted": 3,
+        "excluded": 4,
+        "uncertain": 2,
+        "duplicates": 0
+      }
+    }
+  },
+  "crossPartitionDedup": {
+    "completed": true,
+    "inputAcceptedCandidates": 18,
+    "outputUniqueCandidates": 18,
+    "additionalDuplicatesRemoved": 0,
+    "duplicateGroups": [],
+    "note": "SK하이닉스 미러는 파티션 단계에서 이미 기준선 중복으로 제외됨."
+  },
+  "jobAlioNcsDedup": {
+    "checked": true,
+    "crossSourceObservationCount": 3,
+    "finalRepresentative": {
+      "company_name": "한국산업기술시험원(KTL)",
+      "source_name": "JOB-ALIO",
+      "source_posting_id": "304192",
+      "source_url": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=304192"
+    },
+    "finalDuplicateAbsent": true,
+    "crossValidatedBy": ["Jasoseol", "NCS Fair Recruitment"]
+  },
+  "finalExcludedUncertainAndDuplicateCandidates": [
+    {
+      "partitionId": 1,
+      "raw_candidate_id": "raw-p1-jobkorea-49827600",
+      "company_name": "SK하이닉스",
+      "title": "['26년 하반기] Talent hy-way 기술사무직 신입 - Solution SW",
+      "source_url": "https://m.jobkorea.co.kr/Recruit/GI_Read/49827600?PageGbn=MST&sc=226",
+      "disposition": "DUPLICATE",
+      "reason_codes": ["DUPLICATE_BASELINE", "SAME_OFFICIAL_REQUISITION_R261762"],
+      "matched_existing_id": "job-a01145b7998cfa5061a6b281"
+    },
+    {
+      "partitionId": 1,
+      "raw_candidate_id": "raw-p1-superookie-6a8e9e5daf0d5138bb329f72",
+      "company_name": "마인드로직 주식회사",
+      "title": "마케팅팀 마케팅팀 인턴 복사본",
+      "source_url": "https://www.superookie.com/jobs/6a8e9e5daf0d5138bb329f72",
+      "disposition": "EXCLUDED",
+      "reason_codes": ["NON_IT_ROLE", "MARKETING_ROLE"]
+    },
+    {
+      "partitionId": 1,
+      "raw_candidate_id": "raw-p1-jobkorea-49786216",
+      "company_name": "유라테크",
+      "title": "기술연구소 연구원 채용 (신입) - HW설계",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49786216",
+      "disposition": "EXCLUDED",
+      "reason_codes": ["HARDWARE_ONLY_ROLE"]
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-4e81ef1c9ddb59da",
+      "company_name": "인텍에프에이",
+      "title": "SW개발 신입사원",
+      "source_url": "https://jumpit.saramin.co.kr/position/54680884",
+      "disposition": "EXCLUDED",
+      "reason_codes": ["MANDATORY_EXPERIENCE_3_PLUS"]
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-ca05edfdcf39db69",
+      "company_name": "톤28",
+      "title": "AI Builder [신입]",
+      "source_url": "https://jumpit.saramin.co.kr/position/54753053",
+      "disposition": "EXCLUDED",
+      "reason_codes": ["NON_DEVELOPMENT_AI_DESIGN_ROLE"]
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-4faa8e053e926bfa",
+      "company_name": "씨메스",
+      "title": "Research Engineer - Generative AI / World Model",
+      "source_url": "https://jumpit.saramin.co.kr/position/54767468",
+      "disposition": "EXCLUDED",
+      "reason_codes": ["MANDATORY_EXPERIENCE_1_TO_10_YEARS"]
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-b1c03003bccd0a10",
+      "company_name": "한화모멘텀",
+      "title": "제어설계 채용전환형 인턴",
+      "source_url": "https://career.rememberapp.co.kr/job/posting/334277",
+      "disposition": "EXCLUDED",
+      "reason_codes": ["NON_SOFTWARE_CONTROL_DESIGN_ROLE"]
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-4193b13d6f987d22",
+      "company_name": "미리디",
+      "title": "[미리캔버스] Machine Learning Engineer (Agentic AI & Search) - Intern",
+      "source_url": "https://career.rememberapp.co.kr/job/posting/333829",
+      "disposition": "EXCLUDED",
+      "reason_codes": ["FINAL_RECHECK_CLOSED_BEFORE_ASOF", "DEADLINE_2026_08_21"],
+      "final_recheck_evidence": {
+        "fact": "현재 상세가 2026-08-21 마감 및 마감된 공고로 표시되어 8월 26일 스냅샷 전에 종료된 것으로 확정.",
+        "checkedAt": "2026-08-27T07:30:00+09:00"
+      }
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-7952b6bcbb610345",
+      "company_name": "티에이케이정보시스템",
+      "title": "2026 인프라기술팀 신입/경력",
+      "source_url": "https://inthiswork.com/archives/391378",
+      "disposition": "UNCERTAIN",
+      "reason_codes": ["CURRENT_EVIDENCE_INSUFFICIENT"]
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-f7eb1118977b8d40",
+      "company_name": "오텍캐리어",
+      "title": "임베디드 펌웨어/SW/HW 설계 신입/경력",
+      "source_url": "https://inthiswork.com/archives/391370",
+      "disposition": "UNCERTAIN",
+      "reason_codes": ["SW_HW_TRACK_SEPARATION_UNVERIFIED", "CURRENT_EVIDENCE_INSUFFICIENT"]
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-bf75ccf2eec7d2c7",
+      "company_name": "씨메스",
+      "title": "Physical AI Engineer",
+      "source_url": "https://jumpit.saramin.co.kr/position/54617809",
+      "disposition": "UNCERTAIN",
+      "reason_codes": [
+        "FINAL_RECHECK_SOURCE_CONFLICT",
+        "DETAIL_SAYS_NEW_GRAD_ALLOWED",
+        "METADATA_SAYS_1_TO_10_YEARS"
+      ],
+      "final_recheck_evidence": {
+        "fact": "상세 자격요건은 경력무관·신입 지원 가능으로 표시하지만 같은 페이지의 경력 메타데이터는 1~10년으로 표시해 충돌함.",
+        "checkedAt": "2026-08-27T07:30:00+09:00"
+      }
+    },
+    {
+      "partitionId": 3,
+      "raw_candidate_id": "raw-p3-3148a8a10dd214e2",
+      "company_name": "AR247 Robotics",
+      "title": "Robotics Engineer",
+      "source_url": "https://kr.linkedin.com/jobs/view/robotics-engineer-at-ar247-robotics-4456112747",
+      "disposition": "EXCLUDED",
+      "reason_codes": ["REQUIRED_EXPERIENCE_3_PLUS"]
+    },
+    {
+      "partitionId": 3,
+      "raw_candidate_id": "raw-p3-2b83948bc4dd3455",
+      "company_name": "A1",
+      "title": "Android Software Engineer",
+      "source_url": "https://kr.linkedin.com/jobs/view/android-software-engineer-at-a1-4446285632",
+      "disposition": "EXCLUDED",
+      "reason_codes": ["REQUIRED_EXPERIENCE_3_PLUS", "POSTING_CLOSED"]
+    },
+    {
+      "partitionId": 3,
+      "raw_candidate_id": "raw-p3-e47bbcbc57035eda",
+      "company_name": "KRAFTON",
+      "title": "[AI Research Div.] Research Scientist Intern - 독자 AI 파운데이션 모델 (2년 이상 / 인턴)",
+      "source_url": "https://kr.linkedin.com/jobs/view/ai-research-div-research-scientist-intern-%EB%8F%85%EC%9E%90-ai-%ED%8C%8C%EC%9A%B4%EB%8D%B0%EC%9D%B4%EC%85%98-%EB%AA%A8%EB%8D%B8-2%EB%85%84-%EC%9D%B4%EC%83%81-%EC%9D%B8%ED%84%B4-at-krafton-inc-4368604047",
+      "disposition": "EXCLUDED",
+      "reason_codes": ["REQUIRED_EXPERIENCE_2_PLUS"]
+    },
+    {
+      "partitionId": 3,
+      "raw_candidate_id": "raw-p3-9c1b99241a891d27",
+      "company_name": "자화전자",
+      "title": "2026년 하반기 신입/경력 - 제조 운영/실행 시스템 개발 및 유지보수",
+      "source_url": "https://jasoseol.com/recruit",
+      "disposition": "EXCLUDED",
+      "reason_codes": ["CAREER_ONLY_TRACK"]
+    },
+    {
+      "partitionId": 3,
+      "raw_candidate_id": "raw-p3-96bb8b063c96b58d",
+      "company_name": "GE Healthcare",
+      "title": "Software Engineer",
+      "source_url": "https://kr.linkedin.com/jobs/view/software-engineer-at-ge-healthcare-3095244929",
+      "disposition": "UNCERTAIN",
+      "reason_codes": [
+        "UNCERTAIN_SOURCE_CONFLICT",
+        "LINKEDIN_REQUIRES_5_TO_10_YEARS",
+        "OFFICIAL_ATS_REQUISITION_MATCH_UNRESOLVED"
+      ]
+    },
+    {
+      "partitionId": 3,
+      "raw_candidate_id": "raw-p3-1c046a8cb493b663",
+      "company_name": "QuantumBlack, AI by McKinsey",
+      "title": "Data Engineer - QuantumBlack, AI by McKinsey",
+      "source_url": "https://kr.linkedin.com/jobs/view/data-engineer-quantumblack-ai-by-mckinsey-at-quantumblack-ai-by-mckinsey-4398046069",
+      "disposition": "UNCERTAIN",
+      "reason_codes": ["UNCERTAIN_SCOPE_CONSULTING"]
+    }
+  ],
+  "newlyIncluded": [
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-f388ca492d487b6b",
+      "id": "job-03e07d74b88c49d042f7a0f0",
+      "company_name": "(주)엠엔텍",
+      "title": "머신비전 S/W 개발 신입/경력",
+      "status": "ACTIVE",
+      "deadline_at": "2026-08-26T14:59:59.000Z",
+      "rolling": 0,
+      "source_name": "Saramin",
+      "source_url": "https://www.saramin.co.kr/zf_user/jobs/view?rec_idx=54573785",
+      "source_posting_id": "54573785",
+      "official_requisition_id": null,
+      "verificationStatus": "CONFIRMED_AT_HISTORICAL_CUTOFF",
+      "verificationBasis": [
+        "파티션 2차 확인",
+        "신입 트랙",
+        "고정 마감 2026-08-26 23:59 KST",
+        "스냅샷 시각에는 마감 전"
+      ]
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-a2d74e83d029002d",
+      "id": "job-3adbcac152ebf8c54c491c88",
+      "company_name": "(주)와이매틱스",
+      "title": "AI 개발자",
+      "status": "ACTIVE",
+      "deadline_at": "2026-08-26T14:59:59.000Z",
+      "rolling": 0,
+      "source_name": "Saramin",
+      "source_url": "https://www.saramin.co.kr/zf_user/jobs/view?rec_idx=54575004",
+      "source_posting_id": "54575004",
+      "official_requisition_id": null,
+      "verificationStatus": "CONFIRMED_AT_HISTORICAL_CUTOFF",
+      "verificationBasis": [
+        "파티션 2차 확인",
+        "고정 마감 2026-08-26 23:59 KST",
+        "스냅샷 시각에는 마감 전"
+      ]
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-41c4a203597d1f3a",
+      "id": "job-1280d9e67dc83b1991145763",
+      "company_name": "ASML",
+      "title": "IT Service Desk Administrator (1 Year Contract)",
+      "status": "DEADLINE_UNKNOWN",
+      "deadline_at": null,
+      "rolling": 0,
+      "source_name": "ASML Careers",
+      "source_url": "https://asml.wd3.myworkdayjobs.com/en-US/ASMLEXT1/job/KR-Hwaseong/IT-Service-Desk-Administrator--1year-Contract-_J-00327777",
+      "source_posting_id": "J-00327777",
+      "official_requisition_id": "J-00327777",
+      "verificationStatus": "SECOND_PASS_CONFIRMED",
+      "verificationBasis": [
+        "공식 Workday 지원 경로",
+        "필수 경력 연수 없음",
+        "마감일·상시 문구 미표시"
+      ]
+    },
+    {
+      "partitionId": 3,
+      "raw_candidate_id": "raw-p3-c9977349869c6293",
+      "id": "job-6763a8fb86252e527f9d0994",
+      "company_name": "GE Healthcare",
+      "title": "AI/ML Engineer",
+      "status": "DEADLINE_UNKNOWN",
+      "deadline_at": null,
+      "rolling": 0,
+      "source_name": "LinkedIn Korea",
+      "source_url": "https://kr.linkedin.com/jobs/view/ai-ml-engineer-at-ge-healthcare-4458760266",
+      "source_posting_id": "4458760266",
+      "official_requisition_id": null,
+      "verificationStatus": "CURRENT_DETAIL_CONFIRMED",
+      "verificationBasis": [
+        "성남 근무",
+        "신입 지원 가능",
+        "0~7년 범위에 인턴·학술 프로젝트 포함",
+        "지원 경로 표시",
+        "마감일·상시 문구 미표시"
+      ]
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-f1860f4522010208",
+      "id": "job-d103bc2068c9150c4459b2f7",
+      "company_name": "Microsoft",
+      "title": "Data Center Technicians Intern",
+      "status": "ACTIVE",
+      "deadline_at": null,
+      "rolling": 1,
+      "source_name": "Microsoft Careers",
+      "source_url": "https://apply.careers.microsoft.com/careers/job/1970393556978326",
+      "source_posting_id": "1970393556978326",
+      "official_requisition_id": "1970393556978326",
+      "verificationStatus": "SECOND_PASS_CONFIRMED",
+      "verificationBasis": ["공식 Microsoft 지원 경로", "부산 근무", "인턴", "채용 완료 시 마감"]
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-a55728f53090ba27",
+      "id": "job-d75ce609587d9b784312c074",
+      "company_name": "PFC Technologies",
+      "title": "ML Engineer Intern",
+      "status": "ACTIVE",
+      "deadline_at": null,
+      "rolling": 1,
+      "source_name": "Remember Career",
+      "source_url": "https://career.rememberapp.co.kr/job/posting/289377",
+      "source_posting_id": "289377",
+      "official_requisition_id": null,
+      "verificationStatus": "RETAINED_FOR_HISTORICAL_SNAPSHOT",
+      "verificationBasis": [
+        "파티션 2차 확인 당시 활성",
+        "채용 시 마감",
+        "현재는 마감 표시이나 마감 시점이 스냅샷 이후인지 불명확하여 8월 26일 역사 스냅샷 유지"
+      ],
+      "postCutoffObservation": "CURRENTLY_CLOSED_CLOSE_TIME_UNKNOWN"
+    },
+    {
+      "partitionId": 3,
+      "raw_candidate_id": "raw-p3-72086f1e27a9a2ac",
+      "id": "job-70ba7f440d313a2c451752e9",
+      "company_name": "Palantir Technologies",
+      "title": "Forward Deployed Software Engineer, New Grad - Commercial",
+      "status": "DEADLINE_UNKNOWN",
+      "deadline_at": null,
+      "rolling": 0,
+      "source_name": "Palantir Careers",
+      "source_url": "https://jobs.lever.co/palantir/341d5cae-a473-4813-9a6c-0f67fcc1b253",
+      "source_posting_id": "341d5cae-a473-4813-9a6c-0f67fcc1b253",
+      "official_requisition_id": "341d5cae-a473-4813-9a6c-0f67fcc1b253",
+      "verificationStatus": "CURRENT_OFFICIAL_ATS_CONFIRMED",
+      "verificationBasis": [
+        "서울 근무",
+        "Full-time",
+        "Apply 활성",
+        "2026년 또는 2027년 졸업 예정자",
+        "마감일·상시 문구 미표시"
+      ]
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-4d7109d1d4eabb89",
+      "id": "job-8a231fdfa895a5833d854494",
+      "company_name": "딥오토",
+      "title": "[인턴] Agentic AI Engineer",
+      "status": "ACTIVE",
+      "deadline_at": null,
+      "rolling": 1,
+      "source_name": "Remember Career",
+      "source_url": "https://career.rememberapp.co.kr/job/posting/258549",
+      "source_posting_id": "258549",
+      "official_requisition_id": null,
+      "verificationStatus": "RETAINED_FOR_HISTORICAL_SNAPSHOT",
+      "verificationBasis": [
+        "파티션 2차 확인 당시 활성",
+        "경력무관 인턴",
+        "채용 시 마감",
+        "현재는 마감 표시이나 마감 시점이 스냅샷 이후인지 불명확하여 8월 26일 역사 스냅샷 유지"
+      ],
+      "postCutoffObservation": "CURRENTLY_CLOSED_CLOSE_TIME_UNKNOWN"
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-c1ebb77c2db9647d",
+      "id": "job-d428a282f2b60e6b92c6c69d",
+      "company_name": "라이드플럭스",
+      "title": "[제주/서울] SW Engineer (C++, Python) (정규직·채용연계형 인턴)",
+      "status": "ACTIVE",
+      "deadline_at": null,
+      "rolling": 1,
+      "source_name": "Remember Career",
+      "source_url": "https://career.rememberapp.co.kr/job/posting/324833",
+      "source_posting_id": "324833",
+      "official_requisition_id": null,
+      "verificationStatus": "SECOND_PASS_CONFIRMED",
+      "verificationBasis": ["경력무관", "정규직·채용연계형 인턴", "채용 시 마감"]
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-6ec25e1faa63f921",
+      "id": "job-f6ee76b19de75f5056f77a0f",
+      "company_name": "리비바이오",
+      "title": "Backend Developer (Node.js) (신입)",
+      "status": "DEADLINE_UNKNOWN",
+      "deadline_at": null,
+      "rolling": 0,
+      "source_name": "Inthiswork",
+      "source_url": "https://inthiswork.com/archives/391392",
+      "source_posting_id": "391392",
+      "official_requisition_id": null,
+      "verificationStatus": "SECOND_PASS_CONFIRMED",
+      "verificationBasis": ["신입", "Node.js 백엔드", "지원 경로", "마감일·상시 문구 미표시"]
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-e8a7e79efc68fed7",
+      "id": "job-42237e42cfad918be6a888dd",
+      "company_name": "써큘러랩스",
+      "title": "AI Vision Engineer (YOLO)",
+      "status": "ACTIVE",
+      "deadline_at": "2026-09-06T14:59:59.000Z",
+      "rolling": 0,
+      "source_name": "Jumpit",
+      "source_url": "https://jumpit.saramin.co.kr/position/54678456",
+      "source_posting_id": "54678456",
+      "official_requisition_id": null,
+      "verificationStatus": "SECOND_PASS_CONFIRMED",
+      "verificationBasis": ["신입", "AI Vision 개발", "미래 고정 마감"]
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-900a74913f29ba3f",
+      "id": "job-addfef731fb117aa8689e843",
+      "company_name": "이비즈테크",
+      "title": "클라우드 엔지니어 신입",
+      "status": "ACTIVE",
+      "deadline_at": "2026-09-03T14:59:59.000Z",
+      "rolling": 0,
+      "source_name": "Jumpit",
+      "source_url": "https://jumpit.saramin.co.kr/position/54647756",
+      "source_posting_id": "54647756",
+      "official_requisition_id": null,
+      "verificationStatus": "SECOND_PASS_CONFIRMED",
+      "verificationBasis": ["신입·졸업예정", "클라우드 엔지니어", "미래 고정 마감"]
+    },
+    {
+      "partitionId": 1,
+      "raw_candidate_id": "raw-p1-wanted-382447",
+      "id": "job-3884a725e889b9ef682f240b",
+      "company_name": "캐폴랩스",
+      "title": "[인턴] 개발자",
+      "status": "ACTIVE",
+      "deadline_at": null,
+      "rolling": 1,
+      "source_name": "Wanted",
+      "source_url": "https://www.wanted.co.kr/wd/382447",
+      "source_posting_id": "382447",
+      "official_requisition_id": null,
+      "verificationStatus": "SECOND_PASS_CONFIRMED",
+      "verificationBasis": ["신입·인턴", "웹·앱·API 개발", "3개월 정규직전환형", "상시채용"]
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-a7eba9c6be3f4745",
+      "id": "job-0705faf7cb2f1e7ce6541614",
+      "company_name": "쿤텍",
+      "title": "AI 기반 가상머신 개발자 (AX/신입)",
+      "status": "ACTIVE",
+      "deadline_at": "2026-09-12T14:59:59.000Z",
+      "rolling": 0,
+      "source_name": "Jumpit",
+      "source_url": "https://jumpit.saramin.co.kr/position/54728283",
+      "source_posting_id": "54728283",
+      "official_requisition_id": null,
+      "verificationStatus": "SECOND_PASS_CONFIRMED",
+      "verificationBasis": ["신입·경력무관", "AI 시스템 소프트웨어", "미래 고정 마감"]
+    },
+    {
+      "partitionId": 2,
+      "raw_candidate_id": "raw-p2-7ee9d8d84eb7ae0f",
+      "id": "job-55ee4c3d7546494c69428d41",
+      "company_name": "파네시아",
+      "title": "System Software Engineer (신입)",
+      "status": "ACTIVE",
+      "deadline_at": null,
+      "rolling": 1,
+      "source_name": "Panmnesia Careers",
+      "source_url": "https://panmnesia.com/careers_kr/apply/system-software-engineer-new/",
+      "source_posting_id": "system-software-engineer-new",
+      "official_requisition_id": null,
+      "verificationStatus": "SECOND_PASS_CONFIRMED",
+      "verificationBasis": ["신입", "공식 지원 페이지", "상시채용"]
+    },
+    {
+      "partitionId": 3,
+      "raw_candidate_id": "raw-p3-2a022daf6794b758",
+      "id": "job-457f133b04047cf922970648",
+      "company_name": "한국산업기술시험원(KTL)",
+      "title": "2026년 정규직 채용 - IT·AI 연구직",
+      "status": "ACTIVE",
+      "deadline_at": "2026-09-08T14:59:59.000Z",
+      "rolling": 0,
+      "source_name": "JOB-ALIO",
+      "source_url": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=304192",
+      "source_posting_id": "304192",
+      "official_requisition_id": "304192",
+      "verificationStatus": "SECOND_PASS_CONFIRMED",
+      "verificationBasis": [
+        "JOB-ALIO 공고번호 304192",
+        "신입",
+        "정보통신 NCS",
+        "공식 지원처",
+        "미래 고정 마감",
+        "Jasoseol·NCS 교차검증"
+      ]
+    }
+  ],
+  "postCutoffObservations": [
+    {
+      "raw_candidate_id": "raw-p2-4d7109d1d4eabb89",
+      "company_name": "딥오토",
+      "observation": "현재 페이지는 마감 표시이나 정확한 마감 시각이 없어 2026-08-26 스냅샷을 소급 변경하지 않음."
+    },
+    {
+      "raw_candidate_id": "raw-p2-a55728f53090ba27",
+      "company_name": "PFC Technologies",
+      "observation": "현재 페이지는 마감 표시이나 정확한 마감 시각이 없어 2026-08-26 스냅샷을 소급 변경하지 않음."
+    }
+  ],
+  "finalOutput": {
+    "fileName": "careerground-jobs-live-2026-08-26-final.json",
+    "exportedAt": "2026-08-26T23:49:28+09:00",
+    "rowCount": 211,
+    "statusCounts": {
+      "EXPIRED": 21,
+      "ACTIVE": 139,
+      "DEADLINE_UNKNOWN": 37,
+      "REMOVED": 14
+    },
+    "existingRowCount": 195,
+    "newlyIncludedCount": 16,
+    "sha256": "7cac83e0fdde4aea580feb118862e1851a887e99fdc793b9e22e05a5548da775"
+  },
+  "qualityGates": {
+    "jsonParse": true,
+    "rowCountMatchesItems": true,
+    "statusCountsSumMatchesRowCount": true,
+    "statusCountsMatchActual": true,
+    "columnsMatchBaseline": true,
+    "allItemFieldsAndOrderMatchColumns": true,
+    "duplicateIdsAbsent": true,
+    "duplicateSourceUrlsAbsent": true,
+    "duplicateFingerprintsAbsent": true,
+    "techStackAllValidJsonArrays": true,
+    "existingIdsPreserved": true,
+    "existingCreatedAtPreserved": true,
+    "existingCollectedAtPreserved": true,
+    "existingFingerprintPreserved": true,
+    "baselinePreservedExceptReconstructedChanges": true,
+    "allExistingTargetsSingleDecision": true,
+    "existingOwnershipComplete": true,
+    "existingCoverageVerificationMode": "PARTITION_QUALITY_GATE_ASSERTION_PLUS_USER_AUTHORIZATION",
+    "rollingImpliesNullDeadline": true,
+    "deadlineUnknownInvariant": true,
+    "activeFixedDeadlinesFutureAtSnapshot": true,
+    "expiredFixedDeadlinesPastAtSnapshot": true,
+    "newActiveSupportEvidencePresent": true,
+    "newActiveNewGradEvidencePresent": true,
+    "newActiveItEvidencePresent": true,
+    "newActiveDomesticLocationPresent": true,
+    "newConfirmedFinalVerificationComplete": true,
+    "noSnippetOnlyActivation": true,
+    "noPlatformTagOnlyActivation": true,
+    "noMandatoryOnePlusYearNewActive": true,
+    "partitionBaselineSha256Match": true,
+    "partitionRunGroupKeyMatch": true,
+    "partitionAsOfDateMatch": true,
+    "partitionIdsExactlyOneEach": true,
+    "sourceAssignmentMatches6_6_5": true,
+    "crossPartitionDedupComplete": true,
+    "officialRequisitionIdDuplicatesAbsent": true,
+    "jobAlioNcsSamePostingDuplicateAbsent": true,
+    "newIdRulePass": true,
+    "newFingerprintRulePass": true,
+    "finalRowCountExpected211": true,
+    "finalStatusCountsExpected": true,
+    "outputIntegrityOverall": "PASS",
+    "inputRecoveryAssessment": "PASS_WITH_USER_AUTHORIZED_OVERRIDE",
+    "overall": "PASS"
+  },
+  "downstreamEligibility": "ELIGIBLE_WITH_RECORDED_RECOVERY_OVERRIDE",
+  "blockingErrors": []
+}

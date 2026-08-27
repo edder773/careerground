@@ -1,0 +1,109 @@
+{
+  "version": "1.0",
+  "generatedAt": "2026-08-27T08:28:52+09:00",
+  "rowCount": 4,
+  "items": [
+    {
+      "id": "job-35b9be034d8ba7236ef2a07e",
+      "company_name": "한국관세정보원",
+      "title": "2026년도 제2차 직원 채용 - 전산설비·전산OP(신입)",
+      "source_url": "https://kcits.hubst.co.kr/applicantMain/goJobOpeningDetailPage.do?boardType=1&nextPage=&opnIdx=14508&orgIdx=5197&postIdx=",
+      "before": {
+        "status": "ACTIVE",
+        "last_verified_at": "2026-08-21T02:51:23.000Z",
+        "updated_at": "2026-08-21T02:51:23.000Z"
+      },
+      "after": {
+        "status": "EXPIRED",
+        "last_verified_at": "2026-08-26T14:06:16.000Z",
+        "updated_at": "2026-08-26T14:06:16.000Z"
+      },
+      "evidence": [
+        {
+          "url": "https://kcits.hubst.co.kr/applicantMain/goJobOpeningDetailPage.do?boardType=1&nextPage=&opnIdx=14508&orgIdx=5197&postIdx=",
+          "fact": "접수기간이 2026-08-26 18:00 KST에 종료되고 전산설비·전산OP는 신입 모집 단위임.",
+          "checkedAt": "2026-08-27T07:30:00+09:00",
+          "verificationMode": "CURRENT_OFFICIAL_DETAIL_AND_FIXED_DEADLINE"
+        }
+      ],
+      "auditDecisions": ["EXPIRED_CONFIRMED"]
+    },
+    {
+      "id": "job-45f7898244ff71abe006c11a",
+      "company_name": "NAVER Cloud",
+      "title": "LLM 평가 및 학습 데이터 파이프라인 개발 (체험형 인턴)",
+      "source_url": "https://recruit.navercloudcorp.com/rcrt/view.do?annoId=30005293&lang=ko",
+      "before": {
+        "status": "ACTIVE",
+        "last_verified_at": "2026-08-21T02:51:23.000Z",
+        "updated_at": "2026-08-21T02:51:23.000Z"
+      },
+      "after": {
+        "status": "EXPIRED",
+        "last_verified_at": "2026-08-26T13:59:58.000Z",
+        "updated_at": "2026-08-26T13:59:58.000Z"
+      },
+      "evidence": [
+        {
+          "url": "https://recruit.navercloudcorp.com/rcrt/view.do?annoId=30005293&lang=ko",
+          "fact": "기준선의 고정 마감 2026-08-26 18:00 KST가 파티션 실행 시각보다 과거였고 2차 확인에서 동일 판정됨.",
+          "checkedAt": "2026-08-26T22:59:58+09:00",
+          "verificationMode": "PARTITION_SECOND_PASS_AND_FIXED_DEADLINE"
+        }
+      ],
+      "auditDecisions": ["EXPIRED_CONFIRMED"]
+    },
+    {
+      "id": "job-491449af5c4ada4dd7a1671f",
+      "company_name": "㈜제로데이 시큐리티",
+      "title": "[학원수료환영] 웹(Web) 개발자 모집합니다..",
+      "source_url": "https://m.jobkorea.co.kr/Recruit/GI_Read/49761888",
+      "before": {
+        "summary": "보안 전담이 아닌 웹개발 직무의 신입 정규직 공고다. 학원 수료자도 환영한다고 안내한다.",
+        "status": "ACTIVE",
+        "last_verified_at": "2026-08-23T21:12:40.000Z",
+        "updated_at": "2026-08-23T21:12:40.000Z"
+      },
+      "after": {
+        "summary": "웹개발 신입 공고이나 현재 상세가 마감 상태로 표시되어 활성 목록에서 제거한다.",
+        "status": "REMOVED",
+        "last_verified_at": "2026-08-26T13:59:58.000Z",
+        "updated_at": "2026-08-26T13:59:58.000Z"
+      },
+      "evidence": [
+        {
+          "url": "https://m.jobkorea.co.kr/Recruit/GI_Read/49761888",
+          "fact": "파티션 2차 확인에서 상세가 마감 상태로 표시되어 고정 미래 마감보다 앞선 조기마감으로 판정됨.",
+          "checkedAt": "2026-08-26T22:59:58+09:00",
+          "verificationMode": "PARTITION_SECOND_PASS_CURRENT_DETAIL"
+        }
+      ],
+      "auditDecisions": ["REMOVED_CONFIRMED"]
+    },
+    {
+      "id": "job-a01145b7998cfa5061a6b281",
+      "company_name": "SK하이닉스",
+      "title": "['26년 하반기] Talent hy-way 기술사무직 신입",
+      "source_url": "https://www.skcareers.com/Recruit/Detail/R261762",
+      "before": {
+        "status": "ACTIVE",
+        "last_verified_at": "2026-08-23T21:12:40.000Z",
+        "updated_at": "2026-08-23T21:12:40.000Z"
+      },
+      "after": {
+        "status": "EXPIRED",
+        "last_verified_at": "2026-08-26T14:06:16.000Z",
+        "updated_at": "2026-08-26T14:06:16.000Z"
+      },
+      "evidence": [
+        {
+          "url": "https://www.skcareers.com/Recruit/Detail/R261762",
+          "fact": "지원 마감은 2026-08-26 17:00 KST이며 현재 공식 상세에 Application closed로 표시됨.",
+          "checkedAt": "2026-08-27T07:30:00+09:00",
+          "verificationMode": "CURRENT_OFFICIAL_DETAIL_AND_FIXED_DEADLINE"
+        }
+      ],
+      "auditDecisions": ["EXPIRED_CONFIRMED"]
+    }
+  ]
+}

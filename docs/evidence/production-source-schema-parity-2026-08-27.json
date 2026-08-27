@@ -1,0 +1,68 @@
+{
+  "capturedAt": "2026-08-27T04:07:17Z",
+  "scope": "GitHub source, Sites source, and production D1 schema authority",
+  "baseline": {
+    "githubMainCommit": "acde9f9b31154fb57adb2bf3fc51865b5ff40d8c",
+    "githubExpectedSchemaVersion": "0035_sync_validator_jobs_20260825",
+    "productionExpectedSchemaVersion": "0036_sync_validator_jobs_20260826",
+    "productionAppliedSchemaVersion": "0036_sync_validator_jobs_20260826",
+    "missingMigrationFile": "drizzle/0036_sync_validator_jobs_20260826.sql",
+    "sourceDifference": {
+      "files": 13,
+      "insertions": 13553,
+      "deletions": 13
+    },
+    "falseNegativeRun": {
+      "workflow": "Production SLO smoke",
+      "runId": 33023591177,
+      "sourceCommit": "fd6e2b2ef04e126ba9fe777c662d9d3daafb4dbf",
+      "conclusion": "success",
+      "startedAt": "2026-08-26T23:30:32Z"
+    }
+  },
+  "remediation": {
+    "restoredMigration": "0036_sync_validator_jobs_20260826",
+    "restoredJobImportBatch": "catalog-jobs-20260826-validator-confirmed",
+    "sloContract": "repository source version must equal both deployed expected and applied versions",
+    "regressionTests": {
+      "files": 4,
+      "tests": 62,
+      "passed": 62
+    },
+    "productionSlo": {
+      "checks": 28,
+      "passed": 28,
+      "sourceSchemaVersion": "0036_sync_validator_jobs_20260826",
+      "deployedSchemaVersion": "0036_sync_validator_jobs_20260826",
+      "readinessColdStartMs": 2383.4,
+      "readinessWarmP95Ms": 199.3,
+      "coldStartBudgetMs": 5000,
+      "warmP95BudgetMs": 2500
+    },
+    "fullValidation": {
+      "format": "passed after normalizing merge-audit.json",
+      "lint": "passed",
+      "typecheck": "passed",
+      "unitAndIntegration": {
+        "files": 35,
+        "tests": 150,
+        "passed": 150
+      },
+      "e2e": {
+        "tests": 56,
+        "passed": 56,
+        "projects": ["chromium", "chromium-mobile-375", "firefox", "webkit"]
+      },
+      "productionBuild": "passed",
+      "bundleBudgetFailures": 0,
+      "performanceBudgetFailures": 0,
+      "recoveryDrill": {
+        "status": "pass",
+        "snapshotBytes": 2027520,
+        "foreignKeyViolations": 0,
+        "countMismatches": 0
+      }
+    },
+    "slackMessagesSent": 0
+  }
+}

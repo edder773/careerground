@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { formatSloSummary, runProductionSlo } from './check-production-slo.mjs';
+import {
+  formatSloSummary,
+  readSourceSchemaVersion,
+  runProductionSlo,
+  SOURCE_SCHEMA_VERSION,
+} from './check-production-slo.mjs';
 
 const apiHeaders = {
   'content-security-policy': "default-src 'self'; frame-ancestors 'none'; object-src 'none'",
@@ -21,8 +26,8 @@ const healthyReady = {
   database: 'd1',
   schema: {
     ready: true,
-    expectedVersion: '0035_sync_validator_jobs_20260825',
-    appliedVersion: '0035_sync_validator_jobs_20260825',
+    expectedVersion: SOURCE_SCHEMA_VERSION,
+    appliedVersion: SOURCE_SCHEMA_VERSION,
   },
   canary: { jobs: 147, problems: 427, learning: 102, searchRows: 679 },
 };
@@ -84,9 +89,43 @@ describe('production SLO checker', () => {
     expect(report.passed).toBe(true);
     expect(report.latency.readinessColdStartMs).toBe(110);
     expect(report.latency.readinessWarmP95Ms).toBe(140);
-    expect(report.schema?.appliedVersion).toBe('0035_sync_validator_jobs_20260825');
+    expect(report.schema?.sourceVersion).toBe(SOURCE_SCHEMA_VERSION);
+    expect(report.schema?.appliedVersion).toBe(SOURCE_SCHEMA_VERSION);
     expect(request).toHaveBeenCalledTimes(9);
     expect(formatSloSummary(report)).toContain('Result: **PASS**');
+  });
+
+  it('fails when the deployed schema does not match the repository migration authority', async () => {
+    const deployedVersion = '9999_deployed_only';
+    const report = await runProductionSlo({
+      request: requestFixture({
+        ready: {
+          ...healthyReady,
+          schema: {
+            ...healthyReady.schema,
+            expectedVersion: deployedVersion,
+            appliedVersion: deployedVersion,
+          },
+        },
+      }),
+      readinessSamples: 1,
+    });
+
+    expect(report.passed).toBe(false);
+    expect(report.schema).toMatchObject({
+      sourceVersion: SOURCE_SCHEMA_VERSION,
+      expectedVersion: deployedVersion,
+      appliedVersion: deployedVersion,
+    });
+    expect(report.failures).toContain(
+      `readiness.sample-1.contract: HTTP 200 source=${SOURCE_SCHEMA_VERSION} expected=${deployedVersion} applied=${deployedVersion} canary=${JSON.stringify(healthyReady.canary)}`,
+    );
+  });
+
+  it('rejects a migration authority file without a declared version', () => {
+    expect(() => readSourceSchemaVersion('export const OTHER_VALUE = true;')).toThrow(
+      /does not declare EXPECTED_SCHEMA_VERSION/,
+    );
   });
 
   it('fails with an actionable result when a static CSP fallback is missing', async () => {

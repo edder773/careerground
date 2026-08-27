@@ -804,9 +804,9 @@ describe('Sites D1 API', () => {
       )
       .first<{ count: number }>();
 
-    expect(jobCount?.count).toBe(168);
-    expect(currentJobCount?.count).toBe(153);
-    expect(expiredJobCount?.count).toBe(15);
+    expect(jobCount?.count).toBe(178);
+    expect(currentJobCount?.count).toBe(160);
+    expect(expiredJobCount?.count).toBe(18);
     expect(problemCount?.count).toBe(427);
     expect(sqlProblemCount?.count).toBe(66);
     expect(dummyCount?.count).toBe(0);

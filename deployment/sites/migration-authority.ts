@@ -13,8 +13,9 @@ export const PRODUCTION_MIGRATIONS = [
   '0033_fix_sql_problem_classification_20260825.sql',
   '0034_migration_authority_and_delivery_integrity.sql',
   '0035_sync_validator_jobs_20260825.sql',
+  '0036_sync_validator_jobs_20260826.sql',
 ] as const;
 
-export const EXPECTED_SCHEMA_VERSION = '0035_sync_validator_jobs_20260825';
+export const EXPECTED_SCHEMA_VERSION = '0036_sync_validator_jobs_20260826';
 export const EXPECTED_SCHEMA_CHECKSUM =
-  'sha256:7e913c674f3d5d358c6cdef78703f1f9f91a68122c4fd52fbcb457c2092e3754';
+  'sha256:0b0b5878971939adc3bb11f039bb8c5a68bb8d2320f79c2374b2b10e11fba0a9';

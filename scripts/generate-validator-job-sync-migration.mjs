@@ -321,14 +321,29 @@ function planExistingUpdates({ baselineItems, libraryItems, audit }) {
     const resolved = target(entry);
     if (!resolved) continue;
     const { liveRow, finalRow, update } = resolved;
+    const beforeStatus = entry.before_status ?? entry.previous_status;
+    const afterStatus = entry.after_status ?? entry.resulting_status;
     requireSync(
-      liveRow.status === entry.before_status || liveRow.status === entry.after_status,
+      typeof beforeStatus === 'string' && typeof afterStatus === 'string',
+      `${entry.id} audit status transition is incomplete.`,
+    );
+    if (entry.before_status !== undefined && entry.previous_status !== undefined) {
+      requireSync(
+        entry.before_status === entry.previous_status,
+        `${entry.id} audit before status aliases conflict.`,
+      );
+    }
+    if (entry.after_status !== undefined && entry.resulting_status !== undefined) {
+      requireSync(
+        entry.after_status === entry.resulting_status,
+        `${entry.id} audit after status aliases conflict.`,
+      );
+    }
+    requireSync(
+      liveRow.status === beforeStatus || liveRow.status === afterStatus,
       `${entry.id} live status precondition failed.`,
     );
-    requireSync(
-      finalRow.status === entry.after_status,
-      `${entry.id} final status is not audit-approved.`,
-    );
+    requireSync(finalRow.status === afterStatus, `${entry.id} final status is not audit-approved.`);
     requireSync(
       Array.isArray(entry.changed_fields) && entry.changed_fields.length > 0,
       `${entry.id} has no changed fields.`,
