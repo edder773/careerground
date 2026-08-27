@@ -82,6 +82,12 @@ batch 뒤에만 claim되는지, `not-ready`일 때 webhook을 부르지 않는�
 회사명을 읽어 검색하도록 시계 의존성을 제거했다. 해당 테스트 4/4 재검증 뒤 Chromium, 375px
 모바일 Chromium, Firefox, WebKit 전체 E2E 56/56이 통과했다.
 
+Sites 전용 소스의 정확한 HEAD에는 GitHub보다 앞서 적용된 `0036` 채용 migration이 있었고, 이
+migration의 당일 import batch 때문에 readiness 테스트의 최초 요청이 예상한 `not-ready` 대신
+`claimed`가 됐다. 운영 쿼리 오류가 아니라 LocalD1 테스트가 seed 상태에 의존한 문제였다. 해당
+테스트 시작 시 `kind='jobs'` import fixture만 삭제한 뒤 오래된 batch와 당일 batch를 직접 구성하도록
+격리했다. 사용자·공고·운영 D1 행은 변경하지 않았다.
+
 최종 검증은 format, lint, typecheck, production build와 unit/integration 148개가 통과했다. docs
 build에는 기존 500 kB 초과 chunk 경고가 남지만 종료 코드는 성공이며 이번 Slack/D1 경로와 무관하다.
 합성 LocalD1 성능 예산은 jobs cursor p95 5.81ms, 검색 p95 41.58ms로 실패 0건이었다. bundle 예산도

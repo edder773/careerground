@@ -64,6 +64,15 @@
       "targetedAfter": { "passed": 4, "failed": 0 },
       "fullAfter": { "passed": 56, "failed": 0 }
     },
+    "exactSitesSource": {
+      "initial": {
+        "testsPassed": 147,
+        "testsFailed": 1,
+        "cause": "Sites-only migration 0036 seeded a current-day jobs import, violating the test's empty-import precondition."
+      },
+      "fix": "Delete only jobs import batches inside the isolated LocalD1 test before constructing old and current-day fixtures.",
+      "productionRowsChanged": 0
+    },
     "checks": {
       "format": "pass",
       "lint": "pass",

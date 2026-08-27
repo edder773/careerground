@@ -439,6 +439,7 @@ describe('Sites D1 API', () => {
     const token = 'test-digest-token';
     const authorized = { authorization: `Bearer ${token}` };
     const environment = { DIGEST_API_TOKEN: token };
+    await db.prepare("DELETE FROM import_batches WHERE kind = 'jobs'").run();
     const request = () =>
       call(
         '/api/v1/internal/slack-digest/claim',
