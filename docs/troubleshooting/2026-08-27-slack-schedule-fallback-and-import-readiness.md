@@ -3,8 +3,8 @@ title: Slack 08:01 예약 누락과 채용 갱신 순서 보강
 date: 2026-08-27
 tags: [slack, github-actions, schedule, d1, jobs, resilience]
 generatedByAI: false
-pr: pending
-commit: pending
+pr: 68
+commit: fd56cffca3e3b8b979d40db2fc2a962006ac8490
 evidence: docs/evidence/slack-schedule-resilience-2026-08-27.json
 ---
 
