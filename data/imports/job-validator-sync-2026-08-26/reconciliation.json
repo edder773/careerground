@@ -1,0 +1,439 @@
+{
+  "version": "1.0",
+  "mode": "VALIDATOR_CONFIRMED_SYNC",
+  "runAt": "2026-08-27T08:28:52+09:00",
+  "library": {
+    "fileName": "careerground-jobs-live-2026-08-26-final.json",
+    "libraryFileId": "libfile_8b17ef271d74819183edc768a7209fa2",
+    "exportedAt": "2026-08-26T23:49:28+09:00",
+    "sha256": "7cac83e0fdde4aea580feb118862e1851a887e99fdc793b9e22e05a5548da775",
+    "sourceRows": 211
+  },
+  "audit": {
+    "fileName": "careerground-merge-audit-2026-08-26.json",
+    "auditFileId": "libfile_71a4350e13948191958c4d0a67471675",
+    "runGroupKey": "2026-08-26:f059a369ad91af5c",
+    "sha256": "b391ffe3805d85b9e66691ce3b1ba15cd6780b4cb618ea4f0de7c3c6a28775ac",
+    "qualityGate": "PASS"
+  },
+  "precisionRule": {
+    "maxSameSecondSkewMs": 999,
+    "appliedRows": 0,
+    "reason": "Library exportedAt is serialized to seconds while verifier timestamps retain milliseconds."
+  },
+  "comparison": {
+    "baselineRows": 168,
+    "matchedExistingRows": 168,
+    "newSourceRows": 43,
+    "addedActiveRows": 10,
+    "excludedNewNonActiveRows": 33,
+    "excludedStaleActiveRows": 2,
+    "conflictRows": 0,
+    "updatedExistingRows": 4,
+    "auditRowsNotLive": 0,
+    "deletedRows": 0,
+    "storedRowsAfter": 178
+  },
+  "added": [
+    {
+      "id": "job-d103bc2068c9150c4459b2f7",
+      "company_name": "Microsoft",
+      "title": "Data Center Technicians Intern",
+      "source_url": "https://apply.careers.microsoft.com/careers/job/1970393556978326"
+    },
+    {
+      "id": "job-d75ce609587d9b784312c074",
+      "company_name": "PFC Technologies",
+      "title": "ML Engineer Intern",
+      "source_url": "https://career.rememberapp.co.kr/job/posting/289377"
+    },
+    {
+      "id": "job-8a231fdfa895a5833d854494",
+      "company_name": "딥오토",
+      "title": "[인턴] Agentic AI Engineer",
+      "source_url": "https://career.rememberapp.co.kr/job/posting/258549"
+    },
+    {
+      "id": "job-d428a282f2b60e6b92c6c69d",
+      "company_name": "라이드플럭스",
+      "title": "[제주/서울] SW Engineer (C++, Python) (정규직·채용연계형 인턴)",
+      "source_url": "https://career.rememberapp.co.kr/job/posting/324833"
+    },
+    {
+      "id": "job-42237e42cfad918be6a888dd",
+      "company_name": "써큘러랩스",
+      "title": "AI Vision Engineer (YOLO)",
+      "source_url": "https://jumpit.saramin.co.kr/position/54678456"
+    },
+    {
+      "id": "job-addfef731fb117aa8689e843",
+      "company_name": "이비즈테크",
+      "title": "클라우드 엔지니어 신입",
+      "source_url": "https://jumpit.saramin.co.kr/position/54647756"
+    },
+    {
+      "id": "job-3884a725e889b9ef682f240b",
+      "company_name": "캐폴랩스",
+      "title": "[인턴] 개발자",
+      "source_url": "https://www.wanted.co.kr/wd/382447"
+    },
+    {
+      "id": "job-0705faf7cb2f1e7ce6541614",
+      "company_name": "쿤텍",
+      "title": "AI 기반 가상머신 개발자 (AX/신입)",
+      "source_url": "https://jumpit.saramin.co.kr/position/54728283"
+    },
+    {
+      "id": "job-55ee4c3d7546494c69428d41",
+      "company_name": "파네시아",
+      "title": "System Software Engineer (신입)",
+      "source_url": "https://panmnesia.com/careers_kr/apply/system-software-engineer-new/"
+    },
+    {
+      "id": "job-457f133b04047cf922970648",
+      "company_name": "한국산업기술시험원(KTL)",
+      "title": "2026년 정규직 채용 - IT·AI 연구직",
+      "source_url": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=304192"
+    }
+  ],
+  "updated": [
+    {
+      "id": "job-35b9be034d8ba7236ef2a07e",
+      "company_name": "한국관세정보원",
+      "title": "2026년도 제2차 직원 채용 - 전산설비·전산OP(신입)",
+      "source_url": "https://kcits.hubst.co.kr/applicantMain/goJobOpeningDetailPage.do?boardType=1&nextPage=&opnIdx=14508&orgIdx=5197&postIdx=",
+      "before": {
+        "status": "ACTIVE",
+        "last_verified_at": "2026-08-21T02:51:23.000Z",
+        "updated_at": "2026-08-21T02:51:23.000Z"
+      },
+      "after": {
+        "status": "EXPIRED",
+        "last_verified_at": "2026-08-26T14:06:16.000Z",
+        "updated_at": "2026-08-26T14:06:16.000Z"
+      },
+      "auditDecisions": ["EXPIRED_CONFIRMED"]
+    },
+    {
+      "id": "job-45f7898244ff71abe006c11a",
+      "company_name": "NAVER Cloud",
+      "title": "LLM 평가 및 학습 데이터 파이프라인 개발 (체험형 인턴)",
+      "source_url": "https://recruit.navercloudcorp.com/rcrt/view.do?annoId=30005293&lang=ko",
+      "before": {
+        "status": "ACTIVE",
+        "last_verified_at": "2026-08-21T02:51:23.000Z",
+        "updated_at": "2026-08-21T02:51:23.000Z"
+      },
+      "after": {
+        "status": "EXPIRED",
+        "last_verified_at": "2026-08-26T13:59:58.000Z",
+        "updated_at": "2026-08-26T13:59:58.000Z"
+      },
+      "auditDecisions": ["EXPIRED_CONFIRMED"]
+    },
+    {
+      "id": "job-491449af5c4ada4dd7a1671f",
+      "company_name": "㈜제로데이 시큐리티",
+      "title": "[학원수료환영] 웹(Web) 개발자 모집합니다..",
+      "source_url": "https://m.jobkorea.co.kr/Recruit/GI_Read/49761888",
+      "before": {
+        "summary": "보안 전담이 아닌 웹개발 직무의 신입 정규직 공고다. 학원 수료자도 환영한다고 안내한다.",
+        "status": "ACTIVE",
+        "last_verified_at": "2026-08-23T21:12:40.000Z",
+        "updated_at": "2026-08-23T21:12:40.000Z"
+      },
+      "after": {
+        "summary": "웹개발 신입 공고이나 현재 상세가 마감 상태로 표시되어 활성 목록에서 제거한다.",
+        "status": "REMOVED",
+        "last_verified_at": "2026-08-26T13:59:58.000Z",
+        "updated_at": "2026-08-26T13:59:58.000Z"
+      },
+      "auditDecisions": ["REMOVED_CONFIRMED"]
+    },
+    {
+      "id": "job-a01145b7998cfa5061a6b281",
+      "company_name": "SK하이닉스",
+      "title": "['26년 하반기] Talent hy-way 기술사무직 신입",
+      "source_url": "https://www.skcareers.com/Recruit/Detail/R261762",
+      "before": {
+        "status": "ACTIVE",
+        "last_verified_at": "2026-08-23T21:12:40.000Z",
+        "updated_at": "2026-08-23T21:12:40.000Z"
+      },
+      "after": {
+        "status": "EXPIRED",
+        "last_verified_at": "2026-08-26T14:06:16.000Z",
+        "updated_at": "2026-08-26T14:06:16.000Z"
+      },
+      "auditDecisions": ["EXPIRED_CONFIRMED"]
+    }
+  ],
+  "excluded": [
+    {
+      "id": "job-09cdc20d8b1ca33ee5630690",
+      "company_name": "LG AI Research",
+      "title": "Backend Engineer Internship",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4595851005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-3631ff0c3066edbe229126a9",
+      "company_name": "LG AI Research",
+      "title": "Data Engineer Internship - Physical AI",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4725957005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-af0de9234513e793c29b16b3",
+      "company_name": "LG AI Research",
+      "title": "Large Language Model 연구 및 개발 Internship",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4180455005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-717093891e348577fb04f976",
+      "company_name": "LG AI Research",
+      "title": "Materials Intelligence Lab Internship",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4204208005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-b2420db5ea570c366a605f74",
+      "company_name": "LG AI Research",
+      "title": "NLP 개발인턴",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4024293005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-740e28db3429ea37d2ca9bca",
+      "company_name": "LG AI Research",
+      "title": "Platform Engineer Internship",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4685111005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-9e0f22722f59ede41845929c",
+      "company_name": "LG AI Research",
+      "title": "Research Internship - Physical AI",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4725958005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-b29a804bf08de9606c7d754f",
+      "company_name": "LG AI Research",
+      "title": "Research Internship - Robot Foundation Model",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4693138005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-46f4c96f8f2972f7ec95443b",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist Internship (Agentic AI)",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4638356005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-d87a6777423b6c79306a0c44",
+      "company_name": "LG AI Research",
+      "title": "Research/Engineering Internship - Reinforcement Learning",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4708922005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-163bc43ce038e35767684b1f",
+      "company_name": "LG AI Research",
+      "title": "독자AI파운데이션 모델 개발 Internship (World Best LLM)",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4593631005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-f623ee54dc9640256c7e9ae9",
+      "company_name": "LG AI Research",
+      "title": "AI Software Engineer - Self-driving Laboratory",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4724188005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-72dd22d43c8b5863c538a4bc",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist - Chemical Agentic AI",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4623079005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-a7dacb266b63b7c98b048527",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist - Physical AI & Robot Foundation Models",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4708924005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-f4380421ea70d60c8d6e150a",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist/Engineer - EXAONE Lab",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4179238005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-ca90bf1d7ae1483ac616bd45",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist/Engineer - NLP",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4012547005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-824aa9009bac2db6b6267b1f",
+      "company_name": "LG AI Research",
+      "title": "Research Scientist/Engineer - STT/TTS",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4012563005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-794c036754fb07c3c71a620e",
+      "company_name": "LG AI Research",
+      "title": "Superintelligence Lab — AI-Native Engineering Project",
+      "source_url": "https://job-boards.greenhouse.io/lgairesearch/jobs/4722545005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-544b749197f23879d49acb7a",
+      "company_name": "BNK시스템",
+      "title": "2026년도 OP직무 채용공고",
+      "source_url": "https://linkareer.com/activity/342490",
+      "status": "EXPIRED",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-61b64a7d9e463f90c466e081",
+      "company_name": "지비아이티",
+      "title": "[금융IT] [신입] 증권 업무 HTS 운영 및 개발자를 찾습니다.",
+      "source_url": "https://www.jobkorea.co.kr/Recruit/GI_Read/49751734",
+      "status": "EXPIRED",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-201df80a535f1a2412c32eb7",
+      "company_name": "크레셈",
+      "title": "제어기술팀 SW개발 신입 채용",
+      "source_url": "https://jumpit.saramin.co.kr/position/54552437",
+      "status": "EXPIRED",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-3ab15746467e982b91ba1361",
+      "company_name": "42dot",
+      "title": "[MS/PhD Intern] AI Engineer (정규직 전환형)",
+      "source_url": "https://42dot.ai/en/careers/open-roles/c4af7536-c24f-4754-9fe9-d92d237403f3",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-1cb6233012476bf5b583d735",
+      "company_name": "FuriosaAI",
+      "title": "Algorithm - AI Research Engineer Intern",
+      "source_url": "https://furiosa.ai/career/algorithm-ai-research-engineer-intern-4005768201",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-df78a17bfcca7501a37ed974",
+      "company_name": "IBM",
+      "title": "2026 IBM Consulting Internship – Application Developer (AI Ops)",
+      "source_url": "https://careers.ibm.com/pt_BR/careers/JobDetail/2026-IBM-Consulting-Internship-Application-Developer-AI-Ops/127005",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-c7faee9494d10ae3704ef210",
+      "company_name": "Moloco",
+      "title": "Machine Learning Engineer Intern (3-month internship)",
+      "source_url": "https://job-boards.greenhouse.io/moloco/jobs/7635045003",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-879220c74cab81f74a5392eb",
+      "company_name": "Qualcomm Korea",
+      "title": "Intern - Generative AI model personalization and efficient fine-tuning",
+      "source_url": "https://kr.linkedin.com/jobs/view/intern-deep-learning-researcher-at-qualcomm-4432928554",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-bf5c85f1d22098f758076fdf",
+      "company_name": "Qualcomm Korea",
+      "title": "Intern- Deep Learning R&D for Automated Driving",
+      "source_url": "https://kr.linkedin.com/jobs/view/intern-deep-learning-r-d-for-automated-driving-at-qualcomm-4327652815",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-03e07d74b88c49d042f7a0f0",
+      "company_name": "(주)엠엔텍",
+      "title": "머신비전 S/W 개발 신입/경력",
+      "source_url": "https://www.saramin.co.kr/zf_user/jobs/view?rec_idx=54573785",
+      "status": "ACTIVE",
+      "reason": "STALE_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-3adbcac152ebf8c54c491c88",
+      "company_name": "(주)와이매틱스",
+      "title": "AI 개발자",
+      "source_url": "https://www.saramin.co.kr/zf_user/jobs/view?rec_idx=54575004",
+      "status": "ACTIVE",
+      "reason": "STALE_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-1280d9e67dc83b1991145763",
+      "company_name": "ASML",
+      "title": "IT Service Desk Administrator (1 Year Contract)",
+      "source_url": "https://asml.wd3.myworkdayjobs.com/en-US/ASMLEXT1/job/KR-Hwaseong/IT-Service-Desk-Administrator--1year-Contract-_J-00327777",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-6763a8fb86252e527f9d0994",
+      "company_name": "GE Healthcare",
+      "title": "AI/ML Engineer",
+      "source_url": "https://kr.linkedin.com/jobs/view/ai-ml-engineer-at-ge-healthcare-4458760266",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-70ba7f440d313a2c451752e9",
+      "company_name": "Palantir Technologies",
+      "title": "Forward Deployed Software Engineer, New Grad - Commercial",
+      "source_url": "https://jobs.lever.co/palantir/341d5cae-a473-4813-9a6c-0f67fcc1b253",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    },
+    {
+      "id": "job-f6ee76b19de75f5056f77a0f",
+      "company_name": "리비바이오",
+      "title": "Backend Developer (Node.js) (신입)",
+      "source_url": "https://inthiswork.com/archives/391392",
+      "status": "DEADLINE_UNKNOWN",
+      "reason": "NON_ACTIVE_EXCLUDED"
+    }
+  ],
+  "auditRowsNotLive": [],
+  "conflicts": []
+}

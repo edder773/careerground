@@ -85,6 +85,40 @@ describe('CareerGround validator-confirmed job sync', () => {
     ).toThrow(/not confirmed/);
   });
 
+  it('accepts verifier previous/resulting status aliases', async () => {
+    const current = await sources();
+    const audit = JSON.parse(current.auditSource);
+    for (const entry of audit.existingStatusChanges) {
+      entry.previous_status = entry.before_status;
+      entry.resulting_status = entry.after_status;
+      delete entry.before_status;
+      delete entry.after_status;
+    }
+
+    const result = generateValidatorSyncSql({
+      ...current,
+      auditSource: JSON.stringify(audit),
+      ...options(),
+    });
+
+    expect(result.updates).toHaveLength(5);
+    expect(result.sql?.match(/UPDATE jobs\n/gu)).toHaveLength(5);
+  });
+
+  it('rejects conflicting status alias pairs', async () => {
+    const current = await sources();
+    const audit = JSON.parse(current.auditSource);
+    audit.existingStatusChanges[0].previous_status = 'REMOVED';
+
+    expect(() =>
+      generateValidatorSyncSql({
+        ...current,
+        auditSource: JSON.stringify(audit),
+        ...options(),
+      }),
+    ).toThrow(/before status aliases conflict/);
+  });
+
   it('rejects a Library payload that no longer matches the audit SHA-256', async () => {
     const current = await sources();
     const library = JSON.parse(current.librarySource);

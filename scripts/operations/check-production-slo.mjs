@@ -1,4 +1,4 @@
-import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import process from 'node:process';
@@ -9,6 +9,20 @@ const DEFAULT_OUTPUT = 'work/operations/production-slo.json';
 const GOOGLE_CLIENT_ID = '790295034558-q9a41jpu912age0eo0dpdu5pcdh1ipo5.apps.googleusercontent.com';
 const GOOGLE_IDENTITY_SCRIPT_URL = 'https://accounts.google.com/gsi/client';
 const GOOGLE_JWKS_URL = 'https://www.googleapis.com/oauth2/v3/certs';
+const MIGRATION_AUTHORITY_URL = new URL(
+  '../../deployment/sites/migration-authority.ts',
+  import.meta.url,
+);
+
+export const readSourceSchemaVersion = (source = readFileSync(MIGRATION_AUTHORITY_URL, 'utf8')) => {
+  const match = source.match(/EXPECTED_SCHEMA_VERSION\s*=\s*'([^']+)'/u);
+  if (!match?.[1]) {
+    throw new Error('Repository migration authority does not declare EXPECTED_SCHEMA_VERSION.');
+  }
+  return match[1];
+};
+
+export const SOURCE_SCHEMA_VERSION = readSourceSchemaVersion();
 
 const timedRequest = async (url, init = {}) => {
   const startedAt = performance.now();
@@ -79,6 +93,7 @@ export async function runProductionSlo({
   readinessSamples = 5,
   coldStartBudgetMs = 5_000,
   warmLatencyBudgetMs = 2_500,
+  expectedSchemaVersion = SOURCE_SCHEMA_VERSION,
 } = {}) {
   const normalizedBase = new URL(baseUrl).origin;
   const checks = [];
@@ -128,15 +143,15 @@ export async function runProductionSlo({
       payload?.status === 'ok' &&
       payload?.database === 'd1' &&
       payload?.schema?.ready === true &&
-      Boolean(payload?.schema?.expectedVersion) &&
-      payload.schema.expectedVersion === payload.schema.appliedVersion &&
+      payload?.schema?.expectedVersion === expectedSchemaVersion &&
+      payload?.schema?.appliedVersion === expectedSchemaVersion &&
       canaryIsHealthy;
     record(
       `readiness.sample-${index + 1}.contract`,
       contractIsHealthy,
       contractIsHealthy
-        ? `HTTP 200 schema=${payload.schema.appliedVersion}`
-        : `HTTP ${result.response.status} schema=${payload?.schema?.appliedVersion || 'invalid'} canary=${JSON.stringify(canary || null)}`,
+        ? `HTTP 200 source=${expectedSchemaVersion} schema=${payload.schema.appliedVersion}`
+        : `HTTP ${result.response.status} source=${expectedSchemaVersion} expected=${payload?.schema?.expectedVersion || 'invalid'} applied=${payload?.schema?.appliedVersion || 'invalid'} canary=${JSON.stringify(canary || null)}`,
     );
   }
 
@@ -306,6 +321,7 @@ export async function runProductionSlo({
     },
     schema: readinessPayload?.schema
       ? {
+          sourceVersion: expectedSchemaVersion,
           ready: readinessPayload.schema.ready,
           expectedVersion: readinessPayload.schema.expectedVersion,
           appliedVersion: readinessPayload.schema.appliedVersion,
@@ -319,6 +335,7 @@ export async function runProductionSlo({
 
 export const formatSloSummary = (report) => {
   const result = report.passed ? 'PASS' : 'FAIL';
+  const sourceVersion = report.schema?.sourceVersion || SOURCE_SCHEMA_VERSION;
   const version = report.schema?.appliedVersion || 'unavailable';
   const coldStart =
     report.latency.readinessColdStartMs === null
@@ -332,7 +349,8 @@ export const formatSloSummary = (report) => {
     '## Production SLO smoke',
     '',
     `- Result: **${result}**`,
-    `- Schema: \`${version}\``,
+    `- Source schema: \`${sourceVersion}\``,
+    `- Deployed schema: \`${version}\``,
     `- Readiness cold start: **${coldStart}** (budget ${report.latency.coldStartBudgetMs} ms)`,
     `- Readiness warm p95: **${warmP95}** (budget ${report.latency.warmBudgetMs} ms)`,
     `- Checks: ${report.checks.filter((check) => check.passed).length}/${report.checks.length} passed`,
