@@ -130,14 +130,19 @@ test('captures core domain screens', async ({ page }) => {
     await page.goto(screen.href);
     await expect(page.getByRole('heading', { name: screen.heading, exact: true })).toBeVisible();
     if (screen.name === 'jobs') {
-      await expect(page.locator('.job-card').first()).toBeVisible();
+      const firstJobCard = page.locator('.job-card').first();
+      await expect(firstJobCard).toBeVisible();
+      const activeCompanyName = (
+        await firstJobCard.locator('.job-card-detail strong').innerText()
+      ).trim();
+      expect(activeCompanyName.length).toBeGreaterThan(0);
       const companySearch = page.getByRole('searchbox', { name: '회사명 검색' });
       await expect(companySearch).toBeVisible();
-      await companySearch.fill('NAVER');
-      await expect(page.locator('.job-card').first()).toContainText('NAVER');
+      await companySearch.fill(activeCompanyName);
+      await expect(page.locator('.job-card').first()).toContainText(activeCompanyName);
       const companyResults = await page.locator('.job-card').allTextContents();
       expect(companyResults.length).toBeGreaterThan(0);
-      expect(companyResults.every((value) => value.includes('NAVER'))).toBe(true);
+      expect(companyResults.every((value) => value.includes(activeCompanyName))).toBe(true);
       await companySearch.fill('');
       await page.getByRole('button', { name: /^채용공고 필터/ }).click();
       const filterDialog = page.getByRole('dialog', { name: '채용공고 전체 필터' });

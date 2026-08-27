@@ -1,8 +1,15 @@
-import { readFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { URL } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
 import { getKoreanDispatchDecision } from './korean-business-day.mjs';
-import { formatSlackMessages, sendDailyDigest } from './send-daily-digest.mjs';
+import {
+  digestResultStatus,
+  formatSlackMessages,
+  sendDailyDigest,
+  writeGithubOutputs,
+} from './send-daily-digest.mjs';
 
 const BAEUMZIP_URL = 'https://www.baeumzip.site/';
 const BUSINESS_DAY = () => new Date('2026-08-21T00:00:00.000Z');
@@ -159,13 +166,20 @@ describe('daily Slack digest', () => {
     expect(rendered).not.toContain('오늘의 코딩 테스트');
   });
 
-  it('runs at 08:01 on weekdays in the Seoul timezone', async () => {
+  it('uses 08:01 plus off-minute fallback schedules on weekdays in Seoul', async () => {
     const workflow = await readFile(
       new URL('../../.github/workflows/daily-slack-digest.yml', import.meta.url),
       'utf8',
     );
     expect(workflow).toContain("cron: '1 8 * * 1-5'");
+    expect(workflow).toContain("cron: '31 8 * * 1-5'");
+    expect(workflow).toContain("cron: '17 9 * * 1-5'");
     expect(workflow).toContain("timezone: 'Asia/Seoul'");
+    expect(workflow.match(/timezone: 'Asia\/Seoul'/g)).toHaveLength(3);
+    expect(workflow).toContain('SLACK_DIGEST_REQUIRE_FRESH_JOBS:');
+    expect(workflow).toContain("github.event.schedule != '17 9 * * 1-5'");
+    expect(workflow).toContain("steps.digest.outputs.delivery_status == 'job-import-not-ready'");
+    expect(workflow).toContain("steps.digest.outputs.delivery_status == 'already-sent'");
     expect(workflow).not.toContain("cron: '0 8 * * 1-5'");
     expect(workflow).not.toContain("cron: '0 7 * * 1-5'");
   });
@@ -354,6 +368,59 @@ describe('daily Slack digest', () => {
       ),
     ).resolves.toMatchObject({ messageCount: 0, skipped: { reason: 'already-sent' } });
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('defers a scheduled digest until the current KST jobs import is committed', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(
+      new globalThis.Response(
+        JSON.stringify({
+          status: 'not-ready',
+          deliveryKey: 'daily:2026-08-21',
+          reason: 'job-import-not-ready',
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      ),
+    );
+
+    const result = await sendDailyDigest(
+      {
+        CAREERGROUND_DIGEST_URL: 'https://careerground.example/api/v1/internal/slack-digest',
+        CAREERGROUND_DIGEST_TOKEN: 'service-token',
+        SLACK_WEBHOOK_URL: 'https://hooks.slack.com/services/T000/B000/secret',
+        BAEUMZIP_URL,
+        SLACK_DIGEST_REQUIRE_FRESH_JOBS: 'true',
+      },
+      fetchMock,
+      BUSINESS_DAY,
+    );
+
+    expect(result).toEqual({
+      messageCount: 0,
+      skipped: { reason: 'job-import-not-ready', dateKey: 'daily:2026-08-21' },
+    });
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+      jobsOnly: false,
+      requireFreshJobs: true,
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('writes a non-secret delivery status for later workflow monitoring steps', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'careerground-slack-output-'));
+    const outputPath = join(directory, 'github-output.txt');
+    try {
+      const result = {
+        messageCount: 0,
+        skipped: { reason: 'job-import-not-ready', dateKey: 'daily:2026-08-21' },
+      };
+      expect(digestResultStatus(result)).toBe('job-import-not-ready');
+      writeGithubOutputs(result, outputPath);
+      expect(await readFile(outputPath, 'utf8')).toBe(
+        'delivery_status=job-import-not-ready\nmessage_count=0\n',
+      );
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 
   it('marks an ambiguous Slack network failure as uncertain instead of retryable', async () => {

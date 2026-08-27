@@ -435,6 +435,76 @@ describe('Sites D1 API', () => {
     expect(delivery?.completedAt).toBeTruthy();
   });
 
+  it('keeps the daily delivery unclaimed until a current-KST-day jobs import is committed', async () => {
+    const token = 'test-digest-token';
+    const authorized = { authorization: `Bearer ${token}` };
+    const environment = { DIGEST_API_TOKEN: token };
+    const request = () =>
+      call(
+        '/api/v1/internal/slack-digest/claim',
+        {
+          method: 'POST',
+          headers: authorized,
+          body: JSON.stringify({ requireFreshJobs: true }),
+        },
+        {},
+        environment,
+      );
+
+    const waiting = await request();
+    expect(waiting.body).toMatchObject({
+      status: 'not-ready',
+      reason: 'job-import-not-ready',
+      deliveryKey: expect.stringMatching(/^daily:\d{4}-\d{2}-\d{2}$/),
+    });
+    expect(
+      await db
+        .prepare('SELECT COUNT(*) AS count FROM slack_digest_deliveries')
+        .first<{ count: number }>(),
+    ).toMatchObject({ count: 0 });
+
+    await db
+      .prepare(
+        `INSERT INTO import_batches
+           (id, kind, checksum, status, original_count, rejected_count, result, committed_at, created_at)
+         VALUES (?, 'jobs', ?, 'COMMITTED', 0, 0, '{}', ?, ?)`,
+      )
+      .bind(
+        'old-jobs-import',
+        'old-jobs-import-checksum',
+        '2026-01-01T06:00:00+09:00',
+        '2026-01-01T06:00:00+09:00',
+      )
+      .run();
+    expect((await request()).body).toMatchObject({ status: 'not-ready' });
+
+    const today = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date());
+    const committedAtWithOffset = `${today}T06:00:00+09:00`;
+    await db
+      .prepare(
+        `INSERT INTO import_batches
+           (id, kind, checksum, status, original_count, rejected_count, result, committed_at, created_at)
+         VALUES (?, 'jobs', ?, 'COMMITTED', 0, 0, '{}', ?, ?)`,
+      )
+      .bind(
+        'today-jobs-import',
+        'today-jobs-import-checksum',
+        committedAtWithOffset,
+        committedAtWithOffset,
+      )
+      .run();
+    expect((await request()).body).toMatchObject({
+      status: 'claimed',
+      deliveryKey: `daily:${today}`,
+      attemptCount: 1,
+    });
+  });
+
   it('allows a retry only after an explicit Slack rejection', async () => {
     const token = 'test-digest-token';
     const authorized = { authorization: `Bearer ${token}` };

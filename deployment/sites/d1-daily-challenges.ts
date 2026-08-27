@@ -447,6 +447,7 @@ const slackDigestDeliveryInput = (input: unknown) => {
   const body = parseObject(input);
   const snapshotCreatedAt = cleanText(body.snapshotCreatedAt);
   const jobsOnly = body.jobsOnly === true;
+  const requireFreshJobs = body.requireFreshJobs === true;
   if (jobsOnly && !snapshotCreatedAt) {
     throw new RouteError(
       400,
@@ -454,11 +455,51 @@ const slackDigestDeliveryInput = (input: unknown) => {
       'SNAPSHOT_REQUIRED',
     );
   }
-  return { snapshotCreatedAt, jobsOnly };
+  if (snapshotCreatedAt && requireFreshJobs) {
+    throw new RouteError(
+      400,
+      '스냅샷 재전송에는 당일 채용 갱신 확인을 함께 사용할 수 없습니다.',
+      'FRESH_JOBS_NOT_APPLICABLE',
+    );
+  }
+  return { snapshotCreatedAt, jobsOnly, requireFreshJobs };
 };
+
+const kstDayBounds = (date: string) => {
+  const start = new Date(`${date}T00:00:00+09:00`);
+  const end = new Date(start.getTime() + 86_400_000);
+  return { start: start.toISOString(), end: end.toISOString() };
+};
+
+async function committedJobsImportForKstDate(db: D1Database, date: string) {
+  const bounds = kstDayBounds(date);
+  return first<{ id: string; committedAt: string }>(
+    db,
+    `SELECT id, committed_at AS committedAt
+       FROM import_batches
+      WHERE kind = 'jobs' AND status = 'COMMITTED' AND committed_at IS NOT NULL
+        AND julianday(committed_at) >= julianday(?)
+        AND julianday(committed_at) < julianday(?)
+      ORDER BY julianday(committed_at) DESC
+      LIMIT 1`,
+    bounds.start,
+    bounds.end,
+  );
+}
 
 export async function claimSlackDigest(db: D1Database, requestUrl: URL, input: unknown) {
   const options = slackDigestDeliveryInput(input);
+  if (options.requireFreshJobs) {
+    const date = kstDate();
+    const committedImport = await committedJobsImportForKstDate(db, date);
+    if (!committedImport) {
+      return {
+        status: 'not-ready' as const,
+        deliveryKey: `daily:${date}`,
+        reason: 'job-import-not-ready' as const,
+      };
+    }
+  }
   const digestUrl = new URL(requestUrl);
   digestUrl.pathname = '/api/v1/internal/slack-digest';
   digestUrl.search = '';
