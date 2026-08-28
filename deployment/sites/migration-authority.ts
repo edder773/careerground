@@ -14,8 +14,9 @@ export const PRODUCTION_MIGRATIONS = [
   '0034_migration_authority_and_delivery_integrity.sql',
   '0035_sync_validator_jobs_20260825.sql',
   '0036_sync_validator_jobs_20260826.sql',
+  '0037_careerground_jobs_v5_workflow.sql',
 ] as const;
 
-export const EXPECTED_SCHEMA_VERSION = '0036_sync_validator_jobs_20260826';
+export const EXPECTED_SCHEMA_VERSION = '0037_careerground_jobs_v5_workflow';
 export const EXPECTED_SCHEMA_CHECKSUM =
-  'sha256:0b0b5878971939adc3bb11f039bb8c5a68bb8d2320f79c2374b2b10e11fba0a9';
+  'sha256:ca8661ea422f28bb15cf9a9dc7302c8fb15c3668c3224a8b2f8a5691d0354caf';

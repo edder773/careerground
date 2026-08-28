@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "5.0",
+  "timezone": "Asia/Seoul",
+  "schedule": {
+    "days": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+    "localTime": "18:00",
+    "skipKoreanPublicHolidays": true,
+    "holidayDecision": "FAIL_CLOSED"
+  },
+  "ownership": {
+    "algorithm": "int(SHA256(id UTF-8).hexdigest()[0:8],16)%3",
+    "partitionCount": 3
+  },
+  "partitions": [
+    {
+      "partitionId": 1,
+      "ownershipBucket": 0,
+      "sources": ["JobKorea", "Wanted", "Catch", "Superookie", "Career", "Work24"]
+    },
+    {
+      "partitionId": 2,
+      "ownershipBucket": 1,
+      "sources": ["Saramin", "Jumpit", "Inthiswork", "Remember Career", "RocketPunch", "Incruit"]
+    },
+    {
+      "partitionId": 3,
+      "ownershipBucket": 2,
+      "sources": ["LinkedIn Korea", "Jasoseol", "Linkareer", "JOB-ALIO", "NCS Fair Recruitment"]
+    }
+  ],
+  "policy": {
+    "allowedCareerScopes": ["NEW_GRAD_ONLY", "NEW_GRAD_ELIGIBLE"],
+    "allowedEmploymentEvidence": [
+      "NEW_GRAD",
+      "ENTRY_LEVEL",
+      "EXPERIENCE_NOT_REQUIRED",
+      "ZERO_TO_TWO_YEARS",
+      "INTERN",
+      "CONVERSION_INTERNSHIP",
+      "EXPECTED_GRADUATE"
+    ],
+    "excluded": [
+      "MANDATORY_EXPERIENCE_ONE_YEAR_OR_MORE",
+      "CAREER_ONLY",
+      "NON_IT",
+      "SECURITY_ONLY",
+      "QA_TEST_ONLY",
+      "SALES_MARKETING_HR_ACCOUNTING_LEGAL_ADMIN",
+      "HARDWARE_CIRCUIT_PRODUCTION_ONLY",
+      "EDUCATION_BOOTCAMP_EXTERNAL_ACTIVITY",
+      "TALENT_POOL",
+      "OVERSEAS_ONLY",
+      "CLOSED_REMOVED_CANCELLED"
+    ],
+    "evidencePriority": [
+      "OFFICIAL_CAREERS",
+      "OFFICIAL_ATS",
+      "PLATFORM_DETAIL_WITH_ACTIVE_APPLICATION",
+      "PLATFORM_LIST",
+      "SEARCH_SNIPPET"
+    ],
+    "accessFailureDecision": "RETAINED_UNCONFIRMED",
+    "uncertainPublishAllowed": false,
+    "deleteJobsAllowed": false,
+    "mutateSavedJobsAllowed": false
+  }
+}
