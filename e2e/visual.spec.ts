@@ -62,6 +62,15 @@ test('captures the anonymous responsive workspace and accessibility state', asyn
     await expect(page.getByRole('heading', { name: '즐겨찾기', level: 1 })).toBeVisible();
     await expect(page.locator('.today-problem-list a')).toHaveCount(3);
     await expect(page.getByText(/로그인|Google 계정/)).toHaveCount(0);
+    const primaryNavigation = page.getByRole('navigation', { name: '주요 메뉴' });
+    if (viewport.width > 900) {
+      await expect(primaryNavigation).toContainText('둘러보기홈채용공고');
+      await expect(primaryNavigation).toContainText('학습 도구학습코딩테스트자격증');
+      await expect(primaryNavigation).not.toContainText('함께 성장');
+      await expect(
+        primaryNavigation.getByRole('link', { name: '자격증 새 창에서 열기' }),
+      ).toHaveAttribute('href', 'https://baeumzip.site');
+    }
     await page.screenshot({
       path: `test-results/visual/home-${viewport.name}.png`,
       fullPage: false,

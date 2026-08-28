@@ -1615,22 +1615,6 @@
 }
 
 /* Final responsive overrides for the three-track daily set and compact learning library. */
-.certification-link {
-  color: #303641;
-  background: #e5e7eb;
-  border-color: #d5d8de;
-}
-
-.certification-link:hover {
-  color: #222833;
-  background: #dcdfe4;
-}
-
-.certification-link small,
-.certification-link > svg:last-child {
-  color: #555e6a;
-}
-
 .daily-challenge-grid,
 .today-problem-list {
   grid-template-columns: repeat(3, minmax(0, 1fr));

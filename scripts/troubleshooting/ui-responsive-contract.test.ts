@@ -34,9 +34,14 @@ describe('UI polish responsive contracts', () => {
     expect(polish).toContain('text-overflow: clip;\n  white-space: normal;');
     expect(home).toContain('className="favorite-shortcuts"');
     expect(homeCss).toContain('.favorites-today-strip {\n  grid-template-columns: minmax(0, 1fr);');
+    expect(homeCss).toContain('max-width: 760px;\n  margin-bottom: 24px;');
     expect(homeCss).toContain(
-      '.favorite-shortcuts {\n  margin-bottom: 18px;\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));',
+      '.favorites-home .today-feature .today-problem-list a {\n  min-height: 36px;',
     );
+    expect(homeCss).toContain(
+      '.favorite-shortcuts {\n  margin-bottom: 16px;\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));',
+    );
+    expect(homeCss).toContain('.favorite-shortcuts > a {\n  min-height: 70px;');
     expect(home).not.toContain('className="today-summary-link"');
     expect(home).not.toContain('className="virtual-folders"');
     expect(home).not.toContain('폴더 만들기');
