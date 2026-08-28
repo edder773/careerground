@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://careerground.example/schemas/careerground-partition-result.schema.json",
+  "title": "CareerGround v5 partition result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "workflowId",
+    "runId",
+    "runGroupKey",
+    "targetAsOfDate",
+    "partitionId",
+    "status",
+    "sources",
+    "startedAt",
+    "completedAt",
+    "exportedAt",
+    "rowCount",
+    "items",
+    "errorCode",
+    "errorMessage"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "5.0" },
+    "workflowId": { "const": "CG-JOBS-PROD-V5" },
+    "runId": { "type": "string", "minLength": 1 },
+    "runGroupKey": { "type": "string", "pattern": "^CG-\\d{4}-\\d{2}-\\d{2}$" },
+    "targetAsOfDate": { "type": "string", "format": "date" },
+    "partitionId": { "type": "integer", "minimum": 1, "maximum": 3 },
+    "status": { "enum": ["SUCCESS", "FAILED"] },
+    "sources": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "completedAt": { "type": "string", "format": "date-time" },
+    "exportedAt": { "type": "string", "format": "date-time" },
+    "rowCount": { "type": "integer", "minimum": 0 },
+    "items": { "type": "array", "items": { "$ref": "#/$defs/job" } },
+    "errorCode": { "type": ["string", "null"] },
+    "errorMessage": { "type": ["string", "null"] }
+  },
+  "$defs": {
+    "job": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "canonicalJobKey",
+        "fingerprint",
+        "sourceUrl",
+        "sourceName",
+        "companyName",
+        "title",
+        "category",
+        "careerScope",
+        "careerEvidence",
+        "status",
+        "lastVerifiedAt"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "canonicalJobKey": { "type": "string", "minLength": 1 },
+        "fingerprint": { "type": "string", "minLength": 1 },
+        "sourceUrl": { "type": "string", "format": "uri" },
+        "sourceName": { "type": "string", "minLength": 1 },
+        "companyName": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "category": { "type": "string", "minLength": 1 },
+        "careerScope": { "enum": ["NEW_GRAD_ONLY", "NEW_GRAD_ELIGIBLE", "CAREER_ONLY"] },
+        "careerEvidence": { "type": "string" },
+        "status": { "enum": ["ACTIVE", "DEADLINE_UNKNOWN", "EXPIRED", "REMOVED", "NEEDS_REVIEW"] },
+        "lastVerifiedAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}
