@@ -11,6 +11,8 @@ export const PROCESSED_LABEL = 'careerground-v5-handoff-processed';
 export const HANDOFF_SCHEMA_VERSION = '1.0';
 export const HANDOFF_WORKFLOW_ID = 'CG-JOBS-PROD-V5';
 
+export const processedIssueUpdate = () => ({ state: 'closed', state_reason: 'completed' });
+
 const MAX_ARTIFACT_BYTES = 1_000_000;
 const TRUSTED_AUTHOR_ASSOCIATIONS = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
 const REQUIRED_ARTIFACT_KINDS = [
@@ -348,6 +350,11 @@ async function markProcessed({ repository, token, reportPath }) {
       token,
       method: 'POST',
       body: { labels: [PROCESSED_LABEL] },
+    });
+    await githubRequest(`/repos/${repository}/issues/${issueNumber}`, {
+      token,
+      method: 'PATCH',
+      body: processedIssueUpdate(),
     });
   }
   return { status: 'PROCESSED', issueNumbers: report.issueNumbers };
