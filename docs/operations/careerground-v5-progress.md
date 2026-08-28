@@ -123,3 +123,9 @@
 - 판정: `CHAT_RETIREMENT_STATUS: NOT_READY`, `MANUAL_CHAT_DELETION_REQUIRED: true`.
 - MANUAL_REQUIRED: 운영 PUBLISH, Slack PUBLISHED 소비, 외부 정책 이전, Task/채팅 UI 확인.
 - 다음: 전체 검증, 커밋, PR.
+
+## Git/PR — PARTIALLY_COMPLETED
+
+- 수행: `codex/careerground-automation-v5`에 5개 conventional commit을 생성하고 origin에 push.
+- 결과: GitHub branch와 비교 가능한 diff 준비 완료. push hook의 typecheck/unit test 통과.
+- MANUAL_REQUIRED: `gh` 저장 토큰이 만료됐고 연결된 GitHub App은 PR 생성 권한이 없어 API가 403을 반환했다. 자동 병합은 시도하지 않음. `careerground-v5-pull-request.md`와 GitHub의 branch PR 생성 링크로 수동 생성 가능.

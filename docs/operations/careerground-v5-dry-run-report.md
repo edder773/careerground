@@ -1,6 +1,6 @@
 # CareerGround v5 dry-run 보고서
 
-- 기준 commit: `4810dd9bbc9c43facc346451486552459bf6fc2a` 이후 v5 작업 트리
+- 기준 commit: `1a03e92`(v5 코드·workflow가 고정된 브랜치 commit)
 - 입력: `scripts/jobs-v5/fixtures/partition-{1,2,3}.json`, `baseline.json`
 - 데이터: 비식별 `*.example` 3건, 운영 row 없음
 - runId: `CG-2026-08-27-A1-fixture1`
