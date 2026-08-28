@@ -294,6 +294,7 @@ function appendGithubOutput(path, report) {
     `status=${report.status}`,
     `handoff_schema_version=${report.schemaVersion}`,
     `target_as_of_date=${report.targetAsOfDate}`,
+    `handoff_attempt=${Number(report.attempt || 0)}`,
     `issue_numbers=${report.issueNumbers.join(',')}`,
   ];
   writeFileSync(path, `${lines.join('\n')}\n`, { flag: 'a' });
@@ -332,6 +333,9 @@ export async function fetchHandoffBundle({ repository, token, triggerIssueNumber
     workflowId: HANDOFF_WORKFLOW_ID,
     status: resolved.status,
     targetAsOfDate: resolved.targetAsOfDate,
+    attempt: resolved.selected.length
+      ? Math.max(...resolved.selected.map((entry) => Number(entry.pointer.attempt)))
+      : 0,
     issueNumbers: resolved.selected.map((entry) => Number(entry.issue.number)),
     missingArtifactKinds: resolved.missingArtifactKinds,
     rejectedIssueNumbers: resolved.rejectedIssueNumbers,

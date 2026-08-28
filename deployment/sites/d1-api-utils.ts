@@ -71,3 +71,15 @@ export async function readJson(request: Request) {
     throw new RouteError(400, '올바른 JSON 요청 본문이 필요합니다.', 'INVALID_JSON');
   }
 }
+
+export async function readJsonWithLimit(request: Request, maxBytes: number) {
+  const raw = await request.text();
+  if (new TextEncoder().encode(raw).byteLength > maxBytes) {
+    throw new RouteError(413, '요청 본문이 너무 큽니다.', 'PAYLOAD_TOO_LARGE');
+  }
+  try {
+    return JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    throw new RouteError(400, '올바른 JSON 요청 본문이 필요합니다.', 'INVALID_JSON');
+  }
+}

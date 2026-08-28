@@ -45,8 +45,9 @@ jobs:
           steps.handoff.outputs.handoff_schema_version == '2.0'
         env:
           TARGET_DATE: ${{ steps.handoff.outputs.target_as_of_date }}
-          RUN_ID: CG-${{ steps.handoff.outputs.target_as_of_date }}-A1-discovery${{ github.run_id }}
+          HANDOFF_ATTEMPT: ${{ steps.handoff.outputs.handoff_attempt }}
         run: |
+          RUN_ID="CG-$TARGET_DATE-A$HANDOFF_ATTEMPT-discovery"
           pnpm jobs:v5:validate-discovery \
             --target-as-of-date "$TARGET_DATE" \
             --run-id "$RUN_ID" \
@@ -103,6 +104,33 @@ jobs:
           path: |
             work/jobs-v5/handoff/handoff-report.json
             work/jobs-v5/converted
+          if-no-files-found: error
+          retention-days: 30
+      - name: Publish the verified discovery bundle to production D1
+        if: >-
+          steps.handoff.outputs.status == 'READY' &&
+          steps.handoff.outputs.handoff_schema_version == '2.0'
+        env:
+          CAREERGROUND_PUBLISH_URL: https://careerground-workspace.edder773.chatgpt.site/api/v1/internal/jobs-v5/publish
+          CAREERGROUND_PUBLISH_TOKEN: ${{ secrets.CAREERGROUND_PUBLISH_TOKEN }}
+          TARGET_DATE: ${{ steps.handoff.outputs.target_as_of_date }}
+        run: |
+          pnpm jobs:v5:publish-discovery \
+            --handoff work/jobs-v5/handoff/handoff-report.json \
+            --report work/jobs-v5/discovery/discovery-report.json \
+            --partition1 work/jobs-v5/discovery/partition-1.json \
+            --partition2 work/jobs-v5/discovery/partition-2.json \
+            --partition3 work/jobs-v5/discovery/partition-3.json \
+            --output work/jobs-v5/discovery/publish-receipt.json
+          ! grep -R -E 'hooks\.slack\.com/services|gh[pousr]_[A-Za-z0-9]+' work/jobs-v5/discovery
+      - name: Save the production publish receipt
+        if: >-
+          steps.handoff.outputs.status == 'READY' &&
+          steps.handoff.outputs.handoff_schema_version == '2.0'
+        uses: actions/upload-artifact@v6
+        with:
+          name: careerground-v5-${{ steps.handoff.outputs.target_as_of_date }}-publish-receipt
+          path: work/jobs-v5/discovery/publish-receipt.json
           if-no-files-found: error
           retention-days: 30
       - name: Mark the validated source pointers as processed

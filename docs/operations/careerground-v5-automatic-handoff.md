@@ -2,7 +2,7 @@
 
 ## 목표와 경계
 
-ChatGPT 예약 작업의 신규 후보 결과를 로컬 다운로드나 저장소 커밋 없이 GitHub Actions 검증 단계로 넘긴다. 전달 계층은 운영 `jobs`, `saved_jobs`, Sites 배포, Slack을 변경하지 않는다.
+ChatGPT 예약 작업의 신규 후보 결과를 로컬 다운로드나 저장소 커밋 없이 GitHub Actions로 넘기고, 검증을 통과한 신규 ACTIVE 공고만 운영 D1에 반영한다. 일일 실행은 Sites를 다시 배포하지 않으며 `saved_jobs`, 기존 `jobs`, Slack을 변경하지 않는다.
 
 ChatGPT 예약 작업은 연결 도구를 사용할 수 있지만 로컬 프로젝트 폴더를 직접 읽거나 쓸 수 없다. 따라서 GitHub 연결 도구가 생성한 **커밋에 연결되지 않은 임시 Git blob**을 본문 저장소로 사용하고, GitHub Issue에는 blob SHA와 무결성 정보만 기록한다.
 
@@ -13,8 +13,10 @@ ChatGPT 예약 작업은 연결 도구를 사용할 수 있지만 로컬 프로�
 3. 작업은 `careerground-v5-handoff` 라벨의 Issue를 만들고 아래 schema 2.0 포인터만 본문에 기록한다. JSON 본문은 Issue나 저장소 파일로 복제하지 않는다.
 4. `.github/workflows/careerground-v5-handoff.yml`이 같은 날짜의 파티션 포인터 3개를 모은다. 하나라도 없으면 `WAITING` 보고서만 남긴다.
 5. 모두 모이면 GitHub Actions가 blob 크기, SHA-256, UTF-8 JSON, 출처 소유권, 상태·경력 정책, 날짜, 중복을 검증하고 최종 ID와 fingerprint를 결정적으로 생성한다.
-6. 검증된 discovery bundle과 보고서만 30일 GitHub Actions artifact로 보관하고 세 Issue에 처리 완료 라벨을 붙인 뒤 `completed` 상태로 닫는다.
-7. 수동 Pro 검증과 운영 DB 반영은 이 discovery artifact를 후속 입력으로 사용한다. 예약 작업은 운영 기준선 또는 전체 final을 읽지 않는다.
+6. GitHub Actions가 `CAREERGROUND_PUBLISH_TOKEN`으로 Sites의 `/api/v1/internal/jobs-v5/publish`를 호출한다. 서버는 현재 KST 날짜, deterministic runId, ID·URL·canonical key·fingerprint, 신입 증거, 미래 마감일을 다시 검증한다.
+7. 서버는 운영 D1 기준선과 대조해 완전히 동일한 기존 URL은 건너뛰고, 새 URL의 ID·canonical key·fingerprint 충돌은 fail-closed 처리한다. 신규 공고만 최대 75건까지 stage/publish하며 기존 행 UPDATE·DELETE와 `saved_jobs` mutation은 허용하지 않는다.
+8. PUBLISHED run, `jobs-v5` import batch, `last-success` pointer와 사후 row count 검증이 모두 성공한 뒤에만 세 Issue를 처리 완료로 닫는다. 검증 bundle과 publish receipt는 30일 보관한다.
+9. 다음 평일 08:01 Slack workflow가 당일 `jobs-v5` COMMITTED 기록을 준비 신호로 사용한다. 신규 공고가 0건이어도 코딩테스트 알림은 정상 전송할 수 있다.
 
 ## 보안과 멱등성
 
@@ -24,7 +26,8 @@ ChatGPT 예약 작업은 연결 도구를 사용할 수 있지만 로컬 프로�
 - 같은 종류가 재실행되면 가장 큰 `attempt`만 사용한다. 같은 attempt가 서로 다른 blob을 가리키면 자동 선택하지 않는다.
 - workflow 권한은 `contents: read`, `issues: write`뿐이다.
 - 실제 JSON은 커밋·PR·Issue 본문에 저장하지 않는다.
-- workflow에는 cron, D1 publish, Sites 배포, Slack 전송이 없다.
+- workflow에는 별도 cron, Sites 재배포, Slack 전송이 없다. D1 publish만 보호된 HTTPS endpoint로 수행한다.
+- `runId=CG-YYYY-MM-DD-A<attempt>-discovery`는 날짜와 attempt로 결정적이다. 같은 입력 재실행은 `ALREADY_PUBLISHED`, 같은 runId의 다른 입력은 실패한다.
 
 ## 포인터 계약
 
@@ -65,7 +68,7 @@ schema 2.0에서 `artifactKind`와 파일명 조합은 다음 세 개만 허용�
 
 ## 기존 Pro 병합·검증기
 
-Pro 검증기는 더 이상 예약 작업의 Library 기준선이나 partition baseline hash를 전제로 하지 않는다. GitHub Actions의 `discovery-ready` artifact를 입력으로 받아 운영 기준선과 비교하고, 실제 DB 반영 전 final/audit을 생성한다. 기존 schema 1.0 final/audit 전달은 롤백 호환 경로로만 유지한다.
+Pro 검증기는 운영 자동 연결의 필수 단계가 아니다. 필요할 때 `discovery-ready` artifact를 읽기 전용으로 재검토하는 보조 감사 경로로 사용할 수 있다. 기존 schema 1.0 final/audit 전달은 롤백 호환 경로로만 유지하며 자동 D1 게시에는 사용하지 않는다.
 
 ```text
 자동 전달: GitHub 연결 도구를 사용해 edder773/careerground로 final과 audit을 각각 독립 전달하라. 각 파일의 실제 전체 UTF-8 원본 바이트에 대해 SHA-256과 byteLength를 계산하고 GitHub create_blob을 encoding=utf-8로 호출한다. 저장소 파일을 생성·수정하거나 JSON 내용을 Issue 본문에 넣지 마라.
@@ -75,4 +78,4 @@ final은 artifactKind=LEGACY_FINAL, audit은 artifactKind=LEGACY_AUDIT로 하여
 
 ## 현재 활성화 범위
 
-이 연결은 신규 후보의 자동 수신, 결정적 정규화, 출처·정책·중복 검증 artifact 생성까지만 활성화한다. 운영 기준선 대조, Pro 의미 검증, 운영 D1 반영과 Slack은 별도의 `PUBLISH` 승인 및 전환 게이트 뒤에 둔다. 따라서 `VERIFIED_DISCOVERY`는 수집 전달 성공을 뜻하며 운영 공고 게시 성공을 의미하지 않는다.
+schema 2.0 연결은 신규 후보 자동 수신, 결정적 정규화, 출처·정책·중복 검증, 운영 기준선 대조, D1 신규 INSERT와 게시 원장 기록까지 활성화한다. `VERIFIED_DISCOVERY`는 중간 검증 상태이며 최종 성공은 endpoint receipt의 `PUBLISHED` 또는 동일 입력 재실행의 `ALREADY_PUBLISHED`다. Slack은 이 workflow에서 즉시 보내지 않고 기존 오전 발송이 게시 원장을 소비한다.

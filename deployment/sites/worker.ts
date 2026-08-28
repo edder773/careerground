@@ -10,6 +10,7 @@ type SitesEnv = {
   ADMIN_EMAILS?: string;
   AUTH_TEST_MODE?: string;
   DIGEST_API_TOKEN?: string;
+  PUBLISH_API_TOKEN?: string;
   MAX_ACTIVE_USERS?: string;
   REQUEST_LOGGING?: string;
 };

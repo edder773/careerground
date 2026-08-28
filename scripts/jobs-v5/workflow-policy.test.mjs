@@ -41,7 +41,7 @@ describe('CareerGround v5 workflow pre-cutover policy', () => {
     expect(migration).not.toMatch(/DELETE\s+FROM\s+`?jobs/iu);
   });
 
-  it('accepts only trusted issue pointers and never publishes or sends Slack', () => {
+  it('accepts only trusted issue pointers, publishes through the protected endpoint, and never sends Slack', () => {
     expect(handoff).toContain('issues:');
     expect(handoff).toContain("github.event.issue.author_association == 'OWNER'");
     expect(handoff).toContain("github.event.issue.author_association == 'MEMBER'");
@@ -49,10 +49,15 @@ describe('CareerGround v5 workflow pre-cutover policy', () => {
     expect(handoff).toContain('careerground-v5-handoff');
     expect(handoff).toContain('jobs:v5:adapt-v4');
     expect(handoff).toContain('jobs:v5:validate-discovery');
+    expect(handoff).toContain('jobs:v5:publish-discovery');
+    expect(handoff).toContain('CAREERGROUND_PUBLISH_TOKEN');
+    expect(handoff).toContain('/api/v1/internal/jobs-v5/publish');
     expect(handoff).toContain("handoff_schema_version == '2.0'");
     expect(handoff).not.toContain('SLACK_WEBHOOK_URL');
     expect(handoff).not.toContain('DIGEST_API_TOKEN');
-    expect(handoff).not.toContain('jobs:v5:publish');
     expect(handoff).not.toMatch(/^\s+schedule:/mu);
+    expect(handoff.indexOf('jobs:v5:publish-discovery')).toBeLessThan(
+      handoff.indexOf('jobs:v5:handoff mark-processed'),
+    );
   });
 });

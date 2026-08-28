@@ -141,3 +141,13 @@
 - 보안: 실제 운영 JSON은 커밋하지 않았고 운영 DB와 Slack을 변경하지 않았다.
 - MANUAL_REQUIRED: ChatGPT Library 결과를 GitHub artifact로 자동 전달하는 연결, 운영 D1 migration/PUBLISH/schedule 승인.
 - 다음: 전체 회귀 테스트와 branch 갱신.
+
+## 19단계 — VERIFIED_DISCOVERY 운영 자동 연결 COMPLETED
+
+- 수행: schema 2.0 handoff 검증 성공 뒤 Sites의 별도 Bearer 보호 endpoint를 호출하도록 연결했다.
+- 수행: endpoint에서 현재 KST 날짜, deterministic runId, ACTIVE·신입 증거·미래 마감, ID·URL·canonical key·fingerprint를 재검증하고 운영 기준선과 대조한다.
+- 데이터 불변식: 신규 INSERT만 허용하고 기존 `jobs` UPDATE·DELETE와 `saved_jobs` mutation은 0건이다. 동일 bundle은 `ALREADY_PUBLISHED`, 다른 bundle의 같은 runId와 기존 식별자 충돌은 실패한다.
+- Slack 연결: 오전 준비 확인이 기존 `jobs`와 v5 `jobs-v5` COMMITTED import를 모두 인정한다. 실제 Slack 검증 메시지는 보내지 않았다.
+- Secret: Sites `PUBLISH_API_TOKEN`과 GitHub `CAREERGROUND_PUBLISH_TOKEN`을 별도 난수값으로 구성했으며 artifact·로그·문서에 값을 기록하지 않았다.
+- 검증: lint, typecheck, Sites production build, contracts 10 + web 23 + root 175 = unit 208개, E2E 34개 통과.
+- 다음: PR 병합, Sites 운영 배포, 인증 실패·health·공개 카탈로그를 이용한 비파괴 production smoke.

@@ -4,7 +4,7 @@
 
 v5의 운영 기준은 채팅, 파일명, 최근 수정 시각이 아니라 D1의 `workflow_runs`와 검증된 Manifest다. `workflowId`는 `CG-JOBS-PROD-V5`, Schema는 `5.0`, 시간대는 `Asia/Seoul`이다. 날짜별 `runGroupKey`는 `CG-YYYY-MM-DD`이며 재시도는 같은 key와 target date를 유지하고 `runId`, `attempt`만 바꾼다.
 
-운영 수집 목표는 평일 18:00다. 현재 workflow는 전환 승인 전이라 schedule이 없고 수동 DRY_RUN만 안전하게 동작한다. 실제 파티션 수집기는 저장소 밖에 있어 연결 전까지 PUBLISH는 fail-closed다.
+운영 수집 목표는 평일 18:00다. 실제 웹 수집은 저장소 밖의 ChatGPT 예약 작업 3개가 수행하고, GitHub Issue handoff가 세 결과를 모아 검증·게시한다. 저장소의 `careerground-jobs-v5.yml`은 fixture DRY_RUN 회귀용 pre-cutover workflow로 유지한다.
 
 ## 단계별 계약
 
@@ -14,7 +14,7 @@ v5의 운영 기준은 채팅, 파일명, 최근 수정 시각이 아니라 D1�
 4. `validate`: CareerGround 정책과 임계값을 적용한다. DB나 Slack을 변경하지 않는다.
 5. `stage`: VERIFIED 결과를 `workflow_staged_jobs`에 넣고 before-image를 보존한다.
 6. `publish`: PUBLISH 모드와 승인된 VERIFIED run만 D1 atomic batch로 반영한다. `jobs` DELETE와 `saved_jobs` mutation은 없다.
-7. `notify`: DB가 기록한 마지막 PUBLISHED 실행만 사용한다. 수집·상태 재판정을 하지 않는다. 현재 전환 브랜치는 Slack 전송을 하지 않고 상태 artifact만 남긴다.
+7. `notify`: v5 게시 단계는 Slack을 직접 전송하지 않는다. 다음 날 기존 08:01 digest가 당일 `jobs-v5` COMMITTED 기록과 DB의 신규 `created_at` window를 소비한다.
 
 ## canonical JSON
 
@@ -57,16 +57,16 @@ pnpm jobs:v5:run --target-as-of-date 2026-08-27 --run-id CG-2026-08-27-A1-exampl
 
 ```bash
 pnpm jobs:v5:validate-discovery --target-as-of-date YYYY-MM-DD \
-  --run-id CG-YYYY-MM-DD-A1-discovery1 \
+  --run-id CG-YYYY-MM-DD-A1-discovery \
   --partition1 /explicit/partition-1.json \
   --partition2 /explicit/partition-2.json \
   --partition3 /explicit/partition-3.json \
   --output /explicit/non-production-output
 ```
 
-이 명령은 최종 `id`, `canonicalJobKey`, `fingerprint`, raw/canonical hash를 GitHub 실행 환경에서 생성한다. `rowCount=0`은 정상적인 신규 후보 없음으로 허용하며, 한 출처의 BLOCKED/ERROR는 다른 출처 결과를 폐기하지 않는다. 결과는 `VERIFIED_DISCOVERY`이지 `PUBLISHED`가 아니다.
+이 명령은 최종 `id`, `canonicalJobKey`, `fingerprint`, raw/canonical hash를 GitHub 실행 환경에서 생성한다. `rowCount=0`은 정상적인 신규 후보 없음으로 허용하며, 한 출처의 BLOCKED/ERROR는 다른 출처 결과를 폐기하지 않는다. 결과는 중간 상태 `VERIFIED_DISCOVERY`이며 handoff workflow가 보호된 endpoint를 호출한 뒤에만 `PUBLISHED`가 된다.
 
-`publish`는 `--manifest`와 `--approved-run-id`를 모두 요구하며, CLI 자체는 production binding 없이 DB를 변경하지 않는다. 승인된 배포 adapter가 `deployment/sites/d1-jobs-v5.ts`의 `stageVerifiedRun`, `publishVerifiedRun`을 호출해야 한다.
+`jobs:v5:publish-discovery`는 token을 환경변수에서만 읽고 검증 bundle을 Sites endpoint에 전송한다. endpoint는 같은 bundle 재실행을 `ALREADY_PUBLISHED`로 처리하고, 같은 runId의 다른 bundle·기존 fingerprint/canonical key 충돌·75건 초과 신규 삽입을 거부한다.
 
 ## 관측과 성공 판정
 
@@ -77,4 +77,4 @@ pnpm jobs:v5:validate-discovery --target-as-of-date YYYY-MM-DD \
 
 ## 보안
 
-artifact, 로그, 문서에 Secret, webhook, 운영 row를 남기지 않는다. production environment 승인과 최소 권한 Secrets가 없으면 publish는 중단한다.
+artifact, 로그, 문서에 Secret, webhook, 운영 row를 남기지 않는다. Sites `PUBLISH_API_TOKEN`과 GitHub `CAREERGROUND_PUBLISH_TOKEN`이 없거나 일치하지 않으면 publish는 중단하고 Issue를 닫지 않는다.

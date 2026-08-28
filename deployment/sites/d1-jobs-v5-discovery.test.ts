@@ -1,0 +1,189 @@
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { first } from './d1.js';
+import { handleD1Api } from './d1-api.js';
+import { publishDiscoveryBundle } from './d1-jobs-v5.js';
+import { sha256 } from './domain.js';
+import { LocalD1 } from './local-d1.js';
+import { ensureRuntimeSchema } from './runtime-schema.js';
+
+const kstDate = (value: Date) =>
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(value);
+
+async function discoveryJob(now: Date, suffix: string, overrides: Record<string, unknown> = {}) {
+  const sourceUrl = `https://automation-${suffix}.example.test/jobs/${suffix}`;
+  const companyName = String(overrides.companyName || `자동화 회사 ${suffix}`);
+  const title = String(overrides.title || `신입 백엔드 개발자 ${suffix}`);
+  const region = String(overrides.region || '서울');
+  const employmentType = String(overrides.employmentType || 'FULL_TIME');
+  return {
+    id: `job-${(await sha256(sourceUrl)).slice(0, 24)}`,
+    canonicalJobKey: `source:automation-${suffix}.example.test:${suffix}`,
+    fingerprint: await sha256(
+      [companyName, title, region, employmentType]
+        .map((value) => value.trim().toLowerCase())
+        .join('|'),
+    ),
+    sourceUrl,
+    sourceName: '공식 채용',
+    sourcePostingId: suffix,
+    companyName,
+    companySize: 'LARGE',
+    companySizeEvidence: '공식 기업 정보',
+    title,
+    category: '백엔드',
+    careerScope: 'NEW_GRAD_ONLY',
+    careerEvidence: '신입 지원 가능 명시',
+    employmentType,
+    region,
+    remote: false,
+    techStack: ['TypeScript'],
+    publishedAt: now.toISOString(),
+    applicationStartAt: now.toISOString(),
+    deadlineAt: new Date(now.getTime() + 7 * 86_400_000).toISOString(),
+    rolling: false,
+    summary: '자동화 경계 회귀 테스트 공고',
+    status: 'ACTIVE',
+    collectedAt: now.toISOString(),
+    lastVerifiedAt: now.toISOString(),
+    createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
+    ...overrides,
+  };
+}
+
+async function request(now: Date, attempt = 1, jobs?: Array<Record<string, unknown>>) {
+  const targetAsOfDate = kstDate(now);
+  const runId = `CG-${targetAsOfDate}-A${attempt}-discovery`;
+  const items =
+    jobs || (await Promise.all([1, 2, 3].map((value) => discoveryJob(now, String(value)))));
+  const partitions = [1, 2, 3].map((partitionId) => ({
+    schemaVersion: '5.0',
+    workflowId: 'CG-JOBS-PROD-V5',
+    runId,
+    runGroupKey: `CG-${targetAsOfDate}`,
+    targetAsOfDate,
+    partitionId,
+    status: 'SUCCESS',
+    sources: [`source-${partitionId}`],
+    startedAt: now.toISOString(),
+    completedAt: now.toISOString(),
+    exportedAt: now.toISOString(),
+    rowCount: partitionId === 1 ? items.length : 0,
+    items: partitionId === 1 ? items : [],
+    errorCode: null,
+    errorMessage: null,
+  }));
+  return {
+    schemaVersion: '5.1',
+    artifactType: 'CAREERGROUND_DISCOVERY_PUBLISH_REQUEST',
+    workflowId: 'CG-JOBS-PROD-V5',
+    runId,
+    runGroupKey: `CG-${targetAsOfDate}`,
+    targetAsOfDate,
+    attempt,
+    report: {
+      schemaVersion: '5.1',
+      artifactType: 'CAREERGROUND_DISCOVERY_BUNDLE_REPORT',
+      workflowId: 'CG-JOBS-PROD-V5',
+      runId,
+      runGroupKey: `CG-${targetAsOfDate}`,
+      targetAsOfDate,
+      status: 'VERIFIED_DISCOVERY',
+      rowCount: items.length,
+      potentialDuplicateCount: 0,
+      potentialDuplicates: [],
+      productionDatabaseChanged: false,
+      slackSent: false,
+    },
+    partitions,
+  } as const;
+}
+
+describe('CareerGround v5 discovery production boundary', () => {
+  let db: LocalD1;
+  let now: Date;
+
+  beforeEach(async () => {
+    db = new LocalD1();
+    await ensureRuntimeSchema(db);
+    now = new Date();
+  });
+
+  afterEach(() => db.close());
+
+  it('publishes only new ACTIVE jobs, preserves saved_jobs, and is idempotent', async () => {
+    const input = await request(now);
+    const before = await first<{ jobs: number; saved: number }>(
+      db,
+      `SELECT (SELECT COUNT(*) FROM jobs) AS jobs,
+              (SELECT COUNT(*) FROM saved_jobs) AS saved`,
+    );
+    const published = await publishDiscoveryBundle(db, input, now);
+    const repeated = await publishDiscoveryBundle(db, input, now);
+    const after = await first<{ jobs: number; saved: number; batches: number }>(
+      db,
+      `SELECT (SELECT COUNT(*) FROM jobs) AS jobs,
+              (SELECT COUNT(*) FROM saved_jobs) AS saved,
+              (SELECT COUNT(*) FROM import_batches
+                WHERE id = ?) AS batches`,
+      `jobs-v5-${input.runId}`,
+    );
+    expect(published).toMatchObject({
+      status: 'PUBLISHED',
+      inserted: 3,
+      skippedExisting: 0,
+      savedJobsUnchanged: true,
+      deletedJobs: 0,
+    });
+    expect(repeated).toMatchObject({ status: 'ALREADY_PUBLISHED', inserted: 3 });
+    expect(after).toEqual({
+      jobs: Number(before?.jobs || 0) + 3,
+      saved: Number(before?.saved || 0),
+      batches: 1,
+    });
+  });
+
+  it('fails closed when a new URL collides with an existing fingerprint', async () => {
+    const original = await discoveryJob(now, 'collision-a', {
+      companyName: '동일 회사',
+      title: '동일 공고',
+    });
+    await publishDiscoveryBundle(db, await request(now, 1, [original]), now);
+    const collision = await discoveryJob(now, 'collision-b', {
+      companyName: '동일 회사',
+      title: '동일 공고',
+    });
+    await expect(
+      publishDiscoveryBundle(db, await request(now, 2, [collision]), now),
+    ).rejects.toThrow('fingerprint');
+  });
+
+  it('protects the HTTP publish endpoint with a separate bearer token', async () => {
+    const input = await request(now);
+    const call = (token?: string, configured = true) =>
+      handleD1Api(
+        new Request('https://careerground.example/api/v1/internal/jobs-v5/publish', {
+          method: 'POST',
+          headers: token
+            ? { authorization: `Bearer ${token}`, 'content-type': 'application/json' }
+            : { 'content-type': 'application/json' },
+          body: JSON.stringify(input),
+        }),
+        {
+          DB: db,
+          REQUEST_LOGGING: 'false',
+          PUBLISH_API_TOKEN: configured ? 'publish-secret' : undefined,
+        },
+      );
+    expect((await call(undefined, false)).status).toBe(503);
+    expect((await call('wrong')).status).toBe(401);
+    const response = await call('publish-secret');
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({ status: 'PUBLISHED', inserted: 3 });
+  });
+});

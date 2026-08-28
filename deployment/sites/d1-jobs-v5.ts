@@ -1,4 +1,7 @@
 import { all, first, type D1Database, type D1PreparedStatement } from './d1.js';
+import { validateDiscoveryPublishRequest } from './d1-jobs-v5-discovery-contract.js';
+
+const V5_WORKFLOW_ID = 'CG-JOBS-PROD-V5';
 
 export type V5Manifest = {
   schemaVersion: string;
@@ -18,7 +21,7 @@ export type V5Manifest = {
   publishedAt: string | null;
   manifestChecksum: string;
   counts: { new: number; changed: number; ended: number; excluded: number; active: number };
-  db: { idempotencyKey: string; status: string };
+  db: { idempotencyKey: string; status: string; sourceChecksum?: string };
 };
 
 export type V5VerifiedResult = {
@@ -486,5 +489,197 @@ export async function publishedManifestForNotification(
     publishedAt: row.publishedAt,
     completedAt: row.publishedAt,
     db: { ...stored.db, status: 'PUBLISHED' },
+  };
+}
+
+type ExistingJobIdentity = {
+  id: string;
+  sourceUrl: string;
+  fingerprint: string | null;
+  canonicalJobKey: string | null;
+};
+
+type StoredDiscoveryRun = {
+  status: string;
+  manifest: string | null;
+};
+
+export async function publishDiscoveryBundle(db: D1Database, input: unknown, now = new Date()) {
+  const validated = await validateDiscoveryPublishRequest(input, now);
+  const priorRun = await first<StoredDiscoveryRun>(
+    db,
+    `SELECT status, manifest FROM workflow_runs WHERE run_id = ?`,
+    validated.request.runId,
+  );
+  if (priorRun) {
+    const priorManifest = JSON.parse(priorRun.manifest || '{}') as V5Manifest;
+    if (priorManifest.db?.sourceChecksum !== validated.sourceChecksum) {
+      throw new Error('The deterministic runId is already bound to a different discovery bundle.');
+    }
+    if (priorRun.status === 'PUBLISHED') {
+      return {
+        status: 'ALREADY_PUBLISHED' as const,
+        runId: validated.request.runId,
+        targetAsOfDate: validated.request.targetAsOfDate,
+        inserted: Number(priorManifest.counts?.new || 0),
+        skippedExisting: Number(priorManifest.counts?.excluded || 0),
+        sourceChecksum: validated.sourceChecksum,
+      };
+    }
+    if (priorRun.status !== 'VERIFIED') {
+      throw new Error(`The existing discovery run is not publishable: ${priorRun.status}.`);
+    }
+    const [savedBeforeRetry, jobsBeforeRetry] = await Promise.all([
+      first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM saved_jobs'),
+      first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM jobs'),
+    ]);
+    const publication = await publishVerifiedRun(db, priorManifest);
+    const [savedAfterRetry, jobsAfterRetry] = await Promise.all([
+      first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM saved_jobs'),
+      first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM jobs'),
+    ]);
+    if (
+      Number(savedAfterRetry?.count || 0) !== Number(savedBeforeRetry?.count || 0) ||
+      Number(jobsAfterRetry?.count || 0) !==
+        Number(jobsBeforeRetry?.count || 0) + Number(priorManifest.counts?.new || 0)
+    ) {
+      throw new Error('Post-publish D1 retry verification failed.');
+    }
+    return {
+      ...publication,
+      targetAsOfDate: priorManifest.targetAsOfDate,
+      inserted: Number(priorManifest.counts?.new || 0),
+      skippedExisting: Number(priorManifest.counts?.excluded || 0),
+      sourceChecksum: validated.sourceChecksum,
+      savedJobsUnchanged: true,
+      deletedJobs: 0,
+    };
+  }
+
+  const [baseline, savedBefore, jobsBefore] = await Promise.all([
+    all<ExistingJobIdentity>(
+      db,
+      `SELECT id, source_url AS sourceUrl, fingerprint,
+              canonical_key AS canonicalJobKey
+         FROM jobs`,
+    ),
+    first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM saved_jobs'),
+    first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM jobs'),
+  ]);
+  const byId = new Map(baseline.map((row) => [row.id, row]));
+  const byUrl = new Map(baseline.map((row) => [row.sourceUrl, row]));
+  const byFingerprint = new Map(
+    baseline.filter((row) => row.fingerprint).map((row) => [String(row.fingerprint), row]),
+  );
+  const byCanonicalKey = new Map(
+    baseline.filter((row) => row.canonicalJobKey).map((row) => [String(row.canonicalJobKey), row]),
+  );
+  const newJobs: Array<Record<string, unknown>> = [];
+  let skippedExisting = 0;
+  for (const job of validated.jobs) {
+    const id = String(job.id);
+    const sourceUrl = String(job.sourceUrl);
+    const fingerprint = String(job.fingerprint);
+    const key = String(job.canonicalJobKey);
+    const sameUrl = byUrl.get(sourceUrl);
+    const sameId = byId.get(id);
+    if (sameUrl || sameId) {
+      if (!sameUrl || !sameId || sameUrl.id !== id || sameId.sourceUrl !== sourceUrl) {
+        throw new Error(`Existing identifier collision for ${sourceUrl}.`);
+      }
+      skippedExisting += 1;
+      continue;
+    }
+    const sameFingerprint = byFingerprint.get(fingerprint);
+    if (sameFingerprint) {
+      throw new Error(
+        `New URL collides with the existing fingerprint for ${sameFingerprint.sourceUrl}.`,
+      );
+    }
+    const sameCanonicalKey = byCanonicalKey.get(key);
+    if (sameCanonicalKey) {
+      throw new Error(
+        `New URL collides with the existing canonical key for ${sameCanonicalKey.sourceUrl}.`,
+      );
+    }
+    newJobs.push(job);
+  }
+  if (newJobs.length > 75) {
+    throw new Error('A single publish run may insert at most 75 new jobs.');
+  }
+
+  const timestamp = now.toISOString();
+  const previous = await lastPublishedRun(db, V5_WORKFLOW_ID);
+  const manifest: V5Manifest = {
+    schemaVersion: '5.0',
+    workflowId: V5_WORKFLOW_ID,
+    runId: validated.request.runId,
+    runGroupKey: validated.request.runGroupKey,
+    targetAsOfDate: validated.request.targetAsOfDate,
+    attempt: validated.request.attempt,
+    mode: 'PUBLISH',
+    status: 'VERIFIED',
+    previousSuccessfulRunId: previous?.runId || null,
+    errorCode: null,
+    errorMessage: null,
+    startedAt: validated.startedAt,
+    completedAt: timestamp,
+    validatedAt: timestamp,
+    publishedAt: null,
+    manifestChecksum: '',
+    counts: {
+      new: newJobs.length,
+      changed: 0,
+      ended: 0,
+      excluded: skippedExisting,
+      active: newJobs.length,
+    },
+    db: {
+      idempotencyKey: `publish:${V5_WORKFLOW_ID}:${validated.request.runId}`,
+      status: 'VERIFIED',
+      sourceChecksum: validated.sourceChecksum,
+    },
+  };
+  manifest.manifestChecksum = await v5ManifestChecksum(manifest);
+  const verified: V5VerifiedResult = {
+    status: 'VERIFIED',
+    runId: manifest.runId,
+    manifestChecksum: manifest.manifestChecksum,
+    newJobs,
+    updates: [],
+    ended: [],
+  };
+  await stageVerifiedRun(db, manifest, verified);
+  const publication = await publishVerifiedRun(db, manifest);
+  const [savedAfter, jobsAfter, publicationCount, batchCount] = await Promise.all([
+    first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM saved_jobs'),
+    first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM jobs'),
+    first<{ count: number }>(
+      db,
+      'SELECT COUNT(*) AS count FROM workflow_publications WHERE run_id = ?',
+      manifest.runId,
+    ),
+    first<{ count: number }>(
+      db,
+      'SELECT COUNT(*) AS count FROM import_batches WHERE id = ?',
+      `jobs-v5-${manifest.runId}`,
+    ),
+  ]);
+  if (
+    Number(savedAfter?.count || 0) !== Number(savedBefore?.count || 0) ||
+    Number(jobsAfter?.count || 0) !== Number(jobsBefore?.count || 0) + newJobs.length ||
+    Number(publicationCount?.count || 0) !== 1 ||
+    Number(batchCount?.count || 0) !== 1
+  ) {
+    throw new Error('Post-publish D1 verification failed.');
+  }
+  return {
+    ...publication,
+    targetAsOfDate: manifest.targetAsOfDate,
+    inserted: newJobs.length,
+    skippedExisting,
+    sourceChecksum: validated.sourceChecksum,
+    savedJobsUnchanged: true,
+    deletedJobs: 0,
   };
 }

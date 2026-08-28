@@ -1,13 +1,13 @@
 # CareerGround 채용 자동화 v5 전환 전 상태
 
-기준 커밋은 `4810dd9bbc9c43facc346451486552459bf6fc2a`다. 이 문서는 운영 데이터를 복제하지 않고 저장소의 코드·워크플로·문서에서 확인한 사실만 기록한다.
+이 문서는 운영 데이터를 복제하지 않고 저장소의 코드·워크플로·문서에서 확인한 사실만 기록한다. 2026-08-28 자동 게시 전환 이후 상태를 기준으로 한다.
 
 ## 현재 아키텍처와 데이터 흐름
 
-1. 저장소 밖의 ChatGPT 예약 작업 3개가 파티션을 수집하고, 수동 ChatGPT Pro 검증기가 병합·검증하며, ChatGPT Work가 DB에 반영한다. 2026-08-28에 실제 프롬프트와 입출력 표본을 확보했으며 저장소에는 비식별 계약과 호환 adapter만 반영한다.
-2. `docs/operations/daily-job-refresh-automation.md`는 정확한 날짜별 `final.json`과 `merge-audit.json`을 Library에서 고르는 절차를 운영 규칙으로 정의한다. 선택은 파일명, 날짜, `modified_at`에 의존한다.
-3. `scripts/generate-validator-job-sync-migration.mjs`가 전체 기준선, final, merge-audit을 검증하고 허용된 INSERT/UPDATE와 `import_batches`, `app_schema_migrations` 기록을 담은 forward-only SQL을 생성한다.
-4. 생성된 migration은 Sites/D1 배포 경로에서 적용된다. 운영 DB 직접 변경은 이 전환 작업의 범위에서 수행하지 않는다.
+1. 저장소 밖의 ChatGPT 예약 작업 3개가 평일 18:00에 담당 출처의 schema 5.1 신규 후보 delta를 수집하고 임시 Git blob과 Issue 포인터로 전달한다.
+2. `.github/workflows/careerground-v5-handoff.yml`이 세 포인터를 모아 blob 크기·SHA-256·출처 소유권·정책·중복을 검증하고 ID·canonical key·fingerprint를 결정적으로 만든다.
+3. 검증 성공 시 GitHub Actions가 별도 Bearer token으로 Sites의 `/api/v1/internal/jobs-v5/publish`를 호출한다. endpoint가 운영 D1 기준선과 다시 대조하고 신규 ACTIVE만 stage/publish한다.
+4. 게시 과정은 `workflow_runs`, `workflow_staged_jobs`, `workflow_publications`, `workflow_pointers`, `import_batches`에 원장을 남긴다. 기존 `jobs` UPDATE·DELETE와 모든 `saved_jobs` mutation은 금지한다.
 5. `.github/workflows/daily-slack-digest.yml`이 평일 08:01, 08:31, 09:17(Asia/Seoul)에 배포 API를 호출한다. `scripts/slack/send-daily-digest.mjs`가 응답을 Slack Webhook으로 전송한다.
 6. 공휴일은 `scripts/slack/korean-business-day.mjs`의 2026 고정 목록으로 판정한다.
 
@@ -23,11 +23,11 @@
 - `jobs`: 감사로 확인한 제한 필드 UPDATE와 신규 ACTIVE INSERT만 허용한다.
 - `import_batches`, `app_schema_migrations`: 적용 이력과 checksum을 기록한다.
 - `saved_jobs`: 참조도 변경도 금지한다. 기존 생성기는 생성 SQL에 `saved_jobs` 또는 `DELETE FROM jobs`가 포함되면 실패한다.
-- 현재는 `workflow_runs`, 파티션 staging, publish pointer, idempotency ledger가 없다.
+- `workflow_runs`, 파티션 staging, publication, last-success pointer와 idempotency ledger는 migration 0037로 운영 스키마에 포함된다.
 
 ## Slack 데이터 소스와 실패 경로
 
-Slack은 배포 API가 고른 당일 import snapshot을 사용한다. v5 실행의 `PUBLISHED` 상태가 아니라 import 준비 시각과 delivery claim을 기준으로 하므로 미완료/이전 실행과 게시 실행을 동일한 `runId`로 추적할 수 없다. Slack 실패는 별도 incident로 기록되지만 수집·검증 실패와 신규 0건을 공통 상태 모델로 구분하지 않는다.
+Slack은 직전 성공 발송 이후 `created_at` window를 사용하며 08:01·08:31에는 당일 `jobs` 또는 `jobs-v5` COMMITTED import를 준비 신호로 확인한다. 발송 자체는 `daily:YYYY-MM-DD` claim으로 중복 방지되며 v5 publish workflow에서는 Slack을 직접 호출하지 않는다.
 
 주요 실패 경로는 Library 입력 부재, 파일명·날짜 불일치, raw hash 불일치, audit gate 실패, 기준선 충돌, migration 적용 실패, digest API 준비 지연, Slack 4xx/불확실 응답이다. 현재 각 실패는 하나의 workflow run ledger에 누적되지 않는다.
 
@@ -49,13 +49,12 @@ Slack은 배포 API가 고른 당일 import snapshot을 사용한다. v5 실행�
 
 ## 개선 대상과 저장소 밖 구성요소
 
-- 파일/채팅 이름이 아닌 `workflowId + runGroupKey + runId + partitionId` 계약.
-- 실패, skip, 무변경, quarantine, verified, published를 분리한 상태 머신.
-- raw/canonical hash를 모두 검증하는 Manifest와 명시적 입력 adapter.
-- 파티션 병렬 수집, merge, validate, stage/publish, notify의 책임 분리.
-- 원자적 게시와 last-success 포인터.
+- 파일/채팅 이름이 아닌 `workflowId + runGroupKey + runId + partitionId` 계약을 적용했다.
+- 실패, 무변경, verified, published를 분리한 상태 머신과 원자 게시·last-success 포인터를 적용했다.
+- raw/canonical hash 검증과 명시적 Git blob 입력 adapter를 적용했다.
+- Pro/Work 수동 전달은 필수 경로에서 제거했고 필요 시 읽기 전용 보조 감사로만 사용한다.
 - 실제 웹 조사는 여전히 외부 ChatGPT 예약 작업이 수행한다. 2026-08-28부터 예약 작업은 운영 기준선과 File Library 전체 파일을 읽지 않고 담당 출처의 신규 후보 delta만 만든다. 파티션별 17개 출처는 `config/careerground-partition-sources.json`으로 유지한다. schema 2.0 자동 전달 수신기는 세 Git blob의 크기·SHA-256을 GitHub에서 계산하고 `scripts/jobs-v5/discovery-delta.mjs`로 출처 소유권·정책·중복을 검증한다. 기존 schema 1.0 5파일 v4 adapter는 롤백 호환 경로로 유지한다.
 
 ## 문서와 구현 차이
 
-기존 문서는 공휴일을 실행 때마다 공식 자료로 확인한다고 설명하지만 실제 Slack 코드는 2026 고정 Map만 사용한다. 문서는 Library에서 전체 파일을 materialize한다고 설명하지만 그 검색/다운로드 구현은 저장소에 없다. 문서는 DB 반영과 사후 검증을 단일 운영 절차로 설명하지만 GitHub Actions에는 채용 수집·검증·게시 오케스트레이터가 없고 Slack만 별도 예약되어 있다.
+기존 v4 문서의 Library final/audit와 forward-only migration 절차는 롤백 호환 경로다. 현재 schema 2.0 운영 경로는 Library 파일을 검색하지 않으며 검증된 discovery bundle을 보호된 D1 endpoint에 직접 게시한다. 공휴일 판정은 외부 예약 수집 프롬프트와 Slack의 한국 영업일 정책이 각각 fail-closed로 수행한다.

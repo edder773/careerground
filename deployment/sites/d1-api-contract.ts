@@ -5,6 +5,7 @@ export type D1Env = {
   ADMIN_EMAILS?: string;
   AUTH_TEST_MODE?: string;
   DIGEST_API_TOKEN?: string;
+  PUBLISH_API_TOKEN?: string;
   MAX_ACTIVE_USERS?: string;
   RATE_LIMIT_READS_PER_MINUTE?: string;
   RATE_LIMIT_WRITES_PER_MINUTE?: string;
