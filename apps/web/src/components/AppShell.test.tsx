@@ -3,7 +3,6 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router';
-import { AuthProvider } from '../auth';
 import { AppShell } from './AppShell';
 import { response } from '../test/render';
 
@@ -12,12 +11,7 @@ describe('responsive application navigation', () => {
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL) =>
-        String(input).includes('/bootstrap')
-          ? response({
-              user: { id: 'u', email: 'member@example.com', displayName: '멤버', role: 'MEMBER' },
-              home: null,
-            })
-          : response({}),
+        String(input).endsWith('/learning') ? response([]) : response({}),
       ),
     );
   });
@@ -37,6 +31,8 @@ describe('responsive application navigation', () => {
     expect(screen.queryByRole('link', { name: '풀이 기록' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: '랭킹' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: '알림' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '설정' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '로그아웃' })).not.toBeInTheDocument();
     await userEvent.setup().click(screen.getByRole('button', { name: '메뉴 열기' }));
     expect(screen.getAllByRole('navigation', { name: '주요 메뉴' })).toHaveLength(2);
     expect(screen.getByRole('button', { name: '메뉴 닫기' })).toBeInTheDocument();
@@ -45,7 +41,6 @@ describe('responsive application navigation', () => {
   it('prefetches learning data when navigation intent is shown', async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     renderWithProviders(client);
-    expect((await screen.findAllByText('멤버')).length).toBeGreaterThan(0);
 
     await userEvent.setup().hover(screen.getAllByRole('link', { name: '학습' })[0]!);
 
@@ -62,11 +57,9 @@ function renderWithProviders(client: QueryClient) {
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter>
-        <AuthProvider>
-          <AppShell viewMode="grid" onViewMode={() => undefined}>
-            <div>content</div>
-          </AppShell>
-        </AuthProvider>
+        <AppShell viewMode="grid" onViewMode={() => undefined}>
+          <div>content</div>
+        </AppShell>
       </MemoryRouter>
     </QueryClientProvider>,
   );

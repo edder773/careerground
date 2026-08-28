@@ -100,7 +100,7 @@ describe('Sites D1 API', () => {
     return { response, body: (await response.json()) as Record<string, unknown> };
   }
 
-  it('provisions Google users, requires a session, and ignores legacy OpenAI headers', async () => {
+  it('serves public catalogs, retires interactive auth, and ignores legacy identity headers', async () => {
     const health = await call('/api/v1/health', {}, {});
     expect(health.response.status).toBe(200);
     expect(health.body).toMatchObject({ status: 'ok', database: 'd1' });
@@ -108,69 +108,24 @@ describe('Sites D1 API', () => {
     expect(health.response.headers.get('server-timing')).toMatch(/^app;dur=\d+\.\d$/);
     expect(Number(health.response.headers.get('x-response-time-ms'))).toBeGreaterThanOrEqual(0);
 
-    const authConfig = await call(
-      '/api/v1/auth/config',
-      {},
-      {},
-      {
-        GOOGLE_CLIENT_ID: 'operations-client.apps.googleusercontent.com',
-      },
-    );
-    expect(authConfig.response.status).toBe(200);
-    expect(authConfig.body).toEqual({
-      provider: 'GOOGLE',
-      clientId: 'operations-client.apps.googleusercontent.com',
-      identityScriptUrl: 'https://accounts.google.com/gsi/client',
-      jwksUrl: 'https://www.googleapis.com/oauth2/v3/certs',
-    });
+    const authConfig = await call('/api/v1/auth/config', {}, {});
+    expect(authConfig.response.status).toBe(404);
+    expect(authConfig.body).toMatchObject({ code: 'ROUTE_RETIRED' });
 
     const authConfigMutation = await call(
       '/api/v1/auth/config',
       { method: 'POST', body: '{}' },
       {},
     );
-    expect(authConfigMutation.response.status).toBe(405);
-    expect(authConfigMutation.response.headers.get('allow')).toBe('GET');
-
-    const member = await call('/api/v1/auth/me', {}, memberHeaders);
-    expect(member.body).toMatchObject({ user: { role: 'MEMBER', onboardingCompleted: false } });
-
-    const me = await call('/api/v1/auth/me');
-    expect(me.response.status).toBe(200);
-    expect(me.body).toMatchObject({
-      user: {
-        email: 'admin@example.test',
-        displayName: 'Admin User',
-        role: 'ADMIN',
-        preferredLanguage: 'javascript',
-        onboardingCompleted: false,
-      },
-    });
-
-    const onboarding = await call(
-      '/api/v1/auth/onboarding',
-      {
-        method: 'POST',
-        body: JSON.stringify({ displayName: '새 멤버', preferredLanguage: 'java' }),
-      },
-      memberHeaders,
-    );
-    expect(onboarding.response.status).toBe(200);
-    const refreshed = await call('/api/v1/auth/me', {}, memberHeaders);
-    expect(refreshed.body).toMatchObject({
-      user: {
-        displayName: '새 멤버',
-        preferredLanguage: 'java',
-        onboardingCompleted: true,
-      },
-    });
+    expect(authConfigMutation.response.status).toBe(404);
+    expect(authConfigMutation.body).toMatchObject({ code: 'ROUTE_RETIRED' });
 
     const unauthenticated = await call('/api/v1/auth/me', {}, {});
     expect(unauthenticated.response.status).toBe(401);
     expect(unauthenticated.body).toMatchObject({ code: 'UNAUTHORIZED' });
-    expect((await call('/api/v1/jobs', {}, {})).response.status).toBe(401);
-    expect((await call('/api/v1/learning', {}, {})).response.status).toBe(401);
-    expect((await call('/api/v1/coding/problems', {}, {})).response.status).toBe(401);
+    expect((await call('/api/v1/jobs', {}, {})).response.status).toBe(200);
+    expect((await call('/api/v1/learning', {}, {})).response.status).toBe(200);
+    expect((await call('/api/v1/coding/problems', {}, {})).response.status).toBe(200);
 
     const legacyOnly = await handleD1Api(
       new Request('https://careerground.example/api/v1/auth/me', {

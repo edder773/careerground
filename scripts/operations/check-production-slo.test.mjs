@@ -18,7 +18,7 @@ const apiHeaders = {
 
 const staticHtml = `<!doctype html><html><head>
   <meta name="referrer" content="strict-origin-when-cross-origin" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; script-src 'self' https://accounts.google.com/gsi/client" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'; frame-src 'none'; script-src 'self'" />
 </head><body><div id="root"></div></body></html>`;
 
 const healthyReady = {
@@ -53,22 +53,17 @@ const requestFixture = ({ ready = healthyReady, html = staticHtml, readinessMs =
       readinessIndex += 1;
       return { response: jsonResponse(ready, { headers: apiHeaders }), durationMs };
     }
-    if (path === '/api/v1/auth/me') {
-      return { response: jsonResponse({ code: 'UNAUTHORIZED' }, { status: 401 }), durationMs: 90 };
+    if (path === '/api/v1/jobs') {
+      return { response: jsonResponse([]), durationMs: 90 };
+    }
+    if (path === '/api/v1/learning' || path === '/api/v1/coding/problems') {
+      return { response: jsonResponse([]), durationMs: 70 };
     }
     if (path === '/api/v1/auth/config') {
       return {
-        response: jsonResponse({
-          provider: 'GOOGLE',
-          clientId: '790295034558-q9a41jpu912age0eo0dpdu5pcdh1ipo5.apps.googleusercontent.com',
-          identityScriptUrl: 'https://accounts.google.com/gsi/client',
-          jwksUrl: 'https://www.googleapis.com/oauth2/v3/certs',
-        }),
+        response: jsonResponse({ code: 'ROUTE_RETIRED' }, { status: 404 }),
         durationMs: 30,
       };
-    }
-    if (url === 'https://www.googleapis.com/oauth2/v3/certs') {
-      return { response: jsonResponse({ keys: [{ kid: 'google-key-1' }] }), durationMs: 40 };
     }
     if (path === '/favicon.svg') {
       return { response: new globalThis.Response('<svg/>', { status: 200 }), durationMs: 20 };
@@ -91,7 +86,7 @@ describe('production SLO checker', () => {
     expect(report.latency.readinessWarmP95Ms).toBe(140);
     expect(report.schema?.sourceVersion).toBe(SOURCE_SCHEMA_VERSION);
     expect(report.schema?.appliedVersion).toBe(SOURCE_SCHEMA_VERSION);
-    expect(request).toHaveBeenCalledTimes(9);
+    expect(request).toHaveBeenCalledTimes(10);
     expect(formatSloSummary(report)).toContain('Result: **PASS**');
   });
 
@@ -143,11 +138,8 @@ describe('production SLO checker', () => {
     );
   });
 
-  it('requires the Google script origin as an exact CSP source token', async () => {
-    const html = staticHtml.replace(
-      'https://accounts.google.com/gsi/client',
-      'https://malicious.example/https://accounts.google.com/gsi/client',
-    );
+  it('rejects an external script source in the static CSP', async () => {
+    const html = staticHtml.replace("script-src 'self'", "script-src 'self' https://example.test");
     const report = await runProductionSlo({
       request: requestFixture({ html }),
       readinessSamples: 2,
@@ -195,26 +187,24 @@ describe('production SLO checker', () => {
 
     expect(report.passed).toBe(false);
     expect(report.failures).toContain('static-favicon.request: network timeout');
-    expect(report.checks.some((check) => check.id === 'auth-boundary.contract')).toBe(true);
+    expect(report.checks.some((check) => check.id === 'retired-auth.contract')).toBe(true);
   });
 
-  it('fails when the deployed Google client configuration or provider keys are unavailable', async () => {
+  it('fails when a public catalog is unavailable or the retired auth route reappears', async () => {
     const fixture = requestFixture();
     const request = vi.fn(async (url, init) => {
       const path = new globalThis.URL(url).pathname;
-      if (path === '/api/v1/auth/config') {
+      if (path === '/api/v1/jobs') {
         return {
-          response: jsonResponse({
-            provider: 'GOOGLE',
-            clientId: 'wrong-client.apps.googleusercontent.com',
-            identityScriptUrl: 'https://accounts.google.com/gsi/client',
-            jwksUrl: 'https://www.googleapis.com/oauth2/v3/certs',
-          }),
+          response: jsonResponse({ code: 'UNAUTHORIZED' }, { status: 401 }),
           durationMs: 30,
         };
       }
-      if (url === 'https://www.googleapis.com/oauth2/v3/certs') {
-        return { response: jsonResponse({ keys: [] }), durationMs: 40 };
+      if (path === '/api/v1/auth/config') {
+        return {
+          response: jsonResponse({ provider: 'GOOGLE' }),
+          durationMs: 30,
+        };
       }
       return fixture(url, init);
     });
@@ -223,10 +213,10 @@ describe('production SLO checker', () => {
 
     expect(report.passed).toBe(false);
     expect(
-      report.failures.some((failure) => failure.startsWith('google-auth.config-contract:')),
+      report.failures.some((failure) => failure.startsWith('public-catalog.jobs.contract:')),
     ).toBe(true);
-    expect(
-      report.failures.some((failure) => failure.startsWith('google-auth.jwks-contract:')),
-    ).toBe(true);
+    expect(report.failures.some((failure) => failure.startsWith('retired-auth.contract:'))).toBe(
+      true,
+    );
   });
 });

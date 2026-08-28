@@ -1,62 +1,26 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { HomePage, type Collection } from './HomePage';
+import { HomePage } from './HomePage';
 import { renderPage, response } from '../test/render';
 
 describe('favorites workspace', () => {
-  let collections: Collection[];
-  const calls: Array<{ url: string; method: string }> = [];
-
   beforeEach(() => {
-    collections = [
-      {
-        id: '11111111-1111-4111-8111-111111111111',
-        name: '예전 취업 준비 폴더',
-        icon: 'folder',
-        color: 'cyan',
-        position: 0,
-        items: [
-          {
-            id: 'item-learning',
-            itemType: 'LEARNING_UNIT',
-            targetId: 'unit-prompt',
-            label: '프롬프트 설계 핵심',
-          },
-        ],
-      },
-      {
-        id: '22222222-2222-4222-8222-222222222222',
-        name: '예전 학습 폴더',
-        icon: 'folder',
-        color: 'amber',
-        position: 1,
-        items: [
-          {
-            id: 'item-learning-copy',
-            itemType: 'LEARNING_UNIT',
-            targetId: 'unit-prompt',
-            label: '프롬프트 설계 핵심',
-          },
-        ],
-      },
-    ];
-    calls.length = 0;
+    window.localStorage.setItem(
+      'careerground.favorites.v1',
+      JSON.stringify([
+        {
+          itemType: 'LEARNING_UNIT',
+          targetId: 'unit-prompt',
+          label: '프롬프트 설계 핵심',
+          href: '/learning?unit=unit-prompt',
+        },
+      ]),
+    );
     vi.stubGlobal(
       'fetch',
-      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      vi.fn(async (input: RequestInfo | URL) => {
         const url = String(input);
-        const method = init?.method || 'GET';
-        calls.push({ url, method });
-        if (url.endsWith('/collections') && method === 'GET') return response(collections);
-        if (url.includes('/collections/') && url.includes('/items/') && method === 'DELETE') {
-          const itemId = url.split('/').at(-1);
-          collections = collections.map((collection) => ({
-            ...collection,
-            items: collection.items.filter((item) => item.id !== itemId),
-          }));
-          return response({ count: 1 });
-        }
         if (url.endsWith('/coding/daily-challenges'))
           return response([
             {
@@ -118,10 +82,10 @@ describe('favorites workspace', () => {
     expect(screen.queryByText('신규 공고')).not.toBeInTheDocument();
     expect(screen.queryByText('마감 임박')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /새 폴더|폴더 만들기/ })).not.toBeInTheDocument();
-    expect(screen.queryByText('예전 취업 준비 폴더')).not.toBeInTheDocument();
+    expect(screen.getByText('이 브라우저에서 별표한 항목을 한곳에 모았습니다.')).toBeVisible();
   });
 
-  it('removes one favorite from every legacy folder placement', async () => {
+  it('removes a device-local favorite without an API request', async () => {
     const user = userEvent.setup();
     renderPage(<HomePage viewMode="list" />);
 
@@ -129,7 +93,7 @@ describe('favorites workspace', () => {
       await screen.findByRole('button', { name: '프롬프트 설계 핵심 즐겨찾기 해제' }),
     );
 
-    await waitFor(() => expect(calls.filter((call) => call.method === 'DELETE')).toHaveLength(2));
     expect(await screen.findByText('아직 저장한 항목이 없습니다')).toBeInTheDocument();
+    expect(window.localStorage.getItem('careerground.favorites.v1')).toBe('[]');
   });
 });

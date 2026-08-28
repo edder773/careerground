@@ -10,9 +10,8 @@ import {
   MapPin,
   X,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import {
-  applicationLabels,
   calendarEventLabels,
   categoryLabel,
   deadlineLabel,
@@ -42,37 +41,11 @@ export function JobDetailModal({
   job,
   onClose,
   onBookmark,
-  onApplication,
-  pending,
 }: {
   job: Job;
   onClose: () => void;
   onBookmark: (bookmarked: boolean) => void;
-  onApplication: (patch: { status?: string; memo?: string }) => Promise<unknown>;
-  pending: boolean;
 }) {
-  const serverMemo = job.savedBy[0]?.memo || '';
-  const [memo, setMemo] = useState(serverMemo);
-  const [memoStatus, setMemoStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const onApplicationRef = useRef(onApplication);
-  useEffect(() => {
-    onApplicationRef.current = onApplication;
-  }, [onApplication]);
-  useEffect(() => {
-    setMemo(serverMemo);
-    setMemoStatus('idle');
-  }, [job.id, serverMemo]);
-  useEffect(() => {
-    if (memo === serverMemo) return;
-    setMemoStatus('saving');
-    const timer = window.setTimeout(() => {
-      void onApplicationRef.current({ memo }).then(
-        () => setMemoStatus('saved'),
-        () => setMemoStatus('error'),
-      );
-    }, 700);
-    return () => window.clearTimeout(timer);
-  }, [memo, serverMemo]);
   return (
     <DialogPrimitive.Root
       open
@@ -144,48 +117,11 @@ export function JobDetailModal({
               type="button"
               className={job.bookmarked ? 'saved' : ''}
               aria-pressed={job.bookmarked}
-              disabled={pending}
               onClick={() => onBookmark(!job.bookmarked)}
             >
               <Bookmark fill={job.bookmarked ? 'currentColor' : 'none'} />
               {job.bookmarked ? '관심 공고' : '관심 저장'}
             </button>
-            {job.savedBy.length > 0 && (
-              <label className="application-status">
-                <span className="sr-only">{job.title} 지원 상태</span>
-                <select
-                  value={job.savedBy[0]?.status || 'INTERESTED'}
-                  disabled={pending}
-                  onChange={(event) => void onApplication({ status: event.target.value })}
-                >
-                  {Object.entries(applicationLabels).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-            {job.savedBy.length > 0 && (
-              <label className="application-memo">
-                <span className="sr-only">{job.title} 지원 메모</span>
-                <textarea
-                  rows={2}
-                  value={memo}
-                  onChange={(event) => setMemo(event.target.value)}
-                  placeholder="지원 메모"
-                />
-                <small role="status">
-                  {memoStatus === 'saving'
-                    ? '저장 중…'
-                    : memoStatus === 'saved'
-                      ? '저장됨'
-                      : memoStatus === 'error'
-                        ? '저장 실패 · 내용을 유지했습니다'
-                        : ''}
-                </small>
-              </label>
-            )}
             <a href={job.sourceUrl} target="_blank" rel="noreferrer">
               {job.source.name}에서 보기 <ExternalLink />
             </a>
@@ -318,102 +254,100 @@ export function JobFilterPanel({
           </button>
         </DialogPrimitive.Trigger>
       </div>
-      {open && (
-        <DialogPrimitive.Portal>
-          <DialogPrimitive.Overlay className="job-filter-overlay" />
-          <DialogPrimitive.Content
-            className="job-filter-panel"
-            aria-label="채용공고 전체 필터"
-            aria-describedby={undefined}
-          >
-            <header>
-              <div>
-                <DialogPrimitive.Title asChild>
-                  <strong>
-                    <span aria-hidden="true">모든 필터</span>
-                    <span className="sr-only">채용공고 전체 필터</span>
-                  </strong>
-                </DialogPrimitive.Title>
-                <span>여러 조건을 체크해 함께 적용할 수 있습니다.</span>
-              </div>
-              <DialogPrimitive.Close asChild>
-                <button type="button" aria-label="필터 닫기">
-                  <X />
-                </button>
-              </DialogPrimitive.Close>
-            </header>
-            <div className="job-filter-scroll">
-              <fieldset>
-                <legend>기업 규모</legend>
-                <div className="job-filter-options company-size-options">
-                  {Object.entries(sizeLabels).map(([value, label]) => (
-                    <label key={value}>
-                      <input
-                        type="checkbox"
-                        checked={selectedSizes.has(value)}
-                        onChange={(event) =>
-                          toggle(value, event.target.checked, draftSizes, setDraftSizes)
-                        }
-                      />
-                      <span className="multi-filter-check">
-                        {selectedSizes.has(value) && (
-                          <Check size={12} strokeWidth={3} aria-hidden="true" />
-                        )}
-                      </span>
-                      <span>{label}</span>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-              <fieldset>
-                <legend>직무</legend>
-                <div className="job-filter-options category-options">
-                  {categories.map((value) => (
-                    <label key={value}>
-                      <input
-                        type="checkbox"
-                        checked={selectedJobs.has(value)}
-                        onChange={(event) =>
-                          toggle(value, event.target.checked, draftCategories, setDraftCategories)
-                        }
-                      />
-                      <span className="multi-filter-check">
-                        {selectedJobs.has(value) && (
-                          <Check size={12} strokeWidth={3} aria-hidden="true" />
-                        )}
-                      </span>
-                      <span>{categoryLabel(value)}</span>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="job-filter-overlay" />
+        <DialogPrimitive.Content
+          className="job-filter-panel"
+          aria-label="채용공고 전체 필터"
+          aria-describedby={undefined}
+        >
+          <header>
+            <div>
+              <DialogPrimitive.Title asChild>
+                <strong>
+                  <span aria-hidden="true">모든 필터</span>
+                  <span className="sr-only">채용공고 전체 필터</span>
+                </strong>
+              </DialogPrimitive.Title>
+              <span>여러 조건을 체크해 함께 적용할 수 있습니다.</span>
             </div>
-            <footer>
-              <button
-                type="button"
-                className="job-filter-clear"
-                disabled={selectedCount === 0}
-                onClick={() => {
-                  setDraftSizes([]);
-                  setDraftCategories([]);
-                }}
-              >
-                전체 해제
+            <DialogPrimitive.Close asChild>
+              <button type="button" aria-label="필터 닫기">
+                <X />
               </button>
-              <button
-                type="button"
-                className="job-filter-done"
-                onClick={() => {
-                  onApply(draftSizes, draftCategories);
-                  setOpen(false);
-                }}
-              >
-                {selectedCount ? `${selectedCount}개 조건 적용` : '전체 공고 보기'}
-              </button>
-            </footer>
-          </DialogPrimitive.Content>
-        </DialogPrimitive.Portal>
-      )}
+            </DialogPrimitive.Close>
+          </header>
+          <div className="job-filter-scroll">
+            <fieldset>
+              <legend>기업 규모</legend>
+              <div className="job-filter-options company-size-options">
+                {Object.entries(sizeLabels).map(([value, label]) => (
+                  <label key={value}>
+                    <input
+                      type="checkbox"
+                      checked={selectedSizes.has(value)}
+                      onChange={(event) =>
+                        toggle(value, event.target.checked, draftSizes, setDraftSizes)
+                      }
+                    />
+                    <span className="multi-filter-check">
+                      {selectedSizes.has(value) && (
+                        <Check size={12} strokeWidth={3} aria-hidden="true" />
+                      )}
+                    </span>
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>직무</legend>
+              <div className="job-filter-options category-options">
+                {categories.map((value) => (
+                  <label key={value}>
+                    <input
+                      type="checkbox"
+                      checked={selectedJobs.has(value)}
+                      onChange={(event) =>
+                        toggle(value, event.target.checked, draftCategories, setDraftCategories)
+                      }
+                    />
+                    <span className="multi-filter-check">
+                      {selectedJobs.has(value) && (
+                        <Check size={12} strokeWidth={3} aria-hidden="true" />
+                      )}
+                    </span>
+                    <span>{categoryLabel(value)}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+          <footer>
+            <button
+              type="button"
+              className="job-filter-clear"
+              disabled={selectedCount === 0}
+              onClick={() => {
+                setDraftSizes([]);
+                setDraftCategories([]);
+              }}
+            >
+              전체 해제
+            </button>
+            <button
+              type="button"
+              className="job-filter-done"
+              onClick={() => {
+                onApply(draftSizes, draftCategories);
+                setOpen(false);
+              }}
+            >
+              {selectedCount ? `${selectedCount}개 조건 적용` : '전체 공고 보기'}
+            </button>
+          </footer>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
   );
 }

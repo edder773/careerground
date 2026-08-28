@@ -60,14 +60,22 @@ import {
   type CursorPage,
 } from './d1-api-utils.js';
 import { readRuntimeSchema } from './runtime-schema.js';
-import {
-  GOOGLE_CLIENT_ID,
-  GOOGLE_JWKS_URL,
-  verifyGoogleCredential,
-  type GoogleIdentity,
-} from './google-auth.js';
-
 const codeLanguages = new Set(['python', 'java', 'javascript', 'cpp']);
+
+const publicCatalogUser: UserRow = {
+  id: '',
+  email: '',
+  displayName: '',
+  role: 'MEMBER',
+  isActive: true,
+  avatarUrl: null,
+  githubUsername: null,
+  preferredLanguage: 'javascript',
+  onboardingCompletedAt: null,
+  dataDeletionRequested: null,
+  createdAt: '',
+  updatedAt: '',
+};
 
 const collectionFoldersSql = `SELECT id, parent_id AS parentId, name, icon, color, position,
                                       created_at AS createdAt, updated_at AS updatedAt
@@ -857,6 +865,42 @@ async function fastJobRead(
   };
 }
 
+async function publicJobRead(env: D1Env, url: URL, mode: JobReadMode) {
+  const includeData = mode !== 'categories';
+  const includeCategories = mode !== 'data';
+  const catalogBootstrap = mode === 'bootstrap' && url.searchParams.get('catalog') === 'true';
+  const statements: D1PreparedStatement[] = [];
+  const fetchCategories = includeCategories && !catalogBootstrap;
+  const categoriesIndex = fetchCategories ? statements.length : -1;
+  if (fetchCategories) statements.push(jobCategoriesStatement(env.DB));
+  const planUrl = catalogBootstrap ? new URL(url) : url;
+  if (catalogBootstrap) {
+    planUrl.search = '';
+    planUrl.searchParams.set('catalog', 'true');
+  }
+  const plan = includeData
+    ? jobListPlan(env.DB, { kind: 'userId', value: '' }, planUrl)
+    : undefined;
+  const dataIndex = statements.length;
+  if (plan) statements.push(...plan.statements);
+  const results = (await env.DB.batch(statements)) as BatchResult[];
+  const data = plan ? plan.value(results.slice(dataIndex)) : undefined;
+  const categories = catalogBootstrap
+    ? [
+        ...new Set(
+          ((Array.isArray(data) ? data : []) as Array<{ category?: unknown }>)
+            .map((job) => String(job.category || ''))
+            .filter(Boolean),
+        ),
+      ].sort((left, right) => left.localeCompare(right, 'ko'))
+    : fetchCategories
+      ? jobCategoryValues(results[categoriesIndex])
+      : undefined;
+  if (mode === 'categories') return categories || [];
+  if (mode === 'data') return data;
+  return { categories: categories || [], data };
+}
+
 type FastReadPlan = {
   statements: D1PreparedStatement[];
   value(results: BatchResult[]): unknown;
@@ -1022,6 +1066,17 @@ async function fastLearningBootstrap(user: UserRow, request: Request, env: D1Env
     user: apiUser(user),
     data: plan.value(results.slice(dataIndex)),
   };
+}
+
+async function publicLearningBootstrap(env: D1Env) {
+  const plan = learningListPlan(env.DB, { kind: 'userId', value: '' });
+  return {
+    data: plan.value((await env.DB.batch(plan.statements)) as BatchResult[]),
+  };
+}
+
+async function publicFastRead(env: D1Env, plan: FastReadPlan) {
+  return plan.value((await env.DB.batch(plan.statements)) as BatchResult[]);
 }
 
 function learningUnitDetailPlan(db: D1Database, owner: ReadOwner, unitId: string): FastReadPlan {
@@ -2043,18 +2098,20 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     const correct = normalizeAnswer(response) === normalizeAnswer(question.answer);
     const attemptedAt = nowIso();
     const id = newId();
-    await run(
-      db,
-      `INSERT INTO learning_question_attempts
-         (id, user_id, question_id, response, correct, attempted_at)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      id,
-      user.id,
-      question.id,
-      response,
-      correct ? 1 : 0,
-      attemptedAt,
-    );
+    if (user.id) {
+      await run(
+        db,
+        `INSERT INTO learning_question_attempts
+           (id, user_id, question_id, response, correct, attempted_at)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        id,
+        user.id,
+        question.id,
+        response,
+        correct ? 1 : 0,
+        attemptedAt,
+      );
+    }
     return { id, questionId: question.id, response, correct, answer: question.answer, attemptedAt };
   }
   if (method === 'GET' && path === '/learning/due') {
@@ -2218,24 +2275,8 @@ export async function handleD1Api(request: Request, env: D1Env) {
         ),
       );
     }
-    if (url.pathname === '/api/v1/auth/config') {
-      if (request.method !== 'GET') {
-        throw new RouteError(405, 'GET 요청만 허용됩니다.', 'METHOD_NOT_ALLOWED', undefined, {
-          allow: 'GET',
-        });
-      }
-      return finish(
-        responseJson(
-          {
-            provider: 'GOOGLE',
-            clientId: env.GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID,
-            identityScriptUrl: 'https://accounts.google.com/gsi/client',
-            jwksUrl: GOOGLE_JWKS_URL,
-          },
-          200,
-          requestId,
-        ),
-      );
+    if (url.pathname === '/api/v1/auth/config' || url.pathname === '/api/v1/auth/google') {
+      throw new RouteError(404, '로그인 기능은 더 이상 제공하지 않습니다.', 'ROUTE_RETIRED');
     }
     if (url.pathname === '/api/v1/internal/slack-digest') {
       if (request.method !== 'GET') {
@@ -2285,32 +2326,6 @@ export async function handleD1Api(request: Request, env: D1Env) {
         responseJson(await settleSlackDigestDelivery(env.DB, body, outcome), 200, requestId),
       );
     }
-    if (request.method === 'POST' && url.pathname === '/api/v1/auth/google') {
-      const body = await readJson(request);
-      const credential = cleanText(body.credential);
-      let identity: GoogleIdentity;
-      try {
-        identity = await verifyGoogleCredential(
-          credential,
-          env.GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID,
-        );
-      } catch (error) {
-        console.warn('Google credential verification failed', {
-          requestId,
-          reason: error instanceof Error ? error.message : 'UNKNOWN',
-        });
-        throw new RouteError(
-          401,
-          'Google 로그인 정보를 확인하지 못했습니다. 다시 시도해주세요.',
-          'GOOGLE_LOGIN_FAILED',
-        );
-      }
-      const user = await resolveGoogleUser(identity, env);
-      const cookie = await createSession(env.DB, user.id, env.AUTH_TEST_MODE !== 'true');
-      return finish(
-        responseJson({ user: apiUser(user) }, 200, requestId, { 'set-cookie': cookie }),
-      );
-    }
     if (
       request.method === 'POST' &&
       url.pathname === '/api/v1/auth/test' &&
@@ -2339,7 +2354,61 @@ export async function handleD1Api(request: Request, env: D1Env) {
       );
     }
     if (request.method === 'POST' && url.pathname === '/api/v1/auth/logout') {
-      return finish(await logoutSession(request, env));
+      if (env.AUTH_TEST_MODE === 'true') return finish(await logoutSession(request, env));
+      throw new RouteError(404, '로그인 기능은 더 이상 제공하지 않습니다.', 'ROUTE_RETIRED');
+    }
+    const usesTestSession =
+      env.AUTH_TEST_MODE === 'true' &&
+      (request.headers.get('cookie') || '').includes('careerground_session=');
+    if (!usesTestSession && request.method.toUpperCase() === 'GET') {
+      const publicJobMode =
+        url.pathname === '/api/v1/jobs'
+          ? 'data'
+          : url.pathname === '/api/v1/jobs/categories'
+            ? 'categories'
+            : url.pathname === '/api/v1/jobs/bootstrap'
+              ? 'bootstrap'
+              : undefined;
+      if (publicJobMode) {
+        return finish(responseJson(await publicJobRead(env, url, publicJobMode), 200, requestId));
+      }
+      if (url.pathname === '/api/v1/learning/bootstrap') {
+        return finish(responseJson(await publicLearningBootstrap(env), 200, requestId));
+      }
+      const publicFastReadPath =
+        url.pathname === '/api/v1/coding/problems' ||
+        url.pathname === '/api/v1/learning' ||
+        /^\/api\/v1\/learning\/units\/[^/]+$/.test(url.pathname);
+      if (publicFastReadPath) {
+        const plan = fastReadPlanFor(env.DB, { kind: 'userId', value: '' }, url);
+        if (plan) {
+          return finish(responseJson(await publicFastRead(env, plan), 200, requestId));
+        }
+      }
+      const publicRoute =
+        /^\/api\/v1\/jobs\/[^/]+$/.test(url.pathname) ||
+        /^\/api\/v1\/coding\/problems\/[^/]+$/.test(url.pathname) ||
+        url.pathname === '/api/v1/coding/daily-challenge' ||
+        url.pathname === '/api/v1/coding/daily-challenges' ||
+        url.pathname === '/api/v1/search';
+      if (publicRoute) {
+        const result = await handleRoute(request, env, publicCatalogUser, url);
+        return finish(result instanceof Response ? result : responseJson(result, 200, requestId));
+      }
+    }
+    if (
+      !usesTestSession &&
+      request.method.toUpperCase() === 'POST' &&
+      /^\/api\/v1\/learning\/questions\/[^/]+\/answer$/.test(url.pathname)
+    ) {
+      const result = await handleRoute(request, env, publicCatalogUser, url);
+      return finish(result instanceof Response ? result : responseJson(result, 200, requestId));
+    }
+    if (!usesTestSession && env.AUTH_TEST_MODE !== 'true') {
+      if (url.pathname.startsWith('/api/v1/auth/')) {
+        throw new RouteError(404, '로그인 기능은 더 이상 제공하지 않습니다.', 'ROUTE_RETIRED');
+      }
+      throw new RouteError(404, 'API 경로를 찾을 수 없습니다.', 'NOT_FOUND');
     }
     const user = await resolveSessionUser(request, env);
     if (request.method.toUpperCase() === 'GET' && url.pathname === '/api/v1/bootstrap') {

@@ -8,8 +8,9 @@ describe('Sites static security policy fallback', () => {
     expect(html).toContain('http-equiv="Content-Security-Policy"');
     expect(html).toContain("default-src 'self'");
     expect(html).toContain("object-src 'none'");
-    expect(html).toContain('https://accounts.google.com/gsi/client');
-    expect(html).toContain('frame-src https://accounts.google.com/gsi/');
+    expect(html).toContain("script-src 'self'");
+    expect(html).toContain("frame-src 'none'");
+    expect(html).not.toContain('accounts.google.com');
     expect(html).toContain('name="referrer" content="strict-origin-when-cross-origin"');
   });
 });

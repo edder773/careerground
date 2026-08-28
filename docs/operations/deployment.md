@@ -6,8 +6,7 @@
 
 ```mermaid
 flowchart LR
-  User["Google 로그인 사용자"] --> GIS["Google Identity Services"]
-  GIS --> Worker["Sites 정적 자산 + Worker"]
+  User["방문자"] --> Worker["Sites 정적 자산 + 공개 조회 Worker"]
   Worker --> D1["DB binding: D1"]
 ```
 
@@ -48,8 +47,8 @@ E2E는 `deployment/sites/local-d1-server.ts`가 메모리 D1 fixture를 직접 �
 6. **같은 commit SHA와 archive**를 새 Sites version으로 저장한다.
 7. visibility를 `public`으로 지정해 운영 배포한다.
 8. 배포 상태가 완료될 때까지 확인하고 `pnpm slo:check`로 schema/canary, cold-start와 warm p95,
-   정적·API 보안 정책, 비로그인 인증 경계를 함께 검사한다.
-9. 로그인 사용자로 홈·채용·코딩·학습의 공통 데이터와 폴더의 사용자별 격리를 smoke test한다.
+   정적·API 보안 정책, 공개 카탈로그와 폐기된 인증 경계를 함께 검사한다.
+9. 비로그인 브라우저로 홈·채용·코딩·학습의 공개 조회와 기기별 즐겨찾기를 smoke test한다.
 
 정기 점검은 `.github/workflows/production-smoke.yml`이 같은 검사기를 실행한다. 실패 JSON은 30일
 artifact로 남고 하나의 열린 incident에 이력이 누적되며, 복구 실행이 incident를 자동으로 닫는다.
@@ -60,11 +59,6 @@ artifact로 남고 하나의 열린 incident에 이력이 누적되며, 복구 �
 ## 설정과 비밀
 
 - `.openai/hosting.json`의 `d1: "DB"`가 운영 데이터 바인딩이다.
-- `GOOGLE_CLIENT_ID`는 Google 웹 OAuth 클라이언트 ID다. 브라우저와 Worker가 같은 값을 사용한다.
-- `ADMIN_EMAILS`는 검증된 Google 이메일의 명시적 관리자 allowlist다. 최초 가입자를 자동 관리자로 승격하지 않는다.
-- `AUTH_TEST_MODE`는 로컬 D1 회귀 테스트 전용이며 운영 환경에 설정하지 않는다.
-- `RATE_LIMIT_READS_PER_MINUTE`, `RATE_LIMIT_WRITES_PER_MINUTE`는 선택 설정이며 기본값은 각각 240/60이다.
-- `MAX_ACTIVE_USERS`는 활성 사용자 상한이다.
 - `DIGEST_API_TOKEN`은 GitHub Actions가 `/api/v1/internal/slack-digest`를 호출할 때 사용하는 전용 Bearer token이다. GitHub 저장소 secret `CAREERGROUND_DIGEST_TOKEN`과 같은 값을 사용하며 로그나 문서에 원문을 남기지 않는다.
 - `OPENAI_API_KEY`는 앱 런타임과 트러블슈팅 기록에 필수가 아니다. 선택적 AI 문서 재작성 workflow에서만 사용한다.
 

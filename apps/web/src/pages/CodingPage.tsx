@@ -1,14 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type InfiniteData,
-} from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { Code2, ExternalLink, Filter, Flame, Star } from 'lucide-react';
-import { api, json } from '../lib/api';
+import { api } from '../lib/api';
+import { useLocalFavorites } from '../lib/local-favorites';
 
 type Problem = {
   id: string;
@@ -17,16 +12,12 @@ type Problem = {
   track: 'ALGORITHM' | 'SQL';
   tags: string[];
   sourceUrl: string;
-  progress: Array<{ favorite: boolean }>;
 };
 type Challenge = { id: string; problemId: string; problem: Problem };
 type ProblemScope = 'favorites' | 'all';
-type CursorPage<T> = { items: T[]; nextCursor: string | null; total: number };
-
-const favoriteState = (problem: Problem) => Boolean(problem.progress[0]?.favorite);
 
 export function CodingPage() {
-  const client = useQueryClient();
+  const favorites = useLocalFavorites();
   const [searchParams, setSearchParams] = useSearchParams();
   const [level, setLevel] = useState(searchParams.get('level') || '');
   const [track, setTrack] = useState<'ALGORITHM' | 'SQL'>(
@@ -48,69 +39,26 @@ export function CodingPage() {
     if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true });
   }, [level, scope, searchParams, setSearchParams, track]);
 
-  const problems = useInfiniteQuery({
-    queryKey: ['problems', scope, track, level],
-    initialPageParam: null as string | null,
-    queryFn: ({ pageParam }) => {
-      const query = new URLSearchParams({ track, page: 'cursor', limit: '60' });
+  const problems = useQuery({
+    queryKey: ['problems', track, level],
+    queryFn: () => {
+      const query = new URLSearchParams({ track });
       if (level) query.set('level', level);
-      if (scope === 'favorites') query.set('favorites', '1');
-      if (pageParam) query.set('cursor', pageParam);
-      return api<CursorPage<Problem>>(`/coding/problems?${query.toString()}`);
+      return api<Problem[]>(`/coding/problems?${query.toString()}`);
     },
-    getNextPageParam: (lastPage) => lastPage.nextCursor || undefined,
   });
   const challenge = useQuery({
     queryKey: ['daily-challenges'],
     queryFn: () => api<Challenge[]>('/coding/daily-challenges'),
   });
-  const favorite = useMutation({
-    mutationFn: ({ problemId, active }: { problemId: string; active: boolean }) =>
-      api(`/coding/problems/${problemId}/favorite`, {
-        method: 'PATCH',
-        body: json({ favorite: active }),
-      }),
-    onMutate: async ({ problemId, active }) => {
-      await client.cancelQueries({ queryKey: ['problems'] });
-      const snapshots = client.getQueriesData<InfiniteData<CursorPage<Problem>>>({
-        queryKey: ['problems'],
-      });
-      client.setQueriesData<InfiniteData<CursorPage<Problem>>>(
-        { queryKey: ['problems'] },
-        (current) =>
-          current
-            ? {
-                ...current,
-                pages: current.pages.map((page) => ({
-                  ...page,
-                  items: page.items.map((problem) =>
-                    problem.id === problemId
-                      ? { ...problem, progress: [{ favorite: active }] }
-                      : problem,
-                  ),
-                })),
-              }
-            : current,
-      );
-      client.setQueryData<Challenge[]>(['daily-challenges'], (current) =>
-        current?.map((item) =>
-          item.problem.id === problemId
-            ? { ...item, problem: { ...item.problem, progress: [{ favorite: active }] } }
-            : item,
-        ),
-      );
-      return { snapshots };
-    },
-    onError: (_error, _variables, context) =>
-      context?.snapshots.forEach(([key, data]) => client.setQueryData(key, data)),
-    onSettled: () => client.invalidateQueries({ queryKey: ['problems'] }),
-  });
-
   const list = useMemo(
-    () => problems.data?.pages.flatMap((page) => page.items) || [],
-    [problems.data],
+    () =>
+      (problems.data || []).filter(
+        (problem) => scope === 'all' || favorites.isFavorite('CODING_PROBLEM', problem.id),
+      ),
+    [favorites, problems.data, scope],
   );
-  const problemTotal = problems.data?.pages[0]?.total || 0;
+  const problemTotal = list.length;
   const requestedProblem = searchParams.get('problem');
   const requestedProblemQuery = useQuery({
     queryKey: ['problem-detail', requestedProblem],
@@ -131,7 +79,12 @@ export function CodingPage() {
   }, [displayList, requestedProblem]);
 
   const toggleFavorite = (problem: Problem) =>
-    favorite.mutate({ problemId: problem.id, active: !favoriteState(problem) });
+    favorites.toggle({
+      itemType: 'CODING_PROBLEM',
+      targetId: problem.id,
+      label: problem.displayTitle,
+      href: `/coding?problem=${encodeURIComponent(problem.id)}`,
+    });
 
   return (
     <div>
@@ -175,14 +128,20 @@ export function CodingPage() {
                   <button
                     type="button"
                     aria-label={`${item.problem.displayTitle} 즐겨찾기`}
-                    aria-pressed={favoriteState(item.problem)}
-                    disabled={
-                      favorite.isPending && favorite.variables?.problemId === item.problem.id
-                    }
+                    aria-pressed={favorites.isFavorite('CODING_PROBLEM', item.problem.id)}
                     onClick={() => toggleFavorite(item.problem)}
                   >
-                    <Star size={17} fill={favoriteState(item.problem) ? 'currentColor' : 'none'} />
-                    {favoriteState(item.problem) ? '저장됨' : '즐겨찾기'}
+                    <Star
+                      size={17}
+                      fill={
+                        favorites.isFavorite('CODING_PROBLEM', item.problem.id)
+                          ? 'currentColor'
+                          : 'none'
+                      }
+                    />
+                    {favorites.isFavorite('CODING_PROBLEM', item.problem.id)
+                      ? '저장됨'
+                      : '즐겨찾기'}
                   </button>
                 </div>
               </article>
@@ -296,11 +255,15 @@ export function CodingPage() {
               </span>
               <button
                 aria-label={`${problem.displayTitle} 즐겨찾기`}
-                aria-pressed={favoriteState(problem)}
-                disabled={favorite.isPending && favorite.variables?.problemId === problem.id}
+                aria-pressed={favorites.isFavorite('CODING_PROBLEM', problem.id)}
                 onClick={() => toggleFavorite(problem)}
               >
-                <Star size={17} fill={favoriteState(problem) ? 'currentColor' : 'none'} />
+                <Star
+                  size={17}
+                  fill={
+                    favorites.isFavorite('CODING_PROBLEM', problem.id) ? 'currentColor' : 'none'
+                  }
+                />
               </button>
             </div>
             <h2>{problem.displayTitle}</h2>
@@ -317,16 +280,6 @@ export function CodingPage() {
           </article>
         ))}
       </div>
-      {problems.hasNextPage && (
-        <button
-          type="button"
-          className="load-more-button"
-          disabled={problems.isFetchingNextPage}
-          onClick={() => problems.fetchNextPage()}
-        >
-          {problems.isFetchingNextPage ? '문제를 불러오는 중…' : '문제 더 보기'}
-        </button>
-      )}
     </div>
   );
 }

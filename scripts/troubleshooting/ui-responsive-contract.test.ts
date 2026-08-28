@@ -18,7 +18,6 @@ const home = normalizedSource(`${repositoryRoot}apps/web/src/pages/HomePage.tsx`
 const homeCss = normalizedSource(`${repositoryRoot}apps/web/src/styles/home.css`);
 const jobs = normalizedSource(`${repositoryRoot}apps/web/src/pages/JobsPage.tsx`);
 const learning = normalizedSource(`${repositoryRoot}apps/web/src/pages/LearningPage.tsx`);
-const settings = normalizedSource(`${repositoryRoot}apps/web/src/pages/SettingsPage.tsx`);
 const polish = css.slice(css.indexOf('/* Cohesive UI polish'));
 
 describe('UI polish responsive contracts', () => {
@@ -42,15 +41,12 @@ describe('UI polish responsive contracts', () => {
     expect(home).not.toContain('className="virtual-folders"');
     expect(home).not.toContain('폴더 만들기');
     expect(jobs).not.toContain('FolderSaveButton');
-    expect(polish).toContain('.settings-profile-summary dt {\n  color: #5f6672;');
     expect(home).not.toContain('오늘 복습');
     expect(home).not.toContain('복습 예정');
     expect(learning).not.toContain(
       'api<Array<{ unitId: string; title: string; sourceTitle: string',
     );
     expect(learning).not.toContain('className="learning-due-copy"');
-    expect(settings).toContain('className="settings-profile-summary"');
-    expect(settings).not.toContain('학습 복습 예정');
   });
 
   it('keeps the 375×812 mobile reflow explicit', () => {
@@ -61,7 +57,6 @@ describe('UI polish responsive contracts', () => {
     expect(homeMobile).toContain(
       '.favorite-shortcuts,\n  .favorite-item-grid {\n    grid-template-columns: 1fr;',
     );
-    expect(mobile).toContain('.settings-profile-summary > div {\n    grid-template-columns: 1fr;');
     expect(mobile).toContain('.jobs-page .job-actions {\n    grid-template-columns: 1fr;');
   });
 });

@@ -9,23 +9,17 @@ describe('api response contracts', () => {
       'fetch',
       vi.fn().mockResolvedValue(
         Response.json({
-          user: {
-            id: 'user-1',
-            email: 'member@example.test',
-            displayName: '멤버',
-            role: 'MEMBER',
-            preferredLanguage: 'python',
-            onboardingCompleted: true,
-          },
+          categories: ['BACKEND'],
+          data: [],
         }),
       ),
     );
-    await expect(api('/auth/me')).resolves.toMatchObject({ user: { id: 'user-1' } });
+    await expect(api('/jobs/bootstrap')).resolves.toMatchObject({ categories: ['BACKEND'] });
   });
 
   it('rejects a successful HTTP response with an invalid domain shape', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({ user: { role: 'ROOT' } })));
-    await expect(api('/auth/me')).rejects.toMatchObject({
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({ categories: 'BACKEND' })));
+    await expect(api('/jobs/bootstrap')).rejects.toMatchObject({
       status: 502,
       code: 'INVALID_API_RESPONSE',
     } satisfies Partial<ApiError>);
