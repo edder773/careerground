@@ -1,0 +1,82 @@
+name: CareerGround v5 artifact handoff
+
+on:
+  issues:
+    types: [opened, edited, labeled, reopened]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: careerground-v5-artifact-handoff
+  cancel-in-progress: false
+
+jobs:
+  receive:
+    if: >-
+      contains(github.event.issue.labels.*.name, 'careerground-v5-handoff') &&
+      (github.event.issue.author_association == 'OWNER' ||
+       github.event.issue.author_association == 'MEMBER' ||
+       github.event.issue.author_association == 'COLLABORATOR')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: '.node-version'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Resolve and fetch an immutable five-artifact bundle
+        id: handoff
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: >-
+          pnpm jobs:v5:handoff fetch
+          --issue-number "$GITHUB_EVENT_ISSUE_NUMBER"
+          --output work/jobs-v5/handoff
+          --github-output "$GITHUB_OUTPUT"
+      - name: Convert the verified v4 bundle to v5 partition artifacts
+        if: steps.handoff.outputs.status == 'READY'
+        env:
+          TARGET_DATE: ${{ steps.handoff.outputs.target_as_of_date }}
+          RUN_ID: CG-${{ steps.handoff.outputs.target_as_of_date }}-A1-handoff${{ github.run_id }}
+        run: |
+          pnpm jobs:v5:adapt-v4 \
+            --target-as-of-date "$TARGET_DATE" \
+            --run-id "$RUN_ID" \
+            --partition1 "work/jobs-v5/handoff/careerground-partition-1-$TARGET_DATE.json" \
+            --partition2 "work/jobs-v5/handoff/careerground-partition-2-$TARGET_DATE.json" \
+            --partition3 "work/jobs-v5/handoff/careerground-partition-3-$TARGET_DATE.json" \
+            --final "work/jobs-v5/handoff/careerground-jobs-live-$TARGET_DATE-final.json" \
+            --audit "work/jobs-v5/handoff/careerground-merge-audit-$TARGET_DATE.json" \
+            --output work/jobs-v5/converted
+          ! grep -R -E 'hooks\.slack\.com/services|gh[pousr]_[A-Za-z0-9]+' work/jobs-v5/converted
+      - name: Save only the pointer report while waiting
+        if: steps.handoff.outputs.status == 'WAITING'
+        uses: actions/upload-artifact@v6
+        with:
+          name: careerground-v5-handoff-waiting-${{ github.run_id }}
+          path: work/jobs-v5/handoff/handoff-report.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Save the converted compatibility bundle
+        if: steps.handoff.outputs.status == 'READY'
+        uses: actions/upload-artifact@v6
+        with:
+          name: careerground-v5-${{ steps.handoff.outputs.target_as_of_date }}-legacy-compatible
+          path: |
+            work/jobs-v5/handoff/handoff-report.json
+            work/jobs-v5/converted
+          if-no-files-found: error
+          retention-days: 30
+      - name: Mark the five source pointers as processed
+        if: steps.handoff.outputs.status == 'READY'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          pnpm jobs:v5:handoff mark-processed
+          --report work/jobs-v5/handoff/handoff-report.json

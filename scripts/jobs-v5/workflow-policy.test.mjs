@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 const source = readFileSync('.github/workflows/careerground-jobs-v5.yml', 'utf8');
+const handoff = readFileSync('.github/workflows/careerground-v5-handoff.yml', 'utf8');
 const migration = readFileSync('drizzle/0037_careerground_jobs_v5_workflow.sql', 'utf8');
 
 describe('CareerGround v5 workflow pre-cutover policy', () => {
@@ -38,5 +39,18 @@ describe('CareerGround v5 workflow pre-cutover policy', () => {
     expect(migration).toContain(`sha256:${checksum}`);
     expect(migration).not.toMatch(/(?:INSERT|UPDATE|DELETE)\s+(?:INTO\s+)?`?saved_jobs/iu);
     expect(migration).not.toMatch(/DELETE\s+FROM\s+`?jobs/iu);
+  });
+
+  it('accepts only trusted issue pointers and never publishes or sends Slack', () => {
+    expect(handoff).toContain('issues:');
+    expect(handoff).toContain("github.event.issue.author_association == 'OWNER'");
+    expect(handoff).toContain("github.event.issue.author_association == 'MEMBER'");
+    expect(handoff).toContain("github.event.issue.author_association == 'COLLABORATOR'");
+    expect(handoff).toContain('careerground-v5-handoff');
+    expect(handoff).toContain('jobs:v5:adapt-v4');
+    expect(handoff).not.toContain('SLACK_WEBHOOK_URL');
+    expect(handoff).not.toContain('DIGEST_API_TOKEN');
+    expect(handoff).not.toContain('jobs:v5:publish');
+    expect(handoff).not.toMatch(/^\s+schedule:/mu);
   });
 });
