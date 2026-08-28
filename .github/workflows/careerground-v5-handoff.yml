@@ -2,7 +2,7 @@ name: CareerGround v5 artifact handoff
 
 on:
   issues:
-    types: [opened, edited, labeled, reopened]
+    types: [opened, reopened]
 
 permissions:
   contents: read
