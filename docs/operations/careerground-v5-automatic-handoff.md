@@ -14,7 +14,7 @@ ChatGPT 예약 작업은 연결 도구를 사용할 수 있지만 로컬 프로�
 4. 수동 Pro 검증기도 같은 방식으로 final과 audit blob 및 포인터 Issue를 각각 만든다.
 5. `.github/workflows/careerground-v5-handoff.yml`이 같은 날짜의 5개 포인터를 모은다. 하나라도 없으면 `WAITING` 보고서만 남긴다.
 6. 모두 모이면 blob 원본의 바이트 수, SHA-256, UTF-8 JSON 여부를 확인하고 기존 v4 audit의 raw/canonical hash와 품질 게이트를 다시 검증한다.
-7. 검증된 v5 호환 파티션과 보고서만 30일 GitHub Actions artifact로 보관하고 5개 Issue에 처리 완료 라벨을 붙인다.
+7. 검증된 v5 호환 파티션과 보고서만 30일 GitHub Actions artifact로 보관하고 5개 Issue에 처리 완료 라벨을 붙인 뒤 `completed` 상태로 닫는다.
 
 ## 보안과 멱등성
 

@@ -5,6 +5,7 @@ import {
   HANDOFF_LABEL,
   assertTrustedHandoffIssue,
   parseHandoffPointer,
+  processedIssueUpdate,
   rawSha256,
   resolveHandoffIssues,
 } from './handoff.mjs';
@@ -98,5 +99,9 @@ describe('CareerGround v5 GitHub artifact handoff', () => {
         date,
       ),
     ).toThrow(expect.objectContaining({ code: 'HANDOFF_DUPLICATE_CONFLICT' }));
+  });
+
+  it('closes a processed pointer issue as completed', () => {
+    expect(processedIssueUpdate()).toEqual({ state: 'closed', state_reason: 'completed' });
   });
 });
