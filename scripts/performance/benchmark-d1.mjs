@@ -7,9 +7,6 @@ import { createGoogleTestSession } from './google-test-session.mjs';
 const sizes = {
   jobs: 50_000,
   codingProblems: 10_000,
-  solutions: 20_000,
-  comments: 100_000,
-  notificationsPerUser: 10_000,
 };
 const now = '2026-08-13T00:00:00.000Z';
 const db = new LocalD1();
@@ -33,7 +30,7 @@ async function api(path) {
 
 const auth = await api('/auth/me');
 if (!auth.ok) throw new Error(`benchmark user setup failed: ${auth.status}`);
-const userId = (await auth.json()).user.id;
+await auth.arrayBuffer();
 
 async function insertChunks(count, makeStatements, chunkSize = 500) {
   for (let start = 0; start < count; start += chunkSize) {
@@ -87,70 +84,6 @@ await insertChunks(sizes.codingProblems, (index) => [
       now,
     ),
 ]);
-await insertChunks(sizes.solutions, (index) => [
-  db
-    .prepare(
-      `INSERT INTO solutions
-       (id, problem_id, author_id, title, language, code, description, lessons, solved,
-        visibility, current_rev, solved_at, created_at, updated_at)
-       VALUES (?, ?, ?, ?, 'javascript', ?, ?, '', 1, 'MEMBERS', 1, ?, ?, ?)`,
-    )
-    .bind(
-      `perf-solution-${index}`,
-      `perf-problem-${index % sizes.codingProblems}`,
-      userId,
-      `Synthetic solution ${index}`,
-      `export const solve = (value) => value + ${index % 10};`,
-      `Synthetic explanation ${index}`,
-      now,
-      now,
-      now,
-    ),
-  db
-    .prepare(
-      `INSERT INTO solution_revisions
-       (id, solution_id, revision, code, description, created_at)
-       VALUES (?, ?, 1, ?, ?, ?)`,
-    )
-    .bind(
-      `perf-revision-${index}`,
-      `perf-solution-${index}`,
-      `export const solve = (value) => value + ${index % 10};`,
-      `Synthetic explanation ${index}`,
-      now,
-    ),
-]);
-await insertChunks(sizes.comments, (index) => [
-  db
-    .prepare(
-      `INSERT INTO solution_comments
-       (id, solution_id, author_id, parent_id, markdown, created_at, updated_at)
-       VALUES (?, ?, ?, NULL, ?, ?, ?)`,
-    )
-    .bind(
-      `perf-comment-${index}`,
-      `perf-solution-${index % sizes.solutions}`,
-      userId,
-      `Synthetic comment ${index}`,
-      now,
-      now,
-    ),
-]);
-await insertChunks(sizes.notificationsPerUser, (index) => [
-  db
-    .prepare(
-      `INSERT INTO notifications
-       (id, user_id, type, title, message, href, created_at)
-       VALUES (?, ?, 'SYSTEM', ?, ?, '/', ?)`,
-    )
-    .bind(
-      `perf-notification-${index}`,
-      userId,
-      `Synthetic notification ${index}`,
-      `Synthetic message ${index}`,
-      now,
-    ),
-]);
 const seedDurationMs = performance.now() - seedStarted;
 
 const percentile = (values, ratio) => {
@@ -190,9 +123,7 @@ const metrics = {
   jobsFilter: await measure('/jobs?category=BACKEND'),
   codingProblems: await measure('/coding/problems'),
   codingProblemsCursor: await measure('/coding/problems?page=cursor&limit=60'),
-  solutions: await measure('/coding/solutions'),
-  solutionsCursor: await measure('/coding/solutions?page=cursor&limit=10'),
-  notifications: await measure('/notifications'),
+  favoriteProblems: await measure('/coding/problems?page=cursor&limit=60&favorites=1'),
   search: await measure('/search?q=Synthetic'),
 };
 const payloadReductionPercent = (legacy, cursor) =>
@@ -207,11 +138,6 @@ const paginationComparison = {
     legacyBytes: metrics.codingProblems.responseBytes,
     cursorBytes: metrics.codingProblemsCursor.responseBytes,
     reductionPercent: payloadReductionPercent(metrics.codingProblems, metrics.codingProblemsCursor),
-  },
-  solutions: {
-    legacyBytes: metrics.solutions.responseBytes,
-    cursorBytes: metrics.solutionsCursor.responseBytes,
-    reductionPercent: payloadReductionPercent(metrics.solutions, metrics.solutionsCursor),
   },
 };
 

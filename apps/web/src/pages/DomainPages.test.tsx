@@ -2,9 +2,7 @@ import { cleanup, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { JobsPage } from './JobsPage';
-import { SolutionsPage } from './SolutionsPage';
 import { LearningPage } from './LearningPage';
-import { RankingPage } from './RankingPage';
 import { renderPage, response } from '../test/render';
 
 describe('domain pages', () => {
@@ -19,7 +17,6 @@ describe('domain pages', () => {
         preferredLanguage: 'javascript',
         onboardingCompleted: true,
       },
-      unreadCount: 0,
       categories,
       data,
     });
@@ -281,60 +278,6 @@ describe('domain pages', () => {
     expect(screen.getByRole('dialog', { name: '일정회사 1' })).toHaveTextContent('신입 엔지니어 1');
   });
 
-  it('posts a sanitized comment through the solution flow', async () => {
-    const solution = {
-      id: '11111111-1111-4111-8111-111111111111',
-      problemId: 'problem-1',
-      title: '풀이 기록',
-      language: 'javascript',
-      code: 'const answer = 1;',
-      description: '설명',
-      descriptionPreview: '설명',
-      solved: true,
-      currentRev: 1,
-      canEdit: true,
-      reactionCount: 0,
-      reactedByMe: false,
-      commentCount: 0,
-      author: { displayName: '김그라운드' },
-      problem: { displayTitle: '데모 문제', level: 1 },
-      reactions: [],
-      revisions: [
-        { id: 'revision-1', revision: 1, code: 'const answer = 1;', description: '설명' },
-      ],
-      comments: [],
-    };
-    vi.stubGlobal(
-      'fetch',
-      vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
-        const url = String(input);
-        const body = init?.body ? JSON.parse(String(init.body)) : undefined;
-        calls.push({ url, method: init?.method || 'GET', body });
-        if (url.includes('/coding/solutions?')) {
-          return response({ items: [solution], nextCursor: null, total: 1 });
-        }
-        if ((init?.method || 'GET') === 'GET' && url.endsWith(`/coding/solutions/${solution.id}`)) {
-          return response(solution);
-        }
-        return response({ id: 'comment' });
-      }),
-    );
-    const user = userEvent.setup();
-    renderPage(<SolutionsPage />);
-    await user.click(await screen.findByRole('button', { name: /코드·revision·댓글 보기/ }));
-    await user.type(await screen.findByRole('textbox', { name: '댓글' }), '좋은 설명입니다.');
-    await user.click(screen.getByRole('button', { name: '등록' }));
-    await waitFor(() =>
-      expect(
-        calls.some(
-          (call) =>
-            call.url.includes('/comments') &&
-            (call.body as { markdown: string }).markdown === '좋은 설명입니다.',
-        ),
-      ).toBe(true),
-    );
-  });
-
   it('opens learning content without an understanding rating prompt', async () => {
     const detail = {
       id: '11111111-1111-4111-8111-111111111111',
@@ -385,40 +328,5 @@ describe('domain pages', () => {
     expect(screen.queryByText('이 단원을 얼마나 이해했나요?')).not.toBeInTheDocument();
     expect(screen.queryByRole('group', { name: /이해도 기록/ })).not.toBeInTheDocument();
     expect(calls.some((call) => call.url.endsWith('/learning/review'))).toBe(false);
-  });
-
-  it('shows dense ranking and its calculation fields', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() =>
-        response({
-          calculatedAt: '2026-08-12T00:00:00Z',
-          currentUserId: 'u',
-          selfReported: false,
-          periods: {
-            timezone: 'Asia/Seoul',
-            weeklyStart: '2026-08-10T00:00:00+09:00',
-            monthlyStart: '2026-08-01T00:00:00+09:00',
-          },
-          methodology: '모든 멤버의 SOLVED 풀이를 자동 계산합니다.',
-          rows: [
-            {
-              userId: 'u',
-              displayName: '김그라운드',
-              rank: 1,
-              score: 3,
-              weekly: 2,
-              monthly: 3,
-              streak: 2,
-              challengeCount: 5,
-            },
-          ],
-        }),
-      ),
-    );
-    renderPage(<RankingPage />);
-    expect(await screen.findByText('김그라운드')).toBeInTheDocument();
-    expect(screen.getByText('멤버가 해결한 문제 수', { exact: false })).toBeInTheDocument();
-    expect(screen.getByText('2일')).toBeInTheDocument();
   });
 });

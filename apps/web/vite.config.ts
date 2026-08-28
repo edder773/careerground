@@ -4,6 +4,26 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: 'react-core',
+              test: /node_modules[\\/](?:react|react-dom|react-router|scheduler)[\\/]/,
+              priority: 20,
+            },
+            {
+              name: 'data-and-forms',
+              test: /node_modules[\\/](?:@tanstack|@hookform|react-hook-form|zod)[\\/]/,
+              priority: 10,
+            },
+          ],
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     strictPort: true,

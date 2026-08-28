@@ -122,8 +122,6 @@ test('captures core domain screens', async ({ page }) => {
     { href: '/coding', heading: '코딩테스트', name: 'coding' },
     { href: '/jobs', heading: '신입 IT 채용공고', name: 'jobs' },
     { href: '/learning', heading: '학습 라이브러리', name: 'learning' },
-    { href: '/solutions', heading: '풀이 기록', name: 'solutions' },
-    { href: '/notifications', heading: '알림', name: 'notifications' },
     { href: '/settings', heading: '설정', name: 'settings' },
   ];
   for (const screen of screens) {
@@ -171,15 +169,15 @@ test('captures core domain screens', async ({ page }) => {
       fullPage: true,
     });
     if (screen.name === 'coding') {
-      const daily = page.getByRole('region', { name: '오늘의 문제' });
-      await daily.getByRole('button', { name: '풀이 기록' }).first().click();
-      await expect(page.getByRole('dialog')).toBeVisible();
-      await page.waitForTimeout(220);
+      const daily = page.getByRole('region', { name: '오늘의 추천 문제' });
+      await expect(daily.locator('article')).toHaveCount(3);
+      await expect(daily.getByRole('link', { name: /문제 열기/ })).toHaveCount(3);
+      await expect(daily.getByRole('button', { name: /즐겨찾기/ })).toHaveCount(3);
+      await expect(page.getByText(/풀이 기록|다른 풀이|코딩 랭킹/)).toHaveCount(0);
       await page.screenshot({
-        path: 'test-results/visual/coding-editor-desktop-1440.png',
-        fullPage: false,
+        path: 'test-results/visual/coding-catalog-desktop-1440.png',
+        fullPage: true,
       });
-      await page.getByRole('button', { name: '닫기' }).click();
     }
     if (screen.name === 'learning') {
       const promptLearning = page
@@ -239,10 +237,12 @@ test('captures core domain screens', async ({ page }) => {
   await expect(page.getByLabel('표시 이름')).toHaveCount(0);
   await page.screenshot({ path: 'test-results/visual/settings-mobile-375.png', fullPage: false });
 
-  await page.goto('/notifications');
-  await expect(page.getByRole('heading', { name: '알림', exact: true })).toBeVisible();
+  await page.goto('/coding');
+  await expect(page.getByRole('region', { name: '오늘의 추천 문제' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '전체 문제', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '즐겨찾기', exact: true })).toBeVisible();
   await page.screenshot({
-    path: 'test-results/visual/notifications-mobile-375.png',
+    path: 'test-results/visual/coding-catalog-mobile-375.png',
     fullPage: false,
   });
 
@@ -323,15 +323,12 @@ test('captures core domain screens', async ({ page }) => {
   await page.getByRole('button', { name: '닫기' }).click();
 
   await page.goto('/coding');
-  await page
-    .getByRole('region', { name: '오늘의 문제' })
-    .getByRole('button', { name: '풀이 기록' })
-    .first()
-    .click();
-  await expect(page.getByRole('dialog')).toBeVisible();
-  await page.waitForTimeout(220);
+  const daily = page.getByRole('region', { name: '오늘의 추천 문제' });
+  await expect(daily.locator('article')).toHaveCount(3);
+  await expect(daily.getByRole('link', { name: /문제 열기/ })).toHaveCount(3);
+  await expect(daily.getByRole('button', { name: /즐겨찾기/ })).toHaveCount(3);
   await page.screenshot({
-    path: 'test-results/visual/coding-editor-mobile-375.png',
+    path: 'test-results/visual/coding-recommendations-mobile-375.png',
     fullPage: false,
   });
 });
@@ -393,7 +390,7 @@ test('stacks the three daily recommendations without wrapping their titles', asy
   }
 });
 
-test('reflows at 200% equivalent width and keeps the editor usable above a mobile keyboard', async ({
+test('reflows at 200% equivalent width and keeps the coding catalog usable on narrow screens', async ({
   page,
 }) => {
   await login(page, 'visual-accessibility@careerground.local');
@@ -409,23 +406,21 @@ test('reflows at 200% equivalent width and keeps the editor usable above a mobil
 
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto('/coding');
-  await page
-    .getByRole('region', { name: '오늘의 문제' })
-    .getByRole('button', { name: '풀이 기록' })
-    .first()
-    .click();
-  const dialog = page.getByRole('dialog');
-  await expect(dialog).toBeVisible();
-  await dialog.locator('.cm-content').click();
+  await expect(page.getByRole('region', { name: '오늘의 추천 문제' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '전체 문제', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '즐겨찾기', exact: true })).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+    ),
+  ).toBe(true);
 
-  // A 312px viewport reduction approximates a mobile on-screen keyboard without claiming
-  // device-level IME coverage. The dialog must remain scrollable and its save action reachable.
-  await page.setViewportSize({ width: 375, height: 500 });
-  const save = dialog.getByRole('button', { name: '해결 기록 저장' });
-  await save.scrollIntoViewIfNeeded();
-  await expect(save).toBeVisible();
-  expect(await dialog.evaluate((element) => element.scrollWidth <= element.clientWidth + 1)).toBe(
-    true,
-  );
+  await page.setViewportSize({ width: 320, height: 568 });
+  await expect(page.getByRole('region', { name: '오늘의 추천 문제' })).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+    ),
+  ).toBe(true);
   await expectNoSeriousViolations(page);
 });

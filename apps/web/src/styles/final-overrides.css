@@ -125,58 +125,6 @@
   line-height: 1.45;
 }
 
-.notification-edit-list,
-.notification-preference-list {
-  margin: 0;
-  display: grid;
-  gap: 8px;
-}
-
-.notification-edit-list .check-label,
-.notification-preference-list li {
-  min-height: 48px;
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: #f7f8fa;
-  border: 1px solid #e6e8ed;
-  border-radius: 11px;
-  font-size: 12px;
-}
-
-.notification-edit-list .check-label {
-  justify-content: flex-start;
-}
-
-.notification-edit-list input {
-  width: 18px;
-  height: 18px;
-  accent-color: #5867bd;
-}
-
-.notification-preference-list {
-  padding: 0;
-  list-style: none;
-}
-
-.notification-preference-list strong {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: #7a8089;
-  font-size: 11px;
-}
-
-.notification-preference-list strong.enabled {
-  color: #3c568f;
-}
-
-.notification-preference-list svg {
-  width: 15px;
-}
-
 .account-card {
   gap: 14px;
 }

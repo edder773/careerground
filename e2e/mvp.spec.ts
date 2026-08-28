@@ -55,62 +55,28 @@ test.describe('CareerGround MVP vertical slices', () => {
     await expect(page.locator('.problem-grid article').filter({ hasText: title })).toBeVisible();
   });
 
-  test('filters problems and records a member-visible solution', async ({ page }) => {
+  test('shows recommendations, the full catalog, and favorites without collaboration tools', async ({
+    page,
+  }) => {
     await page.getByRole('link', { name: '코딩테스트' }).first().click();
     await expect(page.getByRole('heading', { name: '코딩테스트' })).toBeVisible();
-    const dailySection = page.getByRole('region', { name: '오늘의 문제' });
+    const dailySection = page.getByRole('region', { name: '오늘의 추천 문제' });
     await expect(dailySection.locator('article')).toHaveCount(3);
-    await expect(dailySection.getByText(/오늘 두 문제|오늘의 두 문제/)).toHaveCount(0);
     await expect(dailySection.getByText('Lv. 1', { exact: true })).toBeVisible();
     await expect(dailySection.getByText('Lv. 2', { exact: true })).toBeVisible();
     await expect(dailySection.getByText(/SQL · Lv\. [34]/)).toBeVisible();
-    await expect(dailySection.getByRole('link', { name: '다른 풀이 보기' })).toHaveCount(3);
-    const record = dailySection.getByRole('button', { name: '풀이 기록' }).first();
-    await expect(record).toBeVisible();
-    await record.click();
-    await expect(page.getByRole('dialog', { name: /.+/ })).toBeVisible();
-    const description = `다른 멤버 공개 검증 ${Date.now()}`;
-    await page.getByLabel('언어').selectOption('javascript');
-    await page.locator('.cm-content').fill('function solution(value) { return value; }');
-    await page.getByLabel('풀이 설명').fill(description);
-    await page.getByRole('button', { name: '해결 기록 저장' }).click();
-    await expect(page.locator('.editor-panel')).toBeHidden();
+    await expect(dailySection.getByRole('link', { name: /문제 열기/ })).toHaveCount(3);
+    await expect(dailySection.getByRole('button', { name: /즐겨찾기/ })).toHaveCount(3);
+    await expect(page.getByText(/풀이 기록|다른 풀이/)).toHaveCount(0);
+    await expect(page.getByRole('link', { name: '랭킹' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: '알림' })).toHaveCount(0);
 
-    await dailySection.getByRole('link', { name: '다른 풀이 보기' }).first().click();
-    await expect(page).toHaveURL(/\/solutions\?problemId=/);
-    await expect(page.getByRole('heading', { name: /다른 풀이/ })).toBeVisible();
-    await expect(page.getByText(description)).toBeVisible();
-
-    await logout(page);
-    await login(page, `solution-reader-${Date.now()}@example.com`);
-    await page.getByRole('link', { name: '풀이 기록' }).first().click();
-    await expect(page.getByText(description)).toBeVisible();
-  });
-
-  test('reacts to a solution record and adds a comment', async ({ page }) => {
-    await page.getByRole('link', { name: '코딩테스트' }).first().click();
-    const dailySection = page.getByRole('region', { name: '오늘의 문제' });
-    await dailySection.getByRole('button', { name: '풀이 기록' }).first().click();
-    await page.getByLabel('언어').selectOption('javascript');
-    await page.locator('.cm-content').fill('function solution(value) { return value; }');
-    await page.getByLabel('풀이 설명').fill(`댓글 흐름 검증 ${Date.now()}`);
-    await page.getByRole('button', { name: '해결 기록 저장' }).click();
-    await expect(page.locator('.editor-panel')).toBeHidden();
-
-    await page.getByRole('link', { name: '풀이 기록' }).first().click();
-    await expect(page.getByRole('heading', { name: '풀이 기록', exact: true })).toBeVisible();
-    await page
-      .getByRole('button', { name: /유용해요/ })
-      .first()
-      .click();
-    await page
-      .getByRole('button', { name: /코드·revision·댓글 보기/ })
-      .first()
-      .click();
-    const comment = `E2E 댓글 ${Date.now()}`;
-    await page.getByLabel('댓글').fill(comment);
-    await page.getByRole('button', { name: '등록' }).click();
-    await expect(page.getByText(comment, { exact: true })).toBeVisible();
+    await page.goto('/solutions');
+    await expect(page).toHaveURL(/\/coding$/);
+    await page.goto('/rankings');
+    await expect(page).toHaveURL(/\/coding$/);
+    await page.goto('/notifications');
+    await expect(page).toHaveURL(/\/$/);
   });
 
   test('filters and saves an entry-level IT job', async ({ page }) => {
@@ -209,13 +175,6 @@ test.describe('CareerGround MVP vertical slices', () => {
     await page.getByRole('button', { name: '닫기' }).click();
   });
 
-  test('shows dense ranking calculation details', async ({ page }) => {
-    await page.getByRole('link', { name: '랭킹' }).first().click();
-    await expect(page.getByRole('table', { name: '코딩 랭킹' })).toBeVisible();
-    await expect(page.getByText('동점은 같은 순위로 표시합니다.')).toBeVisible();
-    await expect(page.getByText(/모든 멤버.*자동 계산/)).toBeVisible();
-  });
-
   test('profile settings begin read-only and expose an explicit change action', async ({
     page,
   }) => {
@@ -226,6 +185,7 @@ test.describe('CareerGround MVP vertical slices', () => {
     await expect(page.getByRole('button', { name: '변경', exact: true })).toBeVisible();
     await expect(page.getByText(/데이터 JSON 내보내기|데이터 삭제 요청/)).toHaveCount(0);
     await expect(page.getByRole('checkbox', { name: /랭킹/ })).toHaveCount(0);
+    await expect(page.getByText('인앱 알림')).toHaveCount(0);
     await page.getByRole('button', { name: '변경', exact: true }).click();
     const displayName = page.getByLabel('표시 이름');
     await expect(displayName).toBeEnabled();
@@ -234,14 +194,11 @@ test.describe('CareerGround MVP vertical slices', () => {
     await expect(displayName).toHaveCount(0);
   });
 
-  test('searches across the workspace and marks notifications read', async ({ page }) => {
+  test('searches across the active workspace surfaces', async ({ page }) => {
     await page.getByRole('button', { name: '검색' }).click();
-    await page.getByPlaceholder('폴더, 공고, 문제, 풀이, 학습자료…').fill('백엔드');
+    await page.getByPlaceholder('폴더, 공고, 문제, 학습자료…').fill('백엔드');
     await expect(page.getByText(/개 결과/)).toBeVisible();
     await page.keyboard.press('Escape');
-    await page.getByRole('link', { name: '알림' }).first().click();
-    await expect(page.getByRole('heading', { name: '알림' })).toBeVisible();
-    await page.getByRole('button', { name: '모두 읽음' }).click();
   });
 
   test('admin previews and commits structured job and learning imports without crawling', async ({

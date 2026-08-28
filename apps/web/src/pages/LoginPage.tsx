@@ -106,12 +106,12 @@ export function LoginPage() {
             <br />
             함께 해결하세요.
           </h1>
-          <p>학습자료, 신입 채용공고, 코딩 풀이를 폴더처럼 정돈하는 개인 성장 작업대입니다.</p>
+          <p>학습자료, 신입 채용공고와 추천 코딩 문제를 정돈하는 개인 성장 작업대입니다.</p>
         </div>
         <div className="story-grid">
           <span>학습과 복습</span>
           <span>신입 IT 공고</span>
-          <span>풀이 기록</span>
+          <span>문제 즐겨찾기</span>
         </div>
       </section>
       <section className="login-panel">

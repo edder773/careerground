@@ -22,10 +22,6 @@ export type UserRow = {
   githubUsername: string | null;
   preferredLanguage: string;
   onboardingCompletedAt: string | null;
-  rankingOptIn: number | boolean;
-  commentNotifications: number | boolean;
-  deadlineNotifications: number | boolean;
-  reviewNotifications: number | boolean;
   dataDeletionRequested: string | null;
   createdAt: string;
   updatedAt: string;

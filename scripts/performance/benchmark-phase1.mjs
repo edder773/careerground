@@ -41,12 +41,7 @@ async function assertOk(response, label) {
 
 async function loadLegacyHome() {
   await assertOk(await api('/auth/me'), '/auth/me');
-  const paths = [
-    '/collections',
-    '/dashboard',
-    '/coding/daily-challenges',
-    '/notifications/unread-count',
-  ];
+  const paths = ['/collections', '/dashboard', '/coding/daily-challenges'];
   for (const path of paths) await assertOk(await api(path), path);
 }
 
@@ -78,7 +73,7 @@ await assertOk(
 );
 await loadLegacyHome();
 const legacyHome = await measure(
-  'auth plus four home endpoint handlers (sequential local adapter)',
+  'auth plus three home endpoint handlers (sequential local adapter)',
   loadLegacyHome,
 );
 

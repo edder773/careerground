@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle2, LogOut, Pencil, Save, Settings, X } from 'lucide-react';
+import { LogOut, Pencil, Save, Settings, X } from 'lucide-react';
 import { useAuth } from '../auth';
 import { api, json } from '../lib/api';
 
@@ -11,11 +11,6 @@ type Profile = {
   avatarUrl?: string | null;
   githubUsername?: string | null;
   preferredLanguage: string;
-  preference?: {
-    commentNotifications: boolean;
-    deadlineNotifications: boolean;
-    reviewNotifications: boolean;
-  } | null;
 };
 
 const languageLabels: Record<string, string> = {
@@ -34,9 +29,6 @@ export function SettingsPage() {
   const [githubUsername, setGithubUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [preferredLanguage, setPreferredLanguage] = useState('python');
-  const [commentNotifications, setCommentNotifications] = useState(true);
-  const [deadlineNotifications, setDeadlineNotifications] = useState(true);
-  const [reviewNotifications, setReviewNotifications] = useState(true);
   const [message, setMessage] = useState('');
 
   const loadProfile = (value: Profile) => {
@@ -44,19 +36,13 @@ export function SettingsPage() {
     setGithubUsername(value.githubUsername || '');
     setAvatarUrl(value.avatarUrl || '');
     setPreferredLanguage(value.preferredLanguage);
-    setCommentNotifications(value.preference?.commentNotifications ?? true);
-    setDeadlineNotifications(value.preference?.deadlineNotifications ?? true);
-    setReviewNotifications(value.preference?.reviewNotifications ?? true);
   };
   const dirty = Boolean(
     profile.data &&
     (displayName !== profile.data.displayName ||
       githubUsername !== (profile.data.githubUsername || '') ||
       avatarUrl !== (profile.data.avatarUrl || '') ||
-      preferredLanguage !== profile.data.preferredLanguage ||
-      commentNotifications !== (profile.data.preference?.commentNotifications ?? true) ||
-      deadlineNotifications !== (profile.data.preference?.deadlineNotifications ?? true) ||
-      reviewNotifications !== (profile.data.preference?.reviewNotifications ?? true)),
+      preferredLanguage !== profile.data.preferredLanguage),
   );
 
   useEffect(() => {
@@ -72,9 +58,6 @@ export function SettingsPage() {
           githubUsername: githubUsername || null,
           avatarUrl: avatarUrl || null,
           preferredLanguage,
-          commentNotifications,
-          deadlineNotifications,
-          reviewNotifications,
         }),
       }),
     onSuccess: async () => {
@@ -224,49 +207,6 @@ export function SettingsPage() {
             )}
           </section>
           <div className="settings-side-stack">
-            <section className={`settings-card ${editing ? 'is-editing' : ''}`}>
-              <header className="settings-card-header">
-                <div>
-                  <h2>인앱 알림</h2>
-                  <p>필요한 활동과 일정만 놓치지 않도록 알려드립니다.</p>
-                </div>
-              </header>
-              {editing ? (
-                <div className="notification-edit-list">
-                  <label className="check-label">
-                    <input
-                      type="checkbox"
-                      checked={commentNotifications}
-                      onChange={(event) => setCommentNotifications(event.target.checked)}
-                    />
-                    댓글과 답글
-                  </label>
-                  <label className="check-label">
-                    <input
-                      type="checkbox"
-                      checked={deadlineNotifications}
-                      onChange={(event) => setDeadlineNotifications(event.target.checked)}
-                    />
-                    관심 공고 마감
-                  </label>
-                </div>
-              ) : (
-                <ul className="notification-preference-list">
-                  {[
-                    ['댓글과 답글', commentNotifications],
-                    ['관심 공고 마감', deadlineNotifications],
-                  ].map(([label, enabled]) => (
-                    <li key={String(label)}>
-                      <span>{label}</span>
-                      <strong className={enabled ? 'enabled' : ''}>
-                        {enabled && <CheckCircle2 aria-hidden="true" />}
-                        {enabled ? '받기' : '끄기'}
-                      </strong>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
             <section className="settings-card account-card">
               <header className="settings-card-header">
                 <div>

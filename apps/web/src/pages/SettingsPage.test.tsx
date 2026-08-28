@@ -27,7 +27,6 @@ describe('settings page', () => {
               preferredLanguage: 'python',
               onboardingCompleted: true,
             },
-            unreadCount: 0,
             home: null,
           });
         }
@@ -36,11 +35,6 @@ describe('settings page', () => {
           email: 'member@example.test',
           displayName: '기존 이름',
           preferredLanguage: 'python',
-          preference: {
-            commentNotifications: true,
-            deadlineNotifications: true,
-            reviewNotifications: true,
-          },
         });
       }),
     );
@@ -54,8 +48,7 @@ describe('settings page', () => {
     expect(await screen.findByText('기존 이름')).toBeInTheDocument();
     expect(screen.queryByRole('textbox', { name: '표시 이름' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '변경' })).toBeInTheDocument();
-    expect(screen.getAllByText('받기')).toHaveLength(2);
-    expect(screen.queryByText('학습 복습 예정')).not.toBeInTheDocument();
+    expect(screen.queryByText('인앱 알림')).not.toBeInTheDocument();
     expect(screen.queryByText(/랭킹에 참여/)).not.toBeInTheDocument();
     expect(screen.queryByText(/데이터 JSON 내보내기|데이터 삭제 요청/)).not.toBeInTheDocument();
 
@@ -72,7 +65,9 @@ describe('settings page', () => {
           (call) =>
             call.method === 'PATCH' &&
             call.body?.displayName === '변경 이름' &&
-            !Object.hasOwn(call.body, 'rankingOptIn'),
+            !Object.hasOwn(call.body, 'rankingOptIn') &&
+            !Object.hasOwn(call.body, 'commentNotifications') &&
+            !Object.hasOwn(call.body, 'deadlineNotifications'),
         ),
       ).toBe(true),
     );

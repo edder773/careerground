@@ -27,7 +27,6 @@ describe('initial workspace bootstrap', () => {
           preferredLanguage: 'javascript',
           onboardingCompleted: true,
         },
-        unreadCount: 3,
         home: {
           collections: [{ id: 'folder-1', name: '취업 준비', items: [] }],
           dailyChallenges: [{ id: 'challenge-1', levelSlot: 1 }],
@@ -48,7 +47,7 @@ describe('initial workspace bootstrap', () => {
     expect(await screen.findByText('부트스트랩 멤버')).toBeInTheDocument();
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     expect(String(fetchMock.mock.calls[0]?.[0])).toContain('/bootstrap?home=1');
-    expect(client.getQueryData(['notification-unread-count'])).toEqual({ count: 3 });
+    expect(client.getQueryData(['notification-unread-count'])).toBeUndefined();
     expect(client.getQueryData(['collections'])).toEqual([
       { id: 'folder-1', name: '취업 준비', items: [] },
     ]);
@@ -76,7 +75,6 @@ describe('initial workspace bootstrap', () => {
           preferredLanguage: 'javascript',
           onboardingCompleted: true,
         },
-        unreadCount: 2,
         categories: ['백엔드'],
         data: catalog,
       }),
@@ -123,7 +121,6 @@ describe('initial workspace bootstrap', () => {
           preferredLanguage: 'javascript',
           onboardingCompleted: true,
         },
-        unreadCount: 1,
         data: sources,
       }),
     );
@@ -142,6 +139,6 @@ describe('initial workspace bootstrap', () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     expect(String(fetchMock.mock.calls[0]?.[0])).toContain('/learning/bootstrap');
     expect(client.getQueryData(['learning'])).toEqual(sources);
-    expect(client.getQueryData(['notification-unread-count'])).toEqual({ count: 1 });
+    expect(client.getQueryData(['notification-unread-count'])).toBeUndefined();
   });
 });

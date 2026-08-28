@@ -137,7 +137,6 @@ export function JobsPage() {
     queryKey: ['jobs', 'catalog'],
     queryFn: async () => {
       const payload = await api<JobBootstrapPayload>('/jobs/bootstrap?catalog=true');
-      client.setQueryData(['notification-unread-count'], { count: payload.unreadCount });
       client.setQueryData(['jobs', 'categories'], payload.categories);
       return Array.isArray(payload.data) ? payload.data : payload.data.items;
     },

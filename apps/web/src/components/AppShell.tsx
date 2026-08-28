@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router';
 import {
-  Bell,
   BookOpen,
   BriefcaseBusiness,
   ChevronLeft,
@@ -17,8 +16,6 @@ import {
   Search,
   Settings,
   ShieldCheck,
-  Trophy,
-  Users,
   X,
 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -34,9 +31,6 @@ const navigation = [
   { to: '/learning', label: '학습', icon: BookOpen },
   { to: '/jobs', label: '채용공고', icon: BriefcaseBusiness },
   { to: '/coding', label: '코딩테스트', icon: Code2 },
-  { to: '/solutions', label: '풀이 기록', icon: Users },
-  { to: '/rankings', label: '랭킹', icon: Trophy },
-  { to: '/notifications', label: '알림', icon: Bell },
 ] as const;
 
 const titles: Record<string, string> = {
@@ -44,9 +38,6 @@ const titles: Record<string, string> = {
   '/learning': '학습 라이브러리',
   '/jobs': '신입 IT 채용공고',
   '/coding': '코딩테스트',
-  '/solutions': '풀이 기록',
-  '/rankings': '랭킹',
-  '/notifications': '알림',
   '/admin': '관리자 센터',
   '/settings': '설정',
 };
@@ -86,12 +77,6 @@ export function AppShell({
     } catch {
       return [];
     }
-  });
-  const unread = useQuery({
-    queryKey: ['notification-unread-count'],
-    queryFn: () => api<{ count: number }>('/notifications/unread-count'),
-    refetchInterval: 60_000,
-    refetchOnWindowFocus: true,
   });
   useEffect(() => {
     try {
@@ -193,24 +178,13 @@ export function AppShell({
           </NavLink>
         ))}
         <span className="side-nav-label">함께 성장</span>
-        {navigation.slice(3, 6).map(({ to, label, icon: Icon }) => (
+        {navigation.slice(3).map(({ to, label, icon: Icon }) => (
           <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'active' : '')}>
             <Icon size={18} aria-hidden="true" />
             <span>{label}</span>
           </NavLink>
         ))}
-        <span className="side-nav-label">소식과 관리</span>
-        {navigation.slice(6).map(({ to, label, icon: Icon }) => (
-          <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'active' : '')}>
-            <Icon size={18} aria-hidden="true" />
-            <span>{label}</span>
-            {to === '/notifications' && Boolean(unread.data?.count) && (
-              <span className="nav-badge" aria-label={`읽지 않은 알림 ${unread.data?.count}개`}>
-                {unread.data?.count}
-              </span>
-            )}
-          </NavLink>
-        ))}
+        <span className="side-nav-label">관리</span>
         {user?.role === 'ADMIN' && (
           <NavLink to="/admin" className={({ isActive }) => (isActive ? 'active' : '')}>
             <ShieldCheck size={18} />
@@ -390,7 +364,7 @@ export function AppShell({
                     openResult(flatResults[activeResult]);
                   }
                 }}
-                placeholder="폴더, 공고, 문제, 풀이, 학습자료…"
+                placeholder="폴더, 공고, 문제, 학습자료…"
               />
             </label>
             <div

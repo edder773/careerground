@@ -24,7 +24,6 @@ export type JobFontSize = 'comfortable' | 'large' | 'largest';
 export type CalendarEventType = 'application' | 'deadline' | 'rolling';
 export type CalendarEvent = { job: Job; type: CalendarEventType };
 export type JobBootstrapPayload = {
-  unreadCount: number;
   categories: string[];
   data: Job[] | { items: Job[]; nextCursor: string | null; total: number };
 };

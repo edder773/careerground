@@ -4,7 +4,6 @@ import { api, ApiError, type User } from './lib/api';
 
 type BootstrapPayload = {
   user: User;
-  unreadCount: number;
   home?: null | {
     collections: unknown[];
     dailyChallenges: unknown[];
@@ -50,7 +49,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
           learningBootstrap?.path ||
           `/bootstrap${includeHome ? '?home=1' : ''}`,
       );
-      client.setQueryData(['notification-unread-count'], { count: payload.unreadCount });
       if (payload.home) {
         client.setQueryData(['collections'], payload.home.collections);
         client.setQueryData(['daily-challenges'], payload.home.dailyChallenges);

@@ -29,10 +29,6 @@ export const userSelect = `
          users.github_username AS githubUsername,
          users.preferred_language AS preferredLanguage,
          users.onboarding_completed_at AS onboardingCompletedAt,
-         users.ranking_opt_in AS rankingOptIn,
-         users.comment_notifications AS commentNotifications,
-         users.deadline_notifications AS deadlineNotifications,
-         users.review_notifications AS reviewNotifications,
          users.data_deletion_requested AS dataDeletionRequested,
          users.created_at AS createdAt, users.updated_at AS updatedAt
   FROM users`;
@@ -179,20 +175,6 @@ export async function resolveGoogleUser(identity: GoogleIdentity, env: D1Env): P
            VALUES (?, ?, 'GOOGLE', ?, ?, ?, ?)`,
         )
         .bind(newId(), id, identity.subject, identity.email, timestamp, timestamp),
-      db
-        .prepare(
-          `INSERT INTO notifications
-             (id, user_id, type, title, message, href, dedupe_key, created_at)
-           VALUES (?, ?, 'SYSTEM', ?, ?, '/', ?, ?)`,
-        )
-        .bind(
-          newId(),
-          id,
-          'CareerGround에 오신 것을 환영합니다',
-          'Google 계정으로 개인 워크스페이스가 준비되었습니다.',
-          `welcome:${id}`,
-          timestamp,
-        ),
       db
         .prepare(
           `INSERT INTO audit_logs
