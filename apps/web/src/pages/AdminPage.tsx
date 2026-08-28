@@ -20,7 +20,6 @@ type Overview = {
     originalCount: number;
     rejectedCount: number;
   }>;
-  capabilities: { processingQueue: boolean; commentReports: boolean };
 };
 
 type DailySetting = {

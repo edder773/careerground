@@ -31,7 +31,6 @@ describe('job catalog replacement migration', () => {
     expect(result.overlapUrls).toHaveLength(0);
     expect(result.sql.match(/INSERT INTO jobs\n/g)).toHaveLength(51);
     expect(result.sql).toContain("DELETE FROM collection_items WHERE item_type = 'JOB_POSTING'");
-    expect(result.sql).toContain("DELETE FROM notifications WHERE type = 'JOB_DEADLINE'");
     expect(result.sql).toContain('DELETE FROM saved_jobs;');
     expect(result.sql).toContain('published_at, deadline_at');
     expect(result.sql).toContain('DELETE FROM workspace_search');

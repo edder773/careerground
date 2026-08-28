@@ -42,7 +42,6 @@ type FavoriteItem = CollectionItem & {
 const itemTypeLabels: Record<string, string> = {
   JOB_POSTING: '채용공고',
   CODING_PROBLEM: '코딩 문제',
-  SOLUTION: '풀이',
   LEARNING_UNIT: '학습자료',
   EXTERNAL_LINK: '외부 링크',
 };
@@ -52,7 +51,6 @@ function itemHref(item: CollectionItem) {
   if (item.itemType === 'EXTERNAL_LINK') return item.targetId;
   if (item.itemType === 'JOB_POSTING') return `/jobs?job=${encoded}`;
   if (item.itemType === 'CODING_PROBLEM') return `/coding?problem=${encoded}&view=all`;
-  if (item.itemType === 'SOLUTION') return `/solutions?solution=${encoded}`;
   if (item.itemType === 'LEARNING_UNIT') return `/learning?unit=${encoded}`;
   return undefined;
 }
@@ -71,6 +69,7 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
     const byTarget = new Map<string, FavoriteItem>();
     for (const collection of collections.data || []) {
       for (const item of collection.items) {
+        if (item.itemType === 'SOLUTION') continue;
         const key = `${item.itemType}:${item.targetId}`;
         const current = byTarget.get(key);
         if (current) {
@@ -129,7 +128,7 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
             <Sparkles size={15} /> 개인 워크스페이스
           </span>
           <h1>즐겨찾기</h1>
-          <p>관심 공고, 코딩 문제, 학습자료와 풀이를 한곳에서 다시 확인하세요.</p>
+          <p>관심 공고, 코딩 문제와 학습자료를 한곳에서 다시 확인하세요.</p>
         </div>
       </section>
 
@@ -174,7 +173,7 @@ export function HomePage({ viewMode }: { viewMode: ViewMode }) {
           <div className="empty-panel">
             <Star />
             <h3>아직 저장한 항목이 없습니다</h3>
-            <p>학습자료나 풀이의 즐겨찾기 버튼을 눌러 여기에 모아보세요.</p>
+            <p>채용공고, 코딩 문제나 학습자료의 즐겨찾기 버튼을 눌러 여기에 모아보세요.</p>
           </div>
         )}
         <div className={`favorite-item-grid ${viewMode}`}>

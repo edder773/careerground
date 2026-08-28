@@ -78,19 +78,14 @@ type DailyChallengeRow = {
   level: number;
   track: 'ALGORITHM' | 'SQL';
   tags: string;
-  status: string | null;
   favorite: number | boolean | null;
-  solutionCount: number;
 };
 
 const dailyChallengeRowsSql = `SELECT dc.id, dc.problem_id AS problemId,
                                       dc.level_slot AS levelSlot, dc.created_at AS createdAt,
                                       p.source_url AS sourceUrl,
                                       p.display_title AS displayTitle, p.level, p.track, p.tags,
-                                      pp.status, pp.favorite,
-                                      (SELECT COUNT(*) FROM solutions s
-                                        WHERE s.problem_id = p.id AND s.deleted_at IS NULL)
-                                        AS solutionCount
+                                      pp.favorite
                                  FROM daily_challenges dc
                                  JOIN coding_problems p ON p.id = dc.problem_id AND p.active = 1
                                  LEFT JOIN problem_progress pp
@@ -142,8 +137,7 @@ const dailyChallengeValue = (row: DailyChallengeRow) => ({
     level: row.level,
     track: row.track,
     tags: parseArray(row.tags),
-    progress: row.status ? [{ status: row.status, favorite: asBoolean(row.favorite) }] : [],
-    _count: { solutions: Number(row.solutionCount || 0) },
+    progress: row.favorite === null ? [] : [{ favorite: asBoolean(row.favorite) }],
   },
 });
 

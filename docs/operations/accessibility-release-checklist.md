@@ -26,7 +26,7 @@
 | macOS Safari + VoiceOver      | 랜드마크 이동, Finder형 nav, Dialog 제목/닫기, CodeMirror 이름과 입력 |
 | Windows Firefox/Chrome + NVDA | 검색 결과, 달력 grid 화살표 이동, form 오류 발화, 표 header           |
 | iOS Safari + VoiceOver        | 하단 nav, 모달 focus trap, 가상 키보드 위 editor 저장 버튼            |
-| Android Chrome + TalkBack     | filter checkbox, folder 다중 선택, 알림 상태 변경                     |
+| Android Chrome + TalkBack     | filter checkbox, 즐겨찾기 토글, 코딩 문제 유형 전환                   |
 
 현재 개발 호스트에는 NVDA와 iOS/Android 실제 기기가 없으므로 해당 조합을 실행한 것으로
 기록하지 않는다. 자동 게이트는 위 위험을 줄이는 회귀 방어선이며, 수동 보조기술 검증을

@@ -11,12 +11,7 @@ import {
   type D1Database,
   type D1PreparedStatement,
 } from './d1.js';
-import {
-  DomainValidationError,
-  parseApplicationStatus,
-  parseProblemStatus,
-  sourceText,
-} from './domain.js';
+import { DomainValidationError, parseApplicationStatus, sourceText } from './domain.js';
 import {
   apiUser,
   assertRateLimit,
@@ -73,7 +68,6 @@ import {
 } from './google-auth.js';
 
 const codeLanguages = new Set(['python', 'java', 'javascript', 'cpp']);
-const solutionLanguages = new Set([...codeLanguages, 'sql']);
 
 const collectionFoldersSql = `SELECT id, parent_id AS parentId, name, icon, color, position,
                                       created_at AS createdAt, updated_at AS updatedAt
@@ -153,11 +147,6 @@ async function collections(db: D1Database, userId: string) {
 
 type CountRow = { count: number };
 
-const unreadCountSql = `SELECT COUNT(*) AS count FROM notifications
-                         WHERE user_id = ? AND read_at IS NULL
-                           AND type <> 'LEARNING_REVIEW'
-                           AND (expires_at IS NULL OR expires_at > ?)`;
-
 const dashboardRange = () => {
   const now = nowIso();
   return {
@@ -201,42 +190,6 @@ async function dashboard(db: D1Database, userId: string) {
   return dashboardValue(result);
 }
 
-async function ensureDeadlineNotifications(db: D1Database) {
-  const now = new Date();
-  const todayKst = new Date(
-    new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'Asia/Seoul',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    }).format(now) + 'T00:00:00+09:00',
-  );
-  const results = await db.batch(
-    [1, 3, 7].map((days) => {
-      const from = new Date(todayKst.getTime() + days * 86_400_000).toISOString();
-      const to = new Date(todayKst.getTime() + (days + 1) * 86_400_000).toISOString();
-      return db
-        .prepare(
-          `INSERT INTO notifications
-             (id, user_id, type, title, message, href, dedupe_key, expires_at, created_at)
-           SELECT lower(hex(randomblob(16))), sj.user_id, 'JOB_DEADLINE', ?, j.title,
-                  '/jobs?job=' || j.id,
-                  'job-deadline:' || j.id || ':' || j.deadline_at || ':d-${days}',
-                  datetime(j.deadline_at, '+7 days'), ?
-             FROM saved_jobs sj
-             JOIN jobs j ON j.id = sj.job_id
-             JOIN users u ON u.id = sj.user_id
-            WHERE sj.bookmarked = 1 AND j.status = 'ACTIVE' AND u.is_active = 1
-              AND u.deadline_notifications = 1
-              AND j.deadline_at >= ? AND j.deadline_at < ?
-           ON CONFLICT(user_id, dedupe_key) DO NOTHING`,
-        )
-        .bind(`관심 공고 마감 D-${days}`, now.toISOString(), from, to);
-    }),
-  );
-  return results.reduce((sum, result) => sum + Number(result.meta?.changes || 0), 0);
-}
-
 export async function runScheduledMaintenance(env: D1Env) {
   const db = env.DB;
   const ownerId = newId();
@@ -245,7 +198,7 @@ export async function runScheduledMaintenance(env: D1Env) {
   const lease = await first<{ ownerId: string }>(
     db,
     `INSERT INTO scheduler_leases (name, owner_id, lease_until, updated_at)
-     VALUES ('notifications-and-expiry', ?, ?, ?)
+     VALUES ('maintenance-cleanup', ?, ?, ?)
      ON CONFLICT(name) DO UPDATE SET
        owner_id = excluded.owner_id, lease_until = excluded.lease_until,
        updated_at = excluded.updated_at
@@ -255,8 +208,7 @@ export async function runScheduledMaintenance(env: D1Env) {
     leaseUntil,
     startedAt,
   );
-  if (lease?.ownerId !== ownerId) return { acquired: false, expiredJobs: 0, notifications: 0 };
-  let notifications = 0;
+  if (lease?.ownerId !== ownerId) return { acquired: false };
   try {
     await db.batch([
       db
@@ -264,18 +216,15 @@ export async function runScheduledMaintenance(env: D1Env) {
         .bind(Math.floor(Date.now() / 60_000) - 2),
       db.prepare('DELETE FROM auth_sessions WHERE expires_at <= ?').bind(startedAt),
     ]);
-    notifications += await ensureDeadlineNotifications(db);
     return {
       acquired: true,
-      expiredJobs: 0,
-      notifications,
       completedAt: nowIso(),
     };
   } finally {
     await run(
       db,
       'DELETE FROM scheduler_leases WHERE name = ? AND owner_id = ?',
-      'notifications-and-expiry',
+      'maintenance-cleanup',
       ownerId,
     );
   }
@@ -292,11 +241,6 @@ async function profile(db: D1Database, userId: string) {
     githubUsername: row.githubUsername,
     preferredLanguage: row.preferredLanguage,
     onboardingCompleted: Boolean(row.onboardingCompletedAt),
-    preference: {
-      commentNotifications: asBoolean(row.commentNotifications),
-      deadlineNotifications: asBoolean(row.deadlineNotifications),
-      reviewNotifications: asBoolean(row.reviewNotifications),
-    },
   };
 }
 
@@ -307,9 +251,7 @@ type ProblemRow = {
   level: number;
   track: 'ALGORITHM' | 'SQL';
   tags: string;
-  status: string | null;
   favorite: number | boolean | null;
-  solutionCount: number;
   position: number;
   totalCount?: number;
 };
@@ -334,7 +276,6 @@ function problemListPlan(
   const countValues: unknown[] = [];
   const level = search.get('level');
   const track = search.get('track');
-  const scope = search.get('scope');
   const favoritesOnly = search.get('favorites') === '1';
   if (level) {
     clauses.push('p.level = ?');
@@ -347,16 +288,6 @@ function problemListPlan(
     filterValues.push(track);
     countClauses.push('counted.track = ?');
     countValues.push(track);
-  }
-  if (scope === 'solved') {
-    clauses.push("pp.status = 'SOLVED'");
-    countClauses.push(
-      `EXISTS (SELECT 1 FROM problem_progress counted_progress
-                WHERE counted_progress.problem_id = counted.id
-                  AND counted_progress.user_id = ${readOwnerSql(owner)}
-                  AND counted_progress.status = 'SOLVED')`,
-    );
-    countValues.push(owner.value);
   }
   if (favoritesOnly) {
     clauses.push('pp.favorite = 1');
@@ -393,8 +324,7 @@ function problemListPlan(
                          WHERE ${countClauses.join(' AND ')})`
                     : '0'
                 } AS totalCount,
-                pp.status, pp.favorite,
-                (SELECT COUNT(*) FROM solutions s WHERE s.problem_id = p.id AND s.deleted_at IS NULL) AS solutionCount
+                pp.favorite
            FROM coding_problems p
            LEFT JOIN problem_progress pp ON pp.problem_id = p.id
             AND pp.user_id = ${readOwnerSql(owner)}
@@ -417,8 +347,7 @@ function problemListPlan(
         level: row.level,
         track: row.track,
         tags: parseArray(row.tags),
-        progress: row.status ? [{ status: row.status, favorite: asBoolean(row.favorite) }] : [],
-        _count: { solutions: Number(row.solutionCount || 0) },
+        progress: row.favorite === null ? [] : [{ favorite: asBoolean(row.favorite) }],
       }));
       if (!paged) return items;
       const last = pageRows.at(-1);
@@ -446,9 +375,7 @@ async function problemDetail(db: D1Database, userId: string, problemId: string) 
   const row = await first<ProblemRow>(
     db,
     `SELECT p.id, p.source_url AS sourceUrl, p.display_title AS displayTitle,
-            p.level, p.track, p.tags, p.position, pp.status, pp.favorite,
-            (SELECT COUNT(*) FROM solutions s
-              WHERE s.problem_id = p.id AND s.deleted_at IS NULL) AS solutionCount
+            p.level, p.track, p.tags, p.position, pp.favorite
        FROM coding_problems p
        LEFT JOIN problem_progress pp ON pp.problem_id = p.id AND pp.user_id = ?
       WHERE p.id = ? AND p.active = 1`,
@@ -463,8 +390,7 @@ async function problemDetail(db: D1Database, userId: string, problemId: string) 
     level: row.level,
     track: row.track,
     tags: parseArray(row.tags),
-    progress: row.status ? [{ status: row.status, favorite: asBoolean(row.favorite) }] : [],
-    _count: { solutions: Number(row.solutionCount || 0) },
+    progress: row.favorite === null ? [] : [{ favorite: asBoolean(row.favorite) }],
   };
 }
 
@@ -494,7 +420,6 @@ const bootstrapStatementsForUser = (
         rateWindow.windowStart,
         new Date(rateWindow.now).toISOString(),
       ),
-    db.prepare(unreadCountSql).bind(userId, nowIso()),
   ];
   if (!includeHome) return statements;
   statements.push(
@@ -511,20 +436,14 @@ async function bootstrapPayload(
   today: string,
   rateWindow: RateLimitWindow,
   results: BatchResult[],
-  embeddedUnreadCount?: number,
 ) {
   assertRateLimit(Number(batchRows<CountRow>(results[0])[0]?.count || 1), rateWindow);
   let resultIndex = 1;
-  const unreadCount =
-    embeddedUnreadCount === undefined
-      ? Number(batchRows<CountRow>(results[resultIndex++])[0]?.count || 0)
-      : embeddedUnreadCount;
   const shouldIncludeHome = includeHome && Boolean(user.onboardingCompletedAt);
-  if (!shouldIncludeHome) return { user: apiUser(user), unreadCount, home: null };
+  if (!shouldIncludeHome) return { user: apiUser(user), home: null };
   const collectionResult = results[resultIndex++];
   return {
     user: apiUser(user),
-    unreadCount,
     home: {
       collections: collectionTreeValue(collectionResult),
       dailyChallenges: await completeDailyChallengeBootstrap(
@@ -550,206 +469,6 @@ async function bootstrap(user: UserRow, env: D1Env, includeHome: boolean) {
     ),
   )) as BatchResult[];
   return bootstrapPayload(env.DB, user, includeHome, today, rateWindow, results);
-}
-
-type SolutionRow = {
-  id: string;
-  problemId: string;
-  authorId: string;
-  title: string;
-  language: string;
-  code: string;
-  description: string;
-  timeComplexity: string | null;
-  spaceComplexity: string | null;
-  lessons: string;
-  solved: number | boolean;
-  visibility: 'PRIVATE' | 'MEMBERS';
-  currentRev: number;
-  createdAt: string;
-  updatedAt: string;
-  authorDisplayName: string;
-  problemTitle: string;
-  problemLevel: number;
-};
-
-async function solutionList(db: D1Database, userId: string, search: URLSearchParams) {
-  const clauses = ['s.deleted_at IS NULL', "s.visibility = 'MEMBERS'"];
-  const values: unknown[] = [];
-  const problemId = search.get('problemId');
-  const language = search.get('language');
-  const authorId = search.get('authorId');
-  if (problemId) {
-    clauses.push('s.problem_id = ?');
-    values.push(problemId);
-  }
-  if (language) {
-    clauses.push('s.language = ?');
-    values.push(language);
-  }
-  if (authorId) {
-    clauses.push('s.author_id = ?');
-    values.push(authorId);
-  }
-  const baseClauses = [...clauses];
-  const baseValues = [...values];
-  const paged = cursorPageRequested(search);
-  const limit = paged ? cursorLimit(search, 10, 30) : 50;
-  const cursor = paged
-    ? decodeCursor<{ updatedAt?: unknown; id?: unknown }>(search.get('cursor'))
-    : null;
-  if (cursor) {
-    const updatedAt = cleanText(cursor.updatedAt);
-    const id = cleanText(cursor.id);
-    if (!updatedAt || !id)
-      throw new RouteError(400, '올바른 cursor가 필요합니다.', 'INVALID_CURSOR');
-    clauses.push('(s.updated_at < ? OR (s.updated_at = ? AND s.id < ?))');
-    values.push(updatedAt, updatedAt, id);
-  }
-  const rows = await all<SolutionRow>(
-    db,
-    `SELECT s.id, s.problem_id AS problemId, s.author_id AS authorId, s.title, s.language,
-            substr(s.description, 1, 240) AS descriptionPreview,
-            s.time_complexity AS timeComplexity, s.space_complexity AS spaceComplexity,
-            s.solved, s.visibility,
-            s.current_rev AS currentRev, s.created_at AS createdAt, s.updated_at AS updatedAt,
-            u.display_name AS authorDisplayName,
-            p.display_title AS problemTitle, p.level AS problemLevel,
-            (SELECT COUNT(*) FROM solution_reactions sr WHERE sr.solution_id = s.id) AS reactionCount,
-            EXISTS(SELECT 1 FROM solution_reactions sr WHERE sr.solution_id = s.id AND sr.user_id = ?) AS reactedByMe,
-            (SELECT COUNT(*) FROM solution_comments sc WHERE sc.solution_id = s.id) AS commentCount
-       FROM solutions s
-       JOIN users u ON u.id = s.author_id
-       JOIN coding_problems p ON p.id = s.problem_id
-      WHERE ${clauses.join(' AND ')}
-      ORDER BY s.updated_at DESC, s.id DESC
-      LIMIT ?`,
-    userId,
-    ...values,
-    limit + (paged ? 1 : 0),
-  );
-  const hasMore = paged && rows.length > limit;
-  const pageRows = hasMore ? rows.slice(0, limit) : rows;
-  const total = paged
-    ? Number(
-        (
-          await first<{ count: number }>(
-            db,
-            `SELECT COUNT(*) AS count FROM solutions s WHERE ${baseClauses.join(' AND ')}`,
-            ...baseValues,
-          )
-        )?.count || 0,
-      )
-    : pageRows.length;
-  const items = pageRows.map((row) => ({
-    id: row.id,
-    problemId: row.problemId,
-    title: row.title,
-    language: row.language,
-    descriptionPreview: Reflect.get(row, 'descriptionPreview'),
-    timeComplexity: row.timeComplexity,
-    spaceComplexity: row.spaceComplexity,
-    solved: asBoolean(row.solved),
-    visibility: row.visibility,
-    currentRev: row.currentRev,
-    canEdit: row.authorId === userId,
-    reactionCount: Number(Reflect.get(row, 'reactionCount') || 0),
-    reactedByMe: asBoolean(Reflect.get(row, 'reactedByMe')),
-    commentCount: Number(Reflect.get(row, 'commentCount') || 0),
-    author: { id: row.authorId, displayName: row.authorDisplayName },
-    problem: { displayTitle: row.problemTitle, level: row.problemLevel },
-  }));
-  if (!paged) return items;
-  const last = pageRows.at(-1);
-  return {
-    items,
-    nextCursor: hasMore && last ? encodeCursor({ updatedAt: last.updatedAt, id: last.id }) : null,
-    total,
-  } satisfies CursorPage<(typeof items)[number]>;
-}
-
-async function solutionDetail(db: D1Database, userId: string, solutionId: string) {
-  const row = await first<SolutionRow>(
-    db,
-    `SELECT s.id, s.problem_id AS problemId, s.author_id AS authorId, s.title, s.language,
-            s.code, s.description, s.time_complexity AS timeComplexity,
-            s.space_complexity AS spaceComplexity, s.lessons, s.solved, s.visibility,
-            s.current_rev AS currentRev, s.created_at AS createdAt, s.updated_at AS updatedAt,
-            u.display_name AS authorDisplayName,
-            p.display_title AS problemTitle, p.level AS problemLevel
-       FROM solutions s
-       JOIN users u ON u.id = s.author_id
-       JOIN coding_problems p ON p.id = s.problem_id
-      WHERE s.id = ? AND s.deleted_at IS NULL
-        AND (s.visibility = 'MEMBERS' OR s.author_id = ?)`,
-    solutionId,
-    userId,
-  );
-  if (!row) throw new RouteError(404, '풀이를 찾을 수 없습니다.');
-  const [revisions, reactions, comments] = await Promise.all([
-    all<Record<string, unknown>>(
-      db,
-      `SELECT id, revision, code, description, created_at AS createdAt
-         FROM solution_revisions WHERE solution_id = ? ORDER BY revision DESC LIMIT 10`,
-      solutionId,
-    ),
-    all<Record<string, unknown>>(
-      db,
-      `SELECT id, user_id AS userId, created_at AS createdAt
-         FROM solution_reactions WHERE solution_id = ?`,
-      solutionId,
-    ),
-    all<Record<string, unknown>>(
-      db,
-      `SELECT c.id, c.parent_id AS parentId, c.markdown, c.deleted_at AS deletedAt,
-              c.hidden_at AS hiddenAt, c.created_at AS createdAt,
-              u.id AS authorId, u.display_name AS authorDisplayName
-         FROM solution_comments c JOIN users u ON u.id = c.author_id
-        WHERE c.solution_id = ? ORDER BY c.created_at`,
-      solutionId,
-    ),
-  ]);
-  const mapComment = (comment: Record<string, unknown>) => {
-    const deleted = Boolean(comment.deletedAt);
-    const hidden = Boolean(comment.hiddenAt);
-    return {
-      id: comment.id,
-      markdown: deleted || hidden ? null : comment.markdown,
-      redacted: deleted ? ('DELETED' as const) : hidden ? ('HIDDEN' as const) : null,
-      deletedAt: comment.deletedAt,
-      hiddenAt: comment.hiddenAt,
-      createdAt: comment.createdAt,
-      author: { id: comment.authorId, displayName: comment.authorDisplayName },
-      canEdit: comment.authorId === userId,
-      replies: [] as unknown[],
-    };
-  };
-  const mappedComments = new Map(
-    comments.map((comment) => [String(comment.id), mapComment(comment)]),
-  );
-  const rootComments: ReturnType<typeof mapComment>[] = [];
-  for (const comment of comments) {
-    const mapped = mappedComments.get(String(comment.id));
-    if (!mapped) continue;
-    if (!comment.parentId) {
-      rootComments.push(mapped);
-      continue;
-    }
-    const parent = mappedComments.get(String(comment.parentId));
-    if (parent) parent.replies.push(mapped);
-  }
-  return {
-    ...row,
-    solved: asBoolean(row.solved),
-    canEdit: row.authorId === userId,
-    revisions,
-    reactions,
-    reactionCount: reactions.length,
-    reactedByMe: reactions.some((reaction) => reaction.userId === userId),
-    comments: rootComments,
-    author: { id: row.authorId, displayName: row.authorDisplayName },
-    problem: { displayTitle: row.problemTitle, level: row.problemLevel },
-  };
 }
 
 function serializeJobRows(rows: Record<string, unknown>[]) {
@@ -1099,12 +818,9 @@ async function fastJobRead(
 ) {
   const includeData = mode !== 'categories';
   const includeCategories = mode !== 'data';
-  const includeUnread = mode === 'bootstrap';
   const catalogBootstrap = mode === 'bootstrap' && url.searchParams.get('catalog') === 'true';
   const window = rateLimitWindow(request.method.toUpperCase(), env, url.pathname);
   const statements = [rateLimitStatement(env.DB, user.id, window)];
-  const unreadIndex = includeUnread ? statements.length : -1;
-  if (includeUnread) statements.push(env.DB.prepare(unreadCountSql).bind(user.id, nowIso()));
   const fetchCategories = includeCategories && !catalogBootstrap;
   const categoriesIndex = fetchCategories ? statements.length : -1;
   if (fetchCategories) statements.push(jobCategoriesStatement(env.DB));
@@ -1120,8 +836,6 @@ async function fastJobRead(
   if (plan) statements.push(...plan.statements);
   const results = (await env.DB.batch(statements)) as BatchResult[];
   assertRateLimit(Number(batchRows<CountRow>(results[0])[0]?.count || 1), window);
-  const unreadCount =
-    unreadIndex >= 0 ? Number(batchRows<CountRow>(results[unreadIndex])[0]?.count || 0) : 0;
   const data = plan ? plan.value(results.slice(dataIndex)) : undefined;
   const categories = catalogBootstrap
     ? [
@@ -1138,7 +852,6 @@ async function fastJobRead(
   if (mode === 'data') return data;
   return {
     user: apiUser(user),
-    unreadCount,
     categories: categories || [],
     data,
   };
@@ -1299,19 +1012,14 @@ async function learningList(db: D1Database, userId: string) {
 
 async function fastLearningBootstrap(user: UserRow, request: Request, env: D1Env, url: URL) {
   const window = rateLimitWindow(request.method.toUpperCase(), env, url.pathname);
-  const statements = [
-    rateLimitStatement(env.DB, user.id, window),
-    env.DB.prepare(unreadCountSql).bind(user.id, nowIso()),
-  ];
+  const statements = [rateLimitStatement(env.DB, user.id, window)];
   const plan = learningListPlan(env.DB, { kind: 'userId', value: user.id });
   const dataIndex = statements.length;
   statements.push(...plan.statements);
   const results = (await env.DB.batch(statements)) as BatchResult[];
   assertRateLimit(Number(batchRows<CountRow>(results[0])[0]?.count || 1), window);
-  const unreadCount = Number(batchRows<CountRow>(results[1])[0]?.count || 0);
   return {
     user: apiUser(user),
-    unreadCount,
     data: plan.value(results.slice(dataIndex)),
   };
 }
@@ -1516,6 +1224,15 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
   const path = url.pathname.replace(/^\/api\/v1/, '') || '/';
   const method = request.method.toUpperCase();
 
+  if (
+    path === '/coding/rankings' ||
+    path.startsWith('/coding/solutions') ||
+    path.startsWith('/coding/comments') ||
+    path.startsWith('/notifications')
+  ) {
+    throw new RouteError(404, '더 이상 제공하지 않는 기능입니다.', 'ROUTE_RETIRED');
+  }
+
   if (method === 'GET' && path === '/auth/me') return { user: apiUser(user) };
   if (method === 'GET' && path === '/auth/profile') return profile(db, user.id);
   if (method === 'POST' && path === '/auth/onboarding') {
@@ -1574,40 +1291,11 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
     await run(
       db,
       `UPDATE users SET display_name = ?, avatar_url = ?, github_username = ?,
-         preferred_language = ?, ranking_opt_in = ?, comment_notifications = ?,
-         deadline_notifications = ?, review_notifications = ?, updated_at = ? WHERE id = ?`,
+         preferred_language = ?, updated_at = ? WHERE id = ?`,
       displayName,
       avatarUrl || null,
       githubUsername || null,
       preferredLanguage,
-      body.rankingOptIn === undefined
-        ? asBoolean(user.rankingOptIn)
-          ? 1
-          : 0
-        : bool(body.rankingOptIn)
-          ? 1
-          : 0,
-      body.commentNotifications === undefined
-        ? asBoolean(user.commentNotifications)
-          ? 1
-          : 0
-        : bool(body.commentNotifications)
-          ? 1
-          : 0,
-      body.deadlineNotifications === undefined
-        ? asBoolean(user.deadlineNotifications)
-          ? 1
-          : 0
-        : bool(body.deadlineNotifications)
-          ? 1
-          : 0,
-      body.reviewNotifications === undefined
-        ? asBoolean(user.reviewNotifications)
-          ? 1
-          : 0
-        : bool(body.reviewNotifications)
-          ? 1
-          : 0,
       timestamp,
       user.id,
     );
@@ -1897,7 +1585,6 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       'EXTERNAL_LINK',
       'JOB_POSTING',
       'CODING_PROBLEM',
-      'SOLUTION',
       'LEARNING_UNIT',
     ]);
     if (!allowedItemTypes.has(itemType)) {
@@ -1914,14 +1601,9 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       const targetQueries: Record<string, string> = {
         JOB_POSTING: 'SELECT id FROM jobs WHERE id = ?',
         CODING_PROBLEM: 'SELECT id FROM coding_problems WHERE id = ? AND active = 1',
-        SOLUTION:
-          "SELECT id FROM solutions WHERE id = ? AND deleted_at IS NULL AND (visibility = 'MEMBERS' OR author_id = ?)",
         LEARNING_UNIT: 'SELECT id FROM learning_units WHERE id = ? AND published = 1',
       };
-      const ownerScoped = itemType === 'SOLUTION';
-      targetExists = Boolean(
-        await first(db, targetQueries[itemType]!, targetId, ...(ownerScoped ? [user.id] : [])),
-      );
+      targetExists = Boolean(await first(db, targetQueries[itemType]!, targetId));
     }
     if (!targetExists) throw new RouteError(404, '저장할 원본 항목을 찾을 수 없습니다.');
     const count = await first<{ count: number }>(
@@ -2066,6 +1748,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
               rank
          FROM workspace_search
         WHERE workspace_search MATCH ? AND (owner_id = '' OR owner_id = ?)
+          AND kind <> 'solutions'
           AND (
             kind <> 'jobs' OR EXISTS (
               SELECT 1 FROM jobs j
@@ -2089,7 +1772,6 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       folders: [],
       jobs: [],
       problems: [],
-      solutions: [],
       learning: [],
     };
     const groupName = (kind: string) => (kind === 'codingProblems' ? 'problems' : kind);
@@ -2100,9 +1782,7 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
           ? `/jobs?job=${id}`
           : kind === 'codingProblems'
             ? `/coding?problem=${id}`
-            : kind === 'solutions'
-              ? `/solutions?solution=${id}`
-              : `/learning?unit=${id}`;
+            : `/learning?unit=${id}`;
     for (const row of pageRows) {
       const group = groupName(row.kind);
       grouped[group]?.push({
@@ -2120,79 +1800,6 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
           ? encodeCursor({ rank: pageRows.at(-1)?.rank, rowid: pageRows.at(-1)?.searchRowid })
           : null,
     };
-  }
-
-  if (method === 'GET' && path === '/notifications/unread-count') {
-    const row = await first<CountRow>(db, unreadCountSql, user.id, nowIso());
-    return { count: Number(row?.count || 0) };
-  }
-  if (method === 'GET' && path === '/notifications') {
-    const allowedTypes = new Set(['COMMENT', 'REPLY', 'JOB_DEADLINE', 'SYSTEM']);
-    const type = cleanText(url.searchParams.get('type'));
-    if (type && !allowedTypes.has(type)) {
-      throw new RouteError(400, '지원하지 않는 알림 유형입니다.');
-    }
-    const paged = cursorPageRequested(url.searchParams);
-    const limit = paged ? cursorLimit(url.searchParams, 30, 100) : 100;
-    const cursor = paged
-      ? decodeCursor<{ createdAt?: unknown; id?: unknown }>(url.searchParams.get('cursor'))
-      : null;
-    const clauses = [
-      'user_id = ?',
-      "type <> 'LEARNING_REVIEW'",
-      '(expires_at IS NULL OR expires_at > ?)',
-    ];
-    const values: unknown[] = [user.id, nowIso()];
-    if (type) {
-      clauses.push('type = ?');
-      values.push(type);
-    }
-    if (url.searchParams.get('unread') === '1') clauses.push('read_at IS NULL');
-    if (cursor) {
-      const createdAt = cleanText(cursor.createdAt);
-      const id = cleanText(cursor.id);
-      if (!createdAt || !id) {
-        throw new RouteError(400, '올바른 cursor가 필요합니다.', 'INVALID_CURSOR');
-      }
-      clauses.push('(created_at < ? OR (created_at = ? AND id < ?))');
-      values.push(createdAt, createdAt, id);
-    }
-    const rows = await all<Record<string, unknown>>(
-      db,
-      `SELECT id, type, title, message, href, read_at AS readAt, created_at AS createdAt
-         FROM notifications WHERE ${clauses.join(' AND ')}
-        ORDER BY created_at DESC, id DESC LIMIT ?`,
-      ...values,
-      limit + (paged ? 1 : 0),
-    );
-    if (!paged) return rows;
-    const hasMore = rows.length > limit;
-    const items = hasMore ? rows.slice(0, limit) : rows;
-    const last = items.at(-1);
-    return {
-      items,
-      nextCursor: hasMore && last ? encodeCursor({ createdAt: last.createdAt, id: last.id }) : null,
-    };
-  }
-  if (method === 'PATCH' && path === '/notifications/read-all') {
-    const result = await run(
-      db,
-      'UPDATE notifications SET read_at = ? WHERE user_id = ? AND read_at IS NULL',
-      nowIso(),
-      user.id,
-    );
-    return { count: result.meta?.changes || 0 };
-  }
-  const notificationMatch = path.match(/^\/notifications\/([^/]+)\/read$/);
-  if (notificationMatch && method === 'PATCH') {
-    const result = await run(
-      db,
-      'UPDATE notifications SET read_at = ? WHERE id = ? AND user_id = ?',
-      nowIso(),
-      notificationMatch[1],
-      user.id,
-    );
-    return { count: result.meta?.changes || 0 };
   }
 
   if (method === 'GET' && path === '/coding/problems')
@@ -2252,75 +1859,35 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       tags: Array.isArray(body.tags) ? body.tags : [],
     };
   }
-  const progressMatch = path.match(
-    /^\/coding\/problems\/([^/]+)\/(progress|status|favorite|memo)$/,
-  );
-  if (progressMatch && method === 'PATCH') {
+  const favoriteMatch = path.match(/^\/coding\/problems\/([^/]+)\/favorite$/);
+  if (favoriteMatch && method === 'PATCH') {
     const body = await readJson(request);
     const problem = await first<{ id: string }>(
       db,
       'SELECT id FROM coding_problems WHERE id = ? AND active = 1',
-      progressMatch[1],
+      favoriteMatch[1],
     );
     if (!problem) throw new RouteError(404, '문제를 찾을 수 없습니다.');
-    const current = await first<{
-      status: string;
-      favorite: number | boolean;
-      memo: string;
-      solvedAt: string | null;
-    }>(
-      db,
-      `SELECT status, favorite, memo, solved_at AS solvedAt
-         FROM problem_progress WHERE user_id = ? AND problem_id = ?`,
-      user.id,
-      progressMatch[1],
-    );
-    const intent = progressMatch[2];
-    const hasStatus = intent === 'status' || Object.hasOwn(body, 'status');
-    const hasFavorite = intent === 'favorite' || Object.hasOwn(body, 'favorite');
-    const hasMemo = intent === 'memo' || Object.hasOwn(body, 'memo');
-    if (!hasStatus && !hasFavorite && !hasMemo) {
-      throw new RouteError(422, '변경할 진행 상태 필드가 없습니다.', 'VALIDATION_FAILED');
+    if (!Object.hasOwn(body, 'favorite')) {
+      throw new RouteError(422, '즐겨찾기 상태가 필요합니다.', 'VALIDATION_FAILED');
     }
-    const status = hasStatus ? parseProblemStatus(body.status) : current?.status || 'UNTRIED';
-    const favorite = hasFavorite ? bool(body.favorite) : asBoolean(current?.favorite);
-    const memo = hasMemo ? sourceText(body.memo) : current?.memo || '';
-    const timestamp = nowIso();
-    const solvedAt = hasStatus
-      ? status === 'SOLVED'
-        ? current?.solvedAt || timestamp
-        : null
-      : current?.solvedAt || null;
+    const favorite = bool(body.favorite);
     await run(
       db,
-      `INSERT INTO problem_progress (id, user_id, problem_id, status, favorite, memo, solved_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id, problem_id) DO UPDATE SET status = excluded.status, favorite = excluded.favorite, memo = excluded.memo, solved_at = excluded.solved_at, updated_at = excluded.updated_at`,
+      `INSERT INTO problem_progress (id, user_id, problem_id, status, favorite, memo, updated_at)
+       VALUES (?, ?, ?, 'UNTRIED', ?, '', ?)
+       ON CONFLICT(user_id, problem_id) DO UPDATE SET
+         favorite = excluded.favorite, updated_at = excluded.updated_at`,
       newId(),
       user.id,
-      progressMatch[1],
-      status,
+      favoriteMatch[1],
       favorite ? 1 : 0,
-      memo,
-      solvedAt,
-      timestamp,
+      nowIso(),
     );
-    return { problemId: progressMatch[1], status, favorite, memo, solvedAt };
+    return { problemId: favoriteMatch[1], favorite };
   }
   if (method === 'GET' && path === '/coding/daily-challenge') return dailyChallenge(db, user.id);
   if (method === 'GET' && path === '/coding/daily-challenges') return dailyChallenges(db, user.id);
-  const completeMatch = path.match(/^\/coding\/daily-challenge\/([^/]+)\/complete$/);
-  if (completeMatch && method === 'POST') {
-    const timestamp = nowIso();
-    await run(
-      db,
-      `INSERT INTO daily_challenge_participations (id, challenge_id, user_id, completed_at, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(challenge_id, user_id) DO UPDATE SET completed_at = excluded.completed_at`,
-      newId(),
-      completeMatch[1],
-      user.id,
-      timestamp,
-      timestamp,
-    );
-    return { completedAt: timestamp };
-  }
   if (method === 'POST' && path === '/coding/daily-challenge/reselect') {
     requireAdmin(user);
     const body = await readJson(request);
@@ -2359,476 +1926,6 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       problemId,
     });
     return dailyChallenge(db, user.id);
-  }
-  if (method === 'GET' && path === '/coding/solutions')
-    return solutionList(db, user.id, url.searchParams);
-  if (method === 'GET' && path === '/coding/solutions/trash') {
-    return all(
-      db,
-      `SELECT s.id, s.title, s.deleted_at AS deletedAt, p.display_title AS problemTitle
-         FROM solutions s JOIN coding_problems p ON p.id = s.problem_id
-        WHERE s.author_id = ? AND s.deleted_at IS NOT NULL
-        ORDER BY s.deleted_at DESC LIMIT 100`,
-      user.id,
-    );
-  }
-  const restoreSolutionMatch = path.match(/^\/coding\/solutions\/([^/]+)\/restore$/);
-  if (restoreSolutionMatch && method === 'POST') {
-    const timestamp = nowIso();
-    const result = await run(
-      db,
-      `UPDATE solutions SET deleted_at = NULL, updated_at = ?
-        WHERE id = ? AND author_id = ? AND deleted_at IS NOT NULL`,
-      timestamp,
-      restoreSolutionMatch[1],
-      user.id,
-    );
-    if (Number(result.meta?.changes || 0) !== 1)
-      throw new RouteError(404, '복원할 내 풀이를 찾을 수 없습니다.');
-    await audit(db, user.id, 'SOLUTION_RESTORED', 'Solution', restoreSolutionMatch[1]);
-    return { id: restoreSolutionMatch[1], restored: true };
-  }
-  const solutionDetailMatch = path.match(/^\/coding\/solutions\/([^/]+)$/);
-  if (solutionDetailMatch && method === 'GET') {
-    return solutionDetail(db, user.id, solutionDetailMatch[1]);
-  }
-  if (solutionDetailMatch && method === 'DELETE') {
-    const timestamp = nowIso();
-    const result = await run(
-      db,
-      `UPDATE solutions SET deleted_at = ?, updated_at = ?
-        WHERE id = ? AND author_id = ? AND deleted_at IS NULL`,
-      timestamp,
-      timestamp,
-      solutionDetailMatch[1],
-      user.id,
-    );
-    if (Number(result.meta?.changes || 0) !== 1) {
-      throw new RouteError(404, '삭제할 내 풀이를 찾을 수 없습니다.');
-    }
-    await db.batch([
-      db
-        .prepare("DELETE FROM collection_items WHERE item_type = 'SOLUTION' AND target_id = ?")
-        .bind(solutionDetailMatch[1]),
-      db
-        .prepare(
-          `INSERT INTO audit_logs
-             (id, actor_id, action, target_type, target_id, metadata, created_at)
-           VALUES (?, ?, 'SOLUTION_DELETED', 'Solution', ?, '{}', ?)`,
-        )
-        .bind(newId(), user.id, solutionDetailMatch[1], timestamp),
-    ]);
-    return { id: solutionDetailMatch[1], deleted: true };
-  }
-  if (
-    method === 'POST' &&
-    (path === '/coding/solutions' || path === '/coding/solutions/complete')
-  ) {
-    const body = await readJson(request);
-    const code = typeof body.code === 'string' ? body.code : '';
-    if (bool(body.solved) && !code.trim())
-      throw new RouteError(400, '해결 기록에는 코드가 필요합니다.');
-    const timestamp = nowIso();
-    const problemId = cleanText(body.problemId);
-    const challengeId = cleanText(body.challengeId);
-    if (path.endsWith('/complete') && !challengeId) {
-      throw new RouteError(400, '오늘의 문제 식별자가 필요합니다.');
-    }
-    const challenge = challengeId
-      ? await first<{ id: string }>(
-          db,
-          'SELECT id FROM daily_challenges WHERE id = ? AND problem_id = ?',
-          challengeId,
-          problemId,
-        )
-      : null;
-    if (challengeId && !challenge) {
-      throw new RouteError(409, '선택한 오늘의 문제와 풀이 문제가 일치하지 않습니다.');
-    }
-    const language = cleanText(body.language);
-    if (!solutionLanguages.has(language)) {
-      throw new RouteError(400, '지원하는 코드 언어를 선택해주세요.');
-    }
-    if (typeof body.id === 'string' && body.id) {
-      const current = await first<{
-        authorId: string;
-        currentRev: number;
-        solvedAt: string | null;
-      }>(
-        db,
-        'SELECT author_id AS authorId, current_rev AS currentRev, solved_at AS solvedAt FROM solutions WHERE id = ? AND deleted_at IS NULL',
-        body.id,
-      );
-      if (!current) throw new RouteError(404, '풀이를 찾을 수 없습니다.');
-      if (current.authorId !== user.id)
-        throw new RouteError(403, '다른 사용자의 풀이는 수정할 수 없습니다.');
-      const baseRevision = int(body.baseRevision, -1);
-      if (baseRevision !== Number(current.currentRev)) {
-        const latest = await first<{ code: string; description: string; currentRev: number }>(
-          db,
-          'SELECT code, description, current_rev AS currentRev FROM solutions WHERE id = ?',
-          body.id,
-        );
-        throw new RouteError(409, '다른 곳에서 풀이가 먼저 수정되었습니다.', 'REVISION_CONFLICT', {
-          current: latest,
-        });
-      }
-      const revision = Number(current.currentRev) + 1;
-      await db.batch([
-        db
-          .prepare(
-            `UPDATE solutions SET problem_id = ?, title = ?, language = ?, code = ?, description = ?, time_complexity = ?, space_complexity = ?, lessons = ?, solved = ?, visibility = ?, current_rev = ?, solved_at = ?, updated_at = ? WHERE id = ?`,
-          )
-          .bind(
-            problemId,
-            cleanText(body.title),
-            language,
-            code,
-            sourceText(body.description),
-            cleanText(body.timeComplexity) || null,
-            cleanText(body.spaceComplexity) || null,
-            sourceText(body.lessons),
-            bool(body.solved) ? 1 : 0,
-            'MEMBERS',
-            revision,
-            bool(body.solved) ? current.solvedAt || timestamp : null,
-            timestamp,
-            body.id,
-          ),
-        db
-          .prepare(
-            'INSERT INTO solution_revisions (id, solution_id, revision, code, description, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-          )
-          .bind(newId(), body.id, revision, code, sourceText(body.description), timestamp),
-        db
-          .prepare(
-            `INSERT INTO problem_progress (id, user_id, problem_id, status, solved_at, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(user_id, problem_id) DO UPDATE SET status = excluded.status, solved_at = excluded.solved_at, updated_at = excluded.updated_at`,
-          )
-          .bind(
-            newId(),
-            user.id,
-            problemId,
-            bool(body.solved) ? 'SOLVED' : 'IN_PROGRESS',
-            bool(body.solved) ? timestamp : null,
-            timestamp,
-          ),
-        ...(challenge
-          ? [
-              db
-                .prepare(
-                  `INSERT INTO daily_challenge_participations
-                     (id, challenge_id, user_id, completed_at, created_at)
-                   VALUES (?, ?, ?, ?, ?)
-                   ON CONFLICT(challenge_id, user_id) DO UPDATE SET completed_at = excluded.completed_at`,
-                )
-                .bind(newId(), challenge.id, user.id, timestamp, timestamp),
-            ]
-          : []),
-      ]);
-      return { id: body.id, currentRev: revision };
-    }
-    const id = newId();
-    await db.batch([
-      db
-        .prepare(
-          `INSERT INTO solutions (id, problem_id, author_id, title, language, code, description, time_complexity, space_complexity, lessons, solved, visibility, current_rev, solved_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`,
-        )
-        .bind(
-          id,
-          problemId,
-          user.id,
-          cleanText(body.title),
-          language,
-          code,
-          sourceText(body.description),
-          cleanText(body.timeComplexity) || null,
-          cleanText(body.spaceComplexity) || null,
-          sourceText(body.lessons),
-          bool(body.solved) ? 1 : 0,
-          'MEMBERS',
-          bool(body.solved) ? timestamp : null,
-          timestamp,
-          timestamp,
-        ),
-      db
-        .prepare(
-          'INSERT INTO solution_revisions (id, solution_id, revision, code, description, created_at) VALUES (?, ?, 1, ?, ?, ?)',
-        )
-        .bind(newId(), id, code, sourceText(body.description), timestamp),
-      db
-        .prepare(
-          `INSERT INTO problem_progress (id, user_id, problem_id, status, solved_at, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(user_id, problem_id) DO UPDATE SET status = excluded.status, solved_at = excluded.solved_at, updated_at = excluded.updated_at`,
-        )
-        .bind(
-          newId(),
-          user.id,
-          problemId,
-          bool(body.solved) ? 'SOLVED' : 'IN_PROGRESS',
-          bool(body.solved) ? timestamp : null,
-          timestamp,
-        ),
-      ...(challenge
-        ? [
-            db
-              .prepare(
-                `INSERT INTO daily_challenge_participations
-                   (id, challenge_id, user_id, completed_at, created_at)
-                 VALUES (?, ?, ?, ?, ?)
-                 ON CONFLICT(challenge_id, user_id) DO UPDATE SET completed_at = excluded.completed_at`,
-              )
-              .bind(newId(), challenge.id, user.id, timestamp, timestamp),
-          ]
-        : []),
-    ]);
-    return { id, problemId, authorId: user.id, currentRev: 1, createdAt: timestamp };
-  }
-  const reactionMatch = path.match(/^\/coding\/solutions\/([^/]+)\/reaction$/);
-  if (reactionMatch && (method === 'POST' || method === 'PUT')) {
-    const desired = method === 'PUT' ? bool((await readJson(request)).active) : undefined;
-    const existing = await first<{ id: string }>(
-      db,
-      'SELECT id FROM solution_reactions WHERE solution_id = ? AND user_id = ?',
-      reactionMatch[1],
-      user.id,
-    );
-    const active = desired ?? !existing;
-    if (!active && existing) {
-      await run(db, 'DELETE FROM solution_reactions WHERE id = ?', existing.id);
-      return { active: false };
-    }
-    if (active && !existing) {
-      const solution = await first<{ id: string }>(
-        db,
-        "SELECT id FROM solutions WHERE id = ? AND deleted_at IS NULL AND visibility = 'MEMBERS'",
-        reactionMatch[1],
-      );
-      if (!solution) throw new RouteError(404, '풀이를 찾을 수 없습니다.');
-      await run(
-        db,
-        `INSERT INTO solution_reactions (id, solution_id, user_id, created_at)
-         VALUES (?, ?, ?, ?)
-         ON CONFLICT(solution_id, user_id) DO NOTHING`,
-        newId(),
-        reactionMatch[1],
-        user.id,
-        nowIso(),
-      );
-    }
-    return { active };
-  }
-  const commentMatch = path.match(/^\/coding\/solutions\/([^/]+)\/comments$/);
-  if (commentMatch && method === 'POST') {
-    const body = await readJson(request);
-    const markdown = sourceText(body.markdown);
-    if (!markdown.trim()) throw new RouteError(400, '댓글 내용이 필요합니다.');
-    const solution = await first<{ authorId: string }>(
-      db,
-      'SELECT author_id AS authorId FROM solutions WHERE id = ? AND deleted_at IS NULL',
-      commentMatch[1],
-    );
-    if (!solution) throw new RouteError(404, '풀이를 찾을 수 없습니다.');
-    const parentId = typeof body.parentId === 'string' && body.parentId ? body.parentId : null;
-    let notifyUserId = solution.authorId;
-    if (parentId) {
-      const parent = await first<{ authorId: string; parentId: string | null; solutionId: string }>(
-        db,
-        'SELECT author_id AS authorId, parent_id AS parentId, solution_id AS solutionId FROM solution_comments WHERE id = ?',
-        parentId,
-      );
-      if (!parent || parent.parentId || parent.solutionId !== commentMatch[1])
-        throw new RouteError(400, '답글은 한 단계까지만 지원합니다.');
-      notifyUserId = parent.authorId;
-    }
-    const timestamp = nowIso();
-    const id = newId();
-    const statements = [
-      db
-        .prepare(
-          `INSERT INTO solution_comments (id, solution_id, author_id, parent_id, markdown, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        )
-        .bind(id, commentMatch[1], user.id, parentId, markdown, timestamp, timestamp),
-    ];
-    if (notifyUserId !== user.id) {
-      const preference = await first<{ enabled: number | boolean }>(
-        db,
-        'SELECT comment_notifications AS enabled FROM users WHERE id = ?',
-        notifyUserId,
-      );
-      if (asBoolean(preference?.enabled)) {
-        statements.push(
-          db
-            .prepare(
-              `INSERT INTO notifications
-                 (id, user_id, type, title, message, href, dedupe_key, created_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-               ON CONFLICT(user_id, dedupe_key) DO NOTHING`,
-            )
-            .bind(
-              newId(),
-              notifyUserId,
-              parentId ? 'REPLY' : 'COMMENT',
-              parentId ? '새 답글' : '새 댓글',
-              `${user.displayName}님이 의견을 남겼습니다.`,
-              `/solutions?solution=${commentMatch[1]}`,
-              `solution-comment:${id}:${notifyUserId}`,
-              timestamp,
-            ),
-        );
-      }
-    }
-    await db.batch(statements);
-    return {
-      id,
-      solutionId: commentMatch[1],
-      authorId: user.id,
-      parentId,
-      markdown,
-      createdAt: timestamp,
-    };
-  }
-  const commentActionMatch = path.match(/^\/coding\/comments\/([^/]+)(?:\/(report))?$/);
-  if (commentActionMatch && method === 'PATCH' && !commentActionMatch[2]) {
-    const body = await readJson(request);
-    const markdown = sourceText(body.markdown);
-    if (!markdown.trim() || markdown.length > 4_000) {
-      throw new RouteError(422, '댓글은 1~4,000자로 입력해주세요.');
-    }
-    const result = await run(
-      db,
-      `UPDATE solution_comments SET markdown = ?, edited_at = ?, updated_at = ?
-        WHERE id = ? AND author_id = ? AND deleted_at IS NULL AND hidden_at IS NULL`,
-      markdown,
-      nowIso(),
-      nowIso(),
-      commentActionMatch[1],
-      user.id,
-    );
-    if (Number(result.meta?.changes || 0) !== 1)
-      throw new RouteError(404, '수정할 댓글을 찾을 수 없습니다.');
-    return { id: commentActionMatch[1], markdown, edited: true };
-  }
-  if (commentActionMatch && method === 'DELETE' && !commentActionMatch[2]) {
-    const timestamp = nowIso();
-    const result = await run(
-      db,
-      `UPDATE solution_comments SET deleted_at = ?, updated_at = ?
-        WHERE id = ? AND author_id = ? AND deleted_at IS NULL`,
-      timestamp,
-      timestamp,
-      commentActionMatch[1],
-      user.id,
-    );
-    if (Number(result.meta?.changes || 0) !== 1)
-      throw new RouteError(404, '삭제할 댓글을 찾을 수 없습니다.');
-    return { id: commentActionMatch[1], deleted: true };
-  }
-  if (commentActionMatch?.[2] === 'report' && method === 'POST') {
-    const body = await readJson(request);
-    const reason = cleanText(body.reason);
-    if (reason.length < 2 || reason.length > 500)
-      throw new RouteError(422, '신고 사유를 2~500자로 입력해주세요.');
-    const comment = await first<{ id: string; solutionId: string }>(
-      db,
-      'SELECT id, solution_id AS solutionId FROM solution_comments WHERE id = ? AND deleted_at IS NULL',
-      commentActionMatch[1],
-    );
-    if (!comment) throw new RouteError(404, '신고할 댓글을 찾을 수 없습니다.');
-    await audit(db, user.id, 'COMMENT_REPORTED', 'SolutionComment', comment.id, {
-      solutionId: comment.solutionId,
-      reason,
-    });
-    return { id: comment.id, reported: true };
-  }
-  if (method === 'GET' && path === '/coding/rankings') {
-    const now = new Date();
-    const kstParts = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'Asia/Seoul',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    }).format(now);
-    const todayKst = new Date(`${kstParts}T00:00:00+09:00`);
-    const weekdayName = new Intl.DateTimeFormat('en-US', {
-      timeZone: 'Asia/Seoul',
-      weekday: 'short',
-    }).format(now);
-    const weekday = Math.max(
-      0,
-      ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(weekdayName),
-    );
-    const weekStart = new Date(todayKst);
-    weekStart.setUTCDate(weekStart.getUTCDate() - ((weekday + 6) % 7));
-    const monthStart = new Date(`${kstParts.slice(0, 7)}-01T00:00:00+09:00`);
-    const [rows, activity] = await Promise.all([
-      all<Record<string, unknown>>(
-        db,
-        `SELECT u.id AS userId, u.display_name AS displayName,
-              COUNT(DISTINCT CASE WHEN s.solved = 1 THEN s.problem_id END) AS score,
-              COUNT(DISTINCT CASE WHEN s.solved = 1 AND s.solved_at >= ? THEN s.problem_id END) AS weekly,
-              COUNT(DISTINCT CASE WHEN s.solved = 1 AND s.solved_at >= ? THEN s.problem_id END) AS monthly,
-              COUNT(DISTINCT dp.challenge_id) AS challengeCount
-         FROM users u
-         LEFT JOIN solutions s ON s.author_id = u.id AND s.deleted_at IS NULL
-         LEFT JOIN daily_challenge_participations dp ON dp.user_id = u.id AND dp.completed_at IS NOT NULL
-        WHERE u.is_active = 1 AND u.role = 'MEMBER'
-        GROUP BY u.id, u.display_name ORDER BY score DESC, u.display_name`,
-        weekStart.toISOString(),
-        monthStart.toISOString(),
-      ),
-      all<{ userId: string; date: string }>(
-        db,
-        `SELECT dp.user_id AS userId, dc.kst_date AS date
-           FROM daily_challenge_participations dp
-           JOIN daily_challenges dc ON dc.id = dp.challenge_id
-          WHERE dp.completed_at IS NOT NULL ORDER BY dp.user_id, dc.kst_date DESC`,
-      ),
-    ]);
-    const datesByUser = new Map<string, Set<string>>();
-    for (const row of activity) {
-      const dates = datesByUser.get(row.userId) || new Set<string>();
-      dates.add(row.date.slice(0, 10));
-      datesByUser.set(row.userId, dates);
-    }
-    const streakFor = (userId: string) => {
-      const dates = datesByUser.get(userId) || new Set<string>();
-      const today = kstDate();
-      const previous = new Date(`${today}T00:00:00.000Z`);
-      if (!dates.has(today)) previous.setUTCDate(previous.getUTCDate() - 1);
-      let streak = 0;
-      while (dates.has(previous.toISOString().slice(0, 10))) {
-        streak += 1;
-        previous.setUTCDate(previous.getUTCDate() - 1);
-      }
-      return streak;
-    };
-    let rank = 0;
-    let previousScore: number | null = null;
-    return {
-      calculatedAt: nowIso(),
-      currentUserId: user.id,
-      selfReported: true,
-      periods: {
-        timezone: 'Asia/Seoul',
-        weeklyStart: weekStart.toISOString(),
-        monthlyStart: monthStart.toISOString(),
-      },
-      methodology:
-        '모든 멤버가 직접 저장한 SOLVED 풀이를 사용자·문제별 한 번만 자동 계산합니다. 관리자와 삭제된 풀이는 제외되며 점수는 실행 검증 결과가 아닌 자가 기록 활동입니다.',
-      rows: rows.map((row, index) => {
-        const score = Number(row.score || 0);
-        if (previousScore !== score) rank = index + 1;
-        previousScore = score;
-        return {
-          ...row,
-          score,
-          weekly: Number(row.weekly || 0),
-          monthly: Number(row.monthly || 0),
-          challengeCount: Number(row.challengeCount || 0),
-          streak: streakFor(String(row.userId)),
-          rank,
-        };
-      }),
-    };
   }
 
   if (method === 'GET' && path === '/jobs/categories') return jobCategories(db);
@@ -3002,10 +2099,6 @@ async function handleRoute(request: Request, env: D1Env, user: UserRow, url: URL
       activeUsers: Number(active?.count || 0),
       maxActiveUsers: Math.max(1, int(env.MAX_ACTIVE_USERS, 100_000)),
       importBatches: batches,
-      capabilities: {
-        processingQueue: false,
-        commentReports: true,
-      },
     };
   }
   if (method === 'GET' && path === '/admin/audit-logs') {

@@ -1,6 +1,6 @@
 # CareerGround
 
-10명 이하 내부 팀을 위한 학습·신입 IT 채용·코딩 성장 워크스페이스다. 외부 사이트를 크롤링하지 않고 관리자가 검증한 JSON/CSV를 가져오며, 프로그래머스 문제는 원본 링크와 사용자가 작성한 풀이만 저장한다. 브랜드 기본값은 `packages/config`와 `APP_NAME`/`VITE_APP_NAME` 환경 변수로 관리한다.
+10명 이하 내부 팀을 위한 학습·신입 IT 채용·코딩 성장 워크스페이스다. 외부 사이트를 크롤링하지 않고 관리자가 검증한 JSON/CSV를 가져오며, 코딩테스트는 오늘의 추천·전체 문제·즐겨찾기와 프로그래머스 원문 링크만 제공한다. 브랜드 기본값은 `packages/config`와 `APP_NAME`/`VITE_APP_NAME` 환경 변수로 관리한다.
 
 ## 기술 스택과 버전
 
@@ -66,7 +66,7 @@ pnpm docs:build
 
 ## 오늘의 문제와 cron
 
-오늘의 문제는 인증된 사용자의 첫 조회 또는 Slack digest claim 시 D1에서 idempotent하게 준비된다. Worker scheduled handler는 만료 세션·rate-limit 정리와 공고 마감 알림을 lease로 단일 실행한다. Slack 요약은 GitHub Actions가 `Asia/Seoul` 평일 오전 08:01에 실행하고 국내 공휴일은 발송기에서 건너뛴다.
+오늘의 문제는 인증된 사용자의 첫 조회 또는 Slack digest claim 시 D1에서 idempotent하게 준비된다. Worker scheduled handler는 만료 세션·rate-limit 데이터를 lease로 단일 정리한다. Slack 요약은 GitHub Actions가 `Asia/Seoul` 평일 오전 08:01에 실행하고 국내 공휴일은 발송기에서 건너뛴다.
 
 ## 화면 방향
 
@@ -102,6 +102,6 @@ pnpm troubleshoot:validate --file docs/troubleshooting/2026-08-12-pr-123-evidenc
 ## 알려진 초기 제한
 
 - 프로덕션 S3 adapter와 실제 학습 AI worker는 환경별 자격증명·인프라가 필요한 feature flag 경계까지 구현되어 있다. 로컬 storage와 구조화 package import는 완전 동작한다.
-- 이메일/푸시는 범위 밖이며 모든 알림은 인앱이다.
+- 인앱·이메일·푸시 알림은 제공하지 않는다. 별도 운영 기능인 Slack 일일 요약만 유지한다.
 - 코드 실행과 정답 판정은 제공하지 않는다. 프로그래머스에서 수행한다.
 - 검색은 10명 규모를 전제로 D1 FTS5와 보조 index를 사용한다. 별도 검색엔진과 Redis는 없다.

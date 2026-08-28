@@ -140,14 +140,11 @@
 
 @media (max-width: 375px) {
   .page-content,
-  .job-card,
-  .solution-card,
-  .editor-panel {
+  .job-card {
     min-width: 0;
     max-width: 100%;
   }
 
-  .code-view,
   .table-scroll,
   .revision-diff {
     max-width: calc(100vw - 2rem);
@@ -157,7 +154,6 @@
 
 .learning-unit-actions,
 .learning-question-actions,
-.solution-owner-actions,
 .static-code-toolbar,
 .item-actions {
   display: flex;
@@ -225,37 +221,6 @@
 
 .today-summary-link {
   display: block;
-}
-
-.ranking-table-scroll {
-  overflow-x: auto;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-}
-
-.ranking-table-scroll .ranking-table {
-  width: 100%;
-  min-width: 720px;
-  border: 0;
-  border-collapse: collapse;
-}
-
-.ranking-table-scroll th,
-.ranking-table-scroll td {
-  padding: 14px 12px;
-  border-bottom: 1px solid var(--line);
-  text-align: left;
-}
-
-.ranking-table-scroll thead th {
-  color: var(--muted);
-  background: var(--soft);
-  font-size: 0.82rem;
-}
-
-.ranking-table-scroll td svg {
-  width: 15px;
-  vertical-align: middle;
 }
 
 @media (max-width: 640px) {
@@ -1233,47 +1198,6 @@ p {
 .card-actions svg {
   width: 12px;
 }
-.editor-panel {
-  position: fixed;
-  z-index: 111;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: min(900px, calc(100vw - 44px));
-  max-height: calc(100vh - 64px);
-  overflow-y: auto;
-  padding: 24px;
-  background: white;
-  border: 1px solid var(--line);
-  border-radius: 19px;
-  box-shadow: 0 16px 45px rgba(31, 70, 73, 0.1);
-}
-.editor-backdrop {
-  padding: 32px 22px;
-  position: fixed;
-  z-index: 110;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: rgba(35, 39, 52, 0.5);
-  backdrop-filter: blur(8px);
-}
-.editor-heading {
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
-}
-.editor-heading span {
-  color: var(--brand);
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-.editor-heading h2 {
-  margin: 4px 0 19px;
-  font-size: 20px;
-}
-.editor-panel form,
 .admin-card form {
   display: grid;
   gap: 14px;
@@ -1283,7 +1207,6 @@ p {
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
-.editor-panel label,
 .admin-card label,
 .login-panel label {
   display: grid;
@@ -1291,8 +1214,6 @@ p {
   font-size: 11px;
   font-weight: 700;
 }
-.editor-panel select,
-.editor-panel textarea,
 .admin-card input,
 .login-panel input {
   width: 100%;
@@ -1300,141 +1221,10 @@ p {
   border-radius: 10px;
   background: #fbfcfc;
 }
-.editor-panel select,
 .admin-card input,
 .login-panel input {
   height: 42px;
   padding: 0 11px;
-}
-.editor-panel textarea {
-  padding: 11px;
-  resize: vertical;
-}
-.code-editor,
-.code-view {
-  max-width: 100%;
-  overflow: auto;
-  border: 1px solid #cedbda;
-  border-radius: 11px;
-}
-.code-editor .cm-editor,
-.code-view .cm-editor {
-  font-size: 12px;
-}
-.solutions-feed {
-  display: grid;
-  gap: 18px;
-}
-.solution-card {
-  overflow: hidden;
-  background: white;
-  border: 1px solid var(--line);
-  border-radius: 19px;
-}
-.solution-card > header {
-  padding: 22px;
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
-}
-.solution-card > header span {
-  color: var(--brand);
-  font-size: 10px;
-  font-weight: 750;
-}
-.solution-card > header h2 {
-  margin: 5px 0;
-  font-size: 20px;
-}
-.solution-card > header p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 11px;
-}
-.reaction-button {
-  height: 36px;
-  padding: 0 11px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--brand);
-  background: #eef7f5;
-  border: 1px solid #d7e9e6;
-  border-radius: 9px;
-  font-size: 10px;
-  font-weight: 750;
-}
-.reaction-button svg {
-  width: 14px;
-}
-.solution-card .code-view {
-  margin: 0 22px;
-  background: #f5f7f6;
-}
-.markdown-body {
-  padding: 18px 22px 6px;
-  color: #3e5558;
-  font-size: 12px;
-  line-height: 1.75;
-}
-.complexity-row {
-  margin: 0 22px 18px;
-  display: flex;
-  gap: 7px;
-}
-.complexity-row span {
-  padding: 6px 9px;
-  color: #566e71;
-  background: var(--soft);
-  border-radius: 7px;
-  font-size: 10px;
-}
-.comments {
-  padding: 18px 22px 22px;
-  border-top: 1px solid var(--line);
-}
-.comments h3 {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-}
-.comments h3 svg {
-  width: 15px;
-}
-.comment {
-  padding: 9px 0;
-  border-bottom: 1px solid #eef2f1;
-}
-.comment strong {
-  font-size: 10px;
-}
-.comment p {
-  margin: 3px 0 0;
-  color: #4d6467;
-  font-size: 11px;
-}
-.reply {
-  margin: 8px 0 0 20px;
-  padding: 7px 10px;
-  background: var(--soft);
-  border-radius: 8px;
-}
-.comment-form {
-  margin-top: 12px;
-  display: flex;
-  gap: 8px;
-}
-.comment-form label {
-  min-width: 0;
-  flex: 1;
-}
-.comment-form textarea {
-  width: 100%;
-  padding: 9px;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  resize: vertical;
 }
 .jobs-filter {
   flex-wrap: wrap;
@@ -2299,136 +2089,6 @@ p {
     padding: 16px;
   }
 }
-.ranking-notice {
-  margin-bottom: 18px;
-  padding: 15px;
-  display: flex;
-  gap: 11px;
-  color: #445d60;
-  background: #eef5d0;
-  border: 1px solid #dce895;
-  border-radius: 13px;
-}
-.ranking-notice svg {
-  color: #6c7c16;
-}
-.ranking-notice strong,
-.ranking-notice span {
-  display: block;
-}
-.ranking-notice strong {
-  font-size: 11px;
-}
-.ranking-notice span {
-  margin-top: 3px;
-  font-size: 9px;
-}
-.ranking-table {
-  overflow-x: auto;
-  background: white;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-}
-.ranking-row {
-  min-width: 700px;
-  min-height: 55px;
-  padding: 0 16px;
-  display: grid;
-  grid-template-columns: 60px minmax(150px, 1.5fr) repeat(5, minmax(70px, 1fr));
-  align-items: center;
-  border-bottom: 1px solid #edf1f0;
-  font-size: 11px;
-}
-.ranking-row.header {
-  min-height: 44px;
-  color: var(--muted);
-  background: #f5f8f7;
-  font-size: 9px;
-  font-weight: 750;
-}
-.ranking-row:last-child {
-  border-bottom: 0;
-}
-.ranking-row > span {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.ranking-row svg {
-  width: 13px;
-  color: #e0713e;
-}
-.medal {
-  width: 25px;
-  height: 25px;
-  display: grid !important;
-  place-items: center;
-  color: #5d4a00;
-  background: #f5db75;
-  border-radius: 50%;
-  font-weight: 850;
-}
-.rank-2 .medal {
-  color: #506062;
-  background: #dbe4e5;
-}
-.rank-3 .medal {
-  color: #6d4328;
-  background: #e8b28c;
-}
-.calculated-at {
-  display: block;
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 8px;
-  text-align: right;
-}
-.notification-list {
-  display: grid;
-  gap: 7px;
-}
-.notification-list > article {
-  width: 100%;
-  min-height: 76px;
-  padding: 12px 15px;
-  display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto;
-  gap: 11px;
-  align-items: center;
-  text-align: left;
-  background: white;
-  border: 1px solid var(--line);
-  border-radius: 13px;
-}
-.notification-list > article.unread {
-  background: #f5faf8;
-  border-color: #bcd8d5;
-}
-.notification-icon {
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-  color: var(--brand);
-  background: #e5f2ef;
-  border-radius: 11px;
-}
-.notification-icon svg {
-  width: 18px;
-}
-.notification-list strong {
-  display: block;
-  font-size: 11px;
-}
-.notification-list p {
-  margin: 3px 0;
-  color: var(--muted);
-  font-size: 10px;
-}
-.notification-list small {
-  color: #93a1a2;
-  font-size: 8px;
-}
 .admin-stats {
   margin-bottom: 18px;
   display: grid;
@@ -2996,26 +2656,8 @@ p {
   .problem-grid {
     grid-template-columns: 1fr;
   }
-  .editor-panel {
-    padding: 16px;
-  }
   .form-row {
     grid-template-columns: 1fr;
-  }
-  .solution-card > header {
-    flex-direction: column;
-    padding: 16px;
-  }
-  .reaction-button {
-    align-self: flex-start;
-  }
-  .solution-card .code-view {
-    margin: 0 12px;
-  }
-  .markdown-body,
-  .comments {
-    padding-left: 14px;
-    padding-right: 14px;
   }
   .job-card {
     grid-template-columns: 42px minmax(0, 1fr);
@@ -3072,13 +2714,6 @@ p {
   }
   .command-dialog {
     top: 7vh;
-  }
-  .comment-form {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .comment-form .primary-button {
-    align-self: flex-end;
   }
 }
 

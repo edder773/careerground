@@ -634,7 +634,6 @@ describe('Sites D1 API', () => {
     expect(loaded.response.status).toBe(200);
     expect(loaded.body).toMatchObject({
       user: { displayName: '부트스트랩 멤버', onboardingCompleted: true },
-      unreadCount: 1,
       home: {
         collections: [],
         dailyChallenges: [
@@ -644,7 +643,7 @@ describe('Sites D1 API', () => {
         ],
       },
     });
-    expect(db.getQueryCount()).toBe(5);
+    expect(db.getQueryCount()).toBe(4);
     expect(db.preparedSql.some((sql) => /^\s*UPDATE users/i.test(sql))).toBe(false);
     expect(loaded.response.headers.get('server-timing')).toMatch(/^app;dur=\d+\.\d$/);
   });
@@ -887,11 +886,10 @@ describe('Sites D1 API', () => {
     expect(bootstrap.response.status).toBe(200);
     expect(bootstrap.body).toMatchObject({
       user: { email: 'member@example.test' },
-      unreadCount: expect.any(Number),
       categories: expect.arrayContaining(['AI_ML']),
       data: { items: expect.any(Array), total: visibleCount },
     });
-    expect(db.getQueryCount()).toBe(6);
+    expect(db.getQueryCount()).toBe(5);
     expect(db.getBatchCount()).toBe(1);
 
     db.resetQueryCount();
@@ -903,11 +901,11 @@ describe('Sites D1 API', () => {
       data: expect.arrayContaining([expect.objectContaining({ id: expect.any(String) })]),
     });
     expect(fullCatalog.body.data as unknown[]).toHaveLength(visibleCount);
-    expect(db.getQueryCount()).toBe(4);
+    expect(db.getQueryCount()).toBe(3);
     expect(db.getBatchCount()).toBe(1);
   });
 
-  it('returns the welcome unread count when job bootstrap provisions a new user', async () => {
+  it('provisions a new user without creating in-app notifications', async () => {
     const visibleCount = await visibleJobCount();
     const newcomer = {
       ...memberHeaders,
@@ -920,7 +918,12 @@ describe('Sites D1 API', () => {
       newcomer,
     );
     expect(bootstrap.response.status).toBe(200);
-    expect(bootstrap.body).toMatchObject({ unreadCount: 1, data: { total: visibleCount } });
+    expect(bootstrap.body).toMatchObject({ data: { total: visibleCount } });
+    expect(bootstrap.body).not.toHaveProperty('unreadCount');
+    const notifications = await db
+      .prepare('SELECT COUNT(*) AS count FROM notifications')
+      .first<{ count: number }>();
+    expect(notifications?.count).toBe(0);
   });
 
   it('serves the high-traffic read routes in one D1 dispatch each', async () => {
@@ -952,10 +955,9 @@ describe('Sites D1 API', () => {
     expect(bootstrap.response.status).toBe(200);
     expect(bootstrap.body).toMatchObject({
       user: { email: 'member@example.test' },
-      unreadCount: expect.any(Number),
       data: expect.arrayContaining([expect.objectContaining({ units: expect.any(Array) })]),
     });
-    expect(db.getQueryCount()).toBe(4);
+    expect(db.getQueryCount()).toBe(3);
     expect(db.getBatchCount()).toBe(1);
 
     const sources = bootstrap.body.data as unknown as Array<{
@@ -1018,7 +1020,7 @@ describe('Sites D1 API', () => {
     ).not.toContain(jobPage.items.at(-1)?.id);
   });
 
-  it('returns only the signed-in user solved problems when the solved scope is requested', async () => {
+  it('retires solved status and memo mutations from the recommendation-only catalog', async () => {
     const catalog = await call(
       '/api/v1/coding/problems?track=ALGORITHM&page=cursor&limit=25',
       {},
@@ -1029,35 +1031,18 @@ describe('Sites D1 API', () => {
     ).items[0];
     expect(firstProblem).toBeTruthy();
 
-    await call(
+    const status = await call(
       `/api/v1/coding/problems/${firstProblem!.id}/status`,
-      {
-        method: 'PATCH',
-        body: JSON.stringify({ status: 'SOLVED' }),
-      },
+      { method: 'PATCH', body: JSON.stringify({ status: 'SOLVED' }) },
       memberHeaders,
     );
-
-    const solved = await call(
-      '/api/v1/coding/problems?scope=solved&track=ALGORITHM&page=cursor&limit=25',
-      {},
+    const memo = await call(
+      `/api/v1/coding/problems/${firstProblem!.id}/memo`,
+      { method: 'PATCH', body: JSON.stringify({ memo: 'retired' }) },
       memberHeaders,
     );
-    expect(solved.body).toMatchObject({
-      total: 1,
-      nextCursor: null,
-      items: [
-        {
-          id: firstProblem!.id,
-          progress: [{ status: 'SOLVED', favorite: false }],
-        },
-      ],
-    });
-
-    const otherUser = await call(
-      '/api/v1/coding/problems?scope=solved&track=ALGORITHM&page=cursor&limit=25',
-    );
-    expect(otherUser.body).toMatchObject({ total: 0, nextCursor: null, items: [] });
+    expect(status.response.status).toBe(404);
+    expect(memo.response.status).toBe(404);
   });
 
   it('returns only the signed-in user favorite problems when the favorite scope is requested', async () => {
@@ -1091,7 +1076,7 @@ describe('Sites D1 API', () => {
       items: [
         {
           id: firstProblem!.id,
-          progress: [{ status: 'UNTRIED', favorite: true }],
+          progress: [{ favorite: true }],
         },
       ],
     });
@@ -1267,7 +1252,7 @@ describe('Sites D1 API', () => {
     expect(rows.some((row) => Boolean(row.deadlineAt))).toBe(true);
   });
 
-  it('persists coding progress, solution, reaction, and comment', async () => {
+  it('serves recommendations and favorites while retiring solution collaboration', async () => {
     db.resetPreparedSql();
     const challenges = await call('/api/v1/coding/daily-challenges');
     expect(challenges.body).toEqual([
@@ -1301,64 +1286,21 @@ describe('Sites D1 API', () => {
     const daily = challenge.body as unknown as { id: string; problem: { id: string } };
     expect(daily.problem.id).toBeTruthy();
 
-    const solution = await call('/api/v1/coding/solutions', {
-      method: 'POST',
-      body: JSON.stringify({
-        problemId: daily.problem.id,
-        title: '테스트 풀이',
-        language: 'javascript',
-        code: 'return true;',
-        description: 'D1에 저장되는 풀이',
-        solved: true,
-        visibility: 'PRIVATE',
-      }),
+    const favorite = await call(`/api/v1/coding/problems/${daily.problem.id}/favorite`, {
+      method: 'PATCH',
+      body: JSON.stringify({ favorite: true }),
     });
-    const saved = solution.body as { id: string };
-    await call(`/api/v1/coding/solutions/${saved.id}/reaction`, {
-      method: 'PUT',
-      body: JSON.stringify({ active: true }),
-    });
-    await call(`/api/v1/coding/solutions/${saved.id}/reaction`, {
-      method: 'PUT',
-      body: JSON.stringify({ active: true }),
-    });
-    await call(`/api/v1/coding/solutions/${saved.id}/comments`, {
-      method: 'POST',
-      body: JSON.stringify({ markdown: '좋은 풀이입니다.' }),
-    });
-    await call(`/api/v1/coding/daily-challenge/${daily.id}/complete`, { method: 'POST' });
+    expect(favorite.body).toEqual({ problemId: daily.problem.id, favorite: true });
 
-    const solutions = await call(
-      `/api/v1/coding/solutions?problemId=${daily.problem.id}`,
-      {},
-      memberHeaders,
-    );
-    expect(solutions.body).toEqual([
-      expect.objectContaining({
-        id: saved.id,
-        language: 'javascript',
-        visibility: 'MEMBERS',
-        reactionCount: 1,
-        reactedByMe: false,
-        commentCount: 1,
-      }),
+    const retired = await Promise.all([
+      call('/api/v1/coding/solutions'),
+      call('/api/v1/coding/solutions', { method: 'POST', body: '{}' }),
+      call('/api/v1/coding/rankings'),
+      call('/api/v1/coding/comments/comment-id', { method: 'DELETE' }),
+      call(`/api/v1/coding/daily-challenge/${daily.id}/complete`, { method: 'POST' }),
     ]);
-    const detail = await call(`/api/v1/coding/solutions/${saved.id}`, {}, memberHeaders);
-    expect(detail.body).toMatchObject({
-      id: saved.id,
-      reactions: [expect.any(Object)],
-      comments: [expect.objectContaining({ markdown: '좋은 풀이입니다.' })],
-    });
-    const pagedSolutions = await call(
-      `/api/v1/coding/solutions?problemId=${daily.problem.id}&page=cursor&limit=1`,
-      {},
-      memberHeaders,
-    );
-    expect(pagedSolutions.body).toMatchObject({
-      items: [expect.objectContaining({ id: saved.id })],
-      nextCursor: null,
-      total: 1,
-    });
+    expect(retired.slice(0, 4).every((result) => result.response.status === 404)).toBe(true);
+    expect(retired[4]?.response.status).toBe(404);
   });
 
   it('persists learning review state and returns searchable data', async () => {
@@ -1535,39 +1477,21 @@ describe('Sites D1 API', () => {
     expect(events.results.map((event) => event.sequence)).toEqual([1, 2, 3]);
   });
 
-  it('keeps unread GET pure and creates deadline notifications in scheduled maintenance', async () => {
+  it('retires in-app notifications and keeps maintenance notification-free', async () => {
     await call('/api/v1/auth/me');
-    const job = await db.prepare("SELECT id FROM jobs WHERE status = 'ACTIVE' LIMIT 1").first<{
-      id: string;
-    }>();
-    const deadline = new Date(Date.now() + 3 * 86_400_000).toISOString();
-    await db
-      .prepare('UPDATE jobs SET deadline_at = ?, rolling = 0 WHERE id = ?')
-      .bind(deadline, job!.id)
-      .run();
-    await call('/api/v1/jobs/saved', {
-      method: 'POST',
-      body: JSON.stringify({ jobId: job!.id, bookmarked: true }),
-    });
-
-    await call('/api/v1/notifications/unread-count');
-    await call('/api/v1/notifications/unread-count');
-
-    const beforeMaintenance = await db
-      .prepare(
-        "SELECT COUNT(*) AS count FROM notifications WHERE type = 'JOB_DEADLINE' AND user_id = (SELECT user_id FROM auth_identities WHERE provider = 'GOOGLE' AND provider_subject = 'google-admin')",
-      )
-      .first<{ count: number }>();
-    expect(beforeMaintenance?.count).toBe(0);
+    const routes = await Promise.all([
+      call('/api/v1/notifications/unread-count'),
+      call('/api/v1/notifications'),
+      call('/api/v1/notifications/read-all', { method: 'PATCH' }),
+    ]);
+    expect(routes.every((result) => result.response.status === 404)).toBe(true);
 
     const maintenance = await runScheduledMaintenance({ DB: db });
-    expect(maintenance).toMatchObject({ acquired: true, notifications: 1 });
-    const afterMaintenance = await db
-      .prepare(
-        "SELECT COUNT(*) AS count FROM notifications WHERE type = 'JOB_DEADLINE' AND user_id = (SELECT user_id FROM auth_identities WHERE provider = 'GOOGLE' AND provider_subject = 'google-admin')",
-      )
+    expect(maintenance).toMatchObject({ acquired: true });
+    const notificationCount = await db
+      .prepare('SELECT COUNT(*) AS count FROM notifications')
       .first<{ count: number }>();
-    expect(afterMaintenance?.count).toBe(1);
+    expect(notificationCount?.count).toBe(0);
   });
 
   it('keeps jobs immutable during scheduled maintenance and hides past fixed deadlines', async () => {
@@ -1605,8 +1529,6 @@ describe('Sites D1 API', () => {
 
     const result = await runScheduledMaintenance({ DB: db });
     expect(result).toMatchObject({ acquired: true });
-    expect(result.expiredJobs).toBe(0);
-    expect(result.notifications).toBe(0);
     const persistedJob = await db
       .prepare('SELECT status FROM jobs WHERE id = ?')
       .bind(expiredJob!.id)
@@ -1627,55 +1549,11 @@ describe('Sites D1 API', () => {
 
     await db
       .prepare(
-        "INSERT INTO scheduler_leases (name, owner_id, lease_until, updated_at) VALUES ('notifications-and-expiry', 'other-worker', ?, ?)",
+        "INSERT INTO scheduler_leases (name, owner_id, lease_until, updated_at) VALUES ('maintenance-cleanup', 'other-worker', ?, ?)",
       )
       .bind(new Date(Date.now() + 60_000).toISOString(), timestamp)
       .run();
-    expect(await runScheduledMaintenance({ DB: db })).toEqual({
-      acquired: false,
-      expiredJobs: 0,
-      notifications: 0,
-    });
-  });
-
-  it('filters notifications and traverses a stable cursor', async () => {
-    await call('/api/v1/auth/me');
-    const user = await db
-      .prepare(
-        "SELECT user_id AS id FROM auth_identities WHERE provider = 'GOOGLE' AND provider_subject = 'google-admin'",
-      )
-      .first<{ id: string }>();
-    for (let index = 0; index < 3; index += 1) {
-      await db
-        .prepare(
-          `INSERT INTO notifications
-             (id, user_id, type, title, message, created_at)
-           VALUES (?, ?, ?, ?, '', ?)`,
-        )
-        .bind(
-          `cursor-notification-${index}`,
-          user!.id,
-          index === 2 ? 'COMMENT' : 'SYSTEM',
-          `알림 ${index}`,
-          new Date(Date.now() - index * 1_000).toISOString(),
-        )
-        .run();
-    }
-    const firstPage = await call('/api/v1/notifications?type=SYSTEM&page=cursor&limit=1');
-    expect(firstPage.body).toMatchObject({
-      items: [expect.objectContaining({ type: 'SYSTEM' })],
-      nextCursor: expect.any(String),
-    });
-    const cursor = String(firstPage.body.nextCursor);
-    const secondPage = await call(
-      `/api/v1/notifications?type=SYSTEM&page=cursor&limit=1&cursor=${encodeURIComponent(cursor)}`,
-    );
-    expect(secondPage.body).toMatchObject({
-      items: [expect.objectContaining({ type: 'SYSTEM' })],
-    });
-    expect((secondPage.body.items as Array<{ id: string }>)[0].id).not.toBe(
-      (firstPage.body.items as Array<{ id: string }>)[0].id,
-    );
+    expect(await runScheduledMaintenance({ DB: db })).toEqual({ acquired: false });
   });
 
   it('loads the learning summary library with one bounded query', async () => {
@@ -1735,55 +1613,46 @@ describe('Sites D1 API', () => {
     ).toBe(true);
   });
 
-  it('automatically ranks members and does not expose export or deletion request routes', async () => {
+  it('does not expose ranking, export, or deletion request routes', async () => {
     await call('/api/v1/auth/me');
     await call('/api/v1/auth/me', {}, memberHeaders);
-    await db
-      .prepare("UPDATE users SET ranking_opt_in = 0 WHERE email = 'member@example.test'")
-      .run();
-
     const ranking = await call('/api/v1/coding/rankings');
-    expect(ranking.body).toMatchObject({
-      selfReported: true,
-      rows: expect.arrayContaining([expect.objectContaining({ displayName: 'Member User' })]),
-    });
-
     const exportResponse = await call('/api/v1/auth/export');
     const deletionResponse = await call('/api/v1/auth/delete-request', { method: 'POST' });
+    expect(ranking.response.status).toBe(404);
     expect(exportResponse.response.status).toBe(404);
     expect(deletionResponse.response.status).toBe(404);
   });
 
-  it('preserves problem memo and favorite across independent status patches', async () => {
+  it('stores only the problem favorite through the public progress surface', async () => {
     const problem = await db
       .prepare('SELECT id FROM coding_problems WHERE active = 1 ORDER BY position LIMIT 1')
       .first<{ id: string }>();
     expect(problem?.id).toBeTruthy();
     const base = `/api/v1/coding/problems/${problem!.id}`;
-    await call(`${base}/memo`, {
-      method: 'PATCH',
-      body: JSON.stringify({ memo: 'List<String> a < b && c > d' }),
-    });
-    await call(`${base}/favorite`, {
+    const favorite = await call(`${base}/favorite`, {
       method: 'PATCH',
       body: JSON.stringify({ favorite: true }),
     });
-    await call(`${base}/status`, {
+    const status = await call(`${base}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ status: 'IN_PROGRESS' }),
     });
-    await call(`${base}/status`, {
+    const memo = await call(`${base}/memo`, {
       method: 'PATCH',
-      body: JSON.stringify({ status: 'SOLVED' }),
+      body: JSON.stringify({ memo: 'retired' }),
     });
+    expect(favorite.body).toEqual({ problemId: problem!.id, favorite: true });
+    expect(status.response.status).toBe(404);
+    expect(memo.response.status).toBe(404);
     const progress = await db
       .prepare('SELECT status, favorite, memo FROM problem_progress WHERE problem_id = ?')
       .bind(problem!.id)
       .first<{ status: string; favorite: number; memo: string }>();
     expect(progress).toEqual({
-      status: 'SOLVED',
+      status: 'UNTRIED',
       favorite: 1,
-      memo: 'List<String> a < b && c > d',
+      memo: '',
     });
   });
 
@@ -2046,93 +1915,18 @@ describe('Sites D1 API', () => {
     expect(kept?.title).toBe('계속 게시되는 공고');
   });
 
-  it('redacts hidden replies in the API response', async () => {
-    await call('/api/v1/auth/me', {}, memberHeaders);
-    const problem = await db
-      .prepare('SELECT id FROM coding_problems WHERE active = 1 ORDER BY position LIMIT 1')
-      .first<{ id: string }>();
-    const solution = await call('/api/v1/coding/solutions', {
-      method: 'POST',
-      body: JSON.stringify({
-        problemId: problem!.id,
-        title: 'redaction fixture',
-        language: 'javascript',
-        code: 'return true;',
-        description: '설명',
-        solved: true,
+  it('rejects all legacy comment write routes', async () => {
+    const results = [
+      await call('/api/v1/coding/comments/comment-id', {
+        method: 'PATCH',
+        body: JSON.stringify({ markdown: '수정' }),
       }),
-    });
-    const solutionId = String(solution.body.id);
-    const parent = await call(`/api/v1/coding/solutions/${solutionId}/comments`, {
-      method: 'POST',
-      body: JSON.stringify({ markdown: '부모 댓글' }),
-    });
-    const reply = await call(
-      `/api/v1/coding/solutions/${solutionId}/comments`,
-      {
+      await call('/api/v1/coding/comments/comment-id', { method: 'DELETE' }),
+      await call('/api/v1/coding/comments/comment-id/report', {
         method: 'POST',
-        body: JSON.stringify({
-          markdown: '<script>private reply</script>',
-          parentId: parent.body.id,
-        }),
-      },
-      memberHeaders,
-    );
-    await db
-      .prepare('UPDATE solution_comments SET hidden_at = ? WHERE id = ?')
-      .bind(new Date().toISOString(), reply.body.id)
-      .run();
-    const listed = await call(`/api/v1/coding/solutions/${solutionId}`, {}, memberHeaders);
-    const comments = (listed.body as unknown as { comments: Array<{ replies: unknown[] }> })
-      .comments;
-    expect(comments?.[0]?.replies).toEqual([
-      expect.objectContaining({ markdown: null, redacted: 'HIDDEN' }),
-    ]);
-    expect(JSON.stringify(listed.body)).not.toContain('private reply');
-  });
-
-  it('lets owners edit and soft-delete comments and records member reports', async () => {
-    const problem = await db
-      .prepare('SELECT id FROM coding_problems WHERE active = 1 ORDER BY position LIMIT 1')
-      .first<{ id: string }>();
-    const solution = await call('/api/v1/coding/solutions', {
-      method: 'POST',
-      body: JSON.stringify({
-        problemId: problem!.id,
-        title: 'comment actions fixture',
-        language: 'javascript',
-        code: 'return true;',
-        description: '설명',
-        solved: true,
+        body: JSON.stringify({ reason: '신고' }),
       }),
-    });
-    const created = await call(`/api/v1/coding/solutions/${solution.body.id}/comments`, {
-      method: 'POST',
-      body: JSON.stringify({ markdown: '수정 전' }),
-    });
-    const edited = await call(`/api/v1/coding/comments/${created.body.id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ markdown: '**수정 후**' }),
-    });
-    expect(edited.body).toMatchObject({ edited: true, markdown: '**수정 후**' });
-    const reported = await call(
-      `/api/v1/coding/comments/${created.body.id}/report`,
-      { method: 'POST', body: JSON.stringify({ reason: '검토가 필요한 댓글' }) },
-      memberHeaders,
-    );
-    expect(reported.body).toMatchObject({ reported: true });
-    const removed = await call(`/api/v1/coding/comments/${created.body.id}`, {
-      method: 'DELETE',
-    });
-    expect(removed.body).toMatchObject({ deleted: true });
-    const detail = await call(`/api/v1/coding/solutions/${solution.body.id}`);
-    expect(detail.body).toMatchObject({
-      comments: [expect.objectContaining({ markdown: null, redacted: 'DELETED' })],
-    });
-    const report = await db
-      .prepare("SELECT action FROM audit_logs WHERE action = 'COMMENT_REPORTED' AND target_id = ?")
-      .bind(created.body.id)
-      .first<{ action: string }>();
-    expect(report?.action).toBe('COMMENT_REPORTED');
+    ];
+    expect(results.every((result) => result.response.status === 404)).toBe(true);
   });
 });

@@ -398,7 +398,6 @@ export function generateReplacementSql({
   const appliedAt = new Date(audit.secondPassVerificationFinishedAt).toISOString();
   const statements = [
     "DELETE FROM collection_items WHERE item_type = 'JOB_POSTING';",
-    "DELETE FROM notifications WHERE type = 'JOB_DEADLINE';",
     "DELETE FROM import_previews WHERE kind = 'jobs';",
     'DELETE FROM job_source_snapshot_items;',
     'DELETE FROM job_source_snapshots;',

@@ -12,9 +12,6 @@ const HomePage = lazy(() =>
 const CodingPage = lazy(() =>
   import('./pages/CodingPage').then((module) => ({ default: module.CodingPage })),
 );
-const SolutionsPage = lazy(() =>
-  import('./pages/SolutionsPage').then((module) => ({ default: module.SolutionsPage })),
-);
 let jobsPagePromise: Promise<{ default: typeof import('./pages/JobsPage').JobsPage }> | undefined;
 export const preloadJobsPage = () => {
   jobsPagePromise ??= import('./pages/JobsPage')
@@ -38,12 +35,6 @@ export const preloadLearningPage = () => {
   return learningPagePromise;
 };
 const LearningPage = lazy(preloadLearningPage);
-const RankingPage = lazy(() =>
-  import('./pages/RankingPage').then((module) => ({ default: module.RankingPage })),
-);
-const NotificationsPage = lazy(() =>
-  import('./pages/NotificationsPage').then((module) => ({ default: module.NotificationsPage })),
-);
 const AdminPage = lazy(() =>
   import('./pages/AdminPage').then((module) => ({ default: module.AdminPage })),
 );
@@ -84,9 +75,9 @@ export function App() {
             <Route path="/learning" element={<LearningPage />} />
             <Route path="/jobs" element={<JobsPage />} />
             <Route path="/coding" element={<CodingPage />} />
-            <Route path="/solutions" element={<SolutionsPage />} />
-            <Route path="/rankings" element={<RankingPage />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/solutions" element={<Navigate to="/coding" replace />} />
+            <Route path="/rankings" element={<Navigate to="/coding" replace />} />
+            <Route path="/notifications" element={<Navigate to="/" replace />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route
               path="/admin"

@@ -15,7 +15,7 @@
 - 사용자·정규화 경로별 D1 rate limit을 적용한다. 기본값은 읽기 240회/분, 쓰기 60회/분이며 초과 시 `429`와 `Retry-After`를 반환한다.
 - 오류 응답은 `code`, `message`, `details`, `requestId` 형식이다.
 - 모든 API 응답은 `x-request-id`, `server-timing`, `x-response-time-ms`를 제공하고 구조화 로그에는 경로 template·상태·처리 시간만 남긴다.
-- 댓글·풀이 Markdown에서 raw HTML을 제거하고 브라우저에서도 `rehype-sanitize`를 적용한다.
+- 사용자 노트와 학습 Markdown에서 raw HTML을 제거하고 브라우저에서도 안전한 렌더링 경계를 유지한다.
 - 프로그래머스 URL은 HTTPS host/path allowlist를 확인한다.
 - 파일은 MIME/확장자/크기/SHA-256을 함께 검사한다.
 

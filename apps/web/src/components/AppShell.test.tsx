@@ -15,7 +15,6 @@ describe('responsive application navigation', () => {
         String(input).includes('/bootstrap')
           ? response({
               user: { id: 'u', email: 'member@example.com', displayName: '멤버', role: 'MEMBER' },
-              unreadCount: 0,
               home: null,
             })
           : response({}),
@@ -35,6 +34,9 @@ describe('responsive application navigation', () => {
       '_blank',
     );
     expect(screen.getByRole('navigation', { name: '모바일 주요 메뉴' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '풀이 기록' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '랭킹' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '알림' })).not.toBeInTheDocument();
     await userEvent.setup().click(screen.getByRole('button', { name: '메뉴 열기' }));
     expect(screen.getAllByRole('navigation', { name: '주요 메뉴' })).toHaveLength(2);
     expect(screen.getByRole('button', { name: '메뉴 닫기' })).toBeInTheDocument();

@@ -55,21 +55,6 @@ const problem = z
   })
   .passthrough();
 const challenge = z.object({ id: identifier, problemId: identifier, problem }).passthrough();
-const solutionSummary = z
-  .object({
-    id: identifier,
-    problemId: identifier,
-    title: z.string(),
-    language: z.string(),
-    author: z.object({ displayName: z.string() }).passthrough(),
-  })
-  .passthrough();
-const solutionDetail = solutionSummary.extend({
-  code: z.string(),
-  description: z.string(),
-  revisions: z.array(z.object({ revision: z.number() }).passthrough()),
-  comments: z.array(z.object({ id: identifier }).passthrough()),
-});
 const learningUnit = z.object({ id: identifier, title: z.string() }).passthrough();
 const learningSource = z
   .object({ id: identifier, title: z.string(), units: z.array(learningUnit) })
@@ -79,9 +64,6 @@ const learningUnitDetail = learningUnit.extend({
   visuals: z.array(z.object({ src: z.string(), alt: z.string() }).passthrough()),
   questions: z.array(z.object({ id: identifier, prompt: z.string() }).passthrough()),
 });
-const notification = z
-  .object({ id: identifier, type: z.string(), title: z.string(), createdAt: z.string() })
-  .passthrough();
 const searchItem = z.object({ id: identifier, title: z.string(), href: z.string() }).passthrough();
 
 const cursorPage = (item: z.ZodType) =>
@@ -111,9 +93,6 @@ export function responseSchemaFor(path: string, method = 'GET'): z.ZodType {
         .object({ previewToken: identifier, checksum: z.string(), expiresAt: z.string() })
         .passthrough();
     }
-    if (endpoint === '/notifications/read-all' || /\/notifications\/[^/]+\/read$/.test(endpoint)) {
-      return z.object({ count: z.number().nonnegative() }).passthrough();
-    }
     return z.record(z.string(), jsonValueSchema);
   }
   if (endpoint === '/auth/me') return z.object({ user }).passthrough();
@@ -127,7 +106,6 @@ export function responseSchemaFor(path: string, method = 'GET'): z.ZodType {
     return z
       .object({
         user,
-        unreadCount: z.number().nonnegative(),
         categories: z.array(z.string()),
         data: arrayOrCursor(job),
       })
@@ -137,7 +115,6 @@ export function responseSchemaFor(path: string, method = 'GET'): z.ZodType {
     return z
       .object({
         user,
-        unreadCount: z.number().nonnegative(),
         data: z.array(learningSource),
       })
       .passthrough();
@@ -148,27 +125,9 @@ export function responseSchemaFor(path: string, method = 'GET'): z.ZodType {
   if (/^\/coding\/problems\/[^/]+$/.test(endpoint)) return problem;
   if (endpoint === '/coding/daily-challenges') return z.array(challenge);
   if (endpoint === '/coding/daily-challenge') return challenge;
-  if (endpoint === '/coding/solutions') return arrayOrCursor(solutionSummary);
-  if (endpoint === '/coding/solutions/trash') {
-    return z.array(
-      z.object({ id: identifier, title: z.string(), deletedAt: z.string() }).passthrough(),
-    );
-  }
-  if (/^\/coding\/solutions\/[^/]+$/.test(endpoint)) return solutionDetail;
-  if (endpoint === '/coding/rankings') {
-    return z
-      .object({
-        rows: z.array(z.object({ rank: z.number(), displayName: z.string() }).passthrough()),
-      })
-      .passthrough();
-  }
   if (endpoint === '/learning') return z.array(learningSource);
   if (/^\/learning\/units\/[^/]+$/.test(endpoint)) return learningUnitDetail;
   if (endpoint === '/learning/due') return z.array(z.record(z.string(), jsonValueSchema));
-  if (endpoint === '/notifications') return arrayOrCursor(notification);
-  if (endpoint === '/notifications/unread-count') {
-    return z.object({ count: z.number().nonnegative() }).passthrough();
-  }
   if (endpoint === '/search') {
     return z
       .object({ query: z.string(), nextCursor: z.string().nullable().optional() })

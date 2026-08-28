@@ -45,7 +45,7 @@ export function OnboardingPage({ initialDisplayName = '' }: { initialDisplayName
         >
           <span className="onboarding-step">첫 설정</span>
           <h1>어떻게 불러드릴까요?</h1>
-          <p>Google 이름을 확인하고, 풀이 기록과 댓글에 표시할 이름을 정해주세요.</p>
+          <p>Google 이름을 확인하고, CareerGround에서 사용할 이름을 정해주세요.</p>
           <label className="onboarding-name">
             이름
             <input
