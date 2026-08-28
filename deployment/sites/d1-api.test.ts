@@ -394,7 +394,7 @@ describe('Sites D1 API', () => {
     const token = 'test-digest-token';
     const authorized = { authorization: `Bearer ${token}` };
     const environment = { DIGEST_API_TOKEN: token };
-    await db.prepare("DELETE FROM import_batches WHERE kind = 'jobs'").run();
+    await db.prepare("DELETE FROM import_batches WHERE kind IN ('jobs', 'jobs-v5')").run();
     const request = () =>
       call(
         '/api/v1/internal/slack-digest/claim',
@@ -423,7 +423,7 @@ describe('Sites D1 API', () => {
       .prepare(
         `INSERT INTO import_batches
            (id, kind, checksum, status, original_count, rejected_count, result, committed_at, created_at)
-         VALUES (?, 'jobs', ?, 'COMMITTED', 0, 0, '{}', ?, ?)`,
+         VALUES (?, 'jobs-v5', ?, 'COMMITTED', 0, 0, '{}', ?, ?)`,
       )
       .bind(
         'old-jobs-import',
@@ -445,10 +445,10 @@ describe('Sites D1 API', () => {
       .prepare(
         `INSERT INTO import_batches
            (id, kind, checksum, status, original_count, rejected_count, result, committed_at, created_at)
-         VALUES (?, 'jobs', ?, 'COMMITTED', 0, 0, '{}', ?, ?)`,
+         VALUES (?, 'jobs-v5', ?, 'COMMITTED', 0, 0, '{}', ?, ?)`,
       )
       .bind(
-        'today-jobs-import',
+        'today-jobs-v5-import',
         'today-jobs-import-checksum',
         committedAtWithOffset,
         committedAtWithOffset,

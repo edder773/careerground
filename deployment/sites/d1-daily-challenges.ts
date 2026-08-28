@@ -42,7 +42,7 @@ async function dailyDigestWindowStart(db: D1Database, generatedAt: string) {
   return new Date(generatedTime - DAILY_DIGEST_FALLBACK_WINDOW_MS).toISOString();
 }
 
-async function secureTokenMatch(actual: string, expected: string) {
+export async function secureTokenMatch(actual: string, expected: string) {
   const [actualHash, expectedHash] = await Promise.all([sha256(actual), sha256(expected)]);
   let difference = actualHash.length ^ expectedHash.length;
   const length = Math.max(actualHash.length, expectedHash.length);
@@ -471,7 +471,7 @@ async function committedJobsImportForKstDate(db: D1Database, date: string) {
     db,
     `SELECT id, committed_at AS committedAt
        FROM import_batches
-      WHERE kind = 'jobs' AND status = 'COMMITTED' AND committed_at IS NOT NULL
+      WHERE kind IN ('jobs', 'jobs-v5') AND status = 'COMMITTED' AND committed_at IS NOT NULL
         AND julianday(committed_at) >= julianday(?)
         AND julianday(committed_at) < julianday(?)
       ORDER BY julianday(committed_at) DESC

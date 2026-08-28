@@ -46,6 +46,8 @@ import {
   previewJobImport,
   previewLearningImport,
 } from './d1-imports.js';
+import { requirePublishToken } from './d1-jobs-v5-discovery-contract.js';
+import { publishDiscoveryBundle } from './d1-jobs-v5.js';
 import {
   bool,
   cleanText,
@@ -56,6 +58,7 @@ import {
   ftsMatchQuery,
   int,
   readJson,
+  readJsonWithLimit,
   responseJson,
   type CursorPage,
 } from './d1-api-utils.js';
@@ -2324,6 +2327,25 @@ export async function handleD1Api(request: Request, env: D1Env) {
       const outcome = body.uncertain === true ? 'UNCERTAIN' : 'FAILED';
       return finish(
         responseJson(await settleSlackDigestDelivery(env.DB, body, outcome), 200, requestId),
+      );
+    }
+    if (url.pathname === '/api/v1/internal/jobs-v5/publish') {
+      if (request.method !== 'POST') {
+        throw new RouteError(405, 'POST 요청만 허용됩니다.', 'METHOD_NOT_ALLOWED', undefined, {
+          allow: 'POST',
+        });
+      }
+      const contentLength = Number(request.headers.get('content-length') || 0);
+      if (contentLength > 3_000_000) {
+        throw new RouteError(413, '운영 반영 요청이 너무 큽니다.', 'PUBLISH_PAYLOAD_TOO_LARGE');
+      }
+      await requirePublishToken(request, env);
+      return finish(
+        responseJson(
+          await publishDiscoveryBundle(env.DB, await readJsonWithLimit(request, 3_000_000)),
+          200,
+          requestId,
+        ),
       );
     }
     if (

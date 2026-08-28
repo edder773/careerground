@@ -54,6 +54,7 @@ generatedByAI: false
 | 08-27 | [코딩테스트 카탈로그 단순화와 인앱 알림 제거](./2026-08-27-coding-catalog-simplification.md)                  | 이번 변경                                               | 화면 4→1, 활성 협업·알림 API 0개          |
 | 08-28 | [로그인 제거와 공개 카탈로그 전환](./2026-08-28-public-catalog-without-login.md)                              | 이번 변경                                               | 인증 화면 4→0, 공개 카탈로그 0→3          |
 | 08-28 | [ChatGPT 예약 수집기의 기준선·파일 실행 의존성 제거](./2026-08-28-chatgpt-collector-baseline-decoupling.md)   | 이번 변경                                               | 입력 게이트 실패 3건 분석, artifact 5→3   |
+| 08-28 | [VERIFIED_DISCOVERY에서 운영 D1까지 자동 연결](./2026-08-28-verified-discovery-to-d1-automation.md)           | 이번 변경                                               | 게시 호출 0→1, 수동 중계 2→0, 208 unit    |
 
 Dependabot PR #4는 pnpm 11/Node 24를 지원하는 `pnpm/action-setup@6` 갱신이며 별도 장애가 없어 Sites runtime 문서의 도구 체인 맥락에 포함했다. PR #3 이전의 닫힌 #1/#2는 구현이 병합되지 않았으므로 운영 변경 기록에 포함하지 않았다.
 
