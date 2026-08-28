@@ -1,4 +1,6 @@
-# CareerGround 채용 공고 검증기 동기화 자동화
+# CareerGround 채용 공고 검증기 동기화 자동화 (legacy compatibility)
+
+> v5 전환 전 rollback/compatibility 문서다. 신규 실행은 `careerground-v5-runbook.md`의 명시적 Manifest 경로를 사용한다. 이 문서의 Library 파일명 선택 절차를 신규 운영 식별자로 사용하지 않는다.
 
 이 문서는 ChatGPT Work 예약 작업이 CareerGround 운영 DB를 갱신할 때 따르는 단일 실행 절차다. 공고 발견·상세 검증·마감 판정은 별도의 `채용 공고 검증기`가 담당한다. 자동화는 채용 사이트를 직접 탐색하지 않고, ChatGPT 라이브러리의 최종 JSON과 같은 날짜의 병합 감사 파일만 소비한다.
 
