@@ -54,7 +54,7 @@ Slack은 배포 API가 고른 당일 import snapshot을 사용한다. v5 실행�
 - raw/canonical hash를 모두 검증하는 Manifest와 명시적 입력 adapter.
 - 파티션 병렬 수집, merge, validate, stage/publish, notify의 책임 분리.
 - 원자적 게시와 last-success 포인터.
-- 실제 웹 조사는 여전히 외부 ChatGPT 예약 작업이 수행한다. 파티션별 17개 출처와 bucket 소유권은 `config/careerground-partition-sources.json`으로 이전했고, 실제 v4 bundle은 명시적 경로와 hash로 v5 artifact로 변환할 수 있다. 자동 전달 수신기는 `careerground-v5-handoff` Issue 포인터와 커밋에 연결되지 않은 Git blob으로 구현되어 있으며, 외부 예약 작업과 Pro 프롬프트에 `docs/operations/careerground-v5-automatic-handoff.md`의 전달 지시문을 반영해야 실제 입력이 도착한다.
+- 실제 웹 조사는 여전히 외부 ChatGPT 예약 작업이 수행한다. 2026-08-28부터 예약 작업은 운영 기준선과 File Library 전체 파일을 읽지 않고 담당 출처의 신규 후보 delta만 만든다. 파티션별 17개 출처는 `config/careerground-partition-sources.json`으로 유지한다. schema 2.0 자동 전달 수신기는 세 Git blob의 크기·SHA-256을 GitHub에서 계산하고 `scripts/jobs-v5/discovery-delta.mjs`로 출처 소유권·정책·중복을 검증한다. 기존 schema 1.0 5파일 v4 adapter는 롤백 호환 경로로 유지한다.
 
 ## 문서와 구현 차이
 

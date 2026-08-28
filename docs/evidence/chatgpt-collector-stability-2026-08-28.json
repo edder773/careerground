@@ -1,0 +1,82 @@
+{
+  "schema": "careerground-chatgpt-collector-stability-evidence/v1",
+  "capturedAt": "2026-08-28T06:44:37.000Z",
+  "baseline": {
+    "scheduledTasksInspected": 3,
+    "latestRunsBlockedAtInputGate": 3,
+    "failureClasses": [
+      "ChatGPT File Library materialization or execution service failure",
+      "Final artifact truncation before full-byte verification"
+    ],
+    "taskSideRequiredHandoffArtifacts": 5,
+    "taskSideRequiredBaselineFiles": 1,
+    "taskSideRequiredHashFields": 2,
+    "zeroCandidateRunCouldComplete": false
+  },
+  "after": {
+    "scheduledTasksUpdated": 3,
+    "schedule": "Monday-Friday 18:00 Asia/Seoul",
+    "artifactContract": "CAREERGROUND_DISCOVERY_DELTA schema 5.1",
+    "handoffContract": "CAREERGROUND_V5_HANDOFF schema 2.0",
+    "taskSideRequiredHandoffArtifacts": 3,
+    "taskSideRequiredBaselineFiles": 0,
+    "taskSideRequiredHashFields": 0,
+    "zeroCandidateRunCanComplete": true,
+    "partialSourceFailureCanComplete": true,
+    "allSourcesUnavailableFailsClosed": true,
+    "deterministicIdAndFingerprintOwner": "GitHub Actions",
+    "productionDatabaseChanged": false,
+    "slackMessagesSent": 0
+  },
+  "regression": {
+    "targetedCommand": "pnpm exec vitest run scripts/jobs-v5/discovery-delta.test.mjs scripts/jobs-v5/handoff.test.mjs scripts/jobs-v5/workflow-policy.test.mjs --reporter=verbose",
+    "testFilesPassed": 3,
+    "testsPassed": 21,
+    "testsFailed": 0,
+    "fullUnitIntegration": {
+      "testFilesPassed": 36,
+      "testsPassed": 203,
+      "testsFailed": 0
+    },
+    "e2e": {
+      "sandboxedAttempt": {
+        "passed": 0,
+        "failed": 34,
+        "cause": "macOS sandbox denied browser Mach port registration before test execution"
+      },
+      "elevatedFiveWorkerAttempt": {
+        "passed": 32,
+        "failed": 2,
+        "cause": "two Firefox startup requests exceeded the 45 second timeout"
+      },
+      "isolatedFirefoxAfter": {
+        "passed": 10,
+        "failed": 0,
+        "workers": 1
+      },
+      "fullAfter": {
+        "passed": 34,
+        "failed": 0,
+        "workers": 2
+      }
+    },
+    "checks": {
+      "format": "pass",
+      "lint": "pass",
+      "typecheck": "pass",
+      "productionBuild": "pass"
+    },
+    "buildWarning": "The docs bundle retained its existing minified chunk size warning; the build exited successfully."
+  },
+  "limitations": [
+    "The next live 18:00 Asia/Seoul scheduled execution had not occurred when this evidence was captured.",
+    "ChatGPT app actions can pause for user approval depending on the connected app policy.",
+    "A VERIFIED_DISCOVERY artifact is an input for later validation and is not a production database publication."
+  ],
+  "sources": [
+    "scripts/jobs-v5/discovery-delta.mjs",
+    "scripts/jobs-v5/handoff.mjs",
+    ".github/workflows/careerground-v5-handoff.yml",
+    "https://help.openai.com/en/articles/10291617-scheduled-tasks-in-chatgptWorking"
+  ]
+}

@@ -29,7 +29,7 @@ jobs:
           node-version-file: '.node-version'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Resolve and fetch an immutable five-artifact bundle
+      - name: Resolve and fetch an immutable handoff bundle
         id: handoff
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -39,8 +39,26 @@ jobs:
           --issue-number "$GITHUB_EVENT_ISSUE_NUMBER"
           --output work/jobs-v5/handoff
           --github-output "$GITHUB_OUTPUT"
-      - name: Convert the verified v4 bundle to v5 partition artifacts
-        if: steps.handoff.outputs.status == 'READY'
+      - name: Validate the baseline-free discovery bundle
+        if: >-
+          steps.handoff.outputs.status == 'READY' &&
+          steps.handoff.outputs.handoff_schema_version == '2.0'
+        env:
+          TARGET_DATE: ${{ steps.handoff.outputs.target_as_of_date }}
+          RUN_ID: CG-${{ steps.handoff.outputs.target_as_of_date }}-A1-discovery${{ github.run_id }}
+        run: |
+          pnpm jobs:v5:validate-discovery \
+            --target-as-of-date "$TARGET_DATE" \
+            --run-id "$RUN_ID" \
+            --partition1 "work/jobs-v5/handoff/careerground-partition-1-$TARGET_DATE.json" \
+            --partition2 "work/jobs-v5/handoff/careerground-partition-2-$TARGET_DATE.json" \
+            --partition3 "work/jobs-v5/handoff/careerground-partition-3-$TARGET_DATE.json" \
+            --output work/jobs-v5/discovery
+          ! grep -R -E 'hooks\.slack\.com/services|gh[pousr]_[A-Za-z0-9]+' work/jobs-v5/discovery
+      - name: Convert the verified legacy v4 bundle to v5 partition artifacts
+        if: >-
+          steps.handoff.outputs.status == 'READY' &&
+          steps.handoff.outputs.handoff_schema_version == '1.0'
         env:
           TARGET_DATE: ${{ steps.handoff.outputs.target_as_of_date }}
           RUN_ID: CG-${{ steps.handoff.outputs.target_as_of_date }}-A1-handoff${{ github.run_id }}
@@ -63,8 +81,22 @@ jobs:
           path: work/jobs-v5/handoff/handoff-report.json
           if-no-files-found: error
           retention-days: 7
-      - name: Save the converted compatibility bundle
-        if: steps.handoff.outputs.status == 'READY'
+      - name: Save the validated discovery bundle
+        if: >-
+          steps.handoff.outputs.status == 'READY' &&
+          steps.handoff.outputs.handoff_schema_version == '2.0'
+        uses: actions/upload-artifact@v6
+        with:
+          name: careerground-v5-${{ steps.handoff.outputs.target_as_of_date }}-discovery-ready
+          path: |
+            work/jobs-v5/handoff/handoff-report.json
+            work/jobs-v5/discovery
+          if-no-files-found: error
+          retention-days: 30
+      - name: Save the converted legacy compatibility bundle
+        if: >-
+          steps.handoff.outputs.status == 'READY' &&
+          steps.handoff.outputs.handoff_schema_version == '1.0'
         uses: actions/upload-artifact@v6
         with:
           name: careerground-v5-${{ steps.handoff.outputs.target_as_of_date }}-legacy-compatible
@@ -73,7 +105,7 @@ jobs:
             work/jobs-v5/converted
           if-no-files-found: error
           retention-days: 30
-      - name: Mark the five source pointers as processed
+      - name: Mark the validated source pointers as processed
         if: steps.handoff.outputs.status == 'READY'
         env:
           GITHUB_TOKEN: ${{ github.token }}

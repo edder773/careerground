@@ -48,6 +48,8 @@ describe('CareerGround v5 workflow pre-cutover policy', () => {
     expect(handoff).toContain("github.event.issue.author_association == 'COLLABORATOR'");
     expect(handoff).toContain('careerground-v5-handoff');
     expect(handoff).toContain('jobs:v5:adapt-v4');
+    expect(handoff).toContain('jobs:v5:validate-discovery');
+    expect(handoff).toContain("handoff_schema_version == '2.0'");
     expect(handoff).not.toContain('SLACK_WEBHOOK_URL');
     expect(handoff).not.toContain('DIGEST_API_TOKEN');
     expect(handoff).not.toContain('jobs:v5:publish');

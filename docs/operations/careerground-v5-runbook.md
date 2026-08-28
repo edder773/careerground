@@ -9,7 +9,7 @@ v5의 운영 기준은 채팅, 파일명, 최근 수정 시각이 아니라 D1�
 ## 단계별 계약
 
 1. `preflight`: 실행 ID, 모드, 날짜, 공휴일 캐시를 검증한다. 주말/공휴일은 각각 별도 skip 상태다.
-2. `collect`: 파티션 1·2·3의 명시적 artifact 경로만 받는다. 파일명이나 최신 파일을 찾지 않는다.
+2. `collect`: 신규 예약 수집기는 기준선 비의존 schema 5.1 discovery delta를 Git blob으로 전달한다. GitHub가 세 명시적 blob을 받은 뒤 hash·크기·출처 소유권을 검증하고 v5 partition 입력으로 정규화한다. 파일명이나 최신 Library 파일을 찾지 않는다.
 3. `merge`: 세 파티션의 workflow/run group/date/schema/hash/rowCount를 다시 검사하고 canonical key, URL, fingerprint, id를 중복 제거한다. 새 공고를 검색하지 않는다.
 4. `validate`: CareerGround 정책과 임계값을 적용한다. DB나 Slack을 변경하지 않는다.
 5. `stage`: VERIFIED 결과를 `workflow_staged_jobs`에 넣고 before-image를 보존한다.
@@ -52,6 +52,19 @@ pnpm jobs:v5:run --target-as-of-date 2026-08-27 --run-id CG-2026-08-27-A1-exampl
 ```
 
 `adapt-v4`는 전달된 다섯 파일만 읽고 원본/canonical hash와 audit gate를 검증한다. Library를 검색하지 않으며 DB·Slack을 변경하지 않는다. 자세한 계약은 `careerground-v4-collector-contract.md`를 따른다.
+
+신규 예약 수집기 결과는 다음 명령과 같은 검증 경로를 사용한다.
+
+```bash
+pnpm jobs:v5:validate-discovery --target-as-of-date YYYY-MM-DD \
+  --run-id CG-YYYY-MM-DD-A1-discovery1 \
+  --partition1 /explicit/partition-1.json \
+  --partition2 /explicit/partition-2.json \
+  --partition3 /explicit/partition-3.json \
+  --output /explicit/non-production-output
+```
+
+이 명령은 최종 `id`, `canonicalJobKey`, `fingerprint`, raw/canonical hash를 GitHub 실행 환경에서 생성한다. `rowCount=0`은 정상적인 신규 후보 없음으로 허용하며, 한 출처의 BLOCKED/ERROR는 다른 출처 결과를 폐기하지 않는다. 결과는 `VERIFIED_DISCOVERY`이지 `PUBLISHED`가 아니다.
 
 `publish`는 `--manifest`와 `--approved-run-id`를 모두 요구하며, CLI 자체는 production binding 없이 DB를 변경하지 않는다. 승인된 배포 adapter가 `deployment/sites/d1-jobs-v5.ts`의 `stageVerifiedRun`, `publishVerifiedRun`을 호출해야 한다.
 
