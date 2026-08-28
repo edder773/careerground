@@ -1797,50 +1797,6 @@ p {
 }
 
 /* SQL track, compact learning accordion, and source-captured learning visuals */
-.certification-link {
-  min-height: 54px;
-  margin-top: auto;
-  padding: 9px 11px;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-  color: #dce9e8;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-}
-
-.certification-link:hover {
-  color: white;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.certification-link span,
-.certification-link strong,
-.certification-link small {
-  min-width: 0;
-  display: block;
-}
-
-.certification-link strong {
-  font-size: 11px;
-}
-
-.certification-link small {
-  margin-top: 2px;
-  color: #9db9b9;
-  font-size: 8px;
-}
-
-.certification-link > svg:last-child {
-  color: #9db9b9;
-}
-
-.sidebar-profile {
-  margin-top: 8px;
-}
-
 .daily-challenge-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }

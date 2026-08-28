@@ -23,12 +23,17 @@ import { api } from '../lib/api';
 import { ApiStatusRegion } from './ApiStatusRegion';
 import '../styles/shell.css';
 
-const navigation = [
+const browseNavigation = [
   { to: '/', label: '홈', icon: Home },
-  { to: '/learning', label: '학습', icon: BookOpen },
   { to: '/jobs', label: '채용공고', icon: BriefcaseBusiness },
+] as const;
+
+const learningNavigation = [
+  { to: '/learning', label: '학습', icon: BookOpen },
   { to: '/coding', label: '코딩테스트', icon: Code2 },
 ] as const;
+
+const navigation = [...browseNavigation, ...learningNavigation] as const;
 
 const titles: Record<string, string> = {
   '/': '둘러보기',
@@ -156,11 +161,22 @@ export function AppShell({
       </div>
       <nav className="side-nav" aria-label="주요 메뉴">
         <span className="side-nav-label">둘러보기</span>
-        {navigation.slice(0, 3).map(({ to, label, icon: Icon }) => (
+        {browseNavigation.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}
             end={to === '/'}
+            className={({ isActive }) => (isActive ? 'active' : '')}
+          >
+            <Icon size={18} aria-hidden="true" />
+            <span>{label}</span>
+          </NavLink>
+        ))}
+        <span className="side-nav-label">학습 도구</span>
+        {learningNavigation.map(({ to, label, icon: Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
             className={({ isActive }) => (isActive ? 'active' : '')}
             {...(to === '/learning' ? learningIntentProps : {})}
           >
@@ -168,28 +184,16 @@ export function AppShell({
             <span>{label}</span>
           </NavLink>
         ))}
-        <span className="side-nav-label">함께 성장</span>
-        {navigation.slice(3).map(({ to, label, icon: Icon }) => (
-          <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'active' : '')}>
-            <Icon size={18} aria-hidden="true" />
-            <span>{label}</span>
-          </NavLink>
-        ))}
+        <a
+          href={productLinks.certificationLearning}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="자격증 새 창에서 열기"
+        >
+          <GraduationCap size={18} aria-hidden="true" />
+          <span>자격증</span>
+        </a>
       </nav>
-      <a
-        className="certification-link"
-        href={productLinks.certificationLearning}
-        target="_blank"
-        rel="noreferrer"
-        aria-label="배움집 자격증 학습 새 창에서 열기"
-      >
-        <GraduationCap size={18} aria-hidden="true" />
-        <span>
-          <strong>자격증 학습</strong>
-          <small>배움집으로 이동</small>
-        </span>
-        <ChevronRight size={15} aria-hidden="true" />
-      </a>
     </>
   );
 

@@ -19,14 +19,18 @@ describe('responsive application navigation', () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     renderWithProviders(client);
     expect((await screen.findAllByRole('navigation', { name: '주요 메뉴' })).length).toBe(1);
-    expect(screen.getByRole('link', { name: '배움집 자격증 학습 새 창에서 열기' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: '자격증 새 창에서 열기' })).toHaveAttribute(
       'href',
       'https://baeumzip.site',
     );
-    expect(screen.getByRole('link', { name: '배움집 자격증 학습 새 창에서 열기' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: '자격증 새 창에서 열기' })).toHaveAttribute(
       'target',
       '_blank',
     );
+    const primaryNavigation = screen.getByRole('navigation', { name: '주요 메뉴' });
+    expect(primaryNavigation).toHaveTextContent('둘러보기홈채용공고');
+    expect(primaryNavigation).toHaveTextContent('학습 도구학습코딩테스트자격증');
+    expect(primaryNavigation).not.toHaveTextContent('함께 성장');
     expect(screen.getByRole('navigation', { name: '모바일 주요 메뉴' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: '풀이 기록' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: '랭킹' })).not.toBeInTheDocument();
