@@ -43,6 +43,7 @@ describe('CareerGround v5 workflow pre-cutover policy', () => {
 
   it('accepts only trusted issue pointers, publishes through the protected endpoint, and never sends Slack', () => {
     expect(handoff).toContain('issues:');
+    expect(handoff).toContain('types: [opened, reopened]');
     expect(handoff).toContain("github.event.issue.author_association == 'OWNER'");
     expect(handoff).toContain("github.event.issue.author_association == 'MEMBER'");
     expect(handoff).toContain("github.event.issue.author_association == 'COLLABORATOR'");

@@ -12,6 +12,38 @@ export const DISCOVERY_WORKFLOW_ID = 'CG-JOBS-PROD-V5';
 const ALLOWED_GATE_STATUSES = new Set(['PASS', 'PASS_WITH_PARTIAL_COVERAGE']);
 const ALLOWED_COVERAGE_STATUSES = new Set(['COMPLETE', 'PARTIAL', 'BLOCKED', 'NO_ACCESS', 'ERROR']);
 const ALLOWED_CAREER_SCOPES = new Set(['NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE']);
+const CAREER_SCOPE_ALIASES = new Map([
+  ['신입', 'NEW_GRAD_ONLY'],
+  ['신입 공개경쟁', 'NEW_GRAD_ONLY'],
+  ['채용연계형 인턴', 'NEW_GRAD_ONLY'],
+  ['경력무관', 'NEW_GRAD_ELIGIBLE'],
+  ['0~2년', 'NEW_GRAD_ELIGIBLE'],
+]);
+const COMPANY_SIZE_ALIASES = new Map([
+  ['LARGE_ENTERPRISE', 'LARGE'],
+  ['대기업', 'LARGE'],
+  ['PUBLIC_INSTITUTION', 'PUBLIC'],
+  ['공공기관', 'PUBLIC'],
+  ['MID_SIZED', 'MID'],
+  ['중견기업', 'MID'],
+  ['SMALL_BUSINESS', 'SMALL'],
+  ['중소기업', 'SMALL'],
+  ['스타트업', 'STARTUP'],
+  ['외국계기업', 'FOREIGN'],
+  ['금융권', 'UNCLASSIFIED'],
+  ['기타/미확인', 'UNCLASSIFIED'],
+]);
+const EMPLOYMENT_TYPE_ALIASES = new Map([
+  ['신입', 'FULL_TIME'],
+  ['신입사원', 'FULL_TIME'],
+  ['신입행원', 'FULL_TIME'],
+  ['정규직', 'FULL_TIME'],
+  ['인턴', 'INTERNSHIP'],
+  ['체험형 인턴', 'INTERNSHIP'],
+  ['채용연계형 인턴', 'INTERN_TO_FULL_TIME'],
+  ['정규직 전환형 인턴', 'INTERN_TO_FULL_TIME'],
+  ['계약직', 'CONTRACT'],
+]);
 const REQUIRED_ITEM_FIELDS = [
   'sourceUrl',
   'sourceName',
@@ -81,11 +113,16 @@ function candidateFingerprint(item) {
   );
 }
 
+function normalizeAlias(value, aliases) {
+  const normalized = String(value ?? '').trim();
+  return aliases.get(normalized) ?? normalized;
+}
+
 function normalizeItem(item, targetAsOfDate, index) {
   if (!isRecord(item)) fail('DISCOVERY_SCHEMA_INVALID', `items[${index}] must be an object.`);
   for (const field of REQUIRED_ITEM_FIELDS) requireText(item[field], `items[${index}].${field}`);
   const sourceUrl = canonicalizeHttpUrl(item.sourceUrl);
-  const careerScope = String(item.careerScope);
+  const careerScope = normalizeAlias(item.careerScope, CAREER_SCOPE_ALIASES);
   if (!ALLOWED_CAREER_SCOPES.has(careerScope)) {
     fail('DISCOVERY_POLICY_INVALID', `items[${index}].careerScope is not allowed.`);
   }
@@ -109,21 +146,23 @@ function normalizeItem(item, targetAsOfDate, index) {
     ? `source:${new URL(sourceUrl).hostname}:${sourcePostingId}`
     : `url:${sourceUrl}`;
   const timestamp = item.lastVerifiedAt;
+  const employmentType = normalizeAlias(item.employmentType, EMPLOYMENT_TYPE_ALIASES);
+  const fingerprint = candidateFingerprint({ ...item, employmentType });
   return {
     id: `job-${sha256(sourceUrl).slice(0, 24)}`,
     canonicalJobKey,
-    fingerprint: candidateFingerprint(item),
+    fingerprint,
     sourceUrl,
     sourceName: item.sourceName.trim(),
     sourcePostingId,
     companyName: item.companyName.trim(),
-    companySize: String(item.companySize || 'UNCLASSIFIED'),
+    companySize: normalizeAlias(item.companySize || 'UNCLASSIFIED', COMPANY_SIZE_ALIASES),
     companySizeEvidence: String(item.companySizeEvidence || ''),
     title: item.title.trim(),
     category: item.category.trim(),
     careerScope,
     careerEvidence: item.careerEvidence.trim(),
-    employmentType: item.employmentType.trim(),
+    employmentType,
     region: item.region.trim(),
     remote: item.remote === true,
     techStack: Array.isArray(item.techStack) ? item.techStack.map(String) : [],
@@ -185,10 +224,27 @@ export function validateDiscoveryDelta(value, { partitionPolicy, targetAsOfDate 
     fail('DISCOVERY_COVERAGE_INVALID', 'sourceCoverage must contain every assigned source once.');
   }
   const coverageNames = new Set();
+  const normalizedCoverage = [];
+  let coverageAliasesNormalized = 0;
   for (const [index, coverage] of value.sourceCoverage.entries()) {
     if (!isRecord(coverage))
       fail('DISCOVERY_COVERAGE_INVALID', `sourceCoverage[${index}] is invalid.`);
-    const sourceName = requireText(coverage.sourceName, `sourceCoverage[${index}].sourceName`);
+    if (
+      typeof coverage.sourceName === 'string' &&
+      typeof coverage.source === 'string' &&
+      coverage.sourceName.trim() !== coverage.source.trim()
+    ) {
+      fail(
+        'DISCOVERY_COVERAGE_INVALID',
+        `sourceCoverage[${index}] has conflicting sourceName and source values.`,
+      );
+    }
+    const usesLegacySourceAlias =
+      typeof coverage.sourceName !== 'string' && typeof coverage.source === 'string';
+    const sourceName = requireText(
+      coverage.sourceName ?? coverage.source,
+      `sourceCoverage[${index}].sourceName`,
+    );
     if (!expectedSources.includes(sourceName) || coverageNames.has(sourceName)) {
       fail('DISCOVERY_COVERAGE_INVALID', 'sourceCoverage has an unknown or duplicate source.');
     }
@@ -196,8 +252,14 @@ export function validateDiscoveryDelta(value, { partitionPolicy, targetAsOfDate 
     if (!ALLOWED_COVERAGE_STATUSES.has(String(coverage.status))) {
       fail('DISCOVERY_COVERAGE_INVALID', `sourceCoverage[${index}].status is invalid.`);
     }
+    if (usesLegacySourceAlias) coverageAliasesNormalized += 1;
+    normalizedCoverage.push({
+      sourceName,
+      status: String(coverage.status),
+      notes: String(coverage.notes ?? coverage.note ?? coverage.detail ?? ''),
+    });
   }
-  if (!value.sourceCoverage.some((entry) => ['COMPLETE', 'PARTIAL'].includes(entry.status))) {
+  if (!normalizedCoverage.some((entry) => ['COMPLETE', 'PARTIAL'].includes(entry.status))) {
     fail('DISCOVERY_COVERAGE_INVALID', 'At least one assigned source must be investigated.');
   }
   if (!isRecord(value.qualityGates) || !ALLOWED_GATE_STATUSES.has(value.qualityGates.overall)) {
@@ -215,6 +277,15 @@ export function validateDiscoveryDelta(value, { partitionPolicy, targetAsOfDate 
   const normalizedItems = value.items.map((item, index) =>
     normalizeItem(item, targetAsOfDate, index),
   );
+  const itemAliasesNormalized = normalizedItems.reduce((count, item, index) => {
+    const original = value.items[index];
+    return (
+      count +
+      Number(String(original.careerScope).trim() !== item.careerScope) +
+      Number(String(original.companySize || 'UNCLASSIFIED').trim() !== item.companySize) +
+      Number(String(original.employmentType).trim() !== item.employmentType)
+    );
+  }, 0);
   const seenUrls = new Set();
   for (const [index, item] of normalizedItems.entries()) {
     if (!expectedSources.includes(item.sourceName)) {
@@ -228,13 +299,16 @@ export function validateDiscoveryDelta(value, { partitionPolicy, targetAsOfDate 
   return {
     value,
     normalizedItems,
+    normalizedCoverage,
     descriptor: {
       partitionId: value.partitionId,
       attempt: value.attempt,
       rowCount: normalizedItems.length,
       coverage: Object.fromEntries(
-        value.sourceCoverage.map((entry) => [entry.sourceName, entry.status]),
+        normalizedCoverage.map((entry) => [entry.sourceName, entry.status]),
       ),
+      coverageAliasesNormalized,
+      itemAliasesNormalized,
       rawSha256: null,
       canonicalSha256: canonicalSha256(value),
     },

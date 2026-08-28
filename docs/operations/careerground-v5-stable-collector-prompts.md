@@ -47,6 +47,8 @@ items에는 현재 지원 가능하고 다음 중 하나를 만족하는 공고�
 [4. 결과 계약]
 후보가 0건이어도 정상 조사라면 status=SUCCESS, rowCount=0, items=[]로 결과를 만든다. sourceCoverage에는 담당 출처를 정확히 한 번씩 모두 넣고 status는 COMPLETE, PARTIAL, BLOCKED, NO_ACCESS, ERROR 중 하나로 기록한다. 하나 이상의 출처를 실제 조사했고 blockingErrors가 없다면 qualityGates.overall은 PASS 또는 PASS_WITH_PARTIAL_COVERAGE다.
 
+sourceCoverage의 각 원소는 반드시 `{"sourceName":"담당 출처명","status":"상태","notes":"조사 범위 또는 실패 이유"}` 형식을 사용한다. `source`, `note`, `detail` 같은 대체 필드명을 만들지 않는다.
+
 결과 JSON은 정확히 다음 최상위 구조를 사용한다.
 {
   "schemaVersion":"5.1",
@@ -74,6 +76,11 @@ items에는 현재 지원 가능하고 다음 중 하나를 만족하는 공고�
 }
 
 각 items 원소는 sourceUrl, sourceName, sourcePostingId(null 허용), companyName, companySize, companySizeEvidence, title, category, careerScope, careerEvidence, employmentType, region, remote(boolean), techStack(array), publishedAt(null 허용), applicationStartAt(null 허용), deadlineAt(null 허용), rolling(boolean), summary, status="ACTIVE", collectedAt, lastVerifiedAt을 포함한다. 최종 id, canonicalJobKey, fingerprint, createdAt, updatedAt은 넣지 않는다.
+
+enum은 번역하거나 새 값을 만들지 않고 다음 canonical 값만 사용한다.
+- careerScope: `NEW_GRAD_ONLY` 또는 `NEW_GRAD_ELIGIBLE`
+- companySize: `LARGE`, `PUBLIC`, `MID`, `SMALL`, `STARTUP`, `FOREIGN`, `UNCLASSIFIED`
+- employmentType: `FULL_TIME`, `INTERNSHIP`, `INTERN_TO_FULL_TIME`, `CONTRACT`, `UNCONFIRMED`
 
 [5. GitHub 자동 전달]
 완성된 JSON 문자열 자체를 careerground-partition-N-YYYY-MM-DD.json의 내용으로 확정한다. Library 저장이나 로컬 파일 생성을 성공 조건으로 삼지 않는다. GitHub 연결 도구로 edder773/careerground에 create_blob을 encoding=utf-8로 한 번 호출해 커밋에 연결되지 않은 blob을 만든다. 예약 작업에서 SHA-256 또는 byteLength를 계산하지 않고, hash 계산을 위해 Python이나 파일시스템을 호출하지 않는다.

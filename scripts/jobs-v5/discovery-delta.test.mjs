@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -98,6 +99,31 @@ describe('CareerGround discovery-only collector contract', () => {
     expect(normalized.fingerprint).toMatch(/^[a-f0-9]{64}$/u);
   });
 
+  it('normalizes observed Korean and legacy enum aliases before production publish', () => {
+    const value = delta(3, [
+      {
+        ...item('Jasoseol', 'alias-enums'),
+        careerScope: '신입',
+        companySize: '대기업',
+        employmentType: '신입사원',
+      },
+    ]);
+    const loaded = validateDiscoveryDelta(value, {
+      partitionPolicy: sourcePolicy.partitions[2],
+      targetAsOfDate,
+    });
+    expect(loaded.normalizedItems[0]).toMatchObject({
+      careerScope: 'NEW_GRAD_ONLY',
+      companySize: 'LARGE',
+      employmentType: 'FULL_TIME',
+    });
+    const expectedFingerprint = createHash('sha256')
+      .update('비식별 회사 alias-enums|신입 백엔드 개발자 alias-enums|서울|full_time')
+      .digest('hex');
+    expect(loaded.normalizedItems[0].fingerprint).toBe(expectedFingerprint);
+    expect(loaded.descriptor.itemAliasesNormalized).toBe(3);
+  });
+
   it('allows one blocked source while preserving a successful partition', () => {
     const value = delta(2);
     value.sourceCoverage[1] = {
@@ -112,6 +138,43 @@ describe('CareerGround discovery-only collector contract', () => {
         targetAsOfDate,
       }).descriptor.coverage,
     ).toHaveProperty(sourcePolicy.partitions[1].sources[1], 'BLOCKED');
+  });
+
+  it('normalizes the observed source/note coverage aliases at the GitHub boundary', () => {
+    const value = delta(2);
+    value.sourceCoverage = value.sourceCoverage.map(({ sourceName, status }) => ({
+      source: sourceName,
+      status,
+      note: '비식별 조사 범위',
+    }));
+    const loaded = validateDiscoveryDelta(value, {
+      partitionPolicy: sourcePolicy.partitions[1],
+      targetAsOfDate,
+    });
+    expect(loaded.descriptor.coverageAliasesNormalized).toBe(6);
+    expect(loaded.descriptor.coverage).toEqual(
+      Object.fromEntries(
+        sourcePolicy.partitions[1].sources.map((sourceName) => [sourceName, 'COMPLETE']),
+      ),
+    );
+    expect(loaded.normalizedCoverage[0]).toMatchObject({
+      sourceName: sourcePolicy.partitions[1].sources[0],
+      notes: '비식별 조사 범위',
+    });
+  });
+
+  it('rejects conflicting canonical and alias coverage source names', () => {
+    const value = delta(2);
+    value.sourceCoverage[0] = {
+      ...value.sourceCoverage[0],
+      source: sourcePolicy.partitions[1].sources[1],
+    };
+    expect(() =>
+      validateDiscoveryDelta(value, {
+        partitionPolicy: sourcePolicy.partitions[1],
+        targetAsOfDate,
+      }),
+    ).toThrow(expect.objectContaining({ code: 'DISCOVERY_COVERAGE_INVALID' }));
   });
 
   it('rejects a partition when every assigned source is unavailable', () => {
