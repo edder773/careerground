@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Bookmark,
   Building2,
@@ -23,7 +23,6 @@ import {
 } from '../features/jobs/JobControls';
 import {
   JOB_PAGE_SIZE,
-  applicationLabels,
   calendarDates,
   calendarEventLabels,
   categoryLabel,
@@ -49,10 +48,12 @@ import {
   type SortMode,
   type ViewMode,
 } from '../features/jobs/job-domain';
-import { api, json } from '../lib/api';
+import { api } from '../lib/api';
+import { useLocalFavorites } from '../lib/local-favorites';
 
 export function JobsPage() {
   const client = useQueryClient();
+  const favorites = useLocalFavorites();
   const [searchParams, setSearchParams] = useSearchParams();
   const companySizes = useMemo(
     () => dedupeOrdered(searchParams.getAll('companySize')),
@@ -65,7 +66,6 @@ export function JobsPage() {
   const requestedSort = searchParams.get('sort');
   const sort: SortMode =
     requestedSort === 'deadline' || requestedSort === 'company' ? requestedSort : 'new';
-  const [memoDrafts, setMemoDrafts] = useState<Record<string, string>>({});
   const search = searchParams.get('q') || '';
   const [searchInput, setSearchInput] = useState(search);
   const companySearch = searchParams.get('company') || '';
@@ -144,7 +144,15 @@ export function JobsPage() {
     gcTime: 30 * 60_000,
     refetchOnWindowFocus: false,
   });
-  const catalog = catalogQuery.data || [];
+  const catalog = useMemo(
+    () =>
+      (catalogQuery.data || []).map((job) => ({
+        ...job,
+        bookmarked: favorites.isFavorite('JOB_POSTING', job.id),
+        savedBy: [],
+      })),
+    [catalogQuery.data, favorites],
+  );
   const categories = useMemo(
     () =>
       [...new Set(catalog.map((job) => categoryLabel(job.category)))].sort((left, right) =>
@@ -188,61 +196,13 @@ export function JobsPage() {
   const jobTotal = viewMode === 'calendar' ? calendarJobs.length : filteredJobs.length;
   const hasMoreJobs = viewMode === 'list' && visibleCount < filteredJobs.length;
   const jobs = catalogQuery;
-  const bookmark = useMutation({
-    mutationFn: ({ jobId, bookmarked }: { jobId: string; bookmarked: boolean }) =>
-      api(`/jobs/${jobId}/bookmark`, { method: 'PATCH', body: json({ bookmarked }) }),
-    onMutate: async ({ jobId, bookmarked }) => {
-      await client.cancelQueries({ queryKey: ['jobs', 'catalog'] });
-      const snapshot = client.getQueryData<Job[]>(['jobs', 'catalog']);
-      const update = (current: Job[] | undefined) =>
-        current?.map((job) =>
-          job.id === jobId
-            ? {
-                ...job,
-                bookmarked,
-                savedBy: [
-                  {
-                    status: job.savedBy[0]?.status || 'INTERESTED',
-                    memo: job.savedBy[0]?.memo || '',
-                    bookmarked,
-                  },
-                ],
-              }
-            : job,
-        );
-      client.setQueryData<Job[]>(['jobs', 'catalog'], update);
-      return { snapshot };
-    },
-    onError: (_error, _variables, context) =>
-      client.setQueryData(['jobs', 'catalog'], context?.snapshot),
-  });
-  const application = useMutation({
-    mutationFn: ({ jobId, patch }: { jobId: string; patch: { status?: string; memo?: string } }) =>
-      api(`/jobs/${jobId}/application`, { method: 'PATCH', body: json(patch) }),
-    onMutate: async ({ jobId, patch }) => {
-      await client.cancelQueries({ queryKey: ['jobs', 'catalog'] });
-      const snapshot = client.getQueryData<Job[]>(['jobs', 'catalog']);
-      const update = (current: Job[] | undefined) =>
-        current?.map((job) =>
-          job.id === jobId
-            ? {
-                ...job,
-                savedBy: [
-                  {
-                    status: patch.status ?? job.savedBy[0]?.status ?? 'INTERESTED',
-                    memo: patch.memo ?? job.savedBy[0]?.memo ?? '',
-                    bookmarked: job.bookmarked,
-                  },
-                ],
-              }
-            : job,
-        );
-      client.setQueryData<Job[]>(['jobs', 'catalog'], update);
-      return { snapshot };
-    },
-    onError: (_error, _variables, context) =>
-      client.setQueryData(['jobs', 'catalog'], context?.snapshot),
-  });
+  const toggleJobBookmark = (job: Job) =>
+    favorites.toggle({
+      itemType: 'JOB_POSTING',
+      targetId: job.id,
+      label: `${job.company.name} — ${job.title}`,
+      href: `/jobs?job=${encodeURIComponent(job.id)}`,
+    });
 
   useEffect(() => {
     if (!requestedJob || !jobRows.length) return;
@@ -281,7 +241,14 @@ export function JobsPage() {
     enabled: Boolean(selectedJobId),
     staleTime: 60_000,
   });
-  const selectedJob = selectedJobDetail.data || selectedJobSummary;
+  const selectedJobBase = selectedJobDetail.data || selectedJobSummary;
+  const selectedJob = selectedJobBase
+    ? {
+        ...selectedJobBase,
+        bookmarked: favorites.isFavorite('JOB_POSTING', selectedJobBase.id),
+        savedBy: [],
+      }
+    : undefined;
   const expandedDateEvents = expandedDateKey
     ? calendarData.eventsByDate.get(expandedDateKey) || []
     : [];
@@ -627,9 +594,7 @@ export function JobsPage() {
         <JobDetailModal
           job={selectedJob}
           onClose={closeJob}
-          onBookmark={(bookmarked) => bookmark.mutate({ jobId: selectedJob.id, bookmarked })}
-          onApplication={(patch) => application.mutateAsync({ jobId: selectedJob.id, patch })}
-          pending={bookmark.isPending || application.isPending}
+          onBookmark={() => toggleJobBookmark(selectedJob)}
         />
       )}
 
@@ -709,63 +674,13 @@ export function JobsPage() {
                   </div>
                   <div className="job-actions">
                     <button
-                      disabled={bookmark.isPending && bookmark.variables?.jobId === job.id}
-                      onClick={() =>
-                        bookmark.mutate({ jobId: job.id, bookmarked: !job.bookmarked })
-                      }
+                      onClick={() => toggleJobBookmark(job)}
                       className={job.bookmarked ? 'saved' : ''}
                       aria-pressed={job.bookmarked}
                     >
                       <Bookmark fill={job.bookmarked ? 'currentColor' : 'none'} />
                       {job.bookmarked ? '관심 공고' : '관심 저장'}
                     </button>
-                    {job.savedBy.length > 0 && (
-                      <label className="application-status">
-                        <span className="sr-only">{job.title} 지원 상태</span>
-                        <select
-                          aria-label={`${job.title} 지원 상태`}
-                          disabled={
-                            application.isPending && application.variables?.jobId === job.id
-                          }
-                          value={job.savedBy[0]?.status || 'INTERESTED'}
-                          onChange={(event) =>
-                            application.mutate({
-                              jobId: job.id,
-                              patch: { status: event.target.value },
-                            })
-                          }
-                        >
-                          {Object.entries(applicationLabels).map(([value, label]) => (
-                            <option key={value} value={value}>
-                              {label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    )}
-                    {job.savedBy.length > 0 && (
-                      <label className="application-memo">
-                        <span className="sr-only">{job.title} 지원 메모</span>
-                        <textarea
-                          aria-label={`${job.title} 지원 메모`}
-                          rows={2}
-                          value={memoDrafts[job.id] ?? job.savedBy[0]?.memo ?? ''}
-                          onChange={(event) =>
-                            setMemoDrafts((current) => ({
-                              ...current,
-                              [job.id]: event.target.value,
-                            }))
-                          }
-                          onBlur={() => {
-                            const memo = memoDrafts[job.id];
-                            if (memo !== undefined && memo !== job.savedBy[0]?.memo) {
-                              application.mutate({ jobId: job.id, patch: { memo } });
-                            }
-                          }}
-                          placeholder="지원 메모"
-                        />
-                      </label>
-                    )}
                     <a href={job.sourceUrl} target="_blank" rel="noreferrer">
                       {job.source.name}에서 보기 <ExternalLink />
                     </a>

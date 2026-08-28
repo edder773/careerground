@@ -5,19 +5,19 @@ CareerGround 운영 기준은 Sites Worker + D1 단일 경로다. GitHub Actions
 incident를 새로 만들거나 갱신하고, 정상화된 첫 실행이 해당 incident를 닫는다. 같은 장애로
 이슈를 계속 늘리지 않는다.
 
-| 신호                   | 목표                      | 자동 게이트                                               |
-| ---------------------- | ------------------------- | --------------------------------------------------------- |
-| readiness 가용성       | 예약 점검 모두 성공       | HTTP 200, schema 원장 일치, D1 catalog canary 4종 양수    |
-| readiness 초기 응답    | 5초 이하                  | 첫 표본의 외부 왕복 시간                                  |
-| readiness warm p95     | 2.5초 이하                | 뒤이은 4개 표본의 nearest-rank p95                        |
-| 정적 보안 정책         | CSP·referrer fallback     | 배포 HTML의 `meta` 정책                                   |
-| API 보안·관측 헤더     | 필수 정책·request ID 존재 | CSP, frame, permissions, nosniff, referrer, server-timing |
-| 비로그인 개인 API 경계 | 항상 거부                 | `/auth/me` HTTP 401 + `UNAUTHORIZED` 계약                 |
-| Google 인증 구성       | 공급자·client·JWKS 정상   | `/auth/config` 계약 + Google 공개 JWKS key 1개 이상       |
-| 합성 API p95           | endpoint별 150~250ms 이하 | `pnpm performance:budget`                                 |
-| cursor 응답 크기       | 40~80KB 이하              | `pnpm performance:budget`                                 |
-| 운영 웹 초기 gzip      | 180KB 이하                | `pnpm bundle:budget`                                      |
-| 운영 웹 JS/CSS chunk   | JS 110KB, CSS 30KB 이하   | `pnpm bundle:budget`                                      |
+| 신호                 | 목표                      | 자동 게이트                                               |
+| -------------------- | ------------------------- | --------------------------------------------------------- |
+| readiness 가용성     | 예약 점검 모두 성공       | HTTP 200, schema 원장 일치, D1 catalog canary 4종 양수    |
+| readiness 초기 응답  | 5초 이하                  | 첫 표본의 외부 왕복 시간                                  |
+| readiness warm p95   | 2.5초 이하                | 뒤이은 4개 표본의 nearest-rank p95                        |
+| 정적 보안 정책       | CSP·referrer fallback     | 배포 HTML의 `meta` 정책                                   |
+| API 보안·관측 헤더   | 필수 정책·request ID 존재 | CSP, frame, permissions, nosniff, referrer, server-timing |
+| 공개 카탈로그        | 항상 조회 가능            | 채용·학습·코딩 익명 GET HTTP 200 + 배열 계약              |
+| 폐기된 인증 경계     | 다시 열리지 않음          | `/auth/config` HTTP 404 + `ROUTE_RETIRED` 계약            |
+| 합성 API p95         | endpoint별 150~250ms 이하 | `pnpm performance:budget`                                 |
+| cursor 응답 크기     | 40~80KB 이하              | `pnpm performance:budget`                                 |
+| 운영 웹 초기 gzip    | 180KB 이하                | `pnpm bundle:budget`                                      |
+| 운영 웹 JS/CSS chunk | JS 110KB, CSS 30KB 이하   | `pnpm bundle:budget`                                      |
 
 Sites의 정적 asset cache는 Worker 응답 래퍼를 우회할 수 있다. 따라서 정적 HTML에는 브라우저가
 지원하는 CSP와 referrer `meta`를 검사하고, header-only인 frame·permissions·nosniff 정책은 Worker가
@@ -30,17 +30,15 @@ Sites의 정적 asset cache는 Worker 응답 래퍼를 우회할 수 있다. 따
 `production-slo-<run id>` JSON artifact로 30일간 보관한다.
 
 로컬 또는 배포 직후 같은 검사를 재현할 때는 아래 명령을 사용한다. 이 명령은 읽기 전용이며
-로그인이나 Slack webhook을 호출하지 않는다.
+사용자 쓰기나 Slack webhook을 호출하지 않는다.
 
 ```bash
 pnpm slo:check
 ```
 
 외부 왕복 측정은 실행 runner와 edge 위치의 영향을 받는다. 첫 표본은 cold-start 경계로 분리하고,
-후속 표본만 warm p95로 계산한다. 브라우저 LCP·INP·CLS와 실제 Google 계정으로 동의 화면을
-통과하는 synthetic은 이 검사 범위가 아니다. 대신 공개 client 설정, Google Identity script 허용
-정책, Google JWKS 도달성, 비로그인 세션 경계를 매시간 검사한다. 통제된 테스트 계정이 마련되기
-전까지 실제 계정 로그인 자동화를 완료로 주장하지 않는다.
+후속 표본만 warm p95로 계산한다. 브라우저 LCP·INP·CLS는 이 검사 범위가 아니다. 대신 공개
+카탈로그 3종의 익명 조회, 외부 identity script가 없는 CSP와 폐기된 인증 경계를 매시간 검사한다.
 
 점검 주기를 6시간에서 1시간으로 줄여 예약 점검 기준 최악 감지 간격을 360분에서 60분으로
 줄였다. 이는 구성상 83.33% 감소이며 GitHub Actions queue 지연은 별도 변수다.

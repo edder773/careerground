@@ -14,14 +14,11 @@ import {
   Menu,
   MoreHorizontal,
   Search,
-  Settings,
-  ShieldCheck,
   X,
 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { brand, productLinks } from '@careerground/config';
-import { useAuth } from '../auth';
 import { api } from '../lib/api';
 import { ApiStatusRegion } from './ApiStatusRegion';
 import '../styles/shell.css';
@@ -34,12 +31,10 @@ const navigation = [
 ] as const;
 
 const titles: Record<string, string> = {
-  '/': '나의 작업대',
+  '/': '둘러보기',
   '/learning': '학습 라이브러리',
   '/jobs': '신입 IT 채용공고',
   '/coding': '코딩테스트',
-  '/admin': '관리자 센터',
-  '/settings': '설정',
 };
 
 export type ViewMode = 'grid' | 'list';
@@ -58,7 +53,6 @@ export function AppShell({
   viewMode,
   onViewMode,
 }: PropsWithChildren<{ viewMode: ViewMode; onViewMode: (mode: ViewMode) => void }>) {
-  const { user, logout } = useAuth();
   const client = useQueryClient();
   const location = useLocation();
   const navigate = useNavigate();
@@ -67,12 +61,10 @@ export function AppShell({
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [activeResult, setActiveResult] = useState(0);
-  const recentSearchKey = `cg-recent-searches:v2:${user?.id || 'anonymous'}`;
+  const recentSearchKey = 'cg-recent-searches:v3';
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     try {
-      const parsed = JSON.parse(
-        localStorage.getItem(`cg-recent-searches:v2:${user?.id || 'anonymous'}`) || '[]',
-      ) as unknown;
+      const parsed = JSON.parse(localStorage.getItem('cg-recent-searches:v3') || '[]') as unknown;
       return Array.isArray(parsed) ? parsed.map(String).slice(0, 5) : [];
     } catch {
       return [];
@@ -139,7 +131,6 @@ export function AppShell({
     navigate(item.href);
   };
   const preloadLearningData = () => {
-    if (!user) return;
     void client.prefetchQuery({
       queryKey: ['learning'],
       queryFn: () => api<unknown[]>('/learning'),
@@ -164,7 +155,7 @@ export function AppShell({
         </div>
       </div>
       <nav className="side-nav" aria-label="주요 메뉴">
-        <span className="side-nav-label">나의 작업대</span>
+        <span className="side-nav-label">둘러보기</span>
         {navigation.slice(0, 3).map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
@@ -184,17 +175,6 @@ export function AppShell({
             <span>{label}</span>
           </NavLink>
         ))}
-        <span className="side-nav-label">관리</span>
-        {user?.role === 'ADMIN' && (
-          <NavLink to="/admin" className={({ isActive }) => (isActive ? 'active' : '')}>
-            <ShieldCheck size={18} />
-            <span>관리자</span>
-          </NavLink>
-        )}
-        <NavLink to="/settings" className={({ isActive }) => (isActive ? 'active' : '')}>
-          <Settings size={18} />
-          <span>설정</span>
-        </NavLink>
       </nav>
       <a
         className="certification-link"
@@ -210,18 +190,6 @@ export function AppShell({
         </span>
         <ChevronRight size={15} aria-hidden="true" />
       </a>
-      <div className="sidebar-profile">
-        <div className="avatar" aria-hidden="true">
-          {user?.displayName.slice(0, 1)}
-        </div>
-        <div>
-          <strong>{user?.displayName}</strong>
-          <span>{user?.role}</span>
-        </div>
-        <button type="button" onClick={() => void logout()} aria-label="로그아웃">
-          나가기
-        </button>
-      </div>
     </>
   );
 

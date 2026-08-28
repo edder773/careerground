@@ -1,14 +1,5 @@
 import { responseSchemaFor } from './api-contracts';
 
-export type User = {
-  id: string;
-  email: string;
-  displayName: string;
-  role: 'ADMIN' | 'MEMBER';
-  preferredLanguage: 'python' | 'java' | 'javascript' | 'cpp';
-  onboardingCompleted: boolean;
-};
-
 export class ApiError extends Error {
   constructor(
     message: string,

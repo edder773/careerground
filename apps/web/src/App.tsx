@@ -1,9 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, Navigate, Route, Routes } from 'react-router';
-import { useAuth } from './auth';
 import { AppShell, type ViewMode } from './components/AppShell';
-import { LoginPage } from './pages/LoginPage';
-import { OnboardingPage } from './pages/OnboardingPage';
 import { AppErrorBoundary } from './components/AppErrorBoundary';
 
 const HomePage = lazy(() =>
@@ -35,37 +32,11 @@ export const preloadLearningPage = () => {
   return learningPagePromise;
 };
 const LearningPage = lazy(preloadLearningPage);
-const AdminPage = lazy(() =>
-  import('./pages/AdminPage').then((module) => ({ default: module.AdminPage })),
-);
-const SettingsPage = lazy(() =>
-  import('./pages/SettingsPage').then((module) => ({ default: module.SettingsPage })),
-);
-
 export function App() {
-  const { user, loading, error, retry } = useAuth();
   const [viewMode, setViewMode] = useState<ViewMode>(() =>
     localStorage.getItem('cg-view') === 'list' ? 'list' : 'grid',
   );
   useEffect(() => localStorage.setItem('cg-view', viewMode), [viewMode]);
-  if (loading)
-    return (
-      <div className="app-loading">
-        <div className="brand-mark">CG</div>
-        <span>작업대를 준비하는 중…</span>
-      </div>
-    );
-  if (error)
-    return (
-      <div className="fatal-error" role="alert">
-        <h1>작업대를 불러오지 못했습니다</h1>
-        <p>{error.message}</p>
-        {error.requestId && <code>요청 ID: {error.requestId}</code>}
-        <button onClick={retry}>다시 시도</button>
-      </div>
-    );
-  if (!user) return <LoginPage />;
-  if (!user.onboardingCompleted) return <OnboardingPage initialDisplayName={user.displayName} />;
   return (
     <AppErrorBoundary>
       <AppShell viewMode={viewMode} onViewMode={setViewMode}>
@@ -78,11 +49,8 @@ export function App() {
             <Route path="/solutions" element={<Navigate to="/coding" replace />} />
             <Route path="/rankings" element={<Navigate to="/coding" replace />} />
             <Route path="/notifications" element={<Navigate to="/" replace />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route
-              path="/admin"
-              element={user.role === 'ADMIN' ? <AdminPage /> : <Navigate to="/" replace />}
-            />
+            <Route path="/settings" element={<Navigate to="/" replace />} />
+            <Route path="/admin" element={<Navigate to="/" replace />} />
             <Route
               path="*"
               element={

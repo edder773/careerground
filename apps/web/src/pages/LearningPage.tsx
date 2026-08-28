@@ -4,7 +4,6 @@ import * as Dialog from '@radix-ui/react-dialog';
 import {
   BookOpen,
   Brain,
-  CheckCircle2,
   ChevronDown,
   ExternalLink,
   Image as ImageIcon,
@@ -25,7 +24,6 @@ type UnitSummary = {
   summaryPreview: string;
   flashcardCount: number;
   questionCount: number;
-  progress: Array<{ completed: boolean; nextReviewAt: string | null }>;
 };
 type Unit = {
   id: string;
@@ -41,7 +39,6 @@ type Unit = {
     choices: string[];
     attempts: Array<{ id: string; response: string; correct: boolean; attemptedAt: string }>;
   }>;
-  progress: Array<{ completed: boolean; nextReviewAt: string | null }>;
 };
 type Source = {
   id: string;
@@ -80,21 +77,7 @@ function LearningUnitModal({
   index: number;
   onClose: () => void;
 }) {
-  const client = useQueryClient();
   const unit = useQuery(learningUnitQuery(unitId));
-  const complete = useMutation({
-    mutationFn: () =>
-      api('/learning/review', {
-        method: 'POST',
-        body: json({ unitId, rating: 3 }),
-      }),
-    onSuccess: async () => {
-      await Promise.all([
-        client.invalidateQueries({ queryKey: ['learning'] }),
-        client.invalidateQueries({ queryKey: ['learning-unit', unitId] }),
-      ]);
-    },
-  });
   return (
     <Dialog.Root
       open
@@ -166,25 +149,7 @@ function LearningUnitModal({
                     targetId={unit.data.id}
                     label={unit.data.title}
                   />
-                  <button
-                    type="button"
-                    className="primary-button compact"
-                    disabled={complete.isPending}
-                    onClick={() => complete.mutate()}
-                  >
-                    <CheckCircle2 />
-                    {complete.isPending
-                      ? '완료 상태 저장 중…'
-                      : unit.data.progress[0]?.completed
-                        ? '완료 상태 갱신'
-                        : '학습 완료'}
-                  </button>
                 </div>
-                {complete.isError && (
-                  <div className="form-error" role="alert">
-                    학습 완료 상태를 저장하지 못했습니다.
-                  </div>
-                )}
                 <section className="learning-recall-section">
                   <div className="learning-section-title">
                     <Sparkles />
@@ -212,7 +177,7 @@ function LearningUnitModal({
                   </div>
                   <div className="learning-questions">
                     {unit.data.questions.map((question) => (
-                      <LearningQuestion key={question.id} question={question} unitId={unitId} />
+                      <LearningQuestion key={question.id} question={question} />
                     ))}
                   </div>
                 </section>
@@ -225,14 +190,7 @@ function LearningUnitModal({
   );
 }
 
-function LearningQuestion({
-  question,
-  unitId,
-}: {
-  question: Unit['questions'][number];
-  unitId: string;
-}) {
-  const client = useQueryClient();
+function LearningQuestion({ question }: { question: Unit['questions'][number] }) {
   const [response, setResponse] = useState('');
   const answer = useMutation({
     mutationFn: () =>
@@ -240,7 +198,6 @@ function LearningQuestion({
         method: 'POST',
         body: json({ response }),
       }),
-    onSuccess: () => client.invalidateQueries({ queryKey: ['learning-unit', unitId] }),
   });
   return (
     <form
@@ -295,12 +252,6 @@ function LearningQuestion({
         >
           {answer.data.correct ? '정답입니다.' : `다시 확인해보세요. 정답: ${answer.data.answer}`}
         </p>
-      )}
-      {question.attempts.length > 0 && (
-        <small>
-          이전 시도 {question.attempts.length}회 · 오답{' '}
-          {question.attempts.filter((attempt) => !attempt.correct).length}회
-        </small>
       )}
     </form>
   );
@@ -407,11 +358,6 @@ export function LearningPage() {
                     <div className="learning-card-content">
                       <div className="unit-top">
                         <span className="module-number">{String(index + 1).padStart(2, '0')}</span>
-                        {unit.progress[0]?.completed && (
-                          <span>
-                            <CheckCircle2 /> 학습 완료
-                          </span>
-                        )}
                       </div>
                       <h3>{unit.title}</h3>
                       <p>{summaryPreview(unit.summaryPreview)}</p>

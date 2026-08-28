@@ -9,14 +9,6 @@ describe('domain pages', () => {
   const calls: Array<{ url: string; method: string; body?: unknown }> = [];
   const jobBootstrap = (data: unknown, categories: string[]) =>
     response({
-      user: {
-        id: 'member',
-        email: 'member@example.test',
-        displayName: '멤버',
-        role: 'MEMBER',
-        preferredLanguage: 'javascript',
-        onboardingCompleted: true,
-      },
       categories,
       data,
     });

@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { CodingPage } from './CodingPage';
@@ -13,7 +13,6 @@ describe('CodingPage', () => {
       track: 'ALGORITHM' as const,
       tags: ['구현'],
       sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/1',
-      progress: [{ favorite: false }],
     };
     const levelTwo = {
       ...algorithm,
@@ -21,7 +20,6 @@ describe('CodingPage', () => {
       displayTitle: '데모 문제 Lv. 2',
       level: 2,
       sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/2',
-      progress: [],
     };
     const sql = {
       ...algorithm,
@@ -33,7 +31,6 @@ describe('CodingPage', () => {
       sourceUrl: 'https://school.programmers.co.kr/learn/courses/30/lessons/3',
     };
     const calls: Array<{ url: string; method: string; body?: unknown }> = [];
-    let favorite = false;
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -43,12 +40,7 @@ describe('CodingPage', () => {
         calls.push({ url, method, body });
         if (url.includes('/coding/problems?')) {
           const base = url.includes('track=SQL') ? [sql] : [algorithm, levelTwo];
-          const items = url.includes('favorites=1')
-            ? base.filter((item) => item.id === algorithm.id && favorite)
-            : base.map((item) =>
-                item.id === algorithm.id ? { ...item, progress: [{ favorite }] } : item,
-              );
-          return response({ items, nextCursor: null, total: items.length });
+          return response(base);
         }
         if (url.endsWith('/coding/daily-challenges')) {
           return response([
@@ -56,10 +48,6 @@ describe('CodingPage', () => {
             { id: 'daily-lv2', problemId: levelTwo.id, problem: levelTwo },
             { id: 'daily-sql', problemId: sql.id, problem: sql },
           ]);
-        }
-        if (url.endsWith(`/coding/problems/${algorithm.id}/favorite`) && method === 'PATCH') {
-          favorite = Boolean((body as { favorite?: boolean }).favorite);
-          return response({ problemId: algorithm.id, favorite });
         }
         return response({});
       }),
@@ -84,16 +72,9 @@ describe('CodingPage', () => {
       name: '데모 문제 즐겨찾기',
     });
     await user.click(catalogFavorite);
-    await waitFor(() =>
-      expect(
-        calls.some(
-          (call) =>
-            call.url.endsWith(`/coding/problems/${algorithm.id}/favorite`) &&
-            call.method === 'PATCH' &&
-            (call.body as { favorite?: boolean }).favorite === true,
-        ),
-      ).toBe(true),
-    );
+    expect(JSON.parse(window.localStorage.getItem('careerground.favorites.v1') || '[]')).toEqual([
+      expect.objectContaining({ itemType: 'CODING_PROBLEM', targetId: algorithm.id }),
+    ]);
     await user.click(screen.getByRole('button', { name: /^즐겨찾기$/ }));
     expect(await screen.findByRole('heading', { name: '데모 문제' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: '데모 문제 Lv. 2' })).not.toBeInTheDocument();

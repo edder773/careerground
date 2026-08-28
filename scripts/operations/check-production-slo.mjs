@@ -6,9 +6,6 @@ import { pathToFileURL, URL } from 'node:url';
 
 const DEFAULT_BASE_URL = 'https://careerground-workspace.edder773.chatgpt.site';
 const DEFAULT_OUTPUT = 'work/operations/production-slo.json';
-const GOOGLE_CLIENT_ID = '790295034558-q9a41jpu912age0eo0dpdu5pcdh1ipo5.apps.googleusercontent.com';
-const GOOGLE_IDENTITY_SCRIPT_URL = 'https://accounts.google.com/gsi/client';
-const GOOGLE_JWKS_URL = 'https://www.googleapis.com/oauth2/v3/certs';
 const MIGRATION_AUTHORITY_URL = new URL(
   '../../deployment/sites/migration-authority.ts',
   import.meta.url,
@@ -53,24 +50,6 @@ const cspSources = (policy, directiveName) => {
     .map((value) => value.trim().split(/\s+/))
     .find(([name]) => name?.toLowerCase() === directiveName.toLowerCase());
   return directive?.slice(1) || [];
-};
-
-const isGoogleIdentityScriptSource = (value) => {
-  try {
-    const url = new URL(value);
-    return (
-      url.protocol === 'https:' &&
-      url.hostname === 'accounts.google.com' &&
-      url.port === '' &&
-      url.username === '' &&
-      url.password === '' &&
-      url.pathname === '/gsi/client' &&
-      url.search === '' &&
-      url.hash === ''
-    );
-  } catch {
-    return false;
-  }
 };
 
 const nearestRankPercentile = (values, percentile) => {
@@ -235,11 +214,14 @@ export async function runProductionSlo({
     const staticDefaultSources = cspSources(csp, 'default-src');
     const staticObjectSources = cspSources(csp, 'object-src');
     const staticScriptSources = cspSources(csp, 'script-src');
+    const staticFrameSources = cspSources(csp, 'frame-src');
     record(
       'static-security.content-security-policy',
       staticDefaultSources.includes("'self'") &&
         staticObjectSources.includes("'none'") &&
-        staticScriptSources.some(isGoogleIdentityScriptSource),
+        staticScriptSources.length === 1 &&
+        staticScriptSources[0] === "'self'" &&
+        staticFrameSources.includes("'none'"),
       csp || 'missing CSP meta policy',
     );
     const referrerPolicy = metaContent(html, 'name', 'referrer');
@@ -259,51 +241,29 @@ export async function runProductionSlo({
     );
   }
 
-  const authResult = await perform('auth-boundary.request', '/api/v1/auth/me');
-  if (authResult) {
-    const payload = await safeJson(authResult.response);
+  for (const [name, path] of [
+    ['jobs', '/api/v1/jobs?limit=1'],
+    ['learning', '/api/v1/learning'],
+    ['coding', '/api/v1/coding/problems?track=ALGORITHM'],
+  ]) {
+    const result = await perform(`public-catalog.${name}.request`, path);
+    if (!result) continue;
+    const payload = await safeJson(result.response);
+    const isCollection = Array.isArray(payload) || Array.isArray(payload?.items);
     record(
-      'auth-boundary.status',
-      authResult.response.status === 401,
-      `HTTP ${authResult.response.status}`,
-    );
-    record(
-      'auth-boundary.contract',
-      payload?.code === 'UNAUTHORIZED',
-      `code=${payload?.code || 'invalid'}`,
-    );
-  }
-
-  const authConfigResult = await perform('google-auth.config-request', '/api/v1/auth/config');
-  if (authConfigResult) {
-    const payload = await safeJson(authConfigResult.response);
-    record(
-      'google-auth.config-status',
-      authConfigResult.response.status === 200,
-      `HTTP ${authConfigResult.response.status}`,
-    );
-    record(
-      'google-auth.config-contract',
-      payload?.provider === 'GOOGLE' &&
-        payload?.clientId === GOOGLE_CLIENT_ID &&
-        payload?.identityScriptUrl === GOOGLE_IDENTITY_SCRIPT_URL &&
-        payload?.jwksUrl === GOOGLE_JWKS_URL,
-      `provider=${payload?.provider || 'invalid'} client=${payload?.clientId === GOOGLE_CLIENT_ID ? 'expected' : 'invalid'}`,
+      `public-catalog.${name}.contract`,
+      result.response.status === 200 && isCollection,
+      `HTTP ${result.response.status} collection=${isCollection}`,
     );
   }
 
-  const googleKeysResult = await perform('google-auth.jwks-request', GOOGLE_JWKS_URL);
-  if (googleKeysResult) {
-    const payload = await safeJson(googleKeysResult.response);
+  const retiredAuth = await perform('retired-auth.request', '/api/v1/auth/config');
+  if (retiredAuth) {
+    const payload = await safeJson(retiredAuth.response);
     record(
-      'google-auth.jwks-status',
-      googleKeysResult.response.status === 200,
-      `HTTP ${googleKeysResult.response.status}`,
-    );
-    record(
-      'google-auth.jwks-contract',
-      Array.isArray(payload?.keys) && payload.keys.length > 0,
-      `keys=${Array.isArray(payload?.keys) ? payload.keys.length : 'invalid'}`,
+      'retired-auth.contract',
+      retiredAuth.response.status === 404 && payload?.code === 'ROUTE_RETIRED',
+      `HTTP ${retiredAuth.response.status} code=${payload?.code || 'invalid'}`,
     );
   }
 

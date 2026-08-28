@@ -1,12 +1,12 @@
 # CareerGround
 
-10명 이하 내부 팀을 위한 학습·신입 IT 채용·코딩 성장 워크스페이스다. 외부 사이트를 크롤링하지 않고 관리자가 검증한 JSON/CSV를 가져오며, 코딩테스트는 오늘의 추천·전체 문제·즐겨찾기와 프로그래머스 원문 링크만 제공한다. 브랜드 기본값은 `packages/config`와 `APP_NAME`/`VITE_APP_NAME` 환경 변수로 관리한다.
+학습·신입 IT 채용·코딩 문제를 누구나 바로 둘러보는 공개 성장 워크스페이스다. 외부 사이트를 크롤링하지 않고 검증된 JSON/CSV를 순방향 migration으로 반영하며, 코딩테스트는 오늘의 추천·전체 문제·즐겨찾기와 프로그래머스 원문 링크만 제공한다. 브랜드 기본값은 `packages/config`와 `APP_NAME`/`VITE_APP_NAME` 환경 변수로 관리한다.
 
 ## 기술 스택과 버전
 
 - Node.js 24.19.0 LTS (`.nvmrc`, `.node-version`)
 - pnpm 11.21.0 (`packageManager`, `pnpm-lock.yaml`)
-- React 19.2.8, Vite 8.2.1, TypeScript 6.0.3
+- React 19.2.8, Vite 8.2.2, TypeScript 6.0.3
 - 운영: OpenAI Sites Worker + D1
 - 데이터 모델·migration: Drizzle ORM 0.45.2, SQLite/D1 순방향 SQL
 - Vitest, Testing Library, Playwright, axe-core
@@ -25,7 +25,7 @@ pnpm dev
 - D1 API: <http://localhost:4000/api/v1>
 - 문서 사이트: `pnpm docs:dev` → <http://localhost:5174>
 
-운영 로그인은 Google Identity Services 한 가지만 사용한다. 브라우저가 받은 Google ID 토큰은 Sites Worker가 Google 공개키로 서명과 `iss`, `aud`, `exp`, `email_verified`를 검증한다. 검증 후 D1에 무작위 세션의 SHA-256 해시만 저장하고 브라우저에는 `HttpOnly`, `Secure`, `SameSite=Lax` 쿠키를 발급한다. 채용·학습·코딩 공통 데이터도 로그인한 사용자만 조회할 수 있다. `AUTH_TEST_MODE=true` 인증 우회는 로컬 D1 E2E에서만 주입하며 운영에는 설정하지 않는다.
+로그인과 계정 설정은 제공하지 않는다. 채용·학습·코딩 공통 데이터는 익명으로 조회할 수 있고, 관심 공고·코딩 문제·학습자료 즐겨찾기는 현재 브라우저의 `localStorage`에만 저장된다. 따라서 브라우저나 기기를 바꾸면 즐겨찾기가 동기화되지 않는다.
 
 ## 필수 명령
 
@@ -47,10 +47,6 @@ pnpm docs:build
 
 전체 목록과 안전한 placeholder는 `.env.example`에 있다. 핵심 변수는 다음과 같다.
 
-- `GOOGLE_CLIENT_ID`: Google 웹 OAuth 클라이언트 ID. 운영 Worker에는 코드 기본값과 동일한 값을 선택적으로 명시한다.
-- `ADMIN_EMAILS`: Google 로그인 후 ADMIN으로 승격할 이메일 allowlist
-- `AUTH_TEST_MODE`: 로컬 D1/E2E 전용 테스트 로그인 endpoint 활성화. 운영에는 설정하지 않는다.
-- `MAX_ACTIVE_USERS`: 기본 10
 - `DIGEST_API_TOKEN`: GitHub Actions의 Slack 일일 요약 전용 API 인증 토큰. 운영 Worker와 GitHub secret `CAREERGROUND_DIGEST_TOKEN`에 같은 값을 저장한다.
 - `OPENAI_API_KEY`, `OPENAI_TROUBLESHOOTING_MODEL`: 선택형 트러블슈팅 문서 보강에만 사용하며, 없어도 변경 파일·테스트 결과 기반 기록은 생성됨
 
@@ -58,7 +54,7 @@ pnpm docs:build
 
 ## 데이터 가져오기
 
-관리자 UI가 D1 preview/dry-run과 승인 commit을 제공한다. 동일 checksum은 idempotent하게 기존 batch를 반환한다. 경력직 전용 공고는 거절 보고서에 남고 사용자 목록에는 들어가지 않는다. 회사 규모가 미분류인 항목은 `NEEDS_REVIEW`가 된다. 저장소의 catalog 생성기는 검증된 JSON을 새 순방향 D1 migration으로 만들며 운영 데이터 변경은 Sites 배포를 통해서만 적용한다.
+관리자 화면 대신 저장소의 catalog 생성기와 검증 테스트를 사용한다. 동일 checksum은 idempotent하게 기존 batch를 반환한다. 경력직 전용 공고는 거절 보고서에 남고 공개 목록에는 들어가지 않는다. 회사 규모가 미분류인 항목은 `NEEDS_REVIEW`가 된다. 검증된 JSON은 새 순방향 D1 migration으로 만들며 운영 데이터 변경은 Sites 배포를 통해서만 적용한다.
 
 - 채용 스키마: `docs/operations/job-import-schema.md`
 - ChatGPT Work 수집 프롬프트: `docs/operations/job-collection-work-prompt.md`
@@ -66,7 +62,7 @@ pnpm docs:build
 
 ## 오늘의 문제와 cron
 
-오늘의 문제는 인증된 사용자의 첫 조회 또는 Slack digest claim 시 D1에서 idempotent하게 준비된다. Worker scheduled handler는 만료 세션·rate-limit 데이터를 lease로 단일 정리한다. Slack 요약은 GitHub Actions가 `Asia/Seoul` 평일 오전 08:01에 실행하고 국내 공휴일은 발송기에서 건너뛴다.
+오늘의 문제는 첫 공개 조회 또는 Slack digest claim 시 D1에서 idempotent하게 준비된다. Worker scheduled handler는 운영 보조 데이터를 lease로 단일 정리한다. Slack 요약은 GitHub Actions가 `Asia/Seoul` 평일 오전 08:01에 실행하고 국내 공휴일은 발송기에서 건너뛴다.
 
 ## 화면 방향
 
@@ -90,7 +86,7 @@ pnpm troubleshoot:validate --file docs/troubleshooting/2026-08-12-pr-123-evidenc
 
 ## 배포
 
-`pnpm sites:build`는 React production build와 SPA fallback Worker를 `dist`에 만든다. 운영 Sites에서는 `DB` 논리 바인딩으로 전용 D1을 프로비저닝하고 `drizzle/` migration을 적용한다. `/api/v1/auth/google`만 Google ID 토큰을 받아 세션을 만들며, health를 제외한 나머지 `/api/v1/*`는 유효한 D1 세션 쿠키가 있어야 접근할 수 있다. 최초 Google 사용자는 기본 `MEMBER`이고 `ADMIN_EMAILS`에 포함된 검증 이메일만 `ADMIN`이 된다. 상세 절차는 `docs/operations/deployment.md`를 따른다.
+`pnpm sites:build`는 React production build와 SPA fallback Worker를 `dist`에 만든다. 운영 Sites에서는 `DB` 논리 바인딩으로 전용 D1을 프로비저닝하고 `drizzle/` migration을 적용한다. 카탈로그 조회 API는 공개하고 Slack digest 내부 API만 전용 Bearer token으로 보호한다. 과거 인증 경로는 `ROUTE_RETIRED`로 응답한다. 상세 절차는 `docs/operations/deployment.md`를 따른다.
 
 ## 저장소 운영
 

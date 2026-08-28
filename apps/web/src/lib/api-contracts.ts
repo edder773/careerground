@@ -15,30 +15,6 @@ export const jsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
 );
 
 const identifier = z.string().min(1);
-const user = z
-  .object({
-    id: identifier,
-    email: z.string().email(),
-    displayName: z.string(),
-    role: z.enum(['ADMIN', 'MEMBER']),
-    preferredLanguage: z.enum(['python', 'java', 'javascript', 'cpp']),
-    onboardingCompleted: z.boolean(),
-  })
-  .passthrough();
-const profile = z
-  .object({
-    id: identifier,
-    email: z.string().email(),
-    displayName: z.string(),
-    preferredLanguage: z.enum(['python', 'java', 'javascript', 'cpp']),
-  })
-  .passthrough();
-const collectionItem = z
-  .object({ id: identifier, itemType: z.string(), targetId: z.string() })
-  .passthrough();
-const collection = z
-  .object({ id: identifier, name: z.string(), items: z.array(collectionItem) })
-  .passthrough();
 const job = z
   .object({
     id: identifier,
@@ -95,9 +71,6 @@ export function responseSchemaFor(path: string, method = 'GET'): z.ZodType {
     }
     return z.record(z.string(), jsonValueSchema);
   }
-  if (endpoint === '/auth/me') return z.object({ user }).passthrough();
-  if (endpoint === '/auth/profile') return profile;
-  if (endpoint === '/collections' || endpoint === '/collections/trash') return z.array(collection);
   if (endpoint === '/dashboard') {
     return z.object({ recentJobs: z.number(), expiringJobs: z.number() }).passthrough();
   }
@@ -105,7 +78,6 @@ export function responseSchemaFor(path: string, method = 'GET'): z.ZodType {
   if (endpoint === '/jobs/bootstrap') {
     return z
       .object({
-        user,
         categories: z.array(z.string()),
         data: arrayOrCursor(job),
       })
@@ -114,7 +86,6 @@ export function responseSchemaFor(path: string, method = 'GET'): z.ZodType {
   if (endpoint === '/learning/bootstrap') {
     return z
       .object({
-        user,
         data: z.array(learningSource),
       })
       .passthrough();

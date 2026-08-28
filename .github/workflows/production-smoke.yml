@@ -23,7 +23,7 @@ jobs:
         with:
           node-version-file: .node-version
 
-      - name: Check production contracts, Google identity, security boundaries and D1 readiness
+      - name: Check public catalogs, retired auth boundary, security and D1 readiness
         id: slo
         continue-on-error: true
         env:
