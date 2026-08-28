@@ -34,6 +34,15 @@ v5의 운영 기준은 채팅, 파일명, 최근 수정 시각이 아니라 D1�
 ## 명령
 
 ```bash
+pnpm jobs:v5:adapt-v4 --target-as-of-date YYYY-MM-DD \
+  --run-id CG-YYYY-MM-DD-A1-example1 \
+  --partition1 /explicit/partition-1.json \
+  --partition2 /explicit/partition-2.json \
+  --partition3 /explicit/partition-3.json \
+  --final /explicit/final.json \
+  --audit /explicit/merge-audit.json \
+  --output /explicit/non-production-output
+
 pnpm jobs:v5:dry-run
 pnpm jobs:v5:run --target-as-of-date 2026-08-27 --run-id CG-2026-08-27-A1-example1 \
   --partition1 /explicit/partition-1.json \
@@ -41,6 +50,8 @@ pnpm jobs:v5:run --target-as-of-date 2026-08-27 --run-id CG-2026-08-27-A1-exampl
   --partition3 /explicit/partition-3.json \
   --baseline /explicit/baseline.json
 ```
+
+`adapt-v4`는 전달된 다섯 파일만 읽고 원본/canonical hash와 audit gate를 검증한다. Library를 검색하지 않으며 DB·Slack을 변경하지 않는다. 자세한 계약은 `careerground-v4-collector-contract.md`를 따른다.
 
 `publish`는 `--manifest`와 `--approved-run-id`를 모두 요구하며, CLI 자체는 production binding 없이 DB를 변경하지 않는다. 승인된 배포 adapter가 `deployment/sites/d1-jobs-v5.ts`의 `stageVerifiedRun`, `publishVerifiedRun`을 호출해야 한다.
 

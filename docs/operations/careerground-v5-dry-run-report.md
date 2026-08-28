@@ -28,7 +28,26 @@ node scripts/jobs-v5/cli.mjs dry-run --output /tmp/careerground-v5-dry-run
 
 ## 남은 위험과 MANUAL_REQUIRED
 
-- 실제 세 partition 웹 수집기가 저장소에 없어 DRY_RUN fixture까지만 연결됨.
+- 실제 세 partition 웹 수집은 외부 ChatGPT 예약 작업에 남아 있으며 자동 artifact 전달 연결은 없음.
 - 운영 기준선과 운영 D1 publish는 사용하지 않음.
 - production environment/Secret/schedule/PUBLISH 승인이 필요함.
 - legacy ChatGPT Work Task와 채팅 전체 목록은 공식 UI 확인 필요.
+
+## 2026-08-28 legacy v4 bundle 호환 dry-run
+
+사용자가 제공한 실제 partition 3개, final, merge audit을 저장소 밖 임시 경로에서 `jobs:v5:adapt-v4`로 검증했다. 운영 원문은 커밋하지 않았다.
+
+- legacy runGroupKey: `2026-08-28:dcb8d23fe9265bc6`
+- baseline: 211행, canonical SHA-256 일치
+- final: 240행(새 행 29), 원본 SHA-256과 canonical SHA-256 모두 audit 일치
+- 상태: ACTIVE 145, DEADLINE_UNKNOWN 48, EXPIRED 32, REMOVED 15
+- v5 재분할: partition 1/2/3 = 91/65/84행
+- 세 legacy partition 원본 SHA-256과 artifact canonical SHA-256 모두 audit 일치
+- audit: quality gate PASS, downstream ELIGIBLE, blocking error 0
+- 결과: `VERIFIED_COMPATIBLE`
+- 운영 DB 변경: 없음
+- Slack 전송: 없음
+
+비식별 호환 adapter 테스트는 정상 bundle, final 변조, partition 변조, 6/6/5 출처 소유권을 검증한다.
+
+호환 adapter 추가 후 전체 검증은 contracts 10개, web 23개, root scripts/deployment 154개로 총 187개가 통과했다. jobs-v5 집중 검증은 40개가 통과했다. lint, typecheck, Sites production build도 다시 통과했다. UI 변경이 없어 E2E는 기존 34개 통과 결과를 유지하고 재실행하지 않았다.

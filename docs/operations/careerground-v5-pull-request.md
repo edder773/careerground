@@ -13,14 +13,16 @@
 - D1 VERIFIED staging, publish assertion, atomic batch, idempotency, current/last-success
 - PUBLISHED-only notification adapter
 - manual-only pre-cutover GitHub Actions matrix workflow
+- 실제 legacy v4 partition/final/audit을 명시적 hash로 검증해 v5 artifact로 바꾸는 호환 adapter
+- 17개 출처의 6/6/5 분할과 bucket 소유권을 저장소 설정으로 이전
 - 운영·복구·cutover·Secret·watchdog·채팅 폐기 문서
 
-실제 웹 수집기는 저장소에 없으므로 임의로 구현하지 않았다. 외부 collector 계약과 deprecated Library adapter까지만 제공하며 실제 연결은 `MANUAL_REQUIRED`다.
+실제 웹 수집은 외부 ChatGPT 예약 작업에 남아 있다. 제공된 실제 2026-08-28 bundle은 `VERIFIED_COMPATIBLE`로 검증했지만 Library에서 GitHub artifact로 자동 전달하는 연결은 `MANUAL_REQUIRED`다.
 
 ## 검증
 
-- unit: 182 passed (contracts 10, web 23, root 149)
-- v5 집중 실패 주입: 47 passed
+- unit: 187 passed (contracts 10, web 23, root 154)
+- legacy v4 adapter 포함 jobs-v5 집중 검증: 40 passed
 - E2E: 34 passed (Chromium, Firefox, WebKit, 375px mobile)
 - typecheck, lint, Sites production build, workflow YAML, Secret pattern scan: passed
 - dry-run: VERIFIED, 신규 3/변경 0/종료 0/제외 0/활성 3

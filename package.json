@@ -28,6 +28,7 @@
     "jobs:library:insert": "node scripts/generate-library-job-insert-migration.mjs",
     "jobs:validator:sync": "node scripts/generate-validator-job-sync-migration.mjs",
     "jobs:v5:preflight": "node scripts/jobs-v5/cli.mjs preflight",
+    "jobs:v5:adapt-v4": "node scripts/jobs-v5/cli.mjs adapt-v4",
     "jobs:v5:collect": "node scripts/jobs-v5/cli.mjs collect",
     "jobs:v5:merge": "node scripts/jobs-v5/cli.mjs merge",
     "jobs:v5:validate": "node scripts/jobs-v5/cli.mjs validate",

@@ -129,3 +129,15 @@
 - 수행: `codex/careerground-automation-v5`에 5개 conventional commit을 생성하고 origin에 push.
 - 결과: GitHub branch와 비교 가능한 diff 준비 완료. push hook의 typecheck/unit test 통과.
 - MANUAL_REQUIRED: `gh` 저장 토큰이 만료됐고 연결된 GitHub App은 PR 생성 권한이 없어 API가 403을 반환했다. 자동 병합은 시도하지 않음. `careerground-v5-pull-request.md`와 GitHub의 branch PR 생성 링크로 수동 생성 가능.
+
+## 2026-08-28 실제 legacy bundle 연결 — COMPLETED
+
+- 수행: 사용자가 제공한 예약 수집기 3개, 수동 Pro 검증기, Work DB 반영기의 프롬프트와 실제 partition/final/audit 구조를 분석했다.
+- 수행: 17개 출처의 6/6/5 분할, bucket 0/1/2 소유권, 공통 포함·제외·증거 정책을 저장소 설정으로 이전했다.
+- 변경: `config/careerground-partition-sources.json`, `scripts/jobs-v5/legacy-v4-adapter.mjs`, 호환 테스트와 운영 계약 문서.
+- 실행: `pnpm jobs:v5:adapt-v4`로 2026-08-28 실제 bundle을 저장소 밖 임시 디렉터리에서 검증했다.
+- 결과: baseline 211행, final 240행, 신규 29행, partition 재분할 91/65/84행, 모든 raw/canonical hash와 audit PASS/ELIGIBLE 일치, `VERIFIED_COMPATIBLE`.
+- 테스트: 호환 adapter 포함 jobs-v5 40개, 전체 unit 187개, lint, typecheck, Sites production build 통과. UI 변경이 없어 E2E는 기존 34개 통과 결과를 유지했다.
+- 보안: 실제 운영 JSON은 커밋하지 않았고 운영 DB와 Slack을 변경하지 않았다.
+- MANUAL_REQUIRED: ChatGPT Library 결과를 GitHub artifact로 자동 전달하는 연결, 운영 D1 migration/PUBLISH/schedule 승인.
+- 다음: 전체 회귀 테스트와 branch 갱신.

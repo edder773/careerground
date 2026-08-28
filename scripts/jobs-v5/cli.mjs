@@ -4,8 +4,10 @@ import { resolve } from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 import { assertManifestChecksum, validateManifest } from './manifest.mjs';
+import { loadLegacyV4Bundle, writeLegacyV4Conversion } from './legacy-v4-adapter.mjs';
 import { buildNotificationPreview } from './notify.mjs';
 import { failureResult, orchestrate } from './orchestrate.mjs';
+import { createExecutionIdentity } from './contracts.mjs';
 
 function parseArgs(argv) {
   const [command = 'dry-run', ...tokens] = argv;
@@ -36,6 +38,30 @@ function readManifest(path) {
 
 export async function main(argv = process.argv.slice(2)) {
   const args = parseArgs(argv);
+  if (args.command === 'adapt-v4') {
+    for (const field of ['partition1', 'partition2', 'partition3', 'final', 'audit', 'output']) {
+      if (!args[field])
+        throw new Error(
+          `adapt-v4 requires --${field.replace(/[A-Z]/g, (value) => `-${value.toLowerCase()}`)}.`,
+        );
+    }
+    if (!args.targetAsOfDate) throw new Error('adapt-v4 requires --target-as-of-date.');
+    const identity = createExecutionIdentity({
+      targetAsOfDate: String(args.targetAsOfDate),
+      attempt: Number(args.attempt || 1),
+      mode: String(args.mode || 'DRY_RUN'),
+      nonce: args.runId ? String(args.runId).split('-').at(-1) : undefined,
+    });
+    const resolvedIdentity = args.runId ? { ...identity, runId: String(args.runId) } : identity;
+    const bundle = loadLegacyV4Bundle({
+      partitionPaths: [args.partition1, args.partition2, args.partition3],
+      finalPath: args.final,
+      auditPath: args.audit,
+      identity: resolvedIdentity,
+    });
+    const reportPath = writeLegacyV4Conversion(args.output, bundle);
+    return { ...bundle.report, reportPath };
+  }
   if (args.command === 'notify') {
     if (!args.manifest) throw new Error('--manifest is required.');
     const manifest = readManifest(args.manifest);

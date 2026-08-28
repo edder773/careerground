@@ -4,7 +4,7 @@
 
 ## 현재 아키텍처와 데이터 흐름
 
-1. 저장소 밖의 ChatGPT Work/Library 과정이 세 파티션을 수집·병합·검증한다. 실제 웹 수집기와 파티션 프롬프트는 저장소에 없다.
+1. 저장소 밖의 ChatGPT 예약 작업 3개가 파티션을 수집하고, 수동 ChatGPT Pro 검증기가 병합·검증하며, ChatGPT Work가 DB에 반영한다. 2026-08-28에 실제 프롬프트와 입출력 표본을 확보했으며 저장소에는 비식별 계약과 호환 adapter만 반영한다.
 2. `docs/operations/daily-job-refresh-automation.md`는 정확한 날짜별 `final.json`과 `merge-audit.json`을 Library에서 고르는 절차를 운영 규칙으로 정의한다. 선택은 파일명, 날짜, `modified_at`에 의존한다.
 3. `scripts/generate-validator-job-sync-migration.mjs`가 전체 기준선, final, merge-audit을 검증하고 허용된 INSERT/UPDATE와 `import_batches`, `app_schema_migrations` 기록을 담은 forward-only SQL을 생성한다.
 4. 생성된 migration은 Sites/D1 배포 경로에서 적용된다. 운영 DB 직접 변경은 이 전환 작업의 범위에서 수행하지 않는다.
@@ -54,7 +54,7 @@ Slack은 배포 API가 고른 당일 import snapshot을 사용한다. v5 실행�
 - raw/canonical hash를 모두 검증하는 Manifest와 명시적 입력 adapter.
 - 파티션 병렬 수집, merge, validate, stage/publish, notify의 책임 분리.
 - 원자적 게시와 last-success 포인터.
-- 실제 파티션 수집기, 파티션별 출처 소유권의 전체 목록, 기존 ChatGPT Scheduled Task와 채팅 목록은 저장소에 없다. 이들은 `MANUAL_REQUIRED`이며 구현이 완료되었다고 간주하지 않는다.
+- 실제 웹 조사는 여전히 외부 ChatGPT 예약 작업이 수행한다. 파티션별 17개 출처와 bucket 소유권은 `config/careerground-partition-sources.json`으로 이전했고, 실제 v4 bundle은 명시적 경로와 hash로 v5 artifact로 변환할 수 있다. Scheduled Task의 공식 ID·상태와 자동 artifact 전달 연결은 아직 `MANUAL_REQUIRED`다.
 
 ## 문서와 구현 차이
 
