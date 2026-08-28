@@ -4,6 +4,7 @@ import {
   check,
   index,
   integer,
+  primaryKey,
   sqliteTable,
   text,
   uniqueIndex,
@@ -652,6 +653,136 @@ export const importBatches = sqliteTable(
     createdAt: text('created_at').notNull(),
   },
   (table) => [uniqueIndex('idx_import_batches_kind_checksum').on(table.kind, table.checksum)],
+);
+
+export const workflowRuns = sqliteTable(
+  'workflow_runs',
+  {
+    runId: text('run_id').primaryKey(),
+    schemaVersion: text('schema_version').notNull(),
+    workflowId: text('workflow_id').notNull(),
+    runGroupKey: text('run_group_key').notNull(),
+    targetAsOfDate: text('target_as_of_date').notNull(),
+    attempt: integer('attempt').notNull(),
+    mode: text('mode').notNull(),
+    status: text('status').notNull(),
+    previousSuccessfulRunId: text('previous_successful_run_id'),
+    errorCode: text('error_code'),
+    errorMessage: text('error_message'),
+    manifest: text('manifest'),
+    manifestChecksum: text('manifest_checksum'),
+    startedAt: text('started_at').notNull(),
+    completedAt: text('completed_at'),
+    validatedAt: text('validated_at'),
+    publishedAt: text('published_at'),
+  },
+  (table) => [
+    uniqueIndex('idx_workflow_runs_group_attempt').on(
+      table.workflowId,
+      table.runGroupKey,
+      table.attempt,
+    ),
+    index('idx_workflow_runs_group_status').on(
+      table.workflowId,
+      table.runGroupKey,
+      table.status,
+      table.attempt,
+    ),
+    index('idx_workflow_runs_target_status').on(
+      table.workflowId,
+      table.targetAsOfDate,
+      table.status,
+      table.publishedAt,
+    ),
+    check('chk_workflow_runs_attempt', sql`${table.attempt} >= 1`),
+    check('chk_workflow_runs_mode', sql`${table.mode} IN ('DRY_RUN', 'RESUME', 'PUBLISH')`),
+  ],
+);
+
+export const workflowStagedJobs = sqliteTable(
+  'workflow_staged_jobs',
+  {
+    runId: text('run_id')
+      .notNull()
+      .references(() => workflowRuns.runId, { onDelete: 'restrict' }),
+    jobId: text('job_id').notNull(),
+    canonicalJobKey: text('canonical_job_key').notNull(),
+    operation: text('operation').notNull(),
+    payload: text('payload').notNull(),
+    expectedBefore: text('expected_before'),
+    evidence: text('evidence').notNull().default('{}'),
+    createdAt: text('created_at').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.runId, table.jobId, table.operation] }),
+    index('idx_workflow_staged_jobs_run_operation').on(table.runId, table.operation),
+    check(
+      'chk_workflow_staged_jobs_operation',
+      sql`${table.operation} IN ('INSERT', 'UPDATE', 'END')`,
+    ),
+  ],
+);
+
+export const workflowPublications = sqliteTable('workflow_publications', {
+  idempotencyKey: text('idempotency_key').primaryKey(),
+  runId: text('run_id')
+    .notNull()
+    .unique()
+    .references(() => workflowRuns.runId, { onDelete: 'restrict' }),
+  manifestChecksum: text('manifest_checksum').notNull(),
+  insertedCount: integer('inserted_count').notNull(),
+  updatedCount: integer('updated_count').notNull(),
+  endedCount: integer('ended_count').notNull(),
+  publishedAt: text('published_at').notNull(),
+});
+
+export const workflowPublishAssertions = sqliteTable(
+  'workflow_publish_assertions',
+  {
+    runId: text('run_id')
+      .primaryKey()
+      .references(() => workflowRuns.runId, { onDelete: 'restrict' }),
+    ok: integer('ok').notNull(),
+    createdAt: text('created_at').notNull(),
+  },
+  (table) => [check('chk_workflow_publish_assertion', sql`${table.ok} = 1`)],
+);
+
+export const workflowPointers = sqliteTable(
+  'workflow_pointers',
+  {
+    workflowId: text('workflow_id').notNull(),
+    pointerName: text('pointer_name').notNull(),
+    runId: text('run_id')
+      .notNull()
+      .references(() => workflowRuns.runId, { onDelete: 'restrict' }),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.workflowId, table.pointerName] }),
+    check('chk_workflow_pointer_name', sql`${table.pointerName} IN ('current', 'last-success')`),
+  ],
+);
+
+export const workflowNotifications = sqliteTable(
+  'workflow_notifications',
+  {
+    runId: text('run_id')
+      .primaryKey()
+      .references(() => workflowRuns.runId, { onDelete: 'restrict' }),
+    status: text('status').notNull(),
+    attemptCount: integer('attempt_count').notNull().default(0),
+    payloadChecksum: text('payload_checksum'),
+    lastError: text('last_error'),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (table) => [
+    check(
+      'chk_workflow_notification_status',
+      sql`${table.status} IN ('PENDING', 'SENT', 'FAILED', 'SKIPPED')`,
+    ),
+    check('chk_workflow_notification_attempt', sql`${table.attemptCount} >= 0`),
+  ],
 );
 
 export const importPreviews = sqliteTable(
