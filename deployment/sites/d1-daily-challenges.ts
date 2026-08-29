@@ -442,6 +442,7 @@ const slackDigestDeliveryInput = (input: unknown) => {
   const snapshotCreatedAt = cleanText(body.snapshotCreatedAt);
   const jobsOnly = body.jobsOnly === true;
   const requireFreshJobs = body.requireFreshJobs === true;
+  const dryRun = body.dryRun === true;
   if (jobsOnly && !snapshotCreatedAt) {
     throw new RouteError(
       400,
@@ -456,7 +457,7 @@ const slackDigestDeliveryInput = (input: unknown) => {
       'FRESH_JOBS_NOT_APPLICABLE',
     );
   }
-  return { snapshotCreatedAt, jobsOnly, requireFreshJobs };
+  return { snapshotCreatedAt, jobsOnly, requireFreshJobs, dryRun };
 };
 
 async function committedJobsImportAfter(
@@ -504,6 +505,14 @@ export async function claimSlackDigest(db: D1Database, requestUrl: URL, input: u
   const deliveryKey = options.snapshotCreatedAt
     ? `snapshot:${options.snapshotCreatedAt}:jobs`
     : `daily:${payload.date}`;
+  if (options.dryRun) {
+    return {
+      status: 'preview' as const,
+      deliveryKey,
+      jobsOnly: options.jobsOnly,
+      payload,
+    };
+  }
   const serializedPayload = JSON.stringify(payload);
   const payloadChecksum = await sha256(serializedPayload);
   const claimToken = newSessionToken();
