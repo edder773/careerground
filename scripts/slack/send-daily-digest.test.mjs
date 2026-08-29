@@ -177,6 +177,8 @@ describe('daily Slack digest', () => {
     expect(workflow).toContain("timezone: 'Asia/Seoul'");
     expect(workflow.match(/timezone: 'Asia\/Seoul'/g)).toHaveLength(3);
     expect(workflow).toContain('SLACK_DIGEST_REQUIRE_FRESH_JOBS:');
+    expect(workflow).toContain('SLACK_DIGEST_DRY_RUN:');
+    expect(workflow).toContain('inputs.dry_run');
     expect(workflow).toContain("github.event.schedule != '17 9 * * 1-5'");
     expect(workflow).toContain("steps.digest.outputs.delivery_status == 'job-import-not-ready'");
     expect(workflow).toContain("steps.digest.outputs.delivery_status == 'already-sent'");
@@ -296,6 +298,46 @@ describe('daily Slack digest', () => {
         () => new Date('2026-08-17T00:00:00.000Z'),
       ),
     ).resolves.toEqual({ messageCount: 1 });
+  });
+
+  it('validates the production digest without requiring or calling a Slack webhook', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(
+      new globalThis.Response(
+        JSON.stringify({
+          status: 'preview',
+          deliveryKey: 'daily:2026-08-29',
+          jobsOnly: false,
+          payload: { ...payload, date: '2026-08-29' },
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      ),
+    );
+
+    await expect(
+      sendDailyDigest(
+        {
+          CAREERGROUND_DIGEST_URL: 'https://careerground.example/api/v1/internal/slack-digest',
+          CAREERGROUND_DIGEST_TOKEN: 'service-token',
+          BAEUMZIP_URL,
+          SLACK_DIGEST_DRY_RUN: 'true',
+          SLACK_DIGEST_REQUIRE_FRESH_JOBS: 'true',
+        },
+        fetchMock,
+        () => new Date('2026-08-29T00:00:00.000Z'),
+      ),
+    ).resolves.toEqual({
+      messageCount: 0,
+      dryRun: {
+        deliveryKey: 'daily:2026-08-29',
+        previewMessageCount: 1,
+        challengeCount: 4,
+        jobCount: 0,
+        blockCount: 8,
+      },
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const requestBody = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(requestBody).toEqual({ jobsOnly: false, dryRun: true, requireFreshJobs: true });
   });
 
   it('requests an exact snapshot for a jobs-only replay', async () => {

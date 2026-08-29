@@ -477,6 +477,28 @@ describe('Sites D1 API', () => {
         previousEveningImportAt,
       )
       .run();
+    const preview = await call(
+      '/api/v1/internal/slack-digest/claim',
+      {
+        method: 'POST',
+        headers: authorized,
+        body: JSON.stringify({ requireFreshJobs: true, dryRun: true }),
+      },
+      {},
+      environment,
+    );
+    expect(preview.body).toMatchObject({
+      status: 'preview',
+      deliveryKey: `daily:${today}`,
+      jobsOnly: false,
+      payload: { challenges: expect.any(Array), jobs: expect.any(Array) },
+    });
+    expect(
+      await db
+        .prepare('SELECT delivery_key FROM slack_digest_deliveries WHERE delivery_key = ?')
+        .bind(`daily:${today}`)
+        .first(),
+    ).toBeNull();
     expect((await request()).body).toMatchObject({
       status: 'claimed',
       deliveryKey: `daily:${today}`,

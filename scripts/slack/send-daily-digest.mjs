@@ -214,7 +214,8 @@ export async function sendDailyDigest(
   fetchImpl = globalThis.fetch,
   now = () => new Date(),
 ) {
-  if (!forceSendEnabled(env.SLACK_DIGEST_FORCE_SEND)) {
+  const dryRun = forceSendEnabled(env.SLACK_DIGEST_DRY_RUN);
+  if (!dryRun && !forceSendEnabled(env.SLACK_DIGEST_FORCE_SEND)) {
     const decision = getKoreanDispatchDecision(now());
     if (!decision.shouldSend) return { messageCount: 0, skipped: decision };
   }
@@ -223,14 +224,19 @@ export async function sendDailyDigest(
   const digestToken = env.CAREERGROUND_DIGEST_TOKEN;
   const webhookUrl = env.SLACK_WEBHOOK_URL;
   const baeumzipUrl = env.BAEUMZIP_URL;
-  if (!digestUrl || !digestToken || !webhookUrl || !baeumzipUrl) {
+  if (!digestUrl || !digestToken || !baeumzipUrl || (!dryRun && !webhookUrl)) {
     throw new Error(
-      'CAREERGROUND_DIGEST_URL, CAREERGROUND_DIGEST_TOKEN, SLACK_WEBHOOK_URL, BAEUMZIP_URL이 필요합니다.',
+      dryRun
+        ? 'CAREERGROUND_DIGEST_URL, CAREERGROUND_DIGEST_TOKEN, BAEUMZIP_URL이 필요합니다.'
+        : 'CAREERGROUND_DIGEST_URL, CAREERGROUND_DIGEST_TOKEN, SLACK_WEBHOOK_URL, BAEUMZIP_URL이 필요합니다.',
     );
   }
-  const webhook = new URL(webhookUrl);
-  if (webhook.protocol !== 'https:' || webhook.hostname !== 'hooks.slack.com') {
-    throw new Error('Slack 공식 Incoming Webhook 주소가 필요합니다.');
+  let webhook;
+  if (!dryRun) {
+    webhook = new URL(webhookUrl);
+    if (webhook.protocol !== 'https:' || webhook.hostname !== 'hooks.slack.com') {
+      throw new Error('Slack 공식 Incoming Webhook 주소가 필요합니다.');
+    }
   }
 
   const digestRequestUrl = new URL(digestUrl);
@@ -248,6 +254,7 @@ export async function sendDailyDigest(
     'content-type': 'application/json',
   };
   const claimInput = { snapshotCreatedAt: snapshotCreatedAt || undefined, jobsOnly };
+  if (dryRun) claimInput.dryRun = true;
   if (requireFreshJobs) claimInput.requireFreshJobs = true;
   const digestResponse = await fetchImpl(digestRequestUrl, {
     method: 'POST',
@@ -259,6 +266,19 @@ export async function sendDailyDigest(
     throw new Error(`CareerGround 알림 API 오류: HTTP ${digestResponse.status}`);
   }
   const claim = await digestResponse.json();
+  if (dryRun && claim.status === 'preview') {
+    const messages = formatSlackMessages(claim.payload, { baeumzipUrl, jobsOnly });
+    return {
+      messageCount: 0,
+      dryRun: {
+        deliveryKey: String(claim.deliveryKey || ''),
+        previewMessageCount: messages.length,
+        challengeCount: claim.payload.challenges.length,
+        jobCount: claim.payload.jobs.length,
+        blockCount: messages.reduce((count, message) => count + message.blocks.length, 0),
+      },
+    };
+  }
   if (claim.status !== 'claimed') {
     const reason =
       claim.status === 'already-sent'
@@ -315,8 +335,8 @@ export async function sendDailyDigest(
   return { messageCount: messages.length };
 }
 
-export const digestResultStatus = ({ messageCount, skipped }) =>
-  messageCount > 0 ? 'sent' : String(skipped?.reason || 'unknown');
+export const digestResultStatus = ({ messageCount, skipped, dryRun }) =>
+  dryRun ? 'dry-run-passed' : messageCount > 0 ? 'sent' : String(skipped?.reason || 'unknown');
 
 export function writeGithubOutputs(result, outputPath = process.env.GITHUB_OUTPUT) {
   if (!outputPath) return;
@@ -331,10 +351,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   sendDailyDigest()
     .then((deliveryResult) => {
       writeGithubOutputs(deliveryResult);
-      const { messageCount, skipped } = deliveryResult;
-      const result = skipped
-        ? `Slack digest skipped: ${skipped.reason} (${skipped.dateKey})`
-        : `Slack digest sent: ${messageCount}`;
+      const { messageCount, skipped, dryRun } = deliveryResult;
+      const result = dryRun
+        ? `Slack digest dry-run passed: ${dryRun.previewMessageCount} message, ${dryRun.challengeCount} challenges, ${dryRun.jobCount} jobs, ${dryRun.blockCount} blocks (${dryRun.deliveryKey})`
+        : skipped
+          ? `Slack digest skipped: ${skipped.reason} (${skipped.dateKey})`
+          : `Slack digest sent: ${messageCount}`;
       process.stdout.write(`${result}\n`);
     })
     .catch((error) => {

@@ -46,6 +46,11 @@ Webhook URL이 화면·로그 등에 노출되면 Slack 앱의 Incoming Webhooks
 
 GitHub 저장소의 **Actions → Daily CareerGround Slack digest → Run workflow**로 즉시 실행할 수 있다. 성공 조건은 다음과 같다.
 
+Slack을 보내지 않는 운영 점검은 `force=true`, `dry_run=true`, 빈 snapshot으로 실행한다. dry-run은
+운영 `DIGEST_API_TOKEN`으로 직전 발송 이후의 최신 import를 확인하고 실제 D1 payload를 읽어 Slack
+메시지 블록까지 생성·검증한다. 응답 상태는 `dry-run-passed`이며, `slack_digest_deliveries` claim을
+생성하지 않고 `SLACK_WEBHOOK_URL`을 호출하지 않는다.
+
 1. workflow의 `Send CareerGround digest` 단계가 성공한다.
 2. `#테스트채널`에 발신자 `채용공고알리미`로 메시지가 도착한다.
 3. 코딩 문제 링크는 프로그래머스 원문으로, 채용 링크는 각 채용 원문으로 이동한다.
