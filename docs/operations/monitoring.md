@@ -17,7 +17,7 @@ CareerGround 운영 감시는 비밀값이나 개인정보를 외부 관측 도�
 - SLO 실패: readiness의 HTTP·schema·catalog canary·latency와 Google 인증 구성/JWKS 결과를 먼저
   확인하고 같은 실행의 request ID를 Sites Worker log와 대조한다.
 - 예약 지연: Slack 전송 성공 여부와 분리한다. digest가 전송되었으면 queue 지연 incident만 유지한다.
-- 채용 갱신 지연: 같은 KST 날짜의 `jobs`/`COMMITTED` import가 있는지 확인한다. 08:01과 08:31은
+- 채용 갱신 지연: 직전 성공한 일일 Slack 알림 이후 `jobs`/`jobs-v5` `COMMITTED` import가 있는지 확인한다. 08:01과 08:31은
   준비 전이면 delivery를 claim하지 않으며 09:17이 최종 복구를 담당한다.
 - digest 실패: D1 delivery 원장의 `FAILED`, `UNCERTAIN`, `SENT` 상태를 먼저 확인해 중복 전송을
   피한다.

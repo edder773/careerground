@@ -370,7 +370,7 @@ describe('daily Slack digest', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('defers a scheduled digest until the current KST jobs import is committed', async () => {
+  it('defers a scheduled digest until a fresh jobs import is committed', async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(
       new globalThis.Response(
         JSON.stringify({

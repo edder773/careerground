@@ -459,25 +459,22 @@ const slackDigestDeliveryInput = (input: unknown) => {
   return { snapshotCreatedAt, jobsOnly, requireFreshJobs };
 };
 
-const kstDayBounds = (date: string) => {
-  const start = new Date(`${date}T00:00:00+09:00`);
-  const end = new Date(start.getTime() + 86_400_000);
-  return { start: start.toISOString(), end: end.toISOString() };
-};
-
-async function committedJobsImportForKstDate(db: D1Database, date: string) {
-  const bounds = kstDayBounds(date);
+async function committedJobsImportAfter(
+  db: D1Database,
+  windowStartedAt: string,
+  generatedAt: string,
+) {
   return first<{ id: string; committedAt: string }>(
     db,
     `SELECT id, committed_at AS committedAt
        FROM import_batches
       WHERE kind IN ('jobs', 'jobs-v5') AND status = 'COMMITTED' AND committed_at IS NOT NULL
-        AND julianday(committed_at) >= julianday(?)
-        AND julianday(committed_at) < julianday(?)
+        AND julianday(committed_at) > julianday(?)
+        AND julianday(committed_at) <= julianday(?)
       ORDER BY julianday(committed_at) DESC
       LIMIT 1`,
-    bounds.start,
-    bounds.end,
+    windowStartedAt,
+    generatedAt,
   );
 }
 
@@ -485,7 +482,9 @@ export async function claimSlackDigest(db: D1Database, requestUrl: URL, input: u
   const options = slackDigestDeliveryInput(input);
   if (options.requireFreshJobs) {
     const date = kstDate();
-    const committedImport = await committedJobsImportForKstDate(db, date);
+    const generatedAt = nowIso();
+    const windowStartedAt = await dailyDigestWindowStart(db, generatedAt);
+    const committedImport = await committedJobsImportAfter(db, windowStartedAt, generatedAt);
     if (!committedImport) {
       return {
         status: 'not-ready' as const,

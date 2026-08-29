@@ -390,7 +390,7 @@ describe('Sites D1 API', () => {
     expect(delivery?.completedAt).toBeTruthy();
   });
 
-  it('keeps the daily delivery unclaimed until a current-KST-day jobs import is committed', async () => {
+  it('keeps the daily delivery unclaimed until a jobs import is committed after the previous digest', async () => {
     const token = 'test-digest-token';
     const authorized = { authorization: `Bearer ${token}` };
     const environment = { DIGEST_API_TOKEN: token };
@@ -434,13 +434,36 @@ describe('Sites D1 API', () => {
       .run();
     expect((await request()).body).toMatchObject({ status: 'not-ready' });
 
-    const today = new Intl.DateTimeFormat('en-CA', {
+    const kstDateFormatter = new Intl.DateTimeFormat('en-CA', {
       timeZone: 'Asia/Seoul',
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
-    }).format(new Date());
-    const committedAtWithOffset = `${today}T06:00:00+09:00`;
+    });
+    const today = kstDateFormatter.format(new Date());
+    const todayStartedAt = new Date(`${today}T00:00:00+09:00`);
+    const previousDigestAt = new Date(todayStartedAt.getTime() - 8 * 60 * 60 * 1_000).toISOString();
+    const previousEveningImportAt = new Date(
+      todayStartedAt.getTime() - 60 * 60 * 1_000,
+    ).toISOString();
+    expect(kstDateFormatter.format(new Date(previousEveningImportAt))).not.toBe(today);
+    await db
+      .prepare(
+        `INSERT INTO slack_digest_deliveries
+           (delivery_key, delivery_mode, status, claim_token_hash, payload, payload_checksum,
+            attempt_count, claimed_at, completed_at)
+         VALUES (?, 'DAILY', 'SENT', ?, '{}', ?, 1, ?, ?)`,
+      )
+      .bind(
+        'daily:previous-business-day',
+        'a'.repeat(64),
+        'b'.repeat(64),
+        previousDigestAt,
+        previousDigestAt,
+      )
+      .run();
+    expect((await request()).body).toMatchObject({ status: 'not-ready' });
+
     await db
       .prepare(
         `INSERT INTO import_batches
@@ -448,10 +471,10 @@ describe('Sites D1 API', () => {
          VALUES (?, 'jobs-v5', ?, 'COMMITTED', 0, 0, '{}', ?, ?)`,
       )
       .bind(
-        'today-jobs-v5-import',
-        'today-jobs-import-checksum',
-        committedAtWithOffset,
-        committedAtWithOffset,
+        'previous-evening-jobs-v5-import',
+        'previous-evening-jobs-import-checksum',
+        previousEveningImportAt,
+        previousEveningImportAt,
       )
       .run();
     expect((await request()).body).toMatchObject({
