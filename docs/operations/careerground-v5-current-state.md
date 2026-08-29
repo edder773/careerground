@@ -27,7 +27,7 @@
 
 ## Slack 데이터 소스와 실패 경로
 
-Slack은 직전 성공 발송 이후 `created_at` window를 사용하며 08:01·08:31에는 당일 `jobs` 또는 `jobs-v5` COMMITTED import를 준비 신호로 확인한다. 발송 자체는 `daily:YYYY-MM-DD` claim으로 중복 방지되며 v5 publish workflow에서는 Slack을 직접 호출하지 않는다.
+Slack은 직전 성공 발송 이후 `created_at` window를 사용하며 08:01·08:31에는 같은 window 안에 새로 `COMMITTED`된 `jobs` 또는 `jobs-v5` import를 준비 신호로 확인한다. 따라서 전날 저녁 게시도 다음 영업일 오전의 정상 준비 신호가 된다. 발송 자체는 `daily:YYYY-MM-DD` claim으로 중복 방지되며 v5 publish workflow에서는 Slack을 직접 호출하지 않는다.
 
 주요 실패 경로는 Library 입력 부재, 파일명·날짜 불일치, raw hash 불일치, audit gate 실패, 기준선 충돌, migration 적용 실패, digest API 준비 지연, Slack 4xx/불확실 응답이다. 현재 각 실패는 하나의 workflow run ledger에 누적되지 않는다.
 

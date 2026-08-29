@@ -7,8 +7,9 @@ GitHub Actions 예약 실행은 정확한 시각을 보장하지 않고 높은 �
 등록한다. 세 실행은 모두 D1의 같은 `daily:YYYY-MM-DD` 발송 키를 claim하므로 먼저 성공한 한 번만
 Slack을 호출한다.
 
-- 08:01·08:31: 당일 KST `jobs` 또는 v5 `jobs-v5` import가 `COMMITTED`인지 먼저 확인한다. 준비되지 않았으면 발송
-  키를 만들지 않고 다음 fallback에 맡긴다.
+- 08:01·08:31: 직전 성공한 일일 Slack 알림 이후 `jobs` 또는 v5 `jobs-v5` import가 새로
+  `COMMITTED`됐는지 먼저 확인한다. 전날 저녁 수집 결과도 정상적인 신규 import로 인정한다. 준비되지
+  않았으면 발송 키를 만들지 않고 다음 fallback에 맡긴다.
 - 09:17: 그날 수집 결과가 0건이거나 외부 수집이 계속 지연돼도 코딩 문제 알림을 잃지 않도록
   준비 상태 gate 없이 최종 시도한다. 늦게 반영된 공고는 다음 일일 window에 포함된다.
 
@@ -63,7 +64,7 @@ GitHub 저장소의 **Actions → Daily CareerGround Slack digest → Run workfl
 | 채용 섹션 없음                    | 정상일 수 있음. 당일 신규 비상시 공고가 없으면 코딩 문제만 전송                                 |
 | `delivery-blocked`                | 이전 실행이 `CLAIMED` 또는 `UNCERTAIN`인지 운영 원장을 확인                                     |
 | `already-sent`                    | 같은 기준일·스냅샷이 이미 전송된 정상적인 중복 차단                                             |
-| `job-import-not-ready`            | 당일 채용 import 미완료. 발송 키 없이 다음 fallback이 재확인                                    |
+| `job-import-not-ready`            | 직전 성공 알림 이후 채용 import 미완료. 발송 키 없이 다음 fallback이 재확인                     |
 | 예약 실행 15분 초과               | schedule delay artifact와 GitHub Actions queue 상태를 확인                                      |
 | 예약 run 자체가 없음              | GitHub Actions 상태와 fallback run을 확인. workflow 내부 검사는 자기 실행 누락을 감지할 수 없음 |
 
