@@ -29,16 +29,30 @@ const expectedKstInstant = (observedAt, hour, minute) => {
   return expectedAt;
 };
 
+export const scheduleClockFromCron = (value) => {
+  const fields = String(value || '')
+    .trim()
+    .split(/\s+/u);
+  if (fields.length < 2 || !/^\d{1,2}$/u.test(fields[0]) || !/^\d{1,2}$/u.test(fields[1])) {
+    return null;
+  }
+  const minute = Number(fields[0]);
+  const hour = Number(fields[1]);
+  return hour <= 23 && minute <= 59 ? { hour, minute } : null;
+};
+
 export function evaluateScheduleDelay({
   observedAt = new Date(),
   expectedHour = 8,
   expectedMinute = 1,
   thresholdMinutes = 15,
+  scheduleCron = '',
 } = {}) {
   const observed = observedAt instanceof Date ? observedAt : new Date(observedAt);
   if (Number.isNaN(observed.getTime())) throw new Error('SCHEDULE_OBSERVED_AT must be ISO 8601.');
-  const hour = finiteInteger(expectedHour, 8);
-  const minute = finiteInteger(expectedMinute, 1);
+  const scheduledClock = scheduleClockFromCron(scheduleCron);
+  const hour = scheduledClock?.hour ?? finiteInteger(expectedHour, 8);
+  const minute = scheduledClock?.minute ?? finiteInteger(expectedMinute, 1);
   const threshold = finiteInteger(thresholdMinutes, 15);
   if (hour < 0 || hour > 23 || minute < 0 || minute > 59 || threshold < 0) {
     throw new Error('Schedule delay configuration is outside the allowed range.');
@@ -75,6 +89,7 @@ if (isMain) {
     observedAt: process.env.SCHEDULE_OBSERVED_AT || new Date(),
     expectedHour: process.env.SCHEDULE_EXPECTED_HOUR || 8,
     expectedMinute: process.env.SCHEDULE_EXPECTED_MINUTE || 1,
+    scheduleCron: process.env.SCHEDULE_CRON || '',
     thresholdMinutes: process.env.SCHEDULE_DELAY_BUDGET_MINUTES || 15,
   });
   const outputPath = resolve(process.env.SCHEDULE_DELAY_OUTPUT_FILE || DEFAULT_OUTPUT);

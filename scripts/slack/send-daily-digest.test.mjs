@@ -176,10 +176,11 @@ describe('daily Slack digest', () => {
     expect(workflow).toContain("cron: '31 8 * * 1-5'");
     expect(workflow).toContain("cron: '17 9 * * 1-5'");
     expect(workflow).toContain("timezone: 'Asia/Seoul'");
-    expect(workflow.match(/timezone: 'Asia\/Seoul'/g)).toHaveLength(3);
+    expect(workflow.match(/timezone: 'Asia\/Seoul'/g)).toHaveLength(7);
     expect(workflow).toContain('SLACK_DIGEST_REQUIRE_FRESH_JOBS:');
     expect(workflow).toContain('SLACK_DIGEST_DRY_RUN:');
     expect(workflow).toContain("workflows: ['Production SLO smoke']");
+    expect(workflow).toContain('types: [jobs-v5-published]');
     expect(workflow).toContain('SLACK_DIGEST_WINDOW_START:');
     expect(workflow).toContain('SLACK_DIGEST_FRESH_UNTIL:');
     expect(workflow).toContain('inputs.dry_run');

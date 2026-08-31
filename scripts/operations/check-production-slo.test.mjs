@@ -3,6 +3,7 @@ import {
   formatSloSummary,
   readSourceSchemaVersion,
   runProductionSlo,
+  SOURCE_BUILD_FEATURE,
   SOURCE_SCHEMA_VERSION,
 } from './check-production-slo.mjs';
 
@@ -24,6 +25,7 @@ const staticHtml = `<!doctype html><html><head>
 const healthyReady = {
   status: 'ok',
   database: 'd1',
+  build: { featureVersion: SOURCE_BUILD_FEATURE, commitSha: 'a'.repeat(40) },
   schema: {
     ready: true,
     expectedVersion: SOURCE_SCHEMA_VERSION,
@@ -118,8 +120,21 @@ describe('production SLO checker', () => {
       appliedVersion: deployedVersion,
     });
     expect(report.failures).toContain(
-      `readiness.sample-1.contract: HTTP 200 source=${SOURCE_SCHEMA_VERSION} expected=${deployedVersion} applied=${deployedVersion} canary=${JSON.stringify(healthyReady.canary)}`,
+      `readiness.sample-1.contract: HTTP 200 source=${SOURCE_SCHEMA_VERSION} expected=${deployedVersion} applied=${deployedVersion} feature=${SOURCE_BUILD_FEATURE} commit=${'a'.repeat(40)} canary=${JSON.stringify(healthyReady.canary)}`,
     );
+  });
+
+  it('fails when the deployed worker feature or commit provenance is stale', async () => {
+    const report = await runProductionSlo({
+      request: requestFixture({
+        ready: { ...healthyReady, build: { featureVersion: 'legacy', commitSha: 'b'.repeat(40) } },
+      }),
+      readinessSamples: 1,
+      expectedBuildCommit: 'a'.repeat(40),
+    });
+
+    expect(report.passed).toBe(false);
+    expect(report.failures.some((failure) => failure.includes('feature=legacy'))).toBe(true);
   });
 
   it('rejects a migration authority file without a declared version', () => {

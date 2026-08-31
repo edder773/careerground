@@ -40,6 +40,7 @@ const tableNames = [
   'request_rate_limits',
   'scheduler_leases',
   'slack_digest_deliveries',
+  'slack_digest_items',
   'app_schema_migrations',
 ];
 
@@ -64,6 +65,13 @@ function contentChecksum(database) {
       .prepare(
         `SELECT delivery_key AS deliveryKey, status, payload_checksum AS payloadChecksum
            FROM slack_digest_deliveries WHERE delivery_key = 'daily:2099-01-01'`,
+      )
+      .all(),
+    deliveryItems: database
+      .prepare(
+        `SELECT delivery_key AS deliveryKey, job_id AS jobId, campaign_key AS campaignKey,
+                role_key AS roleKey
+           FROM slack_digest_items WHERE delivery_key = 'daily:2099-01-01'`,
       )
       .all(),
     authority: database
@@ -121,6 +129,18 @@ try {
        VALUES ('daily:2099-01-01', 'DAILY', 'SENT', ?, '{}', ?, 1, ?, ?)`,
     )
     .bind('a'.repeat(64), 'b'.repeat(64), timestamp, timestamp)
+    .run();
+  await source
+    .prepare(
+      `INSERT INTO slack_digest_items
+         (delivery_key, job_id, company_key, campaign_key, role_key, source_url,
+          company_name, title, delivered_at)
+       VALUES ('daily:2099-01-01', 'restore-drill-job', 'restore-company',
+               'restore-company|2099-01-01:2099-01-31|unnamed', 'backend',
+               'https://example.invalid/jobs/restore', 'Restore Company',
+               'Backend Engineer', ?)`,
+    )
+    .bind(timestamp)
     .run();
   await source
     .prepare(

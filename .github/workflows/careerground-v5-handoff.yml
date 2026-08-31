@@ -5,7 +5,7 @@ on:
     types: [opened, reopened]
 
 permissions:
-  contents: read
+  contents: write
   issues: write
 
 concurrency:
@@ -133,6 +133,21 @@ jobs:
           path: work/jobs-v5/discovery/publish-receipt.json
           if-no-files-found: error
           retention-days: 30
+      - name: Wake the idempotent Slack digest after a production publish
+        if: >-
+          steps.handoff.outputs.status == 'READY' &&
+          steps.handoff.outputs.handoff_schema_version == '2.0'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.repos.createDispatchEvent({
+              ...context.repo,
+              event_type: 'jobs-v5-published',
+              client_payload: {
+                targetAsOfDate: '${{ steps.handoff.outputs.target_as_of_date }}',
+                sourceRunId: String(context.runId),
+              },
+            });
       - name: Mark the validated source pointers as processed
         if: steps.handoff.outputs.status == 'READY'
         env:

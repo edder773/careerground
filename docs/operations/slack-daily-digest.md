@@ -1,6 +1,6 @@
 # Slack 일일 요약 운영
 
-CareerGround는 GitHub Actions에서 평일 오전 8시 1분(Asia/Seoul, 대한민국 공휴일 제외)을 목표로 운영 Sites API를 조회하고 Slack Incoming Webhook으로 요약을 전송한다. 실행 장비가 GitHub이므로 개인 Mac이 꺼져 있어도 동작한다.
+CareerGround는 GitHub Actions에서 평일 오전 8시 1분(Asia/Seoul, 대한민국 공휴일 제외)을 목표로 운영 Sites API를 조회하고 Slack Incoming Webhook으로 요약을 전송한다. 08:11부터 08:51까지 10분 간격 fallback과 09:17 최종 시도, Production SLO 완료, v5 게시 완료 이벤트가 같은 D1 claim을 재확인한다. 실행 장비가 GitHub이므로 개인 Mac이 꺼져 있어도 동작한다.
 
 GitHub Actions 예약 실행은 정확한 시각을 보장하지 않고 높은 부하에서는 지연되거나 누락될 수
 있다. 단일 예약 실패가 하루 알림 누락으로 이어지지 않도록 08:31과 09:17에도 독립 fallback을
@@ -12,7 +12,7 @@ Slack을 호출한다.
 전에는 신규 jobs import를 요구하고, 이후에는 정기 workflow의 최종 fallback과 마찬가지로 준비
 gate 없이 시도한다. 모든 경로가 같은 D1 발송 키를 사용하므로 실제 Slack 전송은 하루 한 번이다.
 
-- 08:01·08:31: 직전 성공한 일일 Slack 알림 이후 `jobs` 또는 v5 `jobs-v5` import가 새로
+- 08:01~08:51 fallback: 직전 성공한 일일 Slack 알림 이후 `jobs` 또는 v5 `jobs-v5` import가 새로
   `COMMITTED`됐는지 먼저 확인한다. 전날 저녁 수집 결과도 정상적인 신규 import로 인정한다. 준비되지
   않았으면 발송 키를 만들지 않고 다음 fallback에 맡긴다.
 - 09:17: 그날 수집 결과가 0건이거나 외부 수집이 계속 지연돼도 코딩 문제 알림을 잃지 않도록
@@ -64,7 +64,7 @@ Slack을 보내지 않는 운영 점검은 `force=true`, `dry_run=true`, 빈 sna
 전송 실패는 `[운영 경보] Daily Slack digest 전송 실패` 이슈로 누적되고 다음 성공 시 자동으로
 닫힌다. 수동 실행도 전송 실패 감시 대상이지만 예약 지연 계산에서는 제외한다.
 
-발송 전에 Sites API가 `daily:YYYY-MM-DD` 또는 `snapshot:<createdAt>:jobs` 키를 D1에 원자적으로 claim한다. Slack이 명시적으로 거부한 경우만 `FAILED`로 기록해 재시도를 허용한다. 네트워크 timeout처럼 Slack 수신 여부를 알 수 없는 경우는 `UNCERTAIN`으로 기록하고 자동 재전송을 막는다. Slack 전송 성공 뒤 완료 API가 실패하더라도 기존 claim이 남으므로 다음 실행에서 같은 메시지를 다시 보내지 않는다.
+발송 전에 Sites API가 `daily:YYYY-MM-DD` 또는 `snapshot:<createdAt>:jobs` 키를 D1에 원자적으로 claim한다. 이미 `SENT`이면 import 최신성보다 먼저 `already-sent`를 반환한다. 성공 완료 시 공고별 회사·캠페인·직무 키를 `slack_digest_items`에 기록하고, 이후 다른 source URL로 수집된 같은 캠페인·직무를 억제한다. Slack이 명시적으로 거부한 경우만 `FAILED`로 기록해 재시도를 허용한다. 네트워크 timeout처럼 Slack 수신 여부를 알 수 없는 경우는 `UNCERTAIN`으로 기록하고 자동 재전송을 막는다.
 
 | 증상                              | 확인할 항목                                                                    |
 | --------------------------------- | ------------------------------------------------------------------------------ |

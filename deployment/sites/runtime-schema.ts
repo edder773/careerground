@@ -22,6 +22,7 @@ export type RuntimeSchemaState = {
   canonicalJobColumnCount: number;
   canonicalJobIndexCount: number;
   slackDeliveryTableCount: number;
+  slackDeliveryItemTableCount: number;
   workflowTableCount: number;
 };
 
@@ -65,6 +66,7 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
       canonicalJobColumnCount: 0,
       canonicalJobIndexCount: 0,
       slackDeliveryTableCount: 0,
+      slackDeliveryItemTableCount: 0,
       workflowTableCount: 0,
     };
   }
@@ -83,6 +85,7 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
     canonicalJobColumnCount: number;
     canonicalJobIndexCount: number;
     slackDeliveryTableCount: number;
+    slackDeliveryItemTableCount: number;
     workflowTableCount: number;
   }>(
     db,
@@ -121,6 +124,8 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
        (SELECT COUNT(*) FROM sqlite_schema
          WHERE type = 'table' AND name = 'slack_digest_deliveries') AS slackDeliveryTableCount,
        (SELECT COUNT(*) FROM sqlite_schema
+         WHERE type = 'table' AND name = 'slack_digest_items') AS slackDeliveryItemTableCount,
+       (SELECT COUNT(*) FROM sqlite_schema
          WHERE type = 'table' AND name IN (
            'workflow_runs', 'workflow_staged_jobs', 'workflow_publications',
            'workflow_pointers', 'workflow_notifications', 'workflow_publish_assertions'
@@ -140,6 +145,7 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
   const canonicalJobColumnCount = Number(state?.canonicalJobColumnCount || 0);
   const canonicalJobIndexCount = Number(state?.canonicalJobIndexCount || 0);
   const slackDeliveryTableCount = Number(state?.slackDeliveryTableCount || 0);
+  const slackDeliveryItemTableCount = Number(state?.slackDeliveryItemTableCount || 0);
   const workflowTableCount = Number(state?.workflowTableCount || 0);
   const ledger =
     tableCount === 16
@@ -165,6 +171,7 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
       canonicalJobColumnCount === 1 &&
       canonicalJobIndexCount === 1 &&
       slackDeliveryTableCount === 1 &&
+      slackDeliveryItemTableCount === 1 &&
       workflowTableCount === 6 &&
       appliedVersion === EXPECTED_SCHEMA_VERSION &&
       ledger?.checksum === EXPECTED_SCHEMA_CHECKSUM,
@@ -184,6 +191,7 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
     canonicalJobColumnCount,
     canonicalJobIndexCount,
     slackDeliveryTableCount,
+    slackDeliveryItemTableCount,
     workflowTableCount,
   };
 }

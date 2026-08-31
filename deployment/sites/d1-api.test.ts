@@ -417,6 +417,29 @@ describe('Sites D1 API', () => {
       )
       .bind(oldCreatedAt, ...jobRows.results.map((row) => row.id))
       .run();
+    const previouslyDelivered = [0, 2, 4, 7, 9].map((index) => ({
+      jobId: jobRows.results[index]!.id,
+      company: fixtures[index]![0],
+      title: fixtures[index]![1],
+      applicationStartAt,
+      deadlineAt: deadline,
+      sourceUrl: `https://example.test/jobs/${fixtures[index]![3]}`,
+    }));
+    await db
+      .prepare(
+        `INSERT INTO slack_digest_deliveries
+           (delivery_key, delivery_mode, status, claim_token_hash, payload, payload_checksum,
+            attempt_count, claimed_at, completed_at)
+         VALUES ('daily:dedup-history', 'DAILY', 'SENT', ?, ?, ?, 1, ?, ?)`,
+      )
+      .bind(
+        'a'.repeat(64),
+        JSON.stringify({ jobs: previouslyDelivered }),
+        'b'.repeat(64),
+        oldCreatedAt,
+        oldCreatedAt,
+      )
+      .run();
 
     const digest = await call(
       '/api/v1/internal/slack-digest',
@@ -483,7 +506,6 @@ describe('Sites D1 API', () => {
       environment,
     );
     expect(completed.body).toEqual({ status: 'sent', deliveryKey: firstClaim.body.deliveryKey });
-
     const alreadySent = await call(
       '/api/v1/internal/slack-digest/claim',
       { method: 'POST', headers: authorized, body: JSON.stringify({ jobsOnly: false }) },
@@ -500,6 +522,123 @@ describe('Sites D1 API', () => {
       .first<{ status: string; attemptCount: number; completedAt: string | null }>();
     expect(delivery).toMatchObject({ status: 'SENT', attemptCount: 1 });
     expect(delivery?.completedAt).toBeTruthy();
+  });
+
+  it('records sent job identities and suppresses the same campaign from a later source', async () => {
+    const token = 'test-digest-token';
+    const authorized = { authorization: `Bearer ${token}` };
+    const environment = { DIGEST_API_TOKEN: token };
+    const rows = await db.prepare('SELECT id FROM jobs ORDER BY id LIMIT 2').all<{ id: string }>();
+    const firstCreatedAt = new Date(Date.now() - 60 * 60 * 1_000).toISOString();
+    const mirrorCreatedAt = new Date(Date.now() - 30 * 60 * 1_000).toISOString();
+    const deadlineAt = new Date(Date.now() + 7 * 86_400_000).toISOString();
+    await db.prepare("UPDATE jobs SET created_at = '2026-01-01T00:00:00.000Z'").run();
+    for (const [index, sourceUrl, createdAt] of [
+      [0, 'https://official.example.test/oms', firstCreatedAt],
+      [1, 'https://aggregator.example.test/oms', mirrorCreatedAt],
+    ] as const) {
+      await db
+        .prepare(
+          `UPDATE jobs SET company_name = '미래에셋자산운용',
+                  title = ?, source_url = ?, source_posting_id = NULL,
+                  source_name = ?, status = 'ACTIVE', career_scope = 'NEW_GRAD_ELIGIBLE',
+                  rolling = 0, application_start_at = ?, deadline_at = ?, created_at = ?
+            WHERE id = ?`,
+        )
+        .bind(
+          index === 0
+            ? 'OMS 개발 및 운영(채용연계형 인턴)'
+            : '주문관리시스템(OMS) 개발 및 운영 채용연계형 인턴',
+          sourceUrl,
+          index === 0 ? '공식 채용' : '채용 플랫폼',
+          new Date(Date.now() - 2 * 86_400_000).toISOString(),
+          deadlineAt,
+          createdAt,
+          rows.results[index]!.id,
+        )
+        .run();
+    }
+
+    const claim = await call(
+      '/api/v1/internal/slack-digest/claim',
+      { method: 'POST', headers: authorized, body: '{}' },
+      {},
+      environment,
+    );
+    expect((claim.body.payload as { jobs: unknown[] }).jobs).toHaveLength(1);
+    const complete = await call(
+      '/api/v1/internal/slack-digest/complete',
+      {
+        method: 'POST',
+        headers: authorized,
+        body: JSON.stringify({
+          deliveryKey: claim.body.deliveryKey,
+          claimToken: claim.body.claimToken,
+        }),
+      },
+      {},
+      environment,
+    );
+    expect(complete.body).toMatchObject({ status: 'sent' });
+    const recorded = await db
+      .prepare(
+        `SELECT COUNT(*) AS count, MIN(company_key) AS companyKey
+           FROM slack_digest_items WHERE delivery_key = ?`,
+      )
+      .bind(claim.body.deliveryKey)
+      .first<{ count: number; companyKey: string }>();
+    expect(recorded).toMatchObject({ count: 1, companyKey: 'mirae-asset-global-investments' });
+
+    const snapshot = await call(
+      `/api/v1/internal/slack-digest?snapshotCreatedAt=${encodeURIComponent(mirrorCreatedAt)}`,
+      { headers: authorized },
+      {},
+      environment,
+    );
+    expect(snapshot.body).toMatchObject({ suppressedDuplicateCount: 1, jobs: [] });
+  });
+
+  it('returns already-sent before checking whether a newer jobs import exists', async () => {
+    const token = 'test-digest-token';
+    const today = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date());
+    await db.prepare("DELETE FROM import_batches WHERE kind IN ('jobs', 'jobs-v5')").run();
+    await db
+      .prepare(
+        `INSERT INTO slack_digest_deliveries
+           (delivery_key, delivery_mode, status, claim_token_hash, payload, payload_checksum,
+            attempt_count, claimed_at, completed_at)
+         VALUES (?, 'DAILY', 'SENT', ?, '{}', ?, 1, ?, ?)`,
+      )
+      .bind(
+        `daily:${today}`,
+        'a'.repeat(64),
+        'b'.repeat(64),
+        new Date().toISOString(),
+        new Date().toISOString(),
+      )
+      .run();
+
+    const result = await call(
+      '/api/v1/internal/slack-digest/claim',
+      {
+        method: 'POST',
+        headers: { authorization: `Bearer ${token}` },
+        body: JSON.stringify({ requireFreshJobs: true }),
+      },
+      {},
+      { DIGEST_API_TOKEN: token },
+    );
+
+    expect(result.body).toMatchObject({
+      status: 'already-sent',
+      deliveryKey: `daily:${today}`,
+      deliveryStatus: 'SENT',
+    });
   });
 
   it('keeps the daily delivery unclaimed until a jobs import is committed after the previous digest', async () => {

@@ -1,4 +1,6 @@
 import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+import process from 'node:process';
 import { fileURLToPath, URL } from 'node:url';
 import { build } from 'esbuild';
 import {
@@ -12,6 +14,13 @@ await rm('dist', { recursive: true, force: true });
 await mkdir('dist/server', { recursive: true });
 await mkdir('dist/client', { recursive: true });
 await cp('apps/web/dist', 'dist/client', { recursive: true });
+const buildCommitSha = String(
+  process.env.CAREERGROUND_BUILD_COMMIT_SHA ||
+    execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }),
+).trim();
+if (!/^[a-f0-9]{40}$/u.test(buildCommitSha)) {
+  throw new Error(`Invalid CareerGround build commit SHA: ${buildCommitSha}`);
+}
 await build({
   entryPoints: [fileURLToPath(new URL('./worker.ts', import.meta.url))],
   outfile: 'dist/server/index.js',
@@ -21,7 +30,14 @@ await build({
   target: 'es2022',
   minify: true,
   sourcemap: true,
+  define: {
+    __CAREERGROUND_BUILD_COMMIT__: JSON.stringify(buildCommitSha),
+  },
 });
+await writeFile(
+  'dist/build-provenance.json',
+  `${JSON.stringify({ commitSha: buildCommitSha, featureVersion: 'slack-digest-history-v1' }, null, 2)}\n`,
+);
 const hosting = JSON.parse(await readFile('.openai/hosting.json', 'utf8'));
 await mkdir('dist/.openai', { recursive: true });
 await writeFile('dist/.openai/hosting.json', `${JSON.stringify(hosting, null, 2)}\n`);

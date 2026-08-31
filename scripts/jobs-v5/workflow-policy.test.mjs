@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 const source = readFileSync('.github/workflows/careerground-jobs-v5.yml', 'utf8');
 const handoff = readFileSync('.github/workflows/careerground-v5-handoff.yml', 'utf8');
 const migration = readFileSync('drizzle/0037_careerground_jobs_v5_workflow.sql', 'utf8');
+const deliveryMigration = readFileSync('drizzle/0038_slack_digest_delivery_history.sql', 'utf8');
 
 describe('CareerGround v5 workflow pre-cutover policy', () => {
   it('is manual-only until schedule activation is approved', () => {
@@ -41,6 +42,14 @@ describe('CareerGround v5 workflow pre-cutover policy', () => {
     expect(migration).not.toMatch(/DELETE\s+FROM\s+`?jobs/iu);
   });
 
+  it('persists Slack delivery item identities with a verified forward migration', () => {
+    const ddl = deliveryMigration.split('INSERT INTO `app_schema_migrations`')[0];
+    const checksum = createHash('sha256').update(ddl).digest('hex');
+    expect(deliveryMigration).toContain(`sha256:${checksum}`);
+    expect(deliveryMigration).toContain('CREATE TABLE `slack_digest_items`');
+    expect(deliveryMigration).not.toMatch(/DELETE\s+FROM/iu);
+  });
+
   it('accepts only trusted issue pointers, publishes through the protected endpoint, and never sends Slack', () => {
     expect(handoff).toContain('issues:');
     expect(handoff).toContain('types: [opened, reopened]');
@@ -54,6 +63,7 @@ describe('CareerGround v5 workflow pre-cutover policy', () => {
     expect(handoff).toContain('CAREERGROUND_PUBLISH_TOKEN');
     expect(handoff).toContain('/api/v1/internal/jobs-v5/publish');
     expect(handoff).toContain("handoff_schema_version == '2.0'");
+    expect(handoff).toContain("event_type: 'jobs-v5-published'");
     expect(handoff).not.toContain('SLACK_WEBHOOK_URL');
     expect(handoff).not.toContain('DIGEST_API_TOKEN');
     expect(handoff).not.toMatch(/^\s+schedule:/mu);

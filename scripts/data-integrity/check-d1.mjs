@@ -76,10 +76,15 @@ const checks = {
        OR attempt_count < 1
        OR length(claim_token_hash) <> 64
        OR length(payload_checksum) <> 64`,
+  invalidSlackDigestItems: `SELECT COUNT(*) AS count FROM slack_digest_items item
+    LEFT JOIN slack_digest_deliveries delivery ON delivery.delivery_key = item.delivery_key
+    WHERE delivery.delivery_key IS NULL OR delivery.status <> 'SENT'
+       OR length(trim(item.company_key)) = 0 OR length(trim(item.campaign_key)) = 0
+       OR length(trim(item.role_key)) = 0 OR length(trim(item.source_url)) = 0`,
   missingMigrationAuthority: `SELECT CASE WHEN EXISTS (
     SELECT 1 FROM app_schema_migrations
-     WHERE version = '0034_migration_authority_and_delivery_integrity'
-       AND checksum = 'sha256:f67834f4d70094941c682f94ad726066d4ffeb7f9380d7cbf5c18783191eee56'
+     WHERE version = '0038_slack_digest_delivery_history'
+       AND checksum = 'sha256:7ced2b9151cbeeb97cd51079893afa7fdfa7da4031519a3e46b8a2360c8e015a'
   ) THEN 0 ELSE 1 END AS count`,
 };
 

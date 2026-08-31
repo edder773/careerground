@@ -32,6 +32,7 @@ jobs:
           SLO_READINESS_SAMPLES: '5'
           SLO_READINESS_COLD_START_BUDGET_MS: '5000'
           SLO_READINESS_WARM_P95_BUDGET_MS: '2500'
+          SLO_EXPECTED_BUILD_COMMIT: ${{ github.sha }}
         run: node scripts/operations/check-production-slo.mjs
 
       - name: Upload structured SLO evidence
