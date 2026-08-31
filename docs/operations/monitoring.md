@@ -4,13 +4,13 @@ CareerGround 운영 감시는 비밀값이나 개인정보를 외부 관측 도�
 구조화 artifact와 단일 incident 이슈를 사용한다. 같은 장애의 이슈를 계속 만들지 않으며 정상화된
 첫 실행이 기존 이슈를 닫는다.
 
-| 자동화                      | 주기                                    | 실패 이슈                                  | 보존 |
-| --------------------------- | --------------------------------------- | ------------------------------------------ | ---- |
-| Production SLO smoke        | 매시간 17분                             | `[운영 경보] Production SLO smoke 실패`    | 30일 |
-| Daily Slack digest          | 평일 08:01·08:31·09:17 KST, 공휴일 제외 | `[운영 경보] Daily Slack digest 전송 실패` | 로그 |
-| Daily digest schedule lag   | 예약 digest 및 SLO 완료 watchdog        | `[운영 경보] Daily Slack digest 예약 지연` | 30일 |
-| Jobs import readiness       | 08:01·08:31 digest 실행 시              | `[운영 경보] 채용 DB 갱신 지연`            | 로그 |
-| D1-compatible restore drill | 월요일 04:41 KST                        | `[운영 경보] D1 복구 훈련 실패`            | 30일 |
+| 자동화                      | 주기                                             | 실패 이슈                                  | 보존 |
+| --------------------------- | ------------------------------------------------ | ------------------------------------------ | ---- |
+| Production SLO smoke        | 매시간 17분                                      | `[운영 경보] Production SLO smoke 실패`    | 30일 |
+| Daily Slack digest          | 평일 08:01~08:51 fallback·09:17 KST, 공휴일 제외 | `[운영 경보] Daily Slack digest 전송 실패` | 로그 |
+| Daily digest schedule lag   | 예약 digest 및 SLO 완료 watchdog                 | `[운영 경보] Daily Slack digest 예약 지연` | 30일 |
+| Jobs import readiness       | 08:01~08:51 digest fallback 실행 시              | `[운영 경보] 채용 DB 갱신 지연`            | 로그 |
+| D1-compatible restore drill | 월요일 04:41 KST                                 | `[운영 경보] D1 복구 훈련 실패`            | 30일 |
 
 ## 신호별 대응
 

@@ -29,6 +29,7 @@ import {
   type RateLimitWindow,
 } from './d1-auth.js';
 import { RouteError, type D1Env, type UserRow } from './d1-api-contract.js';
+import { BUILD_INFO } from './build-info.js';
 import {
   claimSlackDigest,
   completeDailyChallengeBootstrap,
@@ -2272,7 +2273,7 @@ export async function handleD1Api(request: Request, env: D1Env) {
       const ready = schema.ready && Boolean(canary);
       return finish(
         responseJson(
-          { status: ready ? 'ok' : 'not-ready', database: 'd1', schema, canary },
+          { status: ready ? 'ok' : 'not-ready', database: 'd1', build: BUILD_INFO, schema, canary },
           ready ? 200 : 503,
           requestId,
         ),

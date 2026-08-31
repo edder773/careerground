@@ -16,7 +16,7 @@ ChatGPT 예약 작업은 연결 도구를 사용할 수 있지만 로컬 프로�
 6. GitHub Actions가 `CAREERGROUND_PUBLISH_TOKEN`으로 Sites의 `/api/v1/internal/jobs-v5/publish`를 호출한다. 서버는 현재 KST 날짜, deterministic runId, ID·URL·canonical key·fingerprint, 신입 증거, 미래 마감일을 다시 검증한다.
 7. 서버는 운영 D1 기준선과 대조해 완전히 동일한 기존 URL은 건너뛰고, 새 URL의 ID·canonical key·fingerprint 충돌은 fail-closed 처리한다. 신규 공고만 최대 75건까지 stage/publish하며 기존 행 UPDATE·DELETE와 `saved_jobs` mutation은 허용하지 않는다.
 8. PUBLISHED run, `jobs-v5` import batch, `last-success` pointer와 사후 row count 검증이 모두 성공한 뒤에만 세 Issue를 처리 완료로 닫는다. 검증 bundle과 publish receipt는 30일 보관한다.
-9. 다음 평일 08:01 Slack workflow가 당일 `jobs-v5` COMMITTED 기록을 준비 신호로 사용한다. 신규 공고가 0건이어도 코딩테스트 알림은 정상 전송할 수 있다.
+9. 게시 성공 이벤트가 Slack workflow를 깨우며 08:01~10:30 KST window 안이면 즉시 같은 delivery claim을 시도한다. 그 밖에는 다음 평일 08:01 fallback이 `jobs-v5` COMMITTED 기록을 준비 신호로 사용한다. 신규 공고가 0건이어도 코딩테스트 알림은 정상 전송할 수 있다.
 
 ## 보안과 멱등성
 
@@ -26,7 +26,7 @@ ChatGPT 예약 작업은 연결 도구를 사용할 수 있지만 로컬 프로�
 - 같은 종류가 재실행되면 가장 큰 `attempt`만 사용한다. 같은 attempt가 서로 다른 blob을 가리키면 자동 선택하지 않는다.
 - workflow 권한은 `contents: read`, `issues: write`뿐이다.
 - 실제 JSON은 커밋·PR·Issue 본문에 저장하지 않는다.
-- workflow에는 별도 cron, Sites 재배포, Slack 전송이 없다. D1 publish만 보호된 HTTPS endpoint로 수행한다.
+- workflow에는 별도 cron, Sites 재배포, Slack webhook 호출이 없다. D1 publish만 보호된 HTTPS endpoint로 수행하고, 성공 뒤 digest workflow에 멱등성 wake-up 이벤트만 보낸다.
 - `runId=CG-YYYY-MM-DD-A<attempt>-discovery`는 날짜와 attempt로 결정적이다. 같은 입력 재실행은 `ALREADY_PUBLISHED`, 같은 runId의 다른 입력은 실패한다.
 
 ## 포인터 계약
@@ -78,4 +78,4 @@ final은 artifactKind=LEGACY_FINAL, audit은 artifactKind=LEGACY_AUDIT로 하여
 
 ## 현재 활성화 범위
 
-schema 2.0 연결은 신규 후보 자동 수신, 결정적 정규화, 출처·정책·중복 검증, 운영 기준선 대조, D1 신규 INSERT와 게시 원장 기록까지 활성화한다. `VERIFIED_DISCOVERY`는 중간 검증 상태이며 최종 성공은 endpoint receipt의 `PUBLISHED` 또는 동일 입력 재실행의 `ALREADY_PUBLISHED`다. Slack은 이 workflow에서 즉시 보내지 않고 기존 오전 발송이 게시 원장을 소비한다.
+schema 2.0 연결은 신규 후보 자동 수신, 결정적 정규화, 출처·정책·중복 검증, 운영 기준선 대조, D1 신규 INSERT와 게시 원장 기록까지 활성화한다. `VERIFIED_DISCOVERY`는 중간 검증 상태이며 최종 성공은 endpoint receipt의 `PUBLISHED` 또는 동일 입력 재실행의 `ALREADY_PUBLISHED`다. 이 workflow는 Slack webhook을 직접 호출하지 않고 게시 성공 이벤트로 기존 digest workflow를 깨운다.

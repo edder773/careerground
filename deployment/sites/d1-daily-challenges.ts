@@ -11,7 +11,12 @@ import {
 import { normalizedText, sha256 } from './domain.js';
 import { hashSessionToken, newSessionToken } from './google-auth.js';
 import { RouteError, type D1Env } from './d1-api-contract.js';
-import { duplicateJobReason, jobCompanyKey, type ComparableJob } from './job-dedup.js';
+import {
+  duplicateJobReason,
+  jobCompanyKey,
+  jobDigestIdentity,
+  type ComparableJob,
+} from './job-dedup.js';
 
 const cleanText = normalizedText;
 
@@ -24,6 +29,34 @@ export const kstDate = () =>
   }).format(new Date());
 
 const DAILY_DIGEST_FALLBACK_WINDOW_MS = 86_400_000;
+
+type SlackDigestJobRow = ComparableJob & {
+  id: string;
+  title: string;
+  deadlineAt: string | null;
+  rolling: number | boolean;
+  sourceName: string;
+  sourceUrl: string;
+};
+
+type SlackDigestHistoryRow = ComparableJob & {
+  jobId?: string;
+  deliveredAt?: string;
+};
+
+type SlackDigestPayloadJob = {
+  jobId: string;
+  company: string;
+  title: string;
+  applicationStartAt: string | null;
+  deadlineAt: string | null;
+  rolling: number | boolean;
+  sourceName: string;
+  sourceUrl: string;
+  companyKey: string;
+  campaignKey: string;
+  roleKey: string;
+};
 
 async function dailyDigestWindowStart(db: D1Database, generatedAt: string) {
   const previous = await first<{ completedAt: string | null }>(
@@ -344,6 +377,62 @@ async function slackLv3Challenge(db: D1Database, today: string) {
   return selected;
 }
 
+const deliveryPayloadJobs = (payload: string): SlackDigestHistoryRow[] => {
+  try {
+    const parsed = parseObject(JSON.parse(payload));
+    return (Array.isArray(parsed.jobs) ? parsed.jobs : [])
+      .map(parseObject)
+      .map((job) => ({
+        jobId: cleanText(job.jobId),
+        companyName: cleanText(job.company),
+        title: cleanText(job.title),
+        applicationStartAt: cleanText(job.applicationStartAt) || null,
+        deadlineAt: cleanText(job.deadlineAt) || null,
+        sourceUrl: cleanText(job.sourceUrl),
+      }))
+      .filter((job) => job.companyName && job.title);
+  } catch {
+    return [];
+  }
+};
+
+async function deliveredSlackJobs(db: D1Database) {
+  const [ledgerRows, legacyDeliveries] = await Promise.all([
+    all<SlackDigestHistoryRow>(
+      db,
+      `SELECT job_id AS jobId, company_name AS companyName, title,
+              application_start_at AS applicationStartAt, deadline_at AS deadlineAt,
+              source_url AS sourceUrl, delivered_at AS deliveredAt
+         FROM slack_digest_items
+        ORDER BY delivered_at DESC`,
+    ),
+    all<{ payload: string; completedAt: string }>(
+      db,
+      `SELECT payload, completed_at AS completedAt
+         FROM slack_digest_deliveries
+        WHERE status = 'SENT' AND completed_at IS NOT NULL
+        ORDER BY completed_at DESC`,
+    ),
+  ]);
+  const seen = new Set<string>();
+  const history: SlackDigestHistoryRow[] = [];
+  for (const row of ledgerRows) {
+    const key = `${cleanText(row.jobId)}|${cleanText(row.sourceUrl)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    history.push(row);
+  }
+  for (const delivery of legacyDeliveries) {
+    for (const row of deliveryPayloadJobs(delivery.payload)) {
+      const key = `${cleanText(row.jobId)}|${cleanText(row.sourceUrl)}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      history.push({ ...row, deliveredAt: delivery.completedAt });
+    }
+  }
+  return history;
+}
+
 export async function slackDigest(db: D1Database, requestUrl: URL) {
   const today = kstDate();
   const generatedAt = nowIso();
@@ -364,14 +453,6 @@ export async function slackDigest(db: D1Database, requestUrl: URL) {
     snapshotCreatedAt = snapshotCreatedAtInput;
   }
   const windowStartedAt = snapshotCreatedAt ? null : await dailyDigestWindowStart(db, generatedAt);
-  type SlackDigestJobRow = ComparableJob & {
-    id: string;
-    title: string;
-    deadlineAt: string | null;
-    rolling: number | boolean;
-    sourceName: string;
-    sourceUrl: string;
-  };
   const candidateJobs = await all<SlackDigestJobRow>(
     db,
     snapshotCreatedAt
@@ -399,24 +480,9 @@ export async function slackDigest(db: D1Database, requestUrl: URL) {
       ? [generatedAt, snapshotCreatedAt]
       : [generatedAt, windowStartedAt, generatedAt]),
   );
-  const historicalCutoff = snapshotCreatedAt || windowStartedAt;
-  const historicalJobs = historicalCutoff
-    ? await all<SlackDigestJobRow>(
-        db,
-        `SELECT id, company_name AS companyName, title,
-                application_start_at AS applicationStartAt, deadline_at AS deadlineAt, rolling,
-                source_name AS sourceName, source_url AS sourceUrl
-           FROM jobs
-          WHERE status = 'ACTIVE'
-            AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
-            AND created_at < ?
-            AND (rolling = 1 OR deadline_at IS NULL OR deadline_at > ?)`,
-        historicalCutoff,
-        generatedAt,
-      )
-    : [];
-  const historicalByCompany = new Map<string, SlackDigestJobRow[]>();
-  for (const job of historicalJobs) {
+  const deliveryHistory = await deliveredSlackJobs(db);
+  const historicalByCompany = new Map<string, SlackDigestHistoryRow[]>();
+  for (const job of deliveryHistory) {
     const key = jobCompanyKey(job.companyName);
     const companyJobs = historicalByCompany.get(key) || [];
     companyJobs.push(job);
@@ -424,29 +490,50 @@ export async function slackDigest(db: D1Database, requestUrl: URL) {
   }
   const includedJobs: SlackDigestJobRow[] = [];
   let suppressedDuplicateCount = 0;
+  const duplicateReasons: Record<string, number> = {};
   for (const candidate of candidateJobs) {
     const comparisons = [
       ...(historicalByCompany.get(jobCompanyKey(candidate.companyName)) || []),
       ...includedJobs,
     ];
-    if (comparisons.some((existing) => duplicateJobReason(candidate, existing))) {
+    const duplicateReason = comparisons
+      .map((existing) => duplicateJobReason(candidate, existing))
+      .find(Boolean);
+    if (duplicateReason) {
       suppressedDuplicateCount += 1;
+      duplicateReasons[duplicateReason] = (duplicateReasons[duplicateReason] || 0) + 1;
     } else {
       includedJobs.push(candidate);
     }
   }
-  const jobs = includedJobs.map(
-    ({ id: _id, companyName: company, applicationStartAt: _applicationStartAt, ...job }) => ({
-      company,
-      ...job,
-    }),
-  );
+  const jobs: SlackDigestPayloadJob[] = includedJobs.map((job) => {
+    const identity = jobDigestIdentity(job);
+    return {
+      jobId: job.id,
+      company: job.companyName,
+      title: job.title,
+      applicationStartAt: job.applicationStartAt || null,
+      deadlineAt: job.deadlineAt,
+      rolling: job.rolling,
+      sourceName: job.sourceName,
+      sourceUrl: job.sourceUrl,
+      companyKey: identity.companyKey,
+      campaignKey: identity.campaignKey,
+      roleKey: identity.roleKey,
+    };
+  });
   return {
     date: today,
     generatedAt,
     windowStartedAt,
     snapshotCreatedAt,
     suppressedDuplicateCount,
+    duplicateAudit: {
+      candidateCount: candidateJobs.length,
+      includedCount: jobs.length,
+      suppressedCount: suppressedDuplicateCount,
+      reasons: duplicateReasons,
+    },
     siteUrl: new URL('/', requestUrl).toString(),
     challenges: [
       ...challenges
@@ -528,6 +615,33 @@ async function committedJobsImportAfter(
 
 export async function claimSlackDigest(db: D1Database, requestUrl: URL, input: unknown) {
   const options = slackDigestDeliveryInput(input);
+  const preliminaryDeliveryKey = options.snapshotCreatedAt
+    ? `snapshot:${options.snapshotCreatedAt}:jobs`
+    : `daily:${kstDate()}`;
+  if (!options.dryRun) {
+    const existing = await first<SlackDigestDeliveryRow>(
+      db,
+      `SELECT delivery_key AS deliveryKey, status, payload, attempt_count AS attemptCount
+         FROM slack_digest_deliveries WHERE delivery_key = ?`,
+      preliminaryDeliveryKey,
+    );
+    if (existing?.status === 'SENT') {
+      return {
+        status: 'already-sent' as const,
+        deliveryKey: preliminaryDeliveryKey,
+        deliveryStatus: existing.status,
+        attemptCount: Number(existing.attemptCount || 0),
+      };
+    }
+    if (existing && existing.status !== 'FAILED') {
+      return {
+        status: 'blocked' as const,
+        deliveryKey: preliminaryDeliveryKey,
+        deliveryStatus: existing.status,
+        attemptCount: Number(existing.attemptCount || 0),
+      };
+    }
+  }
   if (options.requireFreshJobs) {
     const date = kstDate();
     const generatedAt = nowIso();
@@ -552,6 +666,9 @@ export async function claimSlackDigest(db: D1Database, requestUrl: URL, input: u
   const deliveryKey = options.snapshotCreatedAt
     ? `snapshot:${options.snapshotCreatedAt}:jobs`
     : `daily:${payload.date}`;
+  if (deliveryKey !== preliminaryDeliveryKey) {
+    throw new RouteError(409, '알림 기준일이 처리 중 변경되었습니다.', 'DELIVERY_DATE_CHANGED');
+  }
   if (options.dryRun) {
     return {
       status: 'preview' as const,
@@ -629,7 +746,21 @@ export async function settleSlackDigestDelivery(
   const claimTokenHash = await hashSessionToken(claimToken);
   const timestamp = nowIso();
   const error = cleanText(body.error).slice(0, 500) || null;
-  const result = await db
+  const claimedDelivery = await first<{ payload: string }>(
+    db,
+    `SELECT payload FROM slack_digest_deliveries
+      WHERE delivery_key = ? AND status = 'CLAIMED' AND claim_token_hash = ?`,
+    deliveryKey,
+    claimTokenHash,
+  );
+  if (!claimedDelivery) {
+    throw new RouteError(
+      409,
+      '발송 claim이 없거나 이미 종료되었습니다.',
+      'DELIVERY_CLAIM_CONFLICT',
+    );
+  }
+  const update = db
     .prepare(
       `UPDATE slack_digest_deliveries
           SET status = ?,
@@ -638,14 +769,42 @@ export async function settleSlackDigestDelivery(
               last_error = ?
         WHERE delivery_key = ? AND status = 'CLAIMED' AND claim_token_hash = ?`,
     )
-    .bind(outcome, outcome, timestamp, outcome, timestamp, error, deliveryKey, claimTokenHash)
-    .run();
-  if (Number(result.meta?.changes || 0) !== 1) {
-    throw new RouteError(
-      409,
-      '발송 claim이 없거나 이미 종료되었습니다.',
-      'DELIVERY_CLAIM_CONFLICT',
-    );
+    .bind(outcome, outcome, timestamp, outcome, timestamp, error, deliveryKey, claimTokenHash);
+  const statements = [update];
+  if (outcome === 'SENT') {
+    for (const job of deliveryPayloadJobs(claimedDelivery.payload)) {
+      const jobId = cleanText(job.jobId);
+      const sourceUrl = cleanText(job.sourceUrl);
+      if (!jobId || !sourceUrl) continue;
+      const identity = jobDigestIdentity(job);
+      statements.push(
+        db
+          .prepare(
+            `INSERT INTO slack_digest_items
+               (delivery_key, job_id, company_key, campaign_key, role_key, source_url,
+                company_name, title, application_start_at, deadline_at, delivered_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             ON CONFLICT(delivery_key, job_id) DO NOTHING`,
+          )
+          .bind(
+            deliveryKey,
+            jobId,
+            identity.companyKey,
+            identity.campaignKey,
+            identity.roleKey,
+            sourceUrl,
+            job.companyName,
+            job.title,
+            job.applicationStartAt || null,
+            job.deadlineAt || null,
+            timestamp,
+          ),
+      );
+    }
+  }
+  const results = await db.batch(statements);
+  if (Number(results[0]?.meta?.changes || 0) !== 1) {
+    throw new RouteError(409, '발송 claim 종료가 충돌했습니다.', 'DELIVERY_CLAIM_CONFLICT');
   }
   return { status: outcome.toLowerCase(), deliveryKey };
 }

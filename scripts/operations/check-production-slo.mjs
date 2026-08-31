@@ -10,6 +10,7 @@ const MIGRATION_AUTHORITY_URL = new URL(
   '../../deployment/sites/migration-authority.ts',
   import.meta.url,
 );
+const BUILD_INFO_URL = new URL('../../deployment/sites/build-info.ts', import.meta.url);
 
 export const readSourceSchemaVersion = (source = readFileSync(MIGRATION_AUTHORITY_URL, 'utf8')) => {
   const match = source.match(/EXPECTED_SCHEMA_VERSION\s*=\s*'([^']+)'/u);
@@ -20,6 +21,14 @@ export const readSourceSchemaVersion = (source = readFileSync(MIGRATION_AUTHORIT
 };
 
 export const SOURCE_SCHEMA_VERSION = readSourceSchemaVersion();
+
+export const readSourceBuildFeature = (source = readFileSync(BUILD_INFO_URL, 'utf8')) => {
+  const match = source.match(/BUILD_FEATURE_VERSION\s*=\s*'([^']+)'/u);
+  if (!match?.[1]) throw new Error('Repository build info does not declare BUILD_FEATURE_VERSION.');
+  return match[1];
+};
+
+export const SOURCE_BUILD_FEATURE = readSourceBuildFeature();
 
 const timedRequest = async (url, init = {}) => {
   const startedAt = performance.now();
@@ -73,6 +82,8 @@ export async function runProductionSlo({
   coldStartBudgetMs = 5_000,
   warmLatencyBudgetMs = 2_500,
   expectedSchemaVersion = SOURCE_SCHEMA_VERSION,
+  expectedBuildFeature = SOURCE_BUILD_FEATURE,
+  expectedBuildCommit = '',
 } = {}) {
   const normalizedBase = new URL(baseUrl).origin;
   const checks = [];
@@ -124,13 +135,15 @@ export async function runProductionSlo({
       payload?.schema?.ready === true &&
       payload?.schema?.expectedVersion === expectedSchemaVersion &&
       payload?.schema?.appliedVersion === expectedSchemaVersion &&
+      payload?.build?.featureVersion === expectedBuildFeature &&
+      (!expectedBuildCommit || payload?.build?.commitSha === expectedBuildCommit) &&
       canaryIsHealthy;
     record(
       `readiness.sample-${index + 1}.contract`,
       contractIsHealthy,
       contractIsHealthy
-        ? `HTTP 200 source=${expectedSchemaVersion} schema=${payload.schema.appliedVersion}`
-        : `HTTP ${result.response.status} source=${expectedSchemaVersion} expected=${payload?.schema?.expectedVersion || 'invalid'} applied=${payload?.schema?.appliedVersion || 'invalid'} canary=${JSON.stringify(canary || null)}`,
+        ? `HTTP 200 source=${expectedSchemaVersion} schema=${payload.schema.appliedVersion} feature=${payload.build.featureVersion} commit=${payload.build.commitSha}`
+        : `HTTP ${result.response.status} source=${expectedSchemaVersion} expected=${payload?.schema?.expectedVersion || 'invalid'} applied=${payload?.schema?.appliedVersion || 'invalid'} feature=${payload?.build?.featureVersion || 'invalid'} commit=${payload?.build?.commitSha || 'invalid'} canary=${JSON.stringify(canary || null)}`,
     );
   }
 
@@ -307,6 +320,7 @@ export async function runProductionSlo({
           appliedVersion: readinessPayload.schema.appliedVersion,
         }
       : null,
+    build: readinessPayload?.build || null,
     canary: readinessPayload?.canary || null,
     checks,
     failures,
@@ -317,6 +331,8 @@ export const formatSloSummary = (report) => {
   const result = report.passed ? 'PASS' : 'FAIL';
   const sourceVersion = report.schema?.sourceVersion || SOURCE_SCHEMA_VERSION;
   const version = report.schema?.appliedVersion || 'unavailable';
+  const buildFeature = report.build?.featureVersion || 'unavailable';
+  const buildCommit = report.build?.commitSha || 'unavailable';
   const coldStart =
     report.latency.readinessColdStartMs === null
       ? 'unavailable'
@@ -331,6 +347,8 @@ export const formatSloSummary = (report) => {
     `- Result: **${result}**`,
     `- Source schema: \`${sourceVersion}\``,
     `- Deployed schema: \`${version}\``,
+    `- Deployed feature: \`${buildFeature}\``,
+    `- Deployed commit: \`${buildCommit}\``,
     `- Readiness cold start: **${coldStart}** (budget ${report.latency.coldStartBudgetMs} ms)`,
     `- Readiness warm p95: **${warmP95}** (budget ${report.latency.warmBudgetMs} ms)`,
     `- Checks: ${report.checks.filter((check) => check.passed).length}/${report.checks.length} passed`,
@@ -348,6 +366,7 @@ if (isMain) {
     readinessSamples: Number(process.env.SLO_READINESS_SAMPLES || 5),
     coldStartBudgetMs: Number(process.env.SLO_READINESS_COLD_START_BUDGET_MS || 5_000),
     warmLatencyBudgetMs: Number(process.env.SLO_READINESS_WARM_P95_BUDGET_MS || 2_500),
+    expectedBuildCommit: process.env.SLO_EXPECTED_BUILD_COMMIT || '',
   });
   const outputPath = resolve(process.env.SLO_OUTPUT_FILE || DEFAULT_OUTPUT);
   mkdirSync(dirname(outputPath), { recursive: true });

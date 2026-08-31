@@ -338,6 +338,8 @@ describe('Sites production migration baseline', () => {
                  )) AS duplicateCanonicalJobs,
                  (SELECT COUNT(*) FROM sqlite_schema
                    WHERE type = 'table' AND name = 'slack_digest_deliveries') AS slackDeliveryTables,
+                 (SELECT COUNT(*) FROM sqlite_schema
+                   WHERE type = 'table' AND name = 'slack_digest_items') AS slackDeliveryItemTables,
                  (SELECT COUNT(*) FROM collections) +
                  (SELECT COUNT(*) FROM collection_items) +
                  (SELECT COUNT(*) FROM problem_progress) +
@@ -410,6 +412,7 @@ describe('Sites production migration baseline', () => {
         canonicalJobIndexes: 1,
         duplicateCanonicalJobs: 0,
         slackDeliveryTables: 1,
+        slackDeliveryItemTables: 1,
         personalRows: 0,
       });
       expect(schema?.jobTechRows).toBeGreaterThan(0);

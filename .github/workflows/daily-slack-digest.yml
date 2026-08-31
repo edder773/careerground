@@ -4,10 +4,20 @@ on:
   workflow_run:
     workflows: ['Production SLO smoke']
     types: [completed]
+  repository_dispatch:
+    types: [jobs-v5-published]
   schedule:
     - cron: '1 8 * * 1-5'
       timezone: 'Asia/Seoul'
+    - cron: '11 8 * * 1-5'
+      timezone: 'Asia/Seoul'
+    - cron: '21 8 * * 1-5'
+      timezone: 'Asia/Seoul'
     - cron: '31 8 * * 1-5'
+      timezone: 'Asia/Seoul'
+    - cron: '41 8 * * 1-5'
+      timezone: 'Asia/Seoul'
+    - cron: '51 8 * * 1-5'
       timezone: 'Asia/Seoul'
     - cron: '17 9 * * 1-5'
       timezone: 'Asia/Seoul'
@@ -61,10 +71,10 @@ jobs:
           SLACK_DIGEST_SNAPSHOT_CREATED_AT: ${{ github.event_name == 'workflow_dispatch' && inputs.snapshot_created_at || '' }}
           SLACK_DIGEST_JOBS_ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.jobs_only || false }}
           SLACK_DIGEST_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
-          SLACK_DIGEST_WINDOW_START: ${{ github.event_name == 'workflow_run' && '08:01' || '' }}
-          SLACK_DIGEST_WINDOW_END: ${{ github.event_name == 'workflow_run' && '10:30' || '' }}
-          SLACK_DIGEST_FRESH_UNTIL: ${{ github.event_name == 'workflow_run' && '09:17' || '' }}
-          SLACK_DIGEST_REQUIRE_FRESH_JOBS: ${{ (github.event_name == 'schedule' && github.event.schedule != '17 9 * * 1-5') || (github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+          SLACK_DIGEST_WINDOW_START: ${{ (github.event_name == 'workflow_run' || github.event_name == 'repository_dispatch') && '08:01' || '' }}
+          SLACK_DIGEST_WINDOW_END: ${{ (github.event_name == 'workflow_run' || github.event_name == 'repository_dispatch') && '10:30' || '' }}
+          SLACK_DIGEST_FRESH_UNTIL: ${{ (github.event_name == 'workflow_run' || github.event_name == 'repository_dispatch') && '09:17' || '' }}
+          SLACK_DIGEST_REQUIRE_FRESH_JOBS: ${{ github.event_name == 'schedule' && github.event.schedule != '17 9 * * 1-5' }}
         run: node scripts/slack/send-daily-digest.mjs
 
       - name: Open or update the jobs refresh incident
@@ -113,11 +123,12 @@ jobs:
 
       - name: Measure the 08:01 KST schedule delay
         id: schedule_delay
-        if: github.event_name == 'schedule' && (steps.digest.outputs.delivery_status == 'sent' || steps.digest.outputs.delivery_status == 'job-import-not-ready')
+        if: github.event_name == 'schedule' && github.event.schedule == '1 8 * * 1-5' && (steps.digest.outputs.delivery_status == 'sent' || steps.digest.outputs.delivery_status == 'already-sent' || steps.digest.outputs.delivery_status == 'job-import-not-ready')
         continue-on-error: true
         env:
           SCHEDULE_EXPECTED_HOUR: '8'
           SCHEDULE_EXPECTED_MINUTE: '1'
+          SCHEDULE_CRON: ${{ github.event.schedule }}
           SCHEDULE_DELAY_BUDGET_MINUTES: '15'
           SCHEDULE_DELAY_OUTPUT_FILE: work/operations/daily-schedule-delay.json
         run: node scripts/operations/check-schedule-delay.mjs
@@ -191,7 +202,7 @@ jobs:
             });
 
       - name: Open or update the digest delivery incident
-        if: always() && steps.digest.outcome == 'failure'
+        if: always() && steps.digest.outcome == 'failure' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
         continue-on-error: true
         uses: actions/github-script@v8
         env:
@@ -251,5 +262,5 @@ jobs:
             });
 
       - name: Fail when digest delivery fails
-        if: always() && steps.digest.outcome == 'failure'
+        if: always() && steps.digest.outcome == 'failure' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
         run: exit 1
