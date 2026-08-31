@@ -232,6 +232,26 @@ export async function runProductionSlo({
     );
   }
 
+  for (const path of ['/jobs', '/coding', '/learning']) {
+    const id = path.slice(1);
+    const result = await perform(`spa-deep-link.${id}.request`, path, {
+      headers: { accept: 'text/html,application/xhtml+xml' },
+    });
+    if (!result) continue;
+    const html = await result.response.text();
+    const finalPath = result.response.url ? new URL(result.response.url).pathname : path;
+    const passed =
+      result.response.status === 200 &&
+      result.response.redirected === false &&
+      finalPath === path &&
+      html.includes('<div id="root"></div>');
+    record(
+      `spa-deep-link.${id}.contract`,
+      passed,
+      `HTTP ${result.response.status} redirected=${result.response.redirected} finalPath=${finalPath}`,
+    );
+  }
+
   const faviconResult = await perform('static-favicon.request', '/favicon.svg');
   if (faviconResult) {
     record(

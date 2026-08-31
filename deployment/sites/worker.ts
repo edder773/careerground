@@ -94,7 +94,7 @@ const worker = {
     const acceptsHtml = request.headers.get('accept')?.includes('text/html');
     if (!acceptsHtml) return withSecurityHeaders(asset);
     return withSecurityHeaders(
-      await env.ASSETS.fetch(new Request(new URL('/index.html', request.url), request)),
+      await env.ASSETS.fetch(new Request(new URL('/', request.url), request)),
     );
   },
   async scheduled(

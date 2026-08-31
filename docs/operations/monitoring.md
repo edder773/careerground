@@ -8,7 +8,7 @@ CareerGround 운영 감시는 비밀값이나 개인정보를 외부 관측 도�
 | --------------------------- | --------------------------------------- | ------------------------------------------ | ---- |
 | Production SLO smoke        | 매시간 17분                             | `[운영 경보] Production SLO smoke 실패`    | 30일 |
 | Daily Slack digest          | 평일 08:01·08:31·09:17 KST, 공휴일 제외 | `[운영 경보] Daily Slack digest 전송 실패` | 로그 |
-| Daily digest schedule lag   | 예약 digest 실행마다                    | `[운영 경보] Daily Slack digest 예약 지연` | 30일 |
+| Daily digest schedule lag   | 예약 digest 및 SLO 완료 watchdog        | `[운영 경보] Daily Slack digest 예약 지연` | 30일 |
 | Jobs import readiness       | 08:01·08:31 digest 실행 시              | `[운영 경보] 채용 DB 갱신 지연`            | 로그 |
 | D1-compatible restore drill | 월요일 04:41 KST                        | `[운영 경보] D1 복구 훈련 실패`            | 30일 |
 

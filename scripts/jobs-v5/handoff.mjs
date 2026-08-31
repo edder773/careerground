@@ -195,11 +195,25 @@ export function resolveHandoffIssues(
     newestAttempt.sort((left, right) => Number(right.issue.number) - Number(left.issue.number));
     selected.push(newestAttempt[0]);
   }
+  const selectedIssueNumbers = new Set(selected.map((entry) => Number(entry.issue.number)));
+  const selectedAttempts = new Map(
+    selected.map((entry) => [entry.pointer.artifactKind, Number(entry.pointer.attempt)]),
+  );
+  const supersededIssueNumbers = candidates
+    .filter(
+      (entry) =>
+        !selectedIssueNumbers.has(Number(entry.issue.number)) &&
+        Number(entry.pointer.attempt) <=
+          Number(selectedAttempts.get(entry.pointer.artifactKind) || Number.NEGATIVE_INFINITY),
+    )
+    .map((entry) => Number(entry.issue.number))
+    .sort((left, right) => left - right);
   return {
     status: missingArtifactKinds.length ? 'WAITING' : 'READY',
     schemaVersion,
     targetAsOfDate,
     selected,
+    supersededIssueNumbers,
     missingArtifactKinds,
     rejectedIssueNumbers,
   };
@@ -315,6 +329,7 @@ export async function fetchHandoffBundle({ repository, token, triggerIssueNumber
       status: 'ALREADY_PROCESSED',
       targetAsOfDate: triggerPointer.targetAsOfDate,
       issueNumbers: [Number(trigger.number)],
+      supersededIssueNumbers: [],
       missingArtifactKinds: [],
       rejectedIssueNumbers: [],
       artifacts: [],
@@ -337,6 +352,7 @@ export async function fetchHandoffBundle({ repository, token, triggerIssueNumber
       ? Math.max(...resolved.selected.map((entry) => Number(entry.pointer.attempt)))
       : 0,
     issueNumbers: resolved.selected.map((entry) => Number(entry.issue.number)),
+    supersededIssueNumbers: resolved.supersededIssueNumbers,
     missingArtifactKinds: resolved.missingArtifactKinds,
     rejectedIssueNumbers: resolved.rejectedIssueNumbers,
     artifacts: resolved.selected.map(({ pointer }) => ({
@@ -381,7 +397,15 @@ async function markProcessed({ repository, token, reportPath }) {
   } catch (error) {
     if (error?.code !== 'HANDOFF_GITHUB_API_FAILED' || error?.details?.status !== 422) throw error;
   }
-  for (const issueNumber of report.issueNumbers) {
+  const issueNumbers = [
+    ...new Set([
+      ...report.issueNumbers.map(Number),
+      ...(Array.isArray(report.supersededIssueNumbers)
+        ? report.supersededIssueNumbers.map(Number)
+        : []),
+    ]),
+  ];
+  for (const issueNumber of issueNumbers) {
     await githubRequest(`/repos/${repository}/issues/${issueNumber}/labels`, {
       token,
       method: 'POST',
@@ -393,7 +417,7 @@ async function markProcessed({ repository, token, reportPath }) {
       body: processedIssueUpdate(),
     });
   }
-  return { status: 'PROCESSED', issueNumbers: report.issueNumbers };
+  return { status: 'PROCESSED', issueNumbers };
 }
 
 export async function main(argv = process.argv.slice(2)) {

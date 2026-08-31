@@ -93,6 +93,7 @@ describe('CareerGround v5 GitHub artifact handoff', () => {
     expect(
       result.selected.find(({ pointer: value }) => value.artifactKind === 'PARTITION_1'),
     ).toMatchObject({ issue: { number: 2 }, pointer: { attempt: 2 } });
+    expect(result.supersededIssueNumbers).toEqual([1]);
   });
 
   it('fails closed when the same retry attempt points at different bytes', () => {
@@ -136,5 +137,23 @@ describe('CareerGround v5 GitHub artifact handoff', () => {
     expect(result).toMatchObject({ status: 'READY', schemaVersion: '2.0' });
     expect(result.selected).toHaveLength(3);
     expect(result.missingArtifactKinds).toEqual([]);
+    expect(result.supersededIssueNumbers).toEqual([]);
+  });
+
+  it('marks duplicate and older retry pointers as superseded after a complete bundle', () => {
+    const result = resolveHandoffIssues(
+      [
+        issue(10, 'PARTITION_1', {}, '2.0'),
+        issue(11, 'PARTITION_1', { pointer: { attempt: 2 } }, '2.0'),
+        issue(12, 'PARTITION_2', {}, '2.0'),
+        issue(13, 'PARTITION_3', {}, '2.0'),
+      ],
+      date,
+      '2.0',
+    );
+
+    expect(result.status).toBe('READY');
+    expect(result.selected.map(({ issue: value }) => value.number)).toEqual([11, 12, 13]);
+    expect(result.supersededIssueNumbers).toEqual([10]);
   });
 });
