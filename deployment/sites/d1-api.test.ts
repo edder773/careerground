@@ -326,6 +326,118 @@ describe('Sites D1 API', () => {
     ]);
   });
 
+  it('suppresses already-announced cross-source mirrors without hiding distinct roles', async () => {
+    const token = 'test-digest-token';
+    const oldCreatedAt = new Date(Date.now() - 48 * 60 * 60 * 1_000).toISOString();
+    const recentCreatedAt = new Date(Date.now() - 12 * 60 * 60 * 1_000).toISOString();
+    const deadline = new Date(Date.now() + 10 * 86_400_000).toISOString();
+    const applicationStartAt = new Date(Date.now() - 5 * 86_400_000).toISOString();
+    const jobRows = await db
+      .prepare('SELECT id FROM jobs ORDER BY id LIMIT 11')
+      .all<{ id: string }>();
+    expect(jobRows.results).toHaveLength(11);
+
+    const fixtures = [
+      [
+        '우리은행',
+        '2026 하반기 신입행원 채용 TECH/IT개발',
+        '공식 채용',
+        'woori-official',
+        oldCreatedAt,
+      ],
+      [
+        '우리은행',
+        '2026 하반기 우리은행 신입행원 채용 TECH IT개발',
+        '링커리어',
+        'woori-mirror',
+        recentCreatedAt,
+      ],
+      [
+        '미래에셋자산운용',
+        'OMS 개발 및 운영(채용연계형 인턴)',
+        '공식 채용',
+        'mirae-official',
+        oldCreatedAt,
+      ],
+      [
+        '미래에셋자산운용',
+        '주문관리시스템(OMS) 개발 및 운영 채용연계형 인턴',
+        '인크루트',
+        'mirae-mirror',
+        recentCreatedAt,
+      ],
+      [
+        'LG에너지솔루션',
+        '2026년 하반기 신입사원 수시채용 IT/SW/AI',
+        '자소설닷컴',
+        'lges-campaign',
+        oldCreatedAt,
+      ],
+      ['LG에너지솔루션', 'Digital Twin 플랫폼 개발', '사람인', 'lges-child', recentCreatedAt],
+      [
+        'LG에너지솔루션',
+        'Remote Manufacturing Intelligence 개발',
+        '사람인',
+        'lges-child-remote',
+        recentCreatedAt,
+      ],
+      ['넥슨코리아', '2026 넥토리얼 Game Programmer', '공식 채용', 'nexon-role', oldCreatedAt],
+      ['넥슨컴퍼니', '2026년 채용형 인턴십 넥토리얼', '사람인', 'nexon-campaign', recentCreatedAt],
+      ['너지', 'iOS 엔지니어 인턴', '공식 채용', 'nudge-ios', oldCreatedAt],
+      ['너지', 'Android 엔지니어 인턴', '공식 채용', 'nudge-android', recentCreatedAt],
+    ] as const;
+    for (const [index, fixture] of fixtures.entries()) {
+      const [company, title, sourceName, slug, createdAt] = fixture;
+      await db
+        .prepare(
+          `UPDATE jobs
+              SET company_name = ?, title = ?, source_name = ?, source_url = ?,
+                  source_posting_id = NULL, status = 'ACTIVE',
+                  career_scope = 'NEW_GRAD_ELIGIBLE', employment_type = 'INTERNSHIP',
+                  rolling = 0, application_start_at = ?, deadline_at = ?, created_at = ?
+            WHERE id = ?`,
+        )
+        .bind(
+          company,
+          title,
+          sourceName,
+          `https://example.test/jobs/${slug}`,
+          applicationStartAt,
+          deadline,
+          createdAt,
+          jobRows.results[index]!.id,
+        )
+        .run();
+    }
+    await db
+      .prepare(
+        'UPDATE jobs SET created_at = ? WHERE id NOT IN (' +
+          jobRows.results.map(() => '?').join(',') +
+          ')',
+      )
+      .bind(oldCreatedAt, ...jobRows.results.map((row) => row.id))
+      .run();
+
+    const digest = await call(
+      '/api/v1/internal/slack-digest',
+      { headers: { authorization: `Bearer ${token}` } },
+      {},
+      { DIGEST_API_TOKEN: token },
+    );
+
+    expect(digest.response.status).toBe(200);
+    expect(digest.body).toMatchObject({
+      suppressedDuplicateCount: 5,
+      jobs: [
+        expect.objectContaining({
+          company: '너지',
+          title: 'Android 엔지니어 인턴',
+          sourceUrl: 'https://example.test/jobs/nudge-android',
+        }),
+      ],
+    });
+  });
+
   it('claims one Slack delivery atomically and blocks duplicate dispatch after completion', async () => {
     const token = 'test-digest-token';
     const authorized = { authorization: `Bearer ${token}` };
@@ -1845,6 +1957,72 @@ describe('Sites D1 API', () => {
       )
       .first<{ count: number; title: string; canonicalKeys: number }>();
     expect(stored).toEqual({ count: 1, title: '처음 제목', canonicalKeys: 1 });
+  });
+
+  it('holds a cross-source mirror for review before it can be inserted', async () => {
+    const timestamp = new Date().toISOString();
+    const deadlineAt = new Date(Date.now() + 10 * 86_400_000).toISOString();
+    const applicationStartAt = new Date(Date.now() - 2 * 86_400_000).toISOString();
+    const existing = await db
+      .prepare('SELECT id FROM jobs ORDER BY id LIMIT 1')
+      .first<{ id: string }>();
+    await db
+      .prepare(
+        `UPDATE jobs
+            SET company_name = '우리은행', title = '2026 하반기 신입행원 채용 TECH/IT개발',
+                source_name = '공식 채용', source_url = 'https://wooribank.example/jobs/tech',
+                source_posting_id = 'official-tech', status = 'ACTIVE',
+                career_scope = 'NEW_GRAD_ONLY', application_start_at = ?, deadline_at = ?,
+                rolling = 0
+          WHERE id = ?`,
+      )
+      .bind(applicationStartAt, deadlineAt, existing!.id)
+      .run();
+    const payload = {
+      version: '1.0',
+      collectedAt: timestamp,
+      sourceCount: 1,
+      items: [
+        {
+          sourceName: '링커리어',
+          sourceId: 'mirror-tech',
+          sourceUrl: 'https://linkareer.example/jobs/tech',
+          companyName: '(주)우리은행',
+          title: '2026 하반기 우리은행 신입행원 채용 TECH IT개발',
+          category: 'IT개발',
+          careerScope: 'NEW_GRAD_ONLY',
+          careerEvidence: '신입 지원 가능',
+          companySize: 'LARGE',
+          employmentType: 'FULL_TIME',
+          region: '서울',
+          remote: false,
+          techStack: [],
+          applicationStartAt,
+          deadlineAt,
+          rolling: false,
+          collectedAt: timestamp,
+          lastVerifiedAt: timestamp,
+          summary: '플랫폼 미러 회귀 테스트',
+          status: 'ACTIVE',
+        },
+      ],
+    };
+
+    const preview = await call('/api/v1/jobs/import/preview', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+
+    expect(preview.response.status).toBe(200);
+    expect(preview.body).toMatchObject({
+      counts: { create: 0, review: 1 },
+      rows: [
+        expect.objectContaining({
+          outcome: 'REVIEW',
+          reason: '기존 공고와 같은 채용 캠페인의 플랫폼 미러로 보임',
+        }),
+      ],
+    });
   });
 
   it('treats full source packages as insert-only and preserves existing jobs', async () => {

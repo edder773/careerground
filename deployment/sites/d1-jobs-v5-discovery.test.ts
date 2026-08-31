@@ -163,6 +163,53 @@ describe('CareerGround v5 discovery production boundary', () => {
     ).rejects.toThrow('fingerprint');
   });
 
+  it('skips a semantic platform mirror while publishing a distinct role', async () => {
+    const applicationStartAt = new Date(now.getTime() - 2 * 86_400_000).toISOString();
+    const deadlineAt = new Date(now.getTime() + 10 * 86_400_000).toISOString();
+    const existing = await first<{ id: string }>(db, 'SELECT id FROM jobs ORDER BY id LIMIT 1');
+    await db
+      .prepare(
+        `UPDATE jobs
+            SET company_name = '우리은행', title = '2026 하반기 신입행원 채용 TECH/IT개발',
+                source_name = '공식 채용', source_url = 'https://wooribank.example/jobs/tech',
+                status = 'ACTIVE', career_scope = 'NEW_GRAD_ONLY', rolling = 0,
+                application_start_at = ?, deadline_at = ?
+          WHERE id = ?`,
+      )
+      .bind(applicationStartAt, deadlineAt, existing!.id)
+      .run();
+    const mirror = await discoveryJob(now, 'woori-mirror', {
+      companyName: '(주)우리은행',
+      title: '2026 하반기 우리은행 신입행원 채용 TECH IT개발',
+      sourceName: '링커리어',
+      applicationStartAt,
+      deadlineAt,
+    });
+    const distinctRole = await discoveryJob(now, 'distinct-role', {
+      companyName: '너지',
+      title: 'Android 엔지니어 인턴',
+      applicationStartAt,
+      deadlineAt,
+    });
+
+    const published = await publishDiscoveryBundle(
+      db,
+      await request(now, 3, [mirror, distinctRole]),
+      now,
+    );
+    const stored = await first<{ mirrors: number; distinctRoles: number }>(
+      db,
+      `SELECT
+         (SELECT COUNT(*) FROM jobs WHERE source_url = ?) AS mirrors,
+         (SELECT COUNT(*) FROM jobs WHERE source_url = ?) AS distinctRoles`,
+      mirror.sourceUrl,
+      distinctRole.sourceUrl,
+    );
+
+    expect(published).toMatchObject({ inserted: 1, skippedExisting: 1 });
+    expect(stored).toEqual({ mirrors: 0, distinctRoles: 1 });
+  });
+
   it('protects the HTTP publish endpoint with a separate bearer token', async () => {
     const input = await request(now);
     const call = (token?: string, configured = true) =>
