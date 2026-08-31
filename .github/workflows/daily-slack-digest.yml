@@ -1,6 +1,9 @@
 name: Daily CareerGround Slack digest
 
 on:
+  workflow_run:
+    workflows: ['Production SLO smoke']
+    types: [completed]
   schedule:
     - cron: '1 8 * * 1-5'
       timezone: 'Asia/Seoul'
@@ -37,6 +40,7 @@ concurrency:
 
 jobs:
   send:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -57,6 +61,9 @@ jobs:
           SLACK_DIGEST_SNAPSHOT_CREATED_AT: ${{ github.event_name == 'workflow_dispatch' && inputs.snapshot_created_at || '' }}
           SLACK_DIGEST_JOBS_ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.jobs_only || false }}
           SLACK_DIGEST_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+          SLACK_DIGEST_WINDOW_START: ${{ github.event_name == 'workflow_run' && '08:01' || '' }}
+          SLACK_DIGEST_WINDOW_END: ${{ github.event_name == 'workflow_run' && '10:30' || '' }}
+          SLACK_DIGEST_FRESH_UNTIL: ${{ github.event_name == 'workflow_run' && '09:17' || '' }}
           SLACK_DIGEST_REQUIRE_FRESH_JOBS: ${{ (github.event_name == 'schedule' && github.event.schedule != '17 9 * * 1-5') || (github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
         run: node scripts/slack/send-daily-digest.mjs
 

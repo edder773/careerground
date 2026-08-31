@@ -209,14 +209,61 @@ export function formatSlackMessages(payload, { baeumzipUrl, jobsOnly = false }) 
 
 const forceSendEnabled = (value) => ['1', 'true'].includes(String(value).toLowerCase());
 
+const parseClockMinutes = (value, name) => {
+  const match = /^(\d{2}):(\d{2})$/u.exec(String(value || ''));
+  const hour = Number(match?.[1]);
+  const minute = Number(match?.[2]);
+  if (!match || hour > 23 || minute > 59) throw new Error(`${name}은 HH:MM 형식이어야 합니다.`);
+  return hour * 60 + minute;
+};
+
+const seoulClockMinutes = (date) => {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Seoul',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    })
+      .formatToParts(date)
+      .map(({ type, value }) => [type, value]),
+  );
+  return Number(parts.hour) * 60 + Number(parts.minute);
+};
+
+export const getDigestWatchdogDecision = (date, { start, end, freshUntil } = {}) => {
+  if (!start && !end && !freshUntil) return { withinWindow: true, requireFreshJobs: false };
+  if (!start || !end) throw new Error('watchdog 시작·종료 시각을 함께 설정해야 합니다.');
+  const nowMinutes = seoulClockMinutes(date);
+  const startMinutes = parseClockMinutes(start, 'watchdog 시작 시각');
+  const endMinutes = parseClockMinutes(end, 'watchdog 종료 시각');
+  if (startMinutes > endMinutes)
+    throw new Error('watchdog 종료 시각은 시작 시각보다 늦어야 합니다.');
+  return {
+    withinWindow: nowMinutes >= startMinutes && nowMinutes <= endMinutes,
+    requireFreshJobs: freshUntil
+      ? nowMinutes < parseClockMinutes(freshUntil, '신규 공고 대기 종료 시각')
+      : false,
+  };
+};
+
 export async function sendDailyDigest(
   env = process.env,
   fetchImpl = globalThis.fetch,
   now = () => new Date(),
 ) {
   const dryRun = forceSendEnabled(env.SLACK_DIGEST_DRY_RUN);
+  const currentTime = now();
+  const watchdog = getDigestWatchdogDecision(currentTime, {
+    start: String(env.SLACK_DIGEST_WINDOW_START || '').trim(),
+    end: String(env.SLACK_DIGEST_WINDOW_END || '').trim(),
+    freshUntil: String(env.SLACK_DIGEST_FRESH_UNTIL || '').trim(),
+  });
+  if (!watchdog.withinWindow) {
+    return { messageCount: 0, skipped: { reason: 'outside-window' } };
+  }
   if (!dryRun && !forceSendEnabled(env.SLACK_DIGEST_FORCE_SEND)) {
-    const decision = getKoreanDispatchDecision(now());
+    const decision = getKoreanDispatchDecision(currentTime);
     if (!decision.shouldSend) return { messageCount: 0, skipped: decision };
   }
 
@@ -242,7 +289,8 @@ export async function sendDailyDigest(
   const digestRequestUrl = new URL(digestUrl);
   const snapshotCreatedAt = String(env.SLACK_DIGEST_SNAPSHOT_CREATED_AT || '').trim();
   const jobsOnly = forceSendEnabled(env.SLACK_DIGEST_JOBS_ONLY);
-  const requireFreshJobs = forceSendEnabled(env.SLACK_DIGEST_REQUIRE_FRESH_JOBS);
+  const requireFreshJobs =
+    forceSendEnabled(env.SLACK_DIGEST_REQUIRE_FRESH_JOBS) || watchdog.requireFreshJobs;
   if (jobsOnly && !snapshotCreatedAt) {
     throw new Error('채용공고만 재전송하려면 SLACK_DIGEST_SNAPSHOT_CREATED_AT이 필요합니다.');
   }

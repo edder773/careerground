@@ -5,6 +5,51 @@ import worker from './worker.js';
 
 const context = { waitUntil: () => undefined, passThroughOnException: () => undefined };
 
+describe('Sites worker SPA fallback', () => {
+  it.each(['/jobs', '/coding', '/learning'])(
+    'serves the app shell for %s deep links',
+    async (path) => {
+      const requestedPaths: string[] = [];
+      const response = await worker.fetch(
+        new Request(`https://careerground.example${path}`, {
+          headers: { accept: 'text/html,application/xhtml+xml' },
+        }),
+        {
+          ASSETS: {
+            fetch: async (request: Request) => {
+              const pathname = new URL(request.url).pathname;
+              requestedPaths.push(pathname);
+              return pathname === '/'
+                ? new Response('<div id="root"></div>', {
+                    status: 200,
+                    headers: { 'content-type': 'text/html' },
+                  })
+                : new Response(null, { status: 404 });
+            },
+          },
+        },
+        context,
+      );
+
+      expect(response.status).toBe(200);
+      expect(await response.text()).toContain('<div id="root"></div>');
+      expect(requestedPaths).toEqual([path, '/']);
+    },
+  );
+
+  it('does not return the app shell for a missing non-HTML asset', async () => {
+    const response = await worker.fetch(
+      new Request('https://careerground.example/missing.js', {
+        headers: { accept: 'application/javascript' },
+      }),
+      { ASSETS: { fetch: async () => new Response(null, { status: 404 }) } },
+      context,
+    );
+
+    expect(response.status).toBe(404);
+  });
+});
+
 describe('Sites worker public catalog bootstrap', () => {
   let db: LocalD1;
 

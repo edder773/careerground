@@ -7,6 +7,7 @@ import { getKoreanDispatchDecision } from './korean-business-day.mjs';
 import {
   digestResultStatus,
   formatSlackMessages,
+  getDigestWatchdogDecision,
   sendDailyDigest,
   writeGithubOutputs,
 } from './send-daily-digest.mjs';
@@ -178,6 +179,9 @@ describe('daily Slack digest', () => {
     expect(workflow.match(/timezone: 'Asia\/Seoul'/g)).toHaveLength(3);
     expect(workflow).toContain('SLACK_DIGEST_REQUIRE_FRESH_JOBS:');
     expect(workflow).toContain('SLACK_DIGEST_DRY_RUN:');
+    expect(workflow).toContain("workflows: ['Production SLO smoke']");
+    expect(workflow).toContain('SLACK_DIGEST_WINDOW_START:');
+    expect(workflow).toContain('SLACK_DIGEST_FRESH_UNTIL:');
     expect(workflow).toContain('inputs.dry_run');
     expect(workflow).toContain("github.event.schedule != '17 9 * * 1-5'");
     expect(workflow).toContain("steps.digest.outputs.delivery_status == 'job-import-not-ready'");
@@ -200,6 +204,37 @@ describe('daily Slack digest', () => {
       shouldSend: true,
       dateKey: '2026-08-21',
     });
+  });
+
+  it('uses production smoke completions only inside the Seoul watchdog window', async () => {
+    expect(
+      getDigestWatchdogDecision(new Date('2026-08-21T00:10:00.000Z'), {
+        start: '08:01',
+        end: '10:30',
+        freshUntil: '09:17',
+      }),
+    ).toEqual({ withinWindow: true, requireFreshJobs: true });
+    expect(
+      getDigestWatchdogDecision(new Date('2026-08-21T00:20:00.000Z'), {
+        start: '08:01',
+        end: '10:30',
+        freshUntil: '09:17',
+      }),
+    ).toEqual({ withinWindow: true, requireFreshJobs: false });
+
+    const fetchMock = vi.fn();
+    await expect(
+      sendDailyDigest(
+        {
+          SLACK_DIGEST_WINDOW_START: '08:01',
+          SLACK_DIGEST_WINDOW_END: '10:30',
+          SLACK_DIGEST_FRESH_UNTIL: '09:17',
+        },
+        fetchMock,
+        () => new Date('2026-08-20T22:00:00.000Z'),
+      ),
+    ).resolves.toEqual({ messageCount: 0, skipped: { reason: 'outside-window' } });
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('does not fetch data or post to Slack on a public holiday', async () => {

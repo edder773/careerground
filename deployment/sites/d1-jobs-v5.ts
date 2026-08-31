@@ -1,5 +1,6 @@
 import { all, first, type D1Database, type D1PreparedStatement } from './d1.js';
 import { validateDiscoveryPublishRequest } from './d1-jobs-v5-discovery-contract.js';
+import { duplicateJobReason, jobCompanyKey, type ComparableJob } from './job-dedup.js';
 
 const V5_WORKFLOW_ID = 'CG-JOBS-PROD-V5';
 
@@ -556,12 +557,22 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
     };
   }
 
-  const [baseline, savedBefore, jobsBefore] = await Promise.all([
+  const [baseline, comparableBaseline, savedBefore, jobsBefore] = await Promise.all([
     all<ExistingJobIdentity>(
       db,
       `SELECT id, source_url AS sourceUrl, fingerprint,
               canonical_key AS canonicalJobKey
          FROM jobs`,
+    ),
+    all<ComparableJob>(
+      db,
+      `SELECT company_name AS companyName, title,
+              application_start_at AS applicationStartAt, deadline_at AS deadlineAt
+         FROM jobs
+        WHERE status = 'ACTIVE'
+          AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
+          AND (rolling = 1 OR deadline_at IS NULL OR deadline_at > ?)`,
+      now.toISOString(),
     ),
     first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM saved_jobs'),
     first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM jobs'),
@@ -574,6 +585,13 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
   const byCanonicalKey = new Map(
     baseline.filter((row) => row.canonicalJobKey).map((row) => [String(row.canonicalJobKey), row]),
   );
+  const comparableByCompany = new Map<string, ComparableJob[]>();
+  for (const job of comparableBaseline) {
+    const key = jobCompanyKey(job.companyName);
+    const companyJobs = comparableByCompany.get(key) || [];
+    companyJobs.push(job);
+    comparableByCompany.set(key, companyJobs);
+  }
   const newJobs: Array<Record<string, unknown>> = [];
   let skippedExisting = 0;
   for (const job of validated.jobs) {
@@ -602,7 +620,24 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
         `New URL collides with the existing canonical key for ${sameCanonicalKey.sourceUrl}.`,
       );
     }
+    const comparable: ComparableJob = {
+      companyName: String(job.companyName),
+      title: String(job.title),
+      applicationStartAt: job.applicationStartAt ? String(job.applicationStartAt) : null,
+      deadlineAt: job.deadlineAt ? String(job.deadlineAt) : null,
+    };
+    const companyKey = jobCompanyKey(comparable.companyName);
+    const sameCampaign = (comparableByCompany.get(companyKey) || []).some((existing) =>
+      duplicateJobReason(comparable, existing),
+    );
+    if (sameCampaign) {
+      skippedExisting += 1;
+      continue;
+    }
     newJobs.push(job);
+    const companyJobs = comparableByCompany.get(companyKey) || [];
+    companyJobs.push(comparable);
+    comparableByCompany.set(companyKey, companyJobs);
   }
   if (newJobs.length > 75) {
     throw new Error('A single publish run may insert at most 75 new jobs.');

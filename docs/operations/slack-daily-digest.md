@@ -7,6 +7,11 @@ GitHub Actions 예약 실행은 정확한 시각을 보장하지 않고 높은 �
 등록한다. 세 실행은 모두 D1의 같은 `daily:YYYY-MM-DD` 발송 키를 claim하므로 먼저 성공한 한 번만
 Slack을 호출한다.
 
+예약 workflow run 자체가 누락되는 경우를 대비해 독립적으로 실행되는 `Production SLO smoke`의
+성공 완료 이벤트도 watchdog 입력으로 사용한다. watchdog은 08:01~10:30 KST에만 동작한다. 09:17
+전에는 신규 jobs import를 요구하고, 이후에는 정기 workflow의 최종 fallback과 마찬가지로 준비
+gate 없이 시도한다. 모든 경로가 같은 D1 발송 키를 사용하므로 실제 Slack 전송은 하루 한 번이다.
+
 - 08:01·08:31: 직전 성공한 일일 Slack 알림 이후 `jobs` 또는 v5 `jobs-v5` import가 새로
   `COMMITTED`됐는지 먼저 확인한다. 전날 저녁 수집 결과도 정상적인 신규 import로 인정한다. 준비되지
   않았으면 발송 키를 만들지 않고 다음 fallback에 맡긴다.
@@ -61,16 +66,16 @@ Slack을 보내지 않는 운영 점검은 `force=true`, `dry_run=true`, 빈 sna
 
 발송 전에 Sites API가 `daily:YYYY-MM-DD` 또는 `snapshot:<createdAt>:jobs` 키를 D1에 원자적으로 claim한다. Slack이 명시적으로 거부한 경우만 `FAILED`로 기록해 재시도를 허용한다. 네트워크 timeout처럼 Slack 수신 여부를 알 수 없는 경우는 `UNCERTAIN`으로 기록하고 자동 재전송을 막는다. Slack 전송 성공 뒤 완료 API가 실패하더라도 기존 claim이 남으므로 다음 실행에서 같은 메시지를 다시 보내지 않는다.
 
-| 증상                              | 확인할 항목                                                                                     |
-| --------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `DIGEST_AUTH_NOT_CONFIGURED`(503) | Sites에 `DIGEST_API_TOKEN`이 설정됐는지 확인                                                    |
-| `DIGEST_UNAUTHORIZED`(401)        | Sites token과 GitHub `CAREERGROUND_DIGEST_TOKEN`이 같은지 확인                                  |
-| Slack 4xx                         | webhook 폐기·채널 권한·GitHub `SLACK_WEBHOOK_URL`을 확인                                        |
-| 채용 섹션 없음                    | 정상일 수 있음. 당일 신규 비상시 공고가 없으면 코딩 문제만 전송                                 |
-| `delivery-blocked`                | 이전 실행이 `CLAIMED` 또는 `UNCERTAIN`인지 운영 원장을 확인                                     |
-| `already-sent`                    | 같은 기준일·스냅샷이 이미 전송된 정상적인 중복 차단                                             |
-| `job-import-not-ready`            | 직전 성공 알림 이후 채용 import 미완료. 발송 키 없이 다음 fallback이 재확인                     |
-| 예약 실행 15분 초과               | schedule delay artifact와 GitHub Actions queue 상태를 확인                                      |
-| 예약 run 자체가 없음              | GitHub Actions 상태와 fallback run을 확인. workflow 내부 검사는 자기 실행 누락을 감지할 수 없음 |
+| 증상                              | 확인할 항목                                                                    |
+| --------------------------------- | ------------------------------------------------------------------------------ |
+| `DIGEST_AUTH_NOT_CONFIGURED`(503) | Sites에 `DIGEST_API_TOKEN`이 설정됐는지 확인                                   |
+| `DIGEST_UNAUTHORIZED`(401)        | Sites token과 GitHub `CAREERGROUND_DIGEST_TOKEN`이 같은지 확인                 |
+| Slack 4xx                         | webhook 폐기·채널 권한·GitHub `SLACK_WEBHOOK_URL`을 확인                       |
+| 채용 섹션 없음                    | 정상일 수 있음. 당일 신규 비상시 공고가 없으면 코딩 문제만 전송                |
+| `delivery-blocked`                | 이전 실행이 `CLAIMED` 또는 `UNCERTAIN`인지 운영 원장을 확인                    |
+| `already-sent`                    | 같은 기준일·스냅샷이 이미 전송된 정상적인 중복 차단                            |
+| `job-import-not-ready`            | 직전 성공 알림 이후 채용 import 미완료. 발송 키 없이 다음 fallback이 재확인    |
+| 예약 실행 15분 초과               | schedule delay artifact와 GitHub Actions queue 상태를 확인                     |
+| 예약 run 자체가 없음              | `Production SLO smoke` 완료 watchdog run과 D1의 `daily:YYYY-MM-DD` 상태를 확인 |
 
 구현은 [daily-slack-digest.yml](../../.github/workflows/daily-slack-digest.yml), [send-daily-digest.mjs](../../scripts/slack/send-daily-digest.mjs), Sites의 `/api/v1/internal/slack-digest/claim`, `/complete`, `/fail`에 있다.

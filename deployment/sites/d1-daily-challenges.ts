@@ -11,6 +11,7 @@ import {
 import { normalizedText, sha256 } from './domain.js';
 import { hashSessionToken, newSessionToken } from './google-auth.js';
 import { RouteError, type D1Env } from './d1-api-contract.js';
+import { duplicateJobReason, jobCompanyKey, type ComparableJob } from './job-dedup.js';
 
 const cleanText = normalizedText;
 
@@ -363,17 +364,19 @@ export async function slackDigest(db: D1Database, requestUrl: URL) {
     snapshotCreatedAt = snapshotCreatedAtInput;
   }
   const windowStartedAt = snapshotCreatedAt ? null : await dailyDigestWindowStart(db, generatedAt);
-  const jobs = await all<{
-    company: string;
+  type SlackDigestJobRow = ComparableJob & {
+    id: string;
     title: string;
     deadlineAt: string | null;
     rolling: number | boolean;
     sourceName: string;
     sourceUrl: string;
-  }>(
+  };
+  const candidateJobs = await all<SlackDigestJobRow>(
     db,
     snapshotCreatedAt
-      ? `SELECT company_name AS company, title, deadline_at AS deadlineAt, rolling,
+      ? `SELECT id, company_name AS companyName, title,
+                application_start_at AS applicationStartAt, deadline_at AS deadlineAt, rolling,
                 source_name AS sourceName, source_url AS sourceUrl
            FROM jobs
           WHERE status = 'ACTIVE'
@@ -381,7 +384,8 @@ export async function slackDigest(db: D1Database, requestUrl: URL) {
             AND (deadline_at IS NULL OR deadline_at > ?)
             AND created_at = ?
           ORDER BY deadline_at IS NULL, deadline_at, company_name, title, id`
-      : `SELECT company_name AS company, title, deadline_at AS deadlineAt, rolling,
+      : `SELECT id, company_name AS companyName, title,
+                application_start_at AS applicationStartAt, deadline_at AS deadlineAt, rolling,
                 source_name AS sourceName, source_url AS sourceUrl
            FROM jobs
           WHERE status = 'ACTIVE'
@@ -395,11 +399,54 @@ export async function slackDigest(db: D1Database, requestUrl: URL) {
       ? [generatedAt, snapshotCreatedAt]
       : [generatedAt, windowStartedAt, generatedAt]),
   );
+  const historicalCutoff = snapshotCreatedAt || windowStartedAt;
+  const historicalJobs = historicalCutoff
+    ? await all<SlackDigestJobRow>(
+        db,
+        `SELECT id, company_name AS companyName, title,
+                application_start_at AS applicationStartAt, deadline_at AS deadlineAt, rolling,
+                source_name AS sourceName, source_url AS sourceUrl
+           FROM jobs
+          WHERE status = 'ACTIVE'
+            AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
+            AND created_at < ?
+            AND (rolling = 1 OR deadline_at IS NULL OR deadline_at > ?)`,
+        historicalCutoff,
+        generatedAt,
+      )
+    : [];
+  const historicalByCompany = new Map<string, SlackDigestJobRow[]>();
+  for (const job of historicalJobs) {
+    const key = jobCompanyKey(job.companyName);
+    const companyJobs = historicalByCompany.get(key) || [];
+    companyJobs.push(job);
+    historicalByCompany.set(key, companyJobs);
+  }
+  const includedJobs: SlackDigestJobRow[] = [];
+  let suppressedDuplicateCount = 0;
+  for (const candidate of candidateJobs) {
+    const comparisons = [
+      ...(historicalByCompany.get(jobCompanyKey(candidate.companyName)) || []),
+      ...includedJobs,
+    ];
+    if (comparisons.some((existing) => duplicateJobReason(candidate, existing))) {
+      suppressedDuplicateCount += 1;
+    } else {
+      includedJobs.push(candidate);
+    }
+  }
+  const jobs = includedJobs.map(
+    ({ id: _id, companyName: company, applicationStartAt: _applicationStartAt, ...job }) => ({
+      company,
+      ...job,
+    }),
+  );
   return {
     date: today,
     generatedAt,
     windowStartedAt,
     snapshotCreatedAt,
+    suppressedDuplicateCount,
     siteUrl: new URL('/', requestUrl).toString(),
     challenges: [
       ...challenges

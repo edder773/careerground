@@ -10,6 +10,12 @@ import {
   sourceText,
 } from './domain.js';
 import { RouteError } from './d1-api-contract.js';
+import {
+  duplicateJobReason,
+  jobCompanyKey,
+  type ComparableJob,
+  type JobDuplicateReason,
+} from './job-dedup.js';
 
 type ImportActor = { id: string; role: 'ADMIN' | 'MEMBER' };
 type ImportKind = 'jobs' | 'learning';
@@ -141,9 +147,36 @@ async function analyzeJobImport(db: D1Database, input: unknown) {
   const seenUrls = new Set<string>();
   const seenCanonicalKeys = new Set<string>();
   const seenFingerprints = new Set<string>();
+  type ExistingComparableJob = ComparableJob & { id: string };
+  const existingComparableJobs = normalized.length
+    ? await all<ExistingComparableJob>(
+        db,
+        `SELECT id, company_name AS companyName, title,
+                application_start_at AS applicationStartAt, deadline_at AS deadlineAt
+           FROM jobs
+          WHERE status = 'ACTIVE'
+            AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
+            AND (rolling = 1 OR deadline_at IS NULL OR deadline_at > ?)`,
+        nowIso(),
+      )
+    : [];
+  const existingComparableByCompany = new Map<string, ExistingComparableJob[]>();
+  for (const job of existingComparableJobs) {
+    const key = jobCompanyKey(job.companyName);
+    const companyJobs = existingComparableByCompany.get(key) || [];
+    companyJobs.push(job);
+    existingComparableByCompany.set(key, companyJobs);
+  }
+  const seenComparableJobs: ComparableJob[] = [];
   const rows = normalized.map((row) => {
     let outcome: 'CREATE' | 'REVIEW' | 'REJECT' | 'DUPLICATE';
     let reason: string;
+    const packageDuplicateReason = seenComparableJobs
+      .map((existing) => duplicateJobReason(row.item, existing))
+      .find((value): value is JobDuplicateReason => Boolean(value));
+    const existingMirror = (
+      existingComparableByCompany.get(jobCompanyKey(row.item.companyName)) || []
+    ).find((existing) => duplicateJobReason(row.item, existing));
     if (row.item.status !== 'ACTIVE') {
       outcome = 'REJECT';
       reason = '신규 ACTIVE 공고만 등록할 수 있음';
@@ -157,6 +190,9 @@ async function analyzeJobImport(db: D1Database, input: unknown) {
     ) {
       outcome = 'DUPLICATE';
       reason = '입력 package 내부 중복';
+    } else if (packageDuplicateReason) {
+      outcome = 'DUPLICATE';
+      reason = '입력 package 안에 같은 채용 캠페인의 플랫폼 미러가 있음';
     } else if (existingByUrl.has(row.canonicalUrl)) {
       outcome = 'DUPLICATE';
       reason = '기존 공고는 변경하지 않음';
@@ -166,6 +202,9 @@ async function analyzeJobImport(db: D1Database, input: unknown) {
     } else if (existingFingerprints.has(row.fingerprint)) {
       outcome = 'REVIEW';
       reason = 'URL은 다르지만 fingerprint가 같은 공고';
+    } else if (existingMirror) {
+      outcome = 'REVIEW';
+      reason = '기존 공고와 같은 채용 캠페인의 플랫폼 미러로 보임';
     } else if (row.item.companySize === 'UNCLASSIFIED') {
       outcome = 'REVIEW';
       reason = '회사 규모 또는 공고 분류 검토 필요';
@@ -177,13 +216,16 @@ async function analyzeJobImport(db: D1Database, input: unknown) {
       seenUrls.add(row.canonicalUrl);
       seenCanonicalKeys.add(row.canonicalKey);
       seenFingerprints.add(row.fingerprint);
+      seenComparableJobs.push(row.item);
     }
     return {
       ...row,
       outcome,
       reason,
       existingId:
-        existingByUrl.get(row.canonicalUrl) || existingByCanonicalKey.get(row.canonicalKey),
+        existingByUrl.get(row.canonicalUrl) ||
+        existingByCanonicalKey.get(row.canonicalKey) ||
+        existingMirror?.id,
     };
   });
   const counts = {

@@ -71,6 +71,11 @@ const requestFixture = ({ ready = healthyReady, html = staticHtml, readinessMs =
     if (path === '/') {
       return { response: new globalThis.Response(html, { status: 200 }), durationMs: 50 };
     }
+    if (['/jobs', '/coding', '/learning'].includes(path)) {
+      const response = new globalThis.Response(html, { status: 200 });
+      Object.defineProperty(response, 'url', { value: url });
+      return { response, durationMs: 50 };
+    }
     throw new Error(`Unexpected URL: ${url}`);
   });
 };
@@ -86,7 +91,7 @@ describe('production SLO checker', () => {
     expect(report.latency.readinessWarmP95Ms).toBe(140);
     expect(report.schema?.sourceVersion).toBe(SOURCE_SCHEMA_VERSION);
     expect(report.schema?.appliedVersion).toBe(SOURCE_SCHEMA_VERSION);
-    expect(request).toHaveBeenCalledTimes(10);
+    expect(request).toHaveBeenCalledTimes(13);
     expect(formatSloSummary(report)).toContain('Result: **PASS**');
   });
 
@@ -217,6 +222,26 @@ describe('production SLO checker', () => {
     ).toBe(true);
     expect(report.failures.some((failure) => failure.startsWith('retired-auth.contract:'))).toBe(
       true,
+    );
+  });
+
+  it('fails when a browser deep link is redirected to the home page', async () => {
+    const fixture = requestFixture();
+    const request = vi.fn(async (url, init) => {
+      if (new globalThis.URL(url).pathname === '/jobs') {
+        const response = new globalThis.Response(staticHtml, { status: 200 });
+        Object.defineProperty(response, 'url', { value: 'https://careerground.example/' });
+        Object.defineProperty(response, 'redirected', { value: true });
+        return { response, durationMs: 50 };
+      }
+      return fixture(url, init);
+    });
+
+    const report = await runProductionSlo({ request, readinessSamples: 1 });
+
+    expect(report.passed).toBe(false);
+    expect(report.failures).toContain(
+      'spa-deep-link.jobs.contract: HTTP 200 redirected=true finalPath=/',
     );
   });
 });
