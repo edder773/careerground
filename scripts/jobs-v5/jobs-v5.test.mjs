@@ -121,6 +121,13 @@ describe('canonical JSON and explicit artifacts', () => {
     expect(canonicalizeHttpUrl('HTTPS://EXAMPLE.test/jobs/1/?utm_source=x&b=2&a=1#top')).toBe(
       'https://example.test/jobs/1?a=1&b=2',
     );
+    expect(
+      canonicalizeHttpUrl(
+        'https://m.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?wantedAuthNo=K170052608240022&infoTypeGroup=tb_workinfoworknet&infoTypeCd=VALIDATION',
+      ),
+    ).toBe(
+      'https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K170052608240022',
+    );
   });
 
   it.each([

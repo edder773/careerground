@@ -23,6 +23,13 @@
     "reason": "targetAsOfDate accepted only the execution-day KST date"
   },
   "replayWindowAfter": "current-or-previous-kst-date",
+  "mobileHostCollision": {
+    "runId": 33457503628,
+    "incomingHost": "m.work24.go.kr",
+    "existingHost": "www.work24.go.kr",
+    "samePostingId": "K170052608240022",
+    "resolution": "canonicalize-mobile-host"
+  },
   "verification": {
     "targetedTests": 45,
     "unitAndComponentTests": 242,
