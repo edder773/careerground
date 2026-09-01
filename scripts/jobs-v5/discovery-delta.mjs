@@ -43,6 +43,19 @@ const COMPANY_SIZE_ALIASES = new Map([
   ['금융권', 'UNCLASSIFIED'],
   ['기타/미확인', 'UNCLASSIFIED'],
 ]);
+const COMPANY_SIZE_COMPACT_ALIASES = new Map([
+  ['LARGEENTERPRISE', 'LARGE'],
+  ['PUBLICINSTITUTION', 'PUBLIC'],
+  ['MIDSIZE', 'MID'],
+  ['MIDSIZED', 'MID'],
+  ['MIDSIZEENTERPRISE', 'MID'],
+  ['MIDSIZEDENTERPRISE', 'MID'],
+  ['MEDIUMSIZE', 'MID'],
+  ['MEDIUMSIZED', 'MID'],
+  ['MEDIUMSIZEENTERPRISE', 'MID'],
+  ['MEDIUMSIZEDENTERPRISE', 'MID'],
+  ['SMALLBUSINESS', 'SMALL'],
+]);
 const EMPLOYMENT_TYPE_ALIASES = new Map([
   ['신입', 'FULL_TIME'],
   ['신입사원', 'FULL_TIME'],
@@ -128,6 +141,24 @@ function normalizeAlias(value, aliases) {
   return aliases.get(normalized) ?? normalized;
 }
 
+function normalizeCompanySize(value) {
+  const normalized =
+    String(value ?? '')
+      .normalize('NFKC')
+      .trim() || 'UNCLASSIFIED';
+  const exactAlias = COMPANY_SIZE_ALIASES.get(normalized);
+  if (exactAlias) return exactAlias;
+
+  const enumToken = normalized
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/gu, '_')
+    .replace(/^_+|_+$/gu, '');
+  if (ALLOWED_COMPANY_SIZES.has(enumToken)) return enumToken;
+
+  const compactToken = enumToken.replaceAll('_', '');
+  return COMPANY_SIZE_COMPACT_ALIASES.get(compactToken) ?? normalized;
+}
+
 function normalizeItem(item, targetAsOfDate, index) {
   if (!isRecord(item)) fail('DISCOVERY_SCHEMA_INVALID', `items[${index}] must be an object.`);
   for (const field of REQUIRED_ITEM_FIELDS) requireText(item[field], `items[${index}].${field}`);
@@ -157,7 +188,7 @@ function normalizeItem(item, targetAsOfDate, index) {
     : `url:${sourceUrl}`;
   const timestamp = item.lastVerifiedAt;
   const employmentType = normalizeAlias(item.employmentType, EMPLOYMENT_TYPE_ALIASES);
-  const companySize = normalizeAlias(item.companySize || 'UNCLASSIFIED', COMPANY_SIZE_ALIASES);
+  const companySize = normalizeCompanySize(item.companySize);
   if (!ALLOWED_COMPANY_SIZES.has(companySize)) {
     fail('DISCOVERY_POLICY_INVALID', `items[${index}].companySize is not allowed.`);
   }

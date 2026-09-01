@@ -74,3 +74,16 @@ SQL 회귀 테스트는 반복 완화 설정을 끈 상태에서 활성 SQL Lv.3
 6. 게시 복구는 현재 또는 직전 KST 일자에만 허용해 자정 경계 복구와 오래된 입력 차단을 함께 만족한다.
 7. 동일 서비스의 모바일 호스트는 공식 호스트로 정규화하되, 그 밖의 fingerprint 충돌은 계속 차단한다.
 8. 활성 문제 카탈로그가 존재하면 반복 제외 기간 고갈만으로 사이트나 Slack 전체를 실패시키지 않는다.
+
+## 2026-09-01 추가 재발과 구조적 보완
+
+같은 날 다음 예약 수집에서 `MID_SIZED_ENTERPRISE`와 의미가 같은 `MIDSIZE_ENTERPRISE`가 새로 관측됐다. 기존 어댑터는 알려진 문자열을 exact match로만 치환했기 때문에, 밑줄 위치나 `SIZED`/`SIZE` 철자가 달라지면 허용값 검사에서 `DISCOVERY_POLICY_INVALID`로 중단됐다. 운영 DB나 Slack에는 부작용이 없었지만, 한 파티션의 검증 실패로 세 파티션 묶음 게시가 보류됐다.
+
+재발 방지는 두 경계에 적용했다.
+
+1. 수집 프롬프트는 GitHub blob 생성 직전에 모든 enum을 전수 검사한다. 중견기업의 다양한 조사 표현은 최종 JSON에 항상 `MID`로 기록하고, 허용 목록 밖의 값이 있으면 PASS 판정과 전달을 금지한다.
+2. GitHub 입력 어댑터는 회사 규모의 Unicode 폭, 대소문자, 공백·밑줄·하이픈 차이를 먼저 표준화한 뒤 의미가 명확한 compact token만 canonical 값으로 바꾼다. `MIDSIZE_ENTERPRISE`, `MID_SIZED_ENTERPRISE`, `mid-size enterprise`, `medium-sized enterprise`는 모두 `MID`가 된다.
+3. 의미를 확정할 수 없는 새 값은 추측하지 않는다. `ENTERPRISE_PLUS` 같은 값은 이전처럼 `DISCOVERY_POLICY_INVALID`로 게시 전에 차단한다.
+4. 회귀 테스트는 실제 실패 표기와 separator·case 변형을 표 기반으로 고정하고, 수집 프롬프트의 전달 전 검사가 GitHub 단계보다 앞에 존재하는지도 확인한다.
+
+이 방식은 별칭 목록에 실패 철자 하나씩만 덧붙이는 방식과 달리 표현상의 변형은 흡수하면서, 새로운 의미 범주가 조용히 잘못 분류되는 것은 막는다.

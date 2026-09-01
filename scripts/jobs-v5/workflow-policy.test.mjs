@@ -4,8 +4,18 @@ import { describe, expect, it } from 'vitest';
 
 const source = readFileSync('.github/workflows/careerground-jobs-v5.yml', 'utf8');
 const handoff = readFileSync('.github/workflows/careerground-v5-handoff.yml', 'utf8');
-const migration = readFileSync('drizzle/0037_careerground_jobs_v5_workflow.sql', 'utf8');
-const deliveryMigration = readFileSync('drizzle/0038_slack_digest_delivery_history.sql', 'utf8');
+const migration = readFileSync('drizzle/0037_careerground_jobs_v5_workflow.sql', 'utf8').replaceAll(
+  '\r\n',
+  '\n',
+);
+const deliveryMigration = readFileSync(
+  'drizzle/0038_slack_digest_delivery_history.sql',
+  'utf8',
+).replaceAll('\r\n', '\n');
+const collectorPrompt = readFileSync(
+  'docs/operations/careerground-v5-stable-collector-prompts.md',
+  'utf8',
+);
 
 describe('CareerGround v5 workflow pre-cutover policy', () => {
   it('is manual-only until schedule activation is approved', () => {
@@ -70,5 +80,15 @@ describe('CareerGround v5 workflow pre-cutover policy', () => {
     expect(handoff.indexOf('jobs:v5:publish-discovery')).toBeLessThan(
       handoff.indexOf('jobs:v5:handoff mark-processed'),
     );
+  });
+
+  it('requires a canonical enum audit before the collector creates a GitHub handoff', () => {
+    const auditIndex = collectorPrompt.indexOf('GitHub 전달 전에');
+    const handoffIndex = collectorPrompt.indexOf('[5. GitHub 자동 전달]');
+    expect(auditIndex).toBeGreaterThan(0);
+    expect(auditIndex).toBeLessThan(handoffIndex);
+    expect(collectorPrompt).toContain('MIDSIZE_ENTERPRISE');
+    expect(collectorPrompt).toContain('companySize에는 반드시 `MID`만 기록');
+    expect(collectorPrompt).toContain('허용 목록 밖의 enum이 하나라도 있으면');
   });
 });

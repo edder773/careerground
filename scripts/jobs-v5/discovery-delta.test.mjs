@@ -124,11 +124,18 @@ describe('CareerGround discovery-only collector contract', () => {
     expect(loaded.descriptor.itemAliasesNormalized).toBe(3);
   });
 
-  it('normalizes MID_SIZED_ENTERPRISE before the production boundary', () => {
+  it.each([
+    'MID_SIZED',
+    'MID_SIZED_ENTERPRISE',
+    'MIDSIZE_ENTERPRISE',
+    'MIDSIZEDENTERPRISE',
+    'mid-size enterprise',
+    'medium-sized enterprise',
+  ])('normalizes the unambiguous company-size variant %s before production publish', (alias) => {
     const value = delta(1, [
       {
         ...item('JobKorea', 'mid-sized-enterprise'),
-        companySize: 'MID_SIZED_ENTERPRISE',
+        companySize: alias,
       },
     ]);
     const loaded = validateDiscoveryDelta(value, {
