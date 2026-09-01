@@ -73,12 +73,12 @@ jobs:
           SLACK_DIGEST_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
           SLACK_DIGEST_WINDOW_START: ${{ (github.event_name == 'workflow_run' || github.event_name == 'repository_dispatch') && '08:01' || '' }}
           SLACK_DIGEST_WINDOW_END: ${{ (github.event_name == 'workflow_run' || github.event_name == 'repository_dispatch') && '10:30' || '' }}
-          SLACK_DIGEST_FRESH_UNTIL: ${{ (github.event_name == 'workflow_run' || github.event_name == 'repository_dispatch') && '09:17' || '' }}
-          SLACK_DIGEST_REQUIRE_FRESH_JOBS: ${{ github.event_name == 'schedule' && github.event.schedule != '17 9 * * 1-5' }}
+          SLACK_DIGEST_FRESH_UNTIL: ${{ (github.event_name == 'workflow_run' || github.event_name == 'repository_dispatch') && '08:31' || '' }}
+          SLACK_DIGEST_REQUIRE_FRESH_JOBS: ${{ github.event_name == 'schedule' && github.event.schedule != '51 8 * * 1-5' && github.event.schedule != '17 9 * * 1-5' }}
         run: node scripts/slack/send-daily-digest.mjs
 
       - name: Open or update the jobs refresh incident
-        if: always() && github.event_name == 'schedule' && steps.digest.outputs.delivery_status == 'job-import-not-ready'
+        if: always() && github.event_name != 'workflow_dispatch' && steps.digest.outputs.delivery_status == 'job-import-not-ready'
         continue-on-error: true
         uses: actions/github-script@v8
         env:
@@ -99,7 +99,7 @@ jobs:
             }
 
       - name: Close the jobs refresh incident after readiness recovery
-        if: always() && github.event_name == 'schedule' && (steps.digest.outputs.delivery_status == 'sent' || steps.digest.outputs.delivery_status == 'already-sent')
+        if: always() && github.event_name != 'workflow_dispatch' && (steps.digest.outputs.delivery_status == 'sent' || steps.digest.outputs.delivery_status == 'already-sent')
         continue-on-error: true
         uses: actions/github-script@v8
         env:

@@ -233,4 +233,29 @@ describe('CareerGround v5 discovery production boundary', () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({ status: 'PUBLISHED', inserted: 3 });
   });
+
+  it('returns a typed 422 response for an invalid discovery enum', async () => {
+    const input = await request(now);
+    input.partitions[0].items[0].companySize = 'MID_SIZED_ENTERPRISE';
+    const response = await handleD1Api(
+      new Request('https://careerground.example/api/v1/internal/jobs-v5/publish', {
+        method: 'POST',
+        headers: {
+          authorization: 'Bearer publish-secret',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify(input),
+      }),
+      {
+        DB: db,
+        REQUEST_LOGGING: 'false',
+        PUBLISH_API_TOKEN: 'publish-secret',
+      },
+    );
+    expect(response.status).toBe(422);
+    await expect(response.json()).resolves.toMatchObject({
+      code: 'PUBLISH_VALIDATION_FAILED',
+      details: { reason: expect.stringContaining('companySize') },
+    });
+  });
 });

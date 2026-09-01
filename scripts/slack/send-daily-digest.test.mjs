@@ -185,6 +185,9 @@ describe('daily Slack digest', () => {
     expect(workflow).toContain('SLACK_DIGEST_FRESH_UNTIL:');
     expect(workflow).toContain('inputs.dry_run');
     expect(workflow).toContain("github.event.schedule != '17 9 * * 1-5'");
+    expect(workflow).toContain("github.event.schedule != '51 8 * * 1-5'");
+    expect(workflow).toContain("&& '08:31' || ''");
+    expect(workflow).toContain("github.event_name != 'workflow_dispatch'");
     expect(workflow).toContain("steps.digest.outputs.delivery_status == 'job-import-not-ready'");
     expect(workflow).toContain("steps.digest.outputs.delivery_status == 'already-sent'");
     expect(workflow).not.toContain("cron: '0 8 * * 1-5'");
@@ -209,17 +212,17 @@ describe('daily Slack digest', () => {
 
   it('uses production smoke completions only inside the Seoul watchdog window', async () => {
     expect(
-      getDigestWatchdogDecision(new Date('2026-08-21T00:10:00.000Z'), {
+      getDigestWatchdogDecision(new Date('2026-08-20T23:10:00.000Z'), {
         start: '08:01',
         end: '10:30',
-        freshUntil: '09:17',
+        freshUntil: '08:31',
       }),
     ).toEqual({ withinWindow: true, requireFreshJobs: true });
     expect(
-      getDigestWatchdogDecision(new Date('2026-08-21T00:20:00.000Z'), {
+      getDigestWatchdogDecision(new Date('2026-08-20T23:50:00.000Z'), {
         start: '08:01',
         end: '10:30',
-        freshUntil: '09:17',
+        freshUntil: '08:31',
       }),
     ).toEqual({ withinWindow: true, requireFreshJobs: false });
 
@@ -229,7 +232,7 @@ describe('daily Slack digest', () => {
         {
           SLACK_DIGEST_WINDOW_START: '08:01',
           SLACK_DIGEST_WINDOW_END: '10:30',
-          SLACK_DIGEST_FRESH_UNTIL: '09:17',
+          SLACK_DIGEST_FRESH_UNTIL: '08:31',
         },
         fetchMock,
         () => new Date('2026-08-20T22:00:00.000Z'),

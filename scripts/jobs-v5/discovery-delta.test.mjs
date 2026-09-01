@@ -124,6 +124,33 @@ describe('CareerGround discovery-only collector contract', () => {
     expect(loaded.descriptor.itemAliasesNormalized).toBe(3);
   });
 
+  it('normalizes MID_SIZED_ENTERPRISE before the production boundary', () => {
+    const value = delta(1, [
+      {
+        ...item('JobKorea', 'mid-sized-enterprise'),
+        companySize: 'MID_SIZED_ENTERPRISE',
+      },
+    ]);
+    const loaded = validateDiscoveryDelta(value, {
+      partitionPolicy: sourcePolicy.partitions[0],
+      targetAsOfDate,
+    });
+    expect(loaded.normalizedItems[0].companySize).toBe('MID');
+    expect(loaded.descriptor.itemAliasesNormalized).toBe(1);
+  });
+
+  it('rejects unknown company-size values before production publish', () => {
+    const value = delta(1, [
+      { ...item('JobKorea', 'unknown-company-size'), companySize: 'ENTERPRISE_PLUS' },
+    ]);
+    expect(() =>
+      validateDiscoveryDelta(value, {
+        partitionPolicy: sourcePolicy.partitions[0],
+        targetAsOfDate,
+      }),
+    ).toThrow(expect.objectContaining({ code: 'DISCOVERY_POLICY_INVALID' }));
+  });
+
   it('allows one blocked source while preserving a successful partition', () => {
     const value = delta(2);
     value.sourceCoverage[1] = {

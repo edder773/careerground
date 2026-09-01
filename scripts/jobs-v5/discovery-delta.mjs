@@ -12,6 +12,15 @@ export const DISCOVERY_WORKFLOW_ID = 'CG-JOBS-PROD-V5';
 const ALLOWED_GATE_STATUSES = new Set(['PASS', 'PASS_WITH_PARTIAL_COVERAGE']);
 const ALLOWED_COVERAGE_STATUSES = new Set(['COMPLETE', 'PARTIAL', 'BLOCKED', 'NO_ACCESS', 'ERROR']);
 const ALLOWED_CAREER_SCOPES = new Set(['NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE']);
+const ALLOWED_COMPANY_SIZES = new Set([
+  'LARGE',
+  'PUBLIC',
+  'MID',
+  'SMALL',
+  'STARTUP',
+  'FOREIGN',
+  'UNCLASSIFIED',
+]);
 const CAREER_SCOPE_ALIASES = new Map([
   ['신입', 'NEW_GRAD_ONLY'],
   ['신입 공개경쟁', 'NEW_GRAD_ONLY'],
@@ -25,6 +34,7 @@ const COMPANY_SIZE_ALIASES = new Map([
   ['PUBLIC_INSTITUTION', 'PUBLIC'],
   ['공공기관', 'PUBLIC'],
   ['MID_SIZED', 'MID'],
+  ['MID_SIZED_ENTERPRISE', 'MID'],
   ['중견기업', 'MID'],
   ['SMALL_BUSINESS', 'SMALL'],
   ['중소기업', 'SMALL'],
@@ -147,6 +157,10 @@ function normalizeItem(item, targetAsOfDate, index) {
     : `url:${sourceUrl}`;
   const timestamp = item.lastVerifiedAt;
   const employmentType = normalizeAlias(item.employmentType, EMPLOYMENT_TYPE_ALIASES);
+  const companySize = normalizeAlias(item.companySize || 'UNCLASSIFIED', COMPANY_SIZE_ALIASES);
+  if (!ALLOWED_COMPANY_SIZES.has(companySize)) {
+    fail('DISCOVERY_POLICY_INVALID', `items[${index}].companySize is not allowed.`);
+  }
   const fingerprint = candidateFingerprint({ ...item, employmentType });
   return {
     id: `job-${sha256(sourceUrl).slice(0, 24)}`,
@@ -156,7 +170,7 @@ function normalizeItem(item, targetAsOfDate, index) {
     sourceName: item.sourceName.trim(),
     sourcePostingId,
     companyName: item.companyName.trim(),
-    companySize: normalizeAlias(item.companySize || 'UNCLASSIFIED', COMPANY_SIZE_ALIASES),
+    companySize,
     companySizeEvidence: String(item.companySizeEvidence || ''),
     title: item.title.trim(),
     category: item.category.trim(),

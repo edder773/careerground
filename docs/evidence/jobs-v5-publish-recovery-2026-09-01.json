@@ -1,0 +1,28 @@
+{
+  "incidentDate": "2026-09-01",
+  "timezone": "Asia/Seoul",
+  "failedHandoffRunId": 33376022739,
+  "failedAt": "2026-08-31T09:06:48.000Z",
+  "verifiedPartitionCount": 3,
+  "verifiedItemCount": 23,
+  "observedCompanySize": "MID_SIZED_ENTERPRISE",
+  "requiredCompanySize": "MID",
+  "productionErrorBefore": {
+    "httpStatus": 500,
+    "code": "DATABASE_ERROR"
+  },
+  "expectedErrorAfter": {
+    "httpStatus": 422,
+    "code": "PUBLISH_VALIDATION_FAILED"
+  },
+  "lastPublishedTargetDateBeforeRecovery": "2026-08-28",
+  "missingDeliveryKeyBeforeRecovery": "daily:2026-09-01",
+  "verification": {
+    "targetedTests": 45,
+    "unitAndComponentTests": 240,
+    "e2eTests": 34,
+    "lint": "PASS",
+    "typecheck": "PASS",
+    "productionBuild": "PASS"
+  }
+}

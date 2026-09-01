@@ -1,4 +1,5 @@
 import { all, first, type D1Database, type D1PreparedStatement } from './d1.js';
+import { RouteError } from './d1-api-contract.js';
 import { validateDiscoveryPublishRequest } from './d1-jobs-v5-discovery-contract.js';
 import { duplicateJobReason, jobCompanyKey, type ComparableJob } from './job-dedup.js';
 
@@ -506,7 +507,18 @@ type StoredDiscoveryRun = {
 };
 
 export async function publishDiscoveryBundle(db: D1Database, input: unknown, now = new Date()) {
-  const validated = await validateDiscoveryPublishRequest(input, now);
+  let validated: Awaited<ReturnType<typeof validateDiscoveryPublishRequest>>;
+  try {
+    validated = await validateDiscoveryPublishRequest(input, now);
+  } catch (error) {
+    if (error instanceof RouteError) throw error;
+    throw new RouteError(
+      422,
+      '운영 채용공고 반영 요청 검증에 실패했습니다.',
+      'PUBLISH_VALIDATION_FAILED',
+      { reason: error instanceof Error ? error.message : String(error) },
+    );
+  }
   const priorRun = await first<StoredDiscoveryRun>(
     db,
     `SELECT status, manifest FROM workflow_runs WHERE run_id = ?`,
