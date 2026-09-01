@@ -24,7 +24,7 @@ export function inspectWebBundle(distDirectory, budgets = DEFAULT_WEB_BUNDLE_BUD
   const assets = assetFiles(join(root, 'assets')).map((path) => {
     const bytes = readFileSync(path);
     return {
-      path: relative(root, path),
+      path: relative(root, path).replaceAll('\\', '/'),
       rawBytes: bytes.length,
       gzipBytes: gzipSync(bytes, { level: 9 }).length,
       type: path.endsWith('.css') ? 'css' : 'javascript',

@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 const sourceRoot = resolve(import.meta.dirname);
 const readSource = (path: string) => readFileSync(resolve(sourceRoot, path), 'utf8');
-const lineCount = (source: string) => source.split('\n').length - 1;
+const lineCount = (source: string) => source.split(/\r?\n/u).length - 1;
 
 describe('web module boundaries', () => {
   it('keeps the jobs route focused on orchestration', () => {
@@ -17,7 +17,7 @@ describe('web module boundaries', () => {
   });
 
   it('keeps the global stylesheet as an ordered module manifest', () => {
-    const manifest = readSource('styles.css').trim().split('\n');
+    const manifest = readSource('styles.css').trim().split(/\r?\n/u);
     const expected = [
       "@import './styles/foundation.css';",
       "@import './styles/workspace.css';",
