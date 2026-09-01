@@ -160,7 +160,46 @@ describe('CareerGround v5 discovery production boundary', () => {
     });
     await expect(
       publishDiscoveryBundle(db, await request(now, 2, [collision]), now),
-    ).rejects.toThrow('fingerprint');
+    ).rejects.toMatchObject({
+      status: 422,
+      code: 'PUBLISH_IDENTITY_CONFLICT',
+      details: { reason: 'FINGERPRINT_COLLISION' },
+    });
+  });
+
+  it('skips an alternate platform URL when its stable source posting key already exists', async () => {
+    const sourcePostingId = '19391543';
+    const canonicalJobKey = `source:matchingbank.example.test:${sourcePostingId}`;
+    const originalUrl = `https://matchingbank.example.test/jobs/view.asp?id_num=${sourcePostingId}`;
+    const printUrl = `https://matchingbank.example.test/jobs/ifrm_default_view_print.asp?id_num=${sourcePostingId}&print=true`;
+    const original = await discoveryJob(now, 'canonical-original', {
+      id: `job-${(await sha256(originalUrl)).slice(0, 24)}`,
+      sourceUrl: originalUrl,
+      sourcePostingId,
+      canonicalJobKey,
+      title: '웹 앱 개발자 채용',
+    });
+    const printView = await discoveryJob(now, 'canonical-print', {
+      id: `job-${(await sha256(printUrl)).slice(0, 24)}`,
+      sourceUrl: printUrl,
+      sourcePostingId,
+      canonicalJobKey,
+      title: '웹·앱 개발자 채용 인쇄 화면',
+    });
+
+    await publishDiscoveryBundle(db, await request(now, 1, [original]), now);
+    const repeated = await publishDiscoveryBundle(db, await request(now, 2, [printView]), now);
+    const stored = await first<{ original: number; printView: number }>(
+      db,
+      `SELECT
+         (SELECT COUNT(*) FROM jobs WHERE source_url = ?) AS original,
+         (SELECT COUNT(*) FROM jobs WHERE source_url = ?) AS printView`,
+      originalUrl,
+      printUrl,
+    );
+
+    expect(repeated).toMatchObject({ inserted: 0, skippedExisting: 1 });
+    expect(stored).toEqual({ original: 1, printView: 0 });
   });
 
   it('skips a semantic platform mirror while publishing a distinct role', async () => {

@@ -615,21 +615,32 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
     const sameId = byId.get(id);
     if (sameUrl || sameId) {
       if (!sameUrl || !sameId || sameUrl.id !== id || sameId.sourceUrl !== sourceUrl) {
-        throw new Error(`Existing identifier collision for ${sourceUrl}.`);
+        throw new RouteError(
+          422,
+          '운영 채용공고 식별자가 기존 데이터와 충돌했습니다.',
+          'PUBLISH_IDENTITY_CONFLICT',
+          { reason: 'IDENTIFIER_COLLISION', sourceUrl },
+        );
       }
+      skippedExisting += 1;
+      continue;
+    }
+    const sameCanonicalKey = byCanonicalKey.get(key);
+    if (sameCanonicalKey) {
       skippedExisting += 1;
       continue;
     }
     const sameFingerprint = byFingerprint.get(fingerprint);
     if (sameFingerprint) {
-      throw new Error(
-        `New URL collides with the existing fingerprint for ${sameFingerprint.sourceUrl}.`,
-      );
-    }
-    const sameCanonicalKey = byCanonicalKey.get(key);
-    if (sameCanonicalKey) {
-      throw new Error(
-        `New URL collides with the existing canonical key for ${sameCanonicalKey.sourceUrl}.`,
+      throw new RouteError(
+        422,
+        '운영 채용공고 내용이 기존 공고와 충돌했습니다.',
+        'PUBLISH_IDENTITY_CONFLICT',
+        {
+          reason: 'FINGERPRINT_COLLISION',
+          sourceUrl,
+          existingSourceUrl: sameFingerprint.sourceUrl,
+        },
       );
     }
     const comparable: ComparableJob = {
@@ -652,7 +663,12 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
     comparableByCompany.set(companyKey, companyJobs);
   }
   if (newJobs.length > 75) {
-    throw new Error('A single publish run may insert at most 75 new jobs.');
+    throw new RouteError(
+      422,
+      '한 번에 반영할 수 있는 신규 채용공고 수를 초과했습니다.',
+      'PUBLISH_VALIDATION_FAILED',
+      { reason: 'NEW_JOB_LIMIT_EXCEEDED', limit: 75, actual: newJobs.length },
+    );
   }
 
   const timestamp = now.toISOString();
