@@ -84,6 +84,8 @@ pnpm troubleshoot:validate --file docs/troubleshooting/2026-08-12-pr-123-evidenc
 
 기본 provider는 실제 API를 호출하지 않는 mock이다. OpenAI provider는 공식 Responses API의 strict JSON schema output을 사용하며 evidence manifest 밖의 수치·원인·성공을 주장하지 않도록 prompt와 validator 양쪽에서 제한한다.
 
+운영 장애 사례와 재발 방지 검증은 `docs/troubleshooting/`에 모은다. 최근 jobs v5 게시·Slack 복구 기록은 [Jobs v5 회사 규모 계약 불일치와 Slack 누락 복구](docs/troubleshooting/2026-09-01-jobs-v5-company-size-publish-recovery.md)에서 확인할 수 있다.
+
 ## 배포
 
 `pnpm sites:build`는 React production build와 SPA fallback Worker를 `dist`에 만든다. 운영 Sites에서는 `DB` 논리 바인딩으로 전용 D1을 프로비저닝하고 `drizzle/` migration을 적용한다. 카탈로그 조회 API는 공개하고 Slack digest 내부 API만 전용 Bearer token으로 보호한다. 과거 인증 경로는 `ROUTE_RETIRED`로 응답한다. 상세 절차는 `docs/operations/deployment.md`를 따른다.

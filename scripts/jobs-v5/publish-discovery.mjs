@@ -62,33 +62,60 @@ export function buildPublishRequest({ handoff, report, partitions }) {
   };
 }
 
-export async function publishDiscovery({ endpoint, token, request, fetchImpl = globalThis.fetch }) {
+const sleep = (milliseconds) =>
+  new Promise((resolvePromise) => globalThis.setTimeout(resolvePromise, milliseconds));
+
+export async function publishDiscovery({
+  endpoint,
+  token,
+  request,
+  fetchImpl = globalThis.fetch,
+  maxAttempts = 3,
+  sleepImpl = sleep,
+}) {
   if (!token) fail('CAREERGROUND_PUBLISH_TOKEN is required.');
+  if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 5) {
+    fail('maxAttempts must be an integer from 1 to 5.');
+  }
   const url = new URL(endpoint);
   if (url.protocol !== 'https:') fail('The production publish endpoint must use HTTPS.');
-  const response = await fetchImpl(url, {
-    method: 'POST',
-    headers: {
-      authorization: `Bearer ${token}`,
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify(request),
-    signal: globalThis.AbortSignal.timeout(30_000),
-  });
-  let body = {};
-  try {
-    body = await response.json();
-  } catch {
-    // The HTTP status is sufficient for a secret-free error.
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    let response;
+    try {
+      response = await fetchImpl(url, {
+        method: 'POST',
+        headers: {
+          authorization: `Bearer ${token}`,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify(request),
+        signal: globalThis.AbortSignal.timeout(30_000),
+      });
+    } catch (error) {
+      if (attempt === maxAttempts) throw error;
+      await sleepImpl(1_000 * 2 ** (attempt - 1));
+      continue;
+    }
+    let body = {};
+    try {
+      body = await response.json();
+    } catch {
+      // The HTTP status is sufficient for a secret-free error.
+    }
+    if (!response.ok) {
+      if (response.status >= 500 && attempt < maxAttempts) {
+        await sleepImpl(1_000 * 2 ** (attempt - 1));
+        continue;
+      }
+      const code = typeof body?.code === 'string' ? ` (${body.code})` : '';
+      fail(`CareerGround production publish failed: HTTP ${response.status}${code}`);
+    }
+    if (!['PUBLISHED', 'ALREADY_PUBLISHED'].includes(body?.status)) {
+      fail('CareerGround production publish returned an unexpected status.');
+    }
+    return body;
   }
-  if (!response.ok) {
-    const code = typeof body?.code === 'string' ? ` (${body.code})` : '';
-    fail(`CareerGround production publish failed: HTTP ${response.status}${code}`);
-  }
-  if (!['PUBLISHED', 'ALREADY_PUBLISHED'].includes(body?.status)) {
-    fail('CareerGround production publish returned an unexpected status.');
-  }
-  return body;
+  fail('CareerGround production publish exhausted all retry attempts.');
 }
 
 export async function main(argv = process.argv.slice(2), env = process.env) {
