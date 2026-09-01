@@ -3,7 +3,10 @@ import { Buffer } from 'node:buffer';
 import { URL } from 'node:url';
 
 const DEFAULT_UNORDERED_ARRAY_KEYS = new Set(['sources', 'techStack', 'tags', 'excludedReasons']);
-const CANONICAL_HOST_ALIASES = new Map([['m.work24.go.kr', 'www.work24.go.kr']]);
+const CANONICAL_HOST_ALIASES = new Map([
+  ['m.work24.go.kr', 'www.work24.go.kr'],
+  ['m.saramin.co.kr', 'www.saramin.co.kr'],
+]);
 
 function canonicalValue(value, parentKey, unorderedArrayKeys) {
   if (Array.isArray(value)) {
