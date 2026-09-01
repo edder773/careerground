@@ -17,9 +17,15 @@
   },
   "lastPublishedTargetDateBeforeRecovery": "2026-08-28",
   "missingDeliveryKeyBeforeRecovery": "daily:2026-09-01",
+  "overnightReplayFailure": {
+    "runId": 33456535261,
+    "httpStatus": 422,
+    "reason": "targetAsOfDate accepted only the execution-day KST date"
+  },
+  "replayWindowAfter": "current-or-previous-kst-date",
   "verification": {
     "targetedTests": 45,
-    "unitAndComponentTests": 240,
+    "unitAndComponentTests": 242,
     "e2eTests": 34,
     "lint": "PASS",
     "typecheck": "PASS",

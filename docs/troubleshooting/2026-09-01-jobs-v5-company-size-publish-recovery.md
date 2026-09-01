@@ -3,8 +3,8 @@ title: Jobs v5 회사 규모 계약 불일치와 Slack 누락 복구
 date: 2026-09-01
 tags: [jobs-v5, slack, github-actions, sites, d1, resilience]
 generatedByAI: false
-pr: 107
-commit: 151a89118b6654ec6e66f878b738f9b1d8bc4069
+pr: 107-108
+commit: 151a89118b6654ec6e66f878b738f9b1d8bc4069, 3f477317675341cc0cd92162e967f6cfc5cda2ba
 evidence: docs/evidence/jobs-v5-publish-recovery-2026-09-01.json
 ---
 
@@ -28,6 +28,8 @@ GitHub cron은 지정 시각에 실행을 보장하지 않는다. 따라서 독�
 
 알림 workflow의 이벤트 기반 watchdog은 09:17까지 신규 import를 요구했다. 08:50 watchdog이 살아 있었음에도 게시 실패 때문에 발송을 보류했고, 이 실행 경로는 채용 DB 갱신 지연 이슈도 열지 않았다.
 
+v97 배포 후 2026-08-31 산출물을 2026-09-01에 다시 게시하자 `targetAsOfDate`가 실행 당일과 같아야 한다는 두 번째 계약 결함이 422로 드러났다. 전날 저녁 수집과 다음 날 오전 알림 사이의 정상 복구 경로를 고려하지 않은 제한이었다.
+
 ## 전후 비교
 
 | 항목                    | 변경 전                    | 변경 후                                             |
@@ -38,6 +40,8 @@ GitHub cron은 지정 시각에 실행을 보장하지 않는다. 따라서 독�
 | 게시 재시도             | 1회                        | 네트워크·5xx에 한해 최대 3회, 1초·2초 backoff       |
 | import 없는 마지막 알림 | 09:17까지 대기             | 08:51부터 코딩 문제 알림 가능                       |
 | readiness incident      | 예약 실행만 생성           | 수동 dry-run 외 예약·watchdog 모두 생성             |
+| 자정 이후 복구          | 실행 당일 산출물만 허용    | 당일·직전 KST 일자만 허용                           |
+| 4xx 진단 로그           | HTTP 상태와 코드만 표시    | 서버의 안전한 필드 원인까지 표시                    |
 
 ## 재현과 검증
 
@@ -58,3 +62,4 @@ pnpm exec vitest run \
 3. 게시 클라이언트는 4xx를 재시도하지 않고 네트워크·5xx만 최대 3회 재시도한다.
 4. 08:51과 09:17 fallback은 import 유무와 관계없이 일일 코딩 문제 알림을 보장한다.
 5. 모든 예약·watchdog 경로는 같은 D1 발송 키를 사용해 실제 Slack 호출을 하루 한 번으로 제한한다.
+6. 게시 복구는 현재 또는 직전 KST 일자에만 허용해 자정 경계 복구와 오래된 입력 차단을 함께 만족한다.

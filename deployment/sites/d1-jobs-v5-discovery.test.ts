@@ -258,4 +258,25 @@ describe('CareerGround v5 discovery production boundary', () => {
       details: { reason: expect.stringContaining('companySize') },
     });
   });
+
+  it('allows one previous-KST-day replay for an overnight recovery', async () => {
+    const collectedAt = new Date('2026-08-31T09:00:00.000Z');
+    const recoveredAt = new Date('2026-09-01T00:54:00.000Z');
+    const input = await request(collectedAt);
+    await expect(publishDiscoveryBundle(db, input, recoveredAt)).resolves.toMatchObject({
+      status: 'PUBLISHED',
+      inserted: 3,
+    });
+  });
+
+  it('rejects a discovery replay older than the previous KST day', async () => {
+    const collectedAt = new Date('2026-08-30T09:00:00.000Z');
+    const recoveredAt = new Date('2026-09-01T00:54:00.000Z');
+    const input = await request(collectedAt);
+    await expect(publishDiscoveryBundle(db, input, recoveredAt)).rejects.toMatchObject({
+      status: 422,
+      code: 'PUBLISH_VALIDATION_FAILED',
+      details: { reason: expect.stringContaining('current or previous') },
+    });
+  });
 });

@@ -71,9 +71,13 @@ describe('CareerGround v5 discovery publisher client', () => {
   it('does not retry a contract rejection', async () => {
     const fetchImpl = vi.fn(
       async () =>
-        new globalThis.Response(JSON.stringify({ code: 'PUBLISH_VALIDATION_FAILED' }), {
-          status: 422,
-        }),
+        new globalThis.Response(
+          JSON.stringify({
+            code: 'PUBLISH_VALIDATION_FAILED',
+            details: { reason: 'targetAsOfDate is outside the recovery window.' },
+          }),
+          { status: 422 },
+        ),
     );
     const sleepImpl = vi.fn(async () => undefined);
     await expect(
@@ -84,7 +88,9 @@ describe('CareerGround v5 discovery publisher client', () => {
         fetchImpl,
         sleepImpl,
       }),
-    ).rejects.toThrow('HTTP 422 (PUBLISH_VALIDATION_FAILED)');
+    ).rejects.toThrow(
+      'HTTP 422 (PUBLISH_VALIDATION_FAILED): targetAsOfDate is outside the recovery window.',
+    );
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(sleepImpl).not.toHaveBeenCalled();
   });

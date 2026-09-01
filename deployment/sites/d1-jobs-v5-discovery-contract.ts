@@ -201,8 +201,12 @@ export async function validateDiscoveryPublishRequest(value: unknown, now: Date)
     throw new Error('Discovery publish request identity is invalid.');
   }
   const targetAsOfDate = requiredString(request.targetAsOfDate, 'targetAsOfDate', 10);
-  if (!/^\d{4}-\d{2}-\d{2}$/u.test(targetAsOfDate) || kstDate(now) !== targetAsOfDate) {
-    throw new Error('targetAsOfDate must be the current Asia/Seoul date.');
+  const acceptedTargetDates = new Set([
+    kstDate(now),
+    kstDate(new Date(now.getTime() - 86_400_000)),
+  ]);
+  if (!/^\d{4}-\d{2}-\d{2}$/u.test(targetAsOfDate) || !acceptedTargetDates.has(targetAsOfDate)) {
+    throw new Error('targetAsOfDate must be the current or previous Asia/Seoul date.');
   }
   const runGroupKey = `CG-${targetAsOfDate}`;
   if (request.runGroupKey !== runGroupKey) throw new Error('runGroupKey is invalid.');
