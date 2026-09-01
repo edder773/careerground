@@ -3,8 +3,8 @@ title: Jobs v5 회사 규모 계약 불일치와 Slack 누락 복구
 date: 2026-09-01
 tags: [jobs-v5, slack, github-actions, sites, d1, resilience]
 generatedByAI: false
-pr: 107-108
-commit: 151a89118b6654ec6e66f878b738f9b1d8bc4069, 3f477317675341cc0cd92162e967f6cfc5cda2ba
+pr: 107-109
+commit: 151a89118b6654ec6e66f878b738f9b1d8bc4069, 3f477317675341cc0cd92162e967f6cfc5cda2ba, f52cff70dc94877d36cc9bd4151f92f8a6d5351e
 evidence: docs/evidence/jobs-v5-publish-recovery-2026-09-01.json
 ---
 
