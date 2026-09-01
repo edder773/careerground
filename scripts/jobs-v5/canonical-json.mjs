@@ -3,6 +3,7 @@ import { Buffer } from 'node:buffer';
 import { URL } from 'node:url';
 
 const DEFAULT_UNORDERED_ARRAY_KEYS = new Set(['sources', 'techStack', 'tags', 'excludedReasons']);
+const CANONICAL_HOST_ALIASES = new Map([['m.work24.go.kr', 'www.work24.go.kr']]);
 
 function canonicalValue(value, parentKey, unorderedArrayKeys) {
   if (Array.isArray(value)) {
@@ -61,6 +62,7 @@ export function canonicalizeHttpUrl(value) {
     throw new Error('Only HTTP(S) URLs are supported.');
   url.hash = '';
   url.hostname = url.hostname.toLowerCase();
+  url.hostname = CANONICAL_HOST_ALIASES.get(url.hostname) ?? url.hostname;
   for (const key of [...url.searchParams.keys()]) {
     if (/^(?:utm_|fbclid$|gclid$)/iu.test(key)) url.searchParams.delete(key);
   }
