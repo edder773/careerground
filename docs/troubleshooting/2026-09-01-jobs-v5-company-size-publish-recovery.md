@@ -95,3 +95,20 @@ enum 보정 후 동일 산출물의 GitHub 검증은 통과했지만 운영 게�
 canonical key는 출처 호스트와 출처 고유 공고번호로 만든 안정 식별자이므로, 기존 DB에 같은 key가 있으면 URL 모양이나 제목 표기 차이와 관계없이 같은 공고로 간주해 건너뛰도록 변경했다. 동일 URL·ID의 정상 재등장도 기존처럼 건너뛴다. 반대로 canonical key가 다른데 fingerprint만 같은 경우와 URL·ID가 서로 엇갈린 경우는 계속 차단하되, 이제 `PUBLISH_IDENTITY_CONFLICT` 422와 구체적인 reason을 반환해 재시도로 가려지지 않게 했다.
 
 다음 재처리에서는 사람인의 `m.saramin.co.kr` 모바일 URL과 `www.saramin.co.kr` 데스크톱 URL이 동일한 `rec_idx`와 fingerprint를 사용했지만 과거 canonical key의 호스트가 달라 충돌했다. 수집 어댑터는 앞으로 사람인 모바일 호스트를 데스크톱 호스트로 canonicalize한다. 운영 경계는 과거 DB에 모바일 호스트가 남아 있는 경우도 고려해, 알려진 모바일·데스크톱 호스트군과 `sourcePostingId`와 fingerprint가 모두 같을 때만 기존 공고로 건너뛴다. 출처 고유번호나 fingerprint가 다르면 계속 typed 422로 차단한다.
+
+## 최종 운영 재처리 결과
+
+[GitHub Actions run 33511428363](https://github.com/edder773/careerground/actions/runs/33511428363)에서 2026-09-01의 세 immutable 파티션을 다시 읽어 검증, 운영 D1 게시, Slack digest wake, 포인터 처리까지 모두 성공했다. 게시 영수증과 운영 D1 원장을 대조한 결과는 다음과 같다.
+
+| 항목             | 결과                                                                                                                                                                                                 |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| runId            | `CG-2026-09-01-A1-discovery`                                                                                                                                                                         |
+| workflow 상태    | `PUBLISHED`                                                                                                                                                                                          |
+| 신규 삽입        | 12건                                                                                                                                                                                                 |
+| 기존 중복 건너뜀 | 16건                                                                                                                                                                                                 |
+| 삭제             | 0건                                                                                                                                                                                                  |
+| `saved_jobs`     | 변화 없음                                                                                                                                                                                            |
+| import batch     | `COMMITTED`                                                                                                                                                                                          |
+| handoff Issue    | [#112](https://github.com/edder773/careerground/issues/112), [#113](https://github.com/edder773/careerground/issues/113), [#114](https://github.com/edder773/careerground/issues/114) 모두 자동 종료 |
+
+재처리는 실패한 원본 blob을 수정하지 않고 그대로 사용했다. 따라서 최종 성공은 산출물 교체가 아니라 입력 경계와 운영 중복 판정의 보완으로 얻은 결과다.
