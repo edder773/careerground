@@ -93,3 +93,5 @@ SQL 회귀 테스트는 반복 완화 설정을 끈 상태에서 활성 SQL Lv.3
 enum 보정 후 동일 산출물의 GitHub 검증은 통과했지만 운영 게시에서 Career 상세 URL과 인쇄용 URL이 같은 `sourcePostingId`를 사용해 충돌했다. 두 URL의 최종 `id`는 달랐지만 canonical key는 동일했으며, 기존 서버는 이를 데이터 훼손 가능성이 있는 충돌로만 판단해 HTTP 500을 반환했다.
 
 canonical key는 출처 호스트와 출처 고유 공고번호로 만든 안정 식별자이므로, 기존 DB에 같은 key가 있으면 URL 모양이나 제목 표기 차이와 관계없이 같은 공고로 간주해 건너뛰도록 변경했다. 동일 URL·ID의 정상 재등장도 기존처럼 건너뛴다. 반대로 canonical key가 다른데 fingerprint만 같은 경우와 URL·ID가 서로 엇갈린 경우는 계속 차단하되, 이제 `PUBLISH_IDENTITY_CONFLICT` 422와 구체적인 reason을 반환해 재시도로 가려지지 않게 했다.
+
+다음 재처리에서는 사람인의 `m.saramin.co.kr` 모바일 URL과 `www.saramin.co.kr` 데스크톱 URL이 동일한 `rec_idx`와 fingerprint를 사용했지만 과거 canonical key의 호스트가 달라 충돌했다. 수집 어댑터는 앞으로 사람인 모바일 호스트를 데스크톱 호스트로 canonicalize한다. 운영 경계는 과거 DB에 모바일 호스트가 남아 있는 경우도 고려해, 알려진 모바일·데스크톱 호스트군과 `sourcePostingId`와 fingerprint가 모두 같을 때만 기존 공고로 건너뛴다. 출처 고유번호나 fingerprint가 다르면 계속 typed 422로 차단한다.

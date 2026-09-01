@@ -4,6 +4,10 @@ import { validateDiscoveryPublishRequest } from './d1-jobs-v5-discovery-contract
 import { duplicateJobReason, jobCompanyKey, type ComparableJob } from './job-dedup.js';
 
 const V5_WORKFLOW_ID = 'CG-JOBS-PROD-V5';
+const SOURCE_HOST_ALIASES = new Map([
+  ['m.work24.go.kr', 'www.work24.go.kr'],
+  ['m.saramin.co.kr', 'www.saramin.co.kr'],
+]);
 
 export type V5Manifest = {
   schemaVersion: string;
@@ -497,6 +501,7 @@ export async function publishedManifestForNotification(
 type ExistingJobIdentity = {
   id: string;
   sourceUrl: string;
+  sourcePostingId: string | null;
   fingerprint: string | null;
   canonicalJobKey: string | null;
 };
@@ -505,6 +510,17 @@ type StoredDiscoveryRun = {
   status: string;
   manifest: string | null;
 };
+
+function stableSourcePostingIdentity(sourceUrl: string, sourcePostingId: unknown) {
+  const postingId = String(sourcePostingId ?? '').trim();
+  if (!postingId) return null;
+  try {
+    const hostname = new URL(sourceUrl).hostname.toLowerCase();
+    return `${SOURCE_HOST_ALIASES.get(hostname) ?? hostname}:${postingId.toLowerCase()}`;
+  } catch {
+    return null;
+  }
+}
 
 export async function publishDiscoveryBundle(db: D1Database, input: unknown, now = new Date()) {
   let validated: Awaited<ReturnType<typeof validateDiscoveryPublishRequest>>;
@@ -572,7 +588,7 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
   const [baseline, comparableBaseline, savedBefore, jobsBefore] = await Promise.all([
     all<ExistingJobIdentity>(
       db,
-      `SELECT id, source_url AS sourceUrl, fingerprint,
+      `SELECT id, source_url AS sourceUrl, source_posting_id AS sourcePostingId, fingerprint,
               canonical_key AS canonicalJobKey
          FROM jobs`,
     ),
@@ -632,6 +648,15 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
     }
     const sameFingerprint = byFingerprint.get(fingerprint);
     if (sameFingerprint) {
+      const incomingSourceIdentity = stableSourcePostingIdentity(sourceUrl, job.sourcePostingId);
+      const existingSourceIdentity = stableSourcePostingIdentity(
+        sameFingerprint.sourceUrl,
+        sameFingerprint.sourcePostingId,
+      );
+      if (incomingSourceIdentity && incomingSourceIdentity === existingSourceIdentity) {
+        skippedExisting += 1;
+        continue;
+      }
       throw new RouteError(
         422,
         '운영 채용공고 내용이 기존 공고와 충돌했습니다.',

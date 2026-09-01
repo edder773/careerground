@@ -202,6 +202,43 @@ describe('CareerGround v5 discovery production boundary', () => {
     expect(stored).toEqual({ original: 1, printView: 0 });
   });
 
+  it('skips a legacy mobile host alias with the same source posting id and fingerprint', async () => {
+    const sourcePostingId = '54870782';
+    const mobileUrl = `https://m.saramin.co.kr/job-search/view?rec_idx=${sourcePostingId}`;
+    const desktopUrl = `https://www.saramin.co.kr/zf_user/jobs/view?rec_idx=${sourcePostingId}`;
+    const shared = {
+      sourcePostingId,
+      companyName: '비식별 제조 회사',
+      title: '제조지능화 디지털트윈 신입 채용',
+    };
+    const mobile = await discoveryJob(now, 'host-alias-mobile', {
+      ...shared,
+      id: `job-${(await sha256(mobileUrl)).slice(0, 24)}`,
+      sourceUrl: mobileUrl,
+      canonicalJobKey: `source:m.saramin.co.kr:${sourcePostingId}`,
+    });
+    const desktop = await discoveryJob(now, 'host-alias-desktop', {
+      ...shared,
+      id: `job-${(await sha256(desktopUrl)).slice(0, 24)}`,
+      sourceUrl: desktopUrl,
+      canonicalJobKey: `source:www.saramin.co.kr:${sourcePostingId}`,
+    });
+
+    await publishDiscoveryBundle(db, await request(now, 1, [mobile]), now);
+    const repeated = await publishDiscoveryBundle(db, await request(now, 2, [desktop]), now);
+    const stored = await first<{ mobile: number; desktop: number }>(
+      db,
+      `SELECT
+         (SELECT COUNT(*) FROM jobs WHERE source_url = ?) AS mobile,
+         (SELECT COUNT(*) FROM jobs WHERE source_url = ?) AS desktop`,
+      mobileUrl,
+      desktopUrl,
+    );
+
+    expect(repeated).toMatchObject({ inserted: 0, skippedExisting: 1 });
+    expect(stored).toEqual({ mobile: 1, desktop: 0 });
+  });
+
   it('skips a semantic platform mirror while publishing a distinct role', async () => {
     const applicationStartAt = new Date(now.getTime() - 2 * 86_400_000).toISOString();
     const deadlineAt = new Date(now.getTime() + 10 * 86_400_000).toISOString();

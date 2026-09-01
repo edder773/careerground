@@ -128,6 +128,11 @@ describe('canonical JSON and explicit artifacts', () => {
     ).toBe(
       'https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K170052608240022',
     );
+    expect(
+      canonicalizeHttpUrl(
+        'https://m.saramin.co.kr/job-search/view?rec_idx=54870782&utm_source=digest',
+      ),
+    ).toBe('https://www.saramin.co.kr/job-search/view?rec_idx=54870782');
   });
 
   it.each([
