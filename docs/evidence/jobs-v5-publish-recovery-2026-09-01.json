@@ -30,9 +30,21 @@
     "samePostingId": "K170052608240022",
     "resolution": "canonicalize-mobile-host"
   },
+  "dailyChallengePoolExhaustion": {
+    "failedSlackRunId": 33458362053,
+    "httpStatus": 404,
+    "repeatExclusionDays": 60,
+    "allowRepeatRelaxation": false,
+    "activeSqlLevel3": 14,
+    "activeSqlLevel4": 4,
+    "strictRemainingSqlCandidates": 0,
+    "activeAlgorithmLevel3": 24,
+    "strictRemainingAlgorithmLevel3Candidates": 17,
+    "resolution": "fallback-to-today-only-exclusion-when-strict-pool-is-empty"
+  },
   "verification": {
-    "targetedTests": 45,
-    "unitAndComponentTests": 242,
+    "targetedTests": 47,
+    "unitAndComponentTests": 243,
     "e2eTests": 34,
     "lint": "PASS",
     "typecheck": "PASS",

@@ -844,6 +844,54 @@ describe('Sites D1 API', () => {
     expect(rejected.body).toMatchObject({ code: 'VALIDATION_FAILED' });
   });
 
+  it('keeps daily challenges available after the SQL repeat window exhausts the catalog', async () => {
+    const today = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date());
+    await db.prepare('DELETE FROM daily_challenges').run();
+    await db
+      .prepare(
+        'UPDATE daily_challenge_settings SET repeat_exclusion_days = 60, allow_repeat_relaxation = 0 WHERE id = 1',
+      )
+      .run();
+    const sqlProblems = await db
+      .prepare(
+        "SELECT id FROM coding_problems WHERE active = 1 AND track = 'SQL' AND level IN (3, 4) ORDER BY id",
+      )
+      .all<{ id: string }>();
+    expect(sqlProblems.results.length).toBeGreaterThan(0);
+    for (const [index, problem] of sqlProblems.results.entries()) {
+      const date = new Date(`${today}T00:00:00.000Z`);
+      date.setUTCDate(date.getUTCDate() - index - 1);
+      await db
+        .prepare(
+          `INSERT INTO daily_challenges (id, kst_date, level_slot, problem_id, created_at)
+           VALUES (?, ?, 34, ?, ?)`,
+        )
+        .bind(
+          `exhausted-sql-${index}`,
+          date.toISOString().slice(0, 10),
+          problem.id,
+          new Date().toISOString(),
+        )
+        .run();
+    }
+
+    const challenges = await call('/api/v1/coding/daily-challenges', {}, {});
+    expect(challenges.response.status).toBe(200);
+    expect(challenges.body).toEqual([
+      expect.objectContaining({ levelSlot: 1 }),
+      expect.objectContaining({ levelSlot: 2 }),
+      expect.objectContaining({
+        levelSlot: 34,
+        problem: expect.objectContaining({ track: 'SQL', level: expect.any(Number) }),
+      }),
+    ]);
+  });
+
   it('rate limits each user and normalized route with Retry-After', async () => {
     const env = { RATE_LIMIT_READS_PER_MINUTE: '2' };
     expect((await call('/api/v1/auth/me', {}, adminHeaders, env)).response.status).toBe(200);
