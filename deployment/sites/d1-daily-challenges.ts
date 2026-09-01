@@ -211,6 +211,31 @@ const seededCandidateIndex = (value: string, candidateCount: number) => {
   return seed % candidateCount;
 };
 
+async function availableCandidates(
+  db: D1Database,
+  sql: string,
+  bindings: Array<string | number>,
+  strictCutoff: string,
+  today: string,
+  allowRepeatRelaxation: boolean,
+) {
+  const strict = await all<{ id: string }>(db, sql, ...bindings, strictCutoff);
+  if (strict.length) return strict;
+
+  // Availability is more important than the preferred repeat window. A finite
+  // catalog (especially SQL Lv.3~4) will eventually be exhausted, so fall back
+  // to excluding only today's selections instead of failing the whole page and
+  // Slack digest. The setting still permits the relaxed query to be planned up
+  // front; this branch is the mandatory safety net when it is disabled.
+  if (!allowRepeatRelaxation) {
+    console.warn('Daily challenge repeat window exhausted; applying availability fallback', {
+      strictCutoff,
+      today,
+    });
+  }
+  return all<{ id: string }>(db, sql, ...bindings, today);
+}
+
 async function selectMissingDailyChallenges(
   db: D1Database,
   today: string,
@@ -223,8 +248,7 @@ async function selectMissingDailyChallenges(
   if (!missing.length) return;
   const cutoff = new Date(`${today}T00:00:00.000Z`);
   cutoff.setUTCDate(cutoff.getUTCDate() - configuration.repeatExclusionDays);
-  const candidateIndexes: Array<{ strict: number; relaxed?: number }> = [];
-  const candidateStatements = [];
+  const candidatesBySpec: Array<Promise<{ id: string }[]>> = [];
   for (const spec of missing) {
     const placeholders = spec.levels.map(() => '?').join(', ');
     const sql = `SELECT id FROM coding_problems
@@ -233,25 +257,21 @@ async function selectMissingDailyChallenges(
                       SELECT problem_id FROM daily_challenges WHERE kst_date >= ?
                     )
                   ORDER BY position, id`;
-    const strict = candidateStatements.length;
-    candidateStatements.push(
-      db.prepare(sql).bind(spec.track, ...spec.levels, cutoff.toISOString().slice(0, 10)),
+    candidatesBySpec.push(
+      availableCandidates(
+        db,
+        sql,
+        [spec.track, ...spec.levels],
+        cutoff.toISOString().slice(0, 10),
+        today,
+        configuration.allowRepeatRelaxation,
+      ),
     );
-    let relaxed: number | undefined;
-    if (configuration.allowRepeatRelaxation) {
-      relaxed = candidateStatements.length;
-      candidateStatements.push(db.prepare(sql).bind(spec.track, ...spec.levels, today));
-    }
-    candidateIndexes.push({ strict, relaxed });
   }
-  const candidateResults = await db.batch<{ id: string }>(candidateStatements);
+  const candidateResults = await Promise.all(candidatesBySpec);
   const timestamp = nowIso();
   const inserts = missing.map((spec, index) => {
-    const resultIndexes = candidateIndexes[index]!;
-    let candidates = candidateResults[resultIndexes.strict]?.results || [];
-    if (!candidates.length && resultIndexes.relaxed !== undefined) {
-      candidates = candidateResults[resultIndexes.relaxed]?.results || [];
-    }
+    const candidates = candidateResults[index] || [];
     if (!candidates.length) {
       throw new RouteError(
         404,
@@ -353,10 +373,14 @@ async function slackLv3Challenge(db: D1Database, today: string) {
                                 SELECT problem_id FROM daily_challenges WHERE kst_date >= ?
                               )
                             ORDER BY position, id`;
-    let candidates = await all<{ id: string }>(db, candidateSql, cutoff.toISOString().slice(0, 10));
-    if (!candidates.length && configuration.allowRepeatRelaxation) {
-      candidates = await all<{ id: string }>(db, candidateSql, today);
-    }
+    const candidates = await availableCandidates(
+      db,
+      candidateSql,
+      [],
+      cutoff.toISOString().slice(0, 10),
+      today,
+      configuration.allowRepeatRelaxation,
+    );
     if (!candidates.length) {
       throw new RouteError(404, 'Slack 도전 문제로 사용할 알고리즘 Lv.3 후보가 없습니다.');
     }

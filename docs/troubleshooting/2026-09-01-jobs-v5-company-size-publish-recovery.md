@@ -3,7 +3,7 @@ title: Jobs v5 회사 규모 계약 불일치와 Slack 누락 복구
 date: 2026-09-01
 tags: [jobs-v5, slack, github-actions, sites, d1, resilience]
 generatedByAI: false
-pr: 107-109
+pr: 107-110
 commit: 151a89118b6654ec6e66f878b738f9b1d8bc4069, 3f477317675341cc0cd92162e967f6cfc5cda2ba, f52cff70dc94877d36cc9bd4151f92f8a6d5351e
 evidence: docs/evidence/jobs-v5-publish-recovery-2026-09-01.json
 ---
@@ -32,6 +32,8 @@ v97 배포 후 2026-08-31 산출물을 2026-09-01에 다시 게시하자 `target
 
 v98에서 자정 경계 검증을 통과한 뒤에는 Work24의 동일 공고가 모바일 `m.work24.go.kr`과 공식 `www.work24.go.kr`로 나뉘어 기존 fingerprint와 충돌했다. 공고번호·경로·query는 동일했으므로 fingerprint 충돌 차단을 완화하지 않고 모바일 호스트만 공식 호스트로 정규화했다.
 
+v99에서 23건 handoff와 운영 D1 게시가 성공한 뒤 Slack claim은 다시 404로 종료됐다. 운영 카탈로그에는 활성 SQL Lv.3 14개와 Lv.4 4개가 있었지만, 60일 반복 제외 기간 안에서 18개가 모두 이미 선택되어 남은 SQL 후보가 0개였다. `allow_repeat_relaxation=0`이어서 SQL 한 슬롯의 후보 고갈이 사이트의 오늘 문제 3개와 Slack 전체 요약을 함께 중단시켰다. 문제 자체가 존재할 때는 선호 반복 기간보다 가용성을 우선해, 엄격 후보가 0개이면 당일 선택만 제외하는 안전 fallback을 적용하도록 변경했다.
+
 ## 전후 비교
 
 | 항목                    | 변경 전                    | 변경 후                                             |
@@ -45,6 +47,8 @@ v98에서 자정 경계 검증을 통과한 뒤에는 Work24의 동일 공고가
 | 자정 이후 복구          | 실행 당일 산출물만 허용    | 당일·직전 KST 일자만 허용                           |
 | 4xx 진단 로그           | HTTP 상태와 코드만 표시    | 서버의 안전한 필드 원인까지 표시                    |
 | Work24 모바일 URL       | 새 URL로 판단해 충돌       | `www.work24.go.kr` 공식 호스트로 정규화             |
+| SQL 반복 제외 후보      | 전체 18개 사용 후 0개      | 당일 중복만 제외해 18개 후보로 자동 완화            |
+| 후보 고갈 영향 범위     | 사이트·Slack 모두 404      | 활성 후보가 존재하면 두 경로 모두 계속 제공         |
 
 ## 재현과 검증
 
@@ -58,6 +62,8 @@ pnpm exec vitest run \
 
 회귀 테스트는 별칭 정규화, 미지원 enum의 사전 차단, 5xx 재시도, 422 비재시도, 운영 API의 typed 422, 08:51 freshness fallback을 각각 검증한다. 운영 복구에서는 실패한 handoff artifact를 그대로 재사용해 새 수집 없이 게시하고, D1 import 원장·jobs 증가량·Slack 일일 원장을 사후 대조한다.
 
+SQL 회귀 테스트는 반복 완화 설정을 끈 상태에서 활성 SQL Lv.3~4 전부를 직전 60일 이력으로 채운 뒤 `/api/v1/coding/daily-challenges`가 200과 세 슬롯을 반환하는지 확인한다. 실제 후보가 없는 경우의 404는 유지해 잘못된 카탈로그를 숨기지 않는다.
+
 ## 예방 규칙
 
 1. 새 enum 별칭은 어댑터의 alias map과 허용 canonical set을 같은 변경에서 갱신한다.
@@ -67,3 +73,4 @@ pnpm exec vitest run \
 5. 모든 예약·watchdog 경로는 같은 D1 발송 키를 사용해 실제 Slack 호출을 하루 한 번으로 제한한다.
 6. 게시 복구는 현재 또는 직전 KST 일자에만 허용해 자정 경계 복구와 오래된 입력 차단을 함께 만족한다.
 7. 동일 서비스의 모바일 호스트는 공식 호스트로 정규화하되, 그 밖의 fingerprint 충돌은 계속 차단한다.
+8. 활성 문제 카탈로그가 존재하면 반복 제외 기간 고갈만으로 사이트나 Slack 전체를 실패시키지 않는다.
