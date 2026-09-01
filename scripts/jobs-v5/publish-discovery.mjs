@@ -108,7 +108,8 @@ export async function publishDiscovery({
         continue;
       }
       const code = typeof body?.code === 'string' ? ` (${body.code})` : '';
-      fail(`CareerGround production publish failed: HTTP ${response.status}${code}`);
+      const reason = typeof body?.details?.reason === 'string' ? `: ${body.details.reason}` : '';
+      fail(`CareerGround production publish failed: HTTP ${response.status}${code}${reason}`);
     }
     if (!['PUBLISHED', 'ALREADY_PUBLISHED'].includes(body?.status)) {
       fail('CareerGround production publish returned an unexpected status.');
