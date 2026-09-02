@@ -18,12 +18,16 @@ export type JobDigestIdentity = {
 
 const titleStopWords = new Set([
   '및',
+  '관련',
   '채용',
   '모집',
   '공고',
   '신입',
+  '신입채용',
   '신입사원',
   '신입행원',
+  '대졸신입',
+  '대졸신입사원',
   '인턴',
   '인턴십',
   '채용형',
@@ -36,6 +40,12 @@ const titleStopWords = new Set([
   '부문',
   '부문별',
   '직군',
+  '직무',
+  '학사',
+  '석',
+  '석사',
+  '박사',
+  '석박사',
 ]);
 
 const roleNoiseWords = new Set([
@@ -46,6 +56,11 @@ const roleNoiseWords = new Set([
   '정규직',
   '계약직',
   '전환형',
+  '학사',
+  '석',
+  '석사',
+  '박사',
+  '석박사',
 ]);
 
 const compact = (value: string) =>
@@ -56,21 +71,36 @@ const compact = (value: string) =>
     .replace(/\(주\)|㈜/g, '')
     .replace(/[^0-9a-z가-힣]/g, '');
 
+const canonicalCompanyAliases = new Map<string, string>([
+  ['넥슨', 'nexon'],
+  ['넥슨코리아', 'nexon'],
+  ['nexon', 'nexon'],
+  ['nexonkorea', 'nexon'],
+  ['lg에너지솔루션', 'lg-energy-solution'],
+  ['엘지에너지솔루션', 'lg-energy-solution'],
+  ['lgenergysolution', 'lg-energy-solution'],
+  ['미래에셋자산운용', 'mirae-asset-global-investments'],
+  ['miraeassetglobalinvestments', 'mirae-asset-global-investments'],
+  ['우리은행', 'woori-bank'],
+  ['wooribank', 'woori-bank'],
+  ['넛지헬스케어', 'nudge-healthcare'],
+  ['너지', 'nudge-healthcare'],
+  ['nudgehealthcare', 'nudge-healthcare'],
+  ['kt', 'kt'],
+  ['케이티', 'kt'],
+  ['ibk', 'ibk-bank'],
+  ['ibk기업은행', 'ibk-bank'],
+  ['기업은행', 'ibk-bank'],
+  ['중소기업은행', 'ibk-bank'],
+  ['중소기업은행ibk기업은행', 'ibk-bank'],
+]);
+
 export function jobCompanyKey(value: string) {
   const normalized = compact(value)
     .replace(/코퍼레이션$/u, '')
     .replace(/컴퍼니$/u, '')
     .replace(/corporation$|company$|corp$|inc$/u, '');
-  if (/^(넥슨|넥슨코리아|nexon|nexonkorea)$/u.test(normalized)) return 'nexon';
-  if (/^(lg에너지솔루션|엘지에너지솔루션|lgenergysolution)$/u.test(normalized)) {
-    return 'lg-energy-solution';
-  }
-  if (/^(미래에셋자산운용|miraeassetglobalinvestments)$/u.test(normalized)) {
-    return 'mirae-asset-global-investments';
-  }
-  if (/^(우리은행|wooribank)$/u.test(normalized)) return 'woori-bank';
-  if (/^(넛지헬스케어|너지|nudgehealthcare)$/u.test(normalized)) return 'nudge-healthcare';
-  return normalized;
+  return canonicalCompanyAliases.get(normalized) || normalized;
 }
 
 const normalizedTitle = (value: string) =>
@@ -88,6 +118,18 @@ const rawTitleTokens = (value: string) =>
     .trim()
     .split(/\s+/u)
     .filter(Boolean);
+
+const comparableTokenVariants = (tokens: string[]) => {
+  const variants = [...tokens];
+  for (let index = 0; index < tokens.length - 1; index += 1) {
+    const left = tokens[index]!;
+    const right = tokens[index + 1]!;
+    if (/^[a-z][a-z0-9+#]*$/iu.test(left) && /^[a-z][a-z0-9+#]*$/iu.test(right)) {
+      variants.push(`${left}${right}`);
+    }
+  }
+  return [...new Set(variants)];
+};
 
 const kstDayFormatter = new Intl.DateTimeFormat('en-CA', {
   timeZone: 'Asia/Seoul',
@@ -144,8 +186,8 @@ const recruitmentWindowKey = (job: ComparableJob) => {
 
 const titleLooksUmbrella = (job: ComparableJob, roles: string[]) => {
   const title = normalizedTitle(job.title);
-  if (/전\s*(부문|직군)|부문별/gu.test(title)) return true;
-  if (/(신입사원|신입행원|공채|공개채용|수시채용)/u.test(title)) {
+  if (/전\s*(부문|직군)|부문별|관련\s*직무/gu.test(title)) return true;
+  if (/(신입(?:사원|행원)?\s*채용|공채|공개채용|수시채용)/u.test(title)) {
     const broadDomains = new Set(
       roles.filter((token) => ['it', 'sw', 'ai', 'tech', '개발', '데이터'].includes(token)),
     );
@@ -173,7 +215,9 @@ const normalizedSourceUrl = (value?: string | null) => {
 export function jobDigestIdentity(job: ComparableJob): JobDigestIdentity {
   const companyKey = jobCompanyKey(job.companyName);
   const campaignNames = namedCampaignTokens(job).sort();
-  const roles = [...new Set(roleTokens(job).map(compact).filter(Boolean))].sort();
+  const roles = [
+    ...new Set(comparableTokenVariants(roleTokens(job)).map(compact).filter(Boolean)),
+  ].sort();
   const umbrella = titleLooksUmbrella(job, roles);
   return {
     companyKey,
@@ -201,8 +245,8 @@ const intersection = (left: Set<string>, right: Set<string>) =>
   [...left].filter((token) => right.has(token));
 
 const equivalentTitles = (left: ComparableJob, right: ComparableJob) => {
-  const leftTokens = new Set(meaningfulTitleTokens(left).map(compact));
-  const rightTokens = new Set(meaningfulTitleTokens(right).map(compact));
+  const leftTokens = new Set(comparableTokenVariants(meaningfulTitleTokens(left)).map(compact));
+  const rightTokens = new Set(comparableTokenVariants(meaningfulTitleTokens(right)).map(compact));
   if (!leftTokens.size || !rightTokens.size) return false;
   const shared = intersection(leftTokens, rightTokens).length;
   const smallerSize = Math.min(leftTokens.size, rightTokens.size);

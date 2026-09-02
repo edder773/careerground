@@ -64,7 +64,7 @@ Slack을 보내지 않는 운영 점검은 `force=true`, `dry_run=true`, 빈 sna
 전송 실패는 `[운영 경보] Daily Slack digest 전송 실패` 이슈로 누적되고 다음 성공 시 자동으로
 닫힌다. 수동 실행도 전송 실패 감시 대상이지만 예약 지연 계산에서는 제외한다.
 
-발송 전에 Sites API가 `daily:YYYY-MM-DD` 또는 `snapshot:<createdAt>:jobs` 키를 D1에 원자적으로 claim한다. 이미 `SENT`이면 import 최신성보다 먼저 `already-sent`를 반환한다. 성공 완료 시 공고별 회사·캠페인·직무 키를 `slack_digest_items`에 기록하고, 이후 다른 source URL로 수집된 같은 캠페인·직무를 억제한다. Slack이 명시적으로 거부한 경우만 `FAILED`로 기록해 재시도를 허용한다. 네트워크 timeout처럼 Slack 수신 여부를 알 수 없는 경우는 `UNCERTAIN`으로 기록하고 자동 재전송을 막는다.
+발송 전에 Sites API가 `daily:YYYY-MM-DD` 또는 `snapshot:<createdAt>:jobs` 키를 D1에 원자적으로 claim한다. 이미 `SENT`이면 import 최신성보다 먼저 `already-sent`를 반환한다. 성공 완료 시 공고별 회사·캠페인·직무 키를 `slack_digest_items`에 기록하고, 이후 다른 source URL로 수집된 같은 캠페인·직무를 억제한다. 회사 법인 표기와 한·영문 별칭, 접수 기간, 포괄 채용 여부, 정규화한 직무 토큰을 공통 기준으로 사용하며, 억제한 공고는 `duplicateAudit.suppressedJobs`에 원본·비교 대상·판정 사유를 남긴다. Slack이 명시적으로 거부한 경우만 `FAILED`로 기록해 재시도를 허용한다. 네트워크 timeout처럼 Slack 수신 여부를 알 수 없는 경우는 `UNCERTAIN`으로 기록하고 자동 재전송을 막는다.
 
 | 증상                              | 확인할 항목                                                                    |
 | --------------------------------- | ------------------------------------------------------------------------------ |

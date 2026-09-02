@@ -8,6 +8,14 @@ const window = {
 
 describe('job campaign and role identity', () => {
   it.each([
+    ['KT', '㈜케이티', 'kt'],
+    ['IBK기업은행', '중소기업은행(IBK기업은행)', 'ibk-bank'],
+  ])('canonicalizes company aliases: %s / %s', (left, right, expected) => {
+    expect(jobCompanyKey(left)).toBe(expected);
+    expect(jobCompanyKey(right)).toBe(expected);
+  });
+
+  it.each([
     [
       { companyName: '미래에셋자산운용', title: 'OMS 개발 및 운영(채용연계형 인턴)', ...window },
       {
@@ -41,6 +49,65 @@ describe('job campaign and role identity', () => {
   });
 
   it.each([
+    [
+      {
+        companyName: 'KT',
+        title: '2026년 KT 대졸신입 채용 - NW인프라운용',
+        sourceUrl: 'https://linkareer.example.test/kt-nw',
+      },
+      {
+        companyName: '㈜케이티',
+        title: '2026년 KT 대졸신입 채용',
+        sourceUrl: 'https://jobkorea.example.test/kt',
+      },
+      'umbrella-campaign',
+    ],
+    [
+      {
+        companyName: 'IBK기업은행',
+        title: '2026년 하반기 신입행원 채용 - 디지털/IT',
+        sourceUrl: 'https://linkareer.example.test/ibk',
+      },
+      {
+        companyName: '중소기업은행(IBK기업은행)',
+        title: '2026년 하반기 신입행원 채용 - 디지털·IT',
+        sourceUrl: 'https://job-alio.example.test/ibk',
+      },
+      'equivalent-title',
+    ],
+    [
+      {
+        companyName: 'Applied Materials Korea',
+        title: '신입 채용 - Meso Vision / Metrology Algorithm Developer',
+        sourceUrl: 'https://jasoseol.example.test/applied-materials',
+      },
+      {
+        companyName: 'Applied Materials Korea',
+        title: '[신입] MesoVision Algorithm Developer (석/박사)',
+        sourceUrl: 'https://inthiswork.example.test/applied-materials',
+      },
+      'equivalent-title',
+    ],
+    [
+      {
+        companyName: '현대모비스',
+        title: '2026년 하반기 신입 채용 - SW·AI·MES 관련 직무',
+        sourceUrl: 'https://jasoseol.example.test/hyundai-mobis',
+      },
+      {
+        companyName: '현대모비스',
+        title: '2026년 하반기 신입 채용 - 연구직 SW·AI·자율주행',
+        sourceUrl: 'https://linkareer.example.test/hyundai-mobis',
+      },
+      'umbrella-campaign',
+    ],
+  ])('blocks the production repeat regression: %s', (left, right, expectedReason) => {
+    expect(duplicateJobReason({ ...right, ...window }, { ...left, ...window })).toBe(
+      expectedReason,
+    );
+  });
+
+  it.each([
     ['iOS 엔지니어 인턴', 'Android 엔지니어 인턴'],
     ['데이터 분석가 인턴', 'Flutter 개발자 인턴'],
     ['백엔드 엔지니어', '프론트엔드 엔지니어'],
@@ -69,5 +136,38 @@ describe('job campaign and role identity', () => {
     };
 
     expect(duplicateJobReason(current, previous)).toBeNull();
+  });
+
+  it.each([
+    ['KT', 'KT Cloud'],
+    ['IBK기업은행', 'IBK투자증권'],
+  ])('does not merge separate companies with a shared brand token: %s / %s', (left, right) => {
+    expect(jobCompanyKey(left)).not.toBe(jobCompanyKey(right));
+  });
+
+  it('keeps separate MesoVision roles in the same recruitment window', () => {
+    const algorithm = {
+      companyName: 'Applied Materials Korea',
+      title: 'MesoVision Algorithm Developer',
+      ...window,
+    };
+    const hardware = {
+      companyName: 'Applied Materials Korea',
+      title: 'MesoVision Hardware Engineer',
+      ...window,
+    };
+
+    expect(duplicateJobReason(hardware, algorithm)).toBeNull();
+  });
+
+  it.each([
+    ['게임 클라이언트 개발자', '광고 수익화 SDK 개발자'],
+    ['Digital Twin 플랫폼 개발', 'Remote Operation 플랫폼 개발'],
+    ['2026 Junior Talent 채용 - Tech', '2026 Junior Talent 채용 - Infra'],
+  ])('keeps separate specialist roles from one company campaign: %s / %s', (left, right) => {
+    const leftJob = { companyName: '전문직무 테스트 회사', title: left, ...window };
+    const rightJob = { companyName: '전문직무 테스트 회사', title: right, ...window };
+
+    expect(duplicateJobReason(rightJob, leftJob)).toBeNull();
   });
 });

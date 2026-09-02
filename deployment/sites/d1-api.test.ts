@@ -524,7 +524,7 @@ describe('Sites D1 API', () => {
     expect(delivery?.completedAt).toBeTruthy();
   });
 
-  it('records sent job identities and suppresses the same campaign from a later source', async () => {
+  it('records canonical company identities and audits a later campaign mirror', async () => {
     const token = 'test-digest-token';
     const authorized = { authorization: `Bearer ${token}` };
     const environment = { DIGEST_API_TOKEN: token };
@@ -534,21 +534,20 @@ describe('Sites D1 API', () => {
     const deadlineAt = new Date(Date.now() + 7 * 86_400_000).toISOString();
     await db.prepare("UPDATE jobs SET created_at = '2026-01-01T00:00:00.000Z'").run();
     for (const [index, sourceUrl, createdAt] of [
-      [0, 'https://official.example.test/oms', firstCreatedAt],
-      [1, 'https://aggregator.example.test/oms', mirrorCreatedAt],
+      [0, 'https://official.example.test/kt-nw', firstCreatedAt],
+      [1, 'https://aggregator.example.test/kt', mirrorCreatedAt],
     ] as const) {
       await db
         .prepare(
-          `UPDATE jobs SET company_name = '미래에셋자산운용',
+          `UPDATE jobs SET company_name = ?,
                   title = ?, source_url = ?, source_posting_id = NULL,
                   source_name = ?, status = 'ACTIVE', career_scope = 'NEW_GRAD_ELIGIBLE',
                   rolling = 0, application_start_at = ?, deadline_at = ?, created_at = ?
             WHERE id = ?`,
         )
         .bind(
-          index === 0
-            ? 'OMS 개발 및 운영(채용연계형 인턴)'
-            : '주문관리시스템(OMS) 개발 및 운영 채용연계형 인턴',
+          index === 0 ? 'KT' : '㈜케이티',
+          index === 0 ? '2026년 KT 대졸신입 채용 - NW인프라운용' : '2026년 KT 대졸신입 채용',
           sourceUrl,
           index === 0 ? '공식 채용' : '채용 플랫폼',
           new Date(Date.now() - 2 * 86_400_000).toISOString(),
@@ -587,7 +586,7 @@ describe('Sites D1 API', () => {
       )
       .bind(claim.body.deliveryKey)
       .first<{ count: number; companyKey: string }>();
-    expect(recorded).toMatchObject({ count: 1, companyKey: 'mirae-asset-global-investments' });
+    expect(recorded).toMatchObject({ count: 1, companyKey: 'kt' });
 
     const snapshot = await call(
       `/api/v1/internal/slack-digest?snapshotCreatedAt=${encodeURIComponent(mirrorCreatedAt)}`,
@@ -595,7 +594,23 @@ describe('Sites D1 API', () => {
       {},
       environment,
     );
-    expect(snapshot.body).toMatchObject({ suppressedDuplicateCount: 1, jobs: [] });
+    expect(snapshot.body).toMatchObject({
+      suppressedDuplicateCount: 1,
+      jobs: [],
+      duplicateAudit: {
+        suppressedCount: 1,
+        reasons: { 'umbrella-campaign': 1 },
+        suppressedJobs: [
+          {
+            company: '㈜케이티',
+            title: '2026년 KT 대졸신입 채용',
+            reason: 'umbrella-campaign',
+            matchedCompany: 'KT',
+            matchedTitle: '2026년 KT 대졸신입 채용 - NW인프라운용',
+          },
+        ],
+      },
+    });
   });
 
   it('returns already-sent before checking whether a newer jobs import exists', async () => {

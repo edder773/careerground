@@ -239,25 +239,25 @@ describe('CareerGround v5 discovery production boundary', () => {
     expect(stored).toEqual({ mobile: 1, desktop: 0 });
   });
 
-  it('skips a semantic platform mirror while publishing a distinct role', async () => {
+  it('skips a company-alias campaign mirror while publishing a distinct role', async () => {
     const applicationStartAt = new Date(now.getTime() - 2 * 86_400_000).toISOString();
     const deadlineAt = new Date(now.getTime() + 10 * 86_400_000).toISOString();
     const existing = await first<{ id: string }>(db, 'SELECT id FROM jobs ORDER BY id LIMIT 1');
     await db
       .prepare(
         `UPDATE jobs
-            SET company_name = '우리은행', title = '2026 하반기 신입행원 채용 TECH/IT개발',
-                source_name = '공식 채용', source_url = 'https://wooribank.example/jobs/tech',
+            SET company_name = 'KT', title = '2026년 KT 대졸신입 채용 - NW인프라운용',
+                source_name = '링커리어', source_url = 'https://linkareer.example/jobs/kt-nw',
                 status = 'ACTIVE', career_scope = 'NEW_GRAD_ONLY', rolling = 0,
                 application_start_at = ?, deadline_at = ?
           WHERE id = ?`,
       )
       .bind(applicationStartAt, deadlineAt, existing!.id)
       .run();
-    const mirror = await discoveryJob(now, 'woori-mirror', {
-      companyName: '(주)우리은행',
-      title: '2026 하반기 우리은행 신입행원 채용 TECH IT개발',
-      sourceName: '링커리어',
+    const mirror = await discoveryJob(now, 'kt-mirror', {
+      companyName: '㈜케이티',
+      title: '2026년 KT 대졸신입 채용',
+      sourceName: '잡코리아',
       applicationStartAt,
       deadlineAt,
     });
