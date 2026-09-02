@@ -1,0 +1,37 @@
+{
+  "schema": "careerground-troubleshooting-evidence/v1",
+  "case": "slack-early-reservation-trigger",
+  "date": "2026-09-02",
+  "timeZone": "Asia/Seoul",
+  "before": {
+    "checkedAt": "2026-09-02T09:04:00+09:00",
+    "scheduledRunsObserved": 0,
+    "expectedScheduledTimes": ["08:01", "08:11", "08:21", "08:31", "08:41", "08:51"],
+    "latestCommittedImportAt": "2026-09-01T22:06:57.790+09:00"
+  },
+  "recovery": {
+    "runId": 33574047476,
+    "runUrl": "https://github.com/edder773/careerground/actions/runs/33574047476",
+    "completedAt": "2026-09-02T09:08:20+09:00",
+    "deliveryKey": "daily:2026-09-02",
+    "deliveryStatus": "SENT",
+    "deliveredJobCount": 10,
+    "deliveryAttempts": 1
+  },
+  "after": {
+    "earlyReservationSchedules": ["07:45", "07:55"],
+    "deliveryTarget": "08:01",
+    "maximumReservationWaitMinutes": 20,
+    "existingFallbackSchedulesPreserved": 7,
+    "idempotency": "D1 daily delivery and item ledgers"
+  },
+  "verification": {
+    "focusedTestFiles": 2,
+    "focusedTestsPassed": 22,
+    "allUnitAndRegressionTestsPassed": 256,
+    "playwrightTestsPassed": 34,
+    "productionBuild": "PASS",
+    "bundleBudget": "PASS",
+    "slackVerificationMessagesSent": 0
+  }
+}
