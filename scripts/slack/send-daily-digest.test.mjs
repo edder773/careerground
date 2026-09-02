@@ -167,16 +167,21 @@ describe('daily Slack digest', () => {
     expect(rendered).not.toContain('오늘의 코딩 테스트');
   });
 
-  it('uses 08:01 plus off-minute fallback schedules on weekdays in Seoul', async () => {
+  it('reserves off-peak runners before 08:01 and keeps fallback schedules in Seoul', async () => {
     const workflow = await readFile(
       new URL('../../.github/workflows/daily-slack-digest.yml', import.meta.url),
       'utf8',
     );
+    expect(workflow).toContain("cron: '45 7 * * 1-5'");
+    expect(workflow).toContain("cron: '55 7 * * 1-5'");
     expect(workflow).toContain("cron: '1 8 * * 1-5'");
     expect(workflow).toContain("cron: '31 8 * * 1-5'");
     expect(workflow).toContain("cron: '17 9 * * 1-5'");
     expect(workflow).toContain("timezone: 'Asia/Seoul'");
-    expect(workflow.match(/timezone: 'Asia\/Seoul'/g)).toHaveLength(7);
+    expect(workflow.match(/timezone: 'Asia\/Seoul'/g)).toHaveLength(9);
+    expect(workflow).toContain('Hold the early reservation until 08:01 KST');
+    expect(workflow).toContain('node scripts/operations/hold-until-kst.mjs');
+    expect(workflow).toContain('timeout-minutes: 25');
     expect(workflow).toContain('SLACK_DIGEST_REQUIRE_FRESH_JOBS:');
     expect(workflow).toContain('SLACK_DIGEST_DRY_RUN:');
     expect(workflow).toContain("workflows: ['Production SLO smoke']");

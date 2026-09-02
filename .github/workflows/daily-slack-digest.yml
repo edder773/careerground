@@ -7,6 +7,12 @@ on:
   repository_dispatch:
     types: [jobs-v5-published]
   schedule:
+    # GitHub documents that top-of-hour schedules can be delayed or dropped.
+    # Reserve runners off-peak, then hold them until the 08:01 KST delivery target.
+    - cron: '45 7 * * 1-5'
+      timezone: 'Asia/Seoul'
+    - cron: '55 7 * * 1-5'
+      timezone: 'Asia/Seoul'
     - cron: '1 8 * * 1-5'
       timezone: 'Asia/Seoul'
     - cron: '11 8 * * 1-5'
@@ -52,12 +58,20 @@ jobs:
   send:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v7
         with:
           node-version-file: '.node-version'
+
+      - name: Hold the early reservation until 08:01 KST
+        if: github.event_name == 'schedule' && (github.event.schedule == '45 7 * * 1-5' || github.event.schedule == '55 7 * * 1-5')
+        env:
+          RESERVATION_TARGET_HOUR: '8'
+          RESERVATION_TARGET_MINUTE: '1'
+          RESERVATION_MAX_WAIT_MINUTES: '20'
+        run: node scripts/operations/hold-until-kst.mjs
 
       - name: Send CareerGround digest
         id: digest

@@ -58,6 +58,7 @@ generatedByAI: false
 | 08-28 | [V5 수집 결과의 sourceCoverage 계약 불일치](./2026-08-28-v5-coverage-contract-drift.md)                       | 이번 변경                                               | alias 정규화·상충 차단·중복 실행 제거     |
 | 08-31 | [운영 버전 94 검증과 알림·딥링크 복구](./2026-08-31-production-v94-verification-and-recovery.md)              | 이번 변경                                               | 18 jobs 알림·딥링크·watchdog·handoff 정리 |
 | 08-31 | [Slack 채용공고 반복 전송과 예약 지연 무결성 개선](./2026-08-31-slack-repeat-and-schedule-integrity.md)       | 이번 변경                                               | 반복 4캠페인·영속 원장·예약 다중 기동     |
+| 09-02 | [Slack 예약 이벤트 누락과 선점형 실행 슬롯](./2026-09-02-slack-early-reservation-trigger.md)                  | 이번 변경                                               | 09:08 복구 10건·07:45/07:55 선점          |
 
 Dependabot PR #4는 pnpm 11/Node 24를 지원하는 `pnpm/action-setup@6` 갱신이며 별도 장애가 없어 Sites runtime 문서의 도구 체인 맥락에 포함했다. PR #3 이전의 닫힌 #1/#2는 구현이 병합되지 않았으므로 운영 변경 기록에 포함하지 않았다.
 
