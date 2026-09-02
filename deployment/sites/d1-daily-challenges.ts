@@ -515,17 +515,38 @@ export async function slackDigest(db: D1Database, requestUrl: URL) {
   const includedJobs: SlackDigestJobRow[] = [];
   let suppressedDuplicateCount = 0;
   const duplicateReasons: Record<string, number> = {};
+  const suppressedJobs: Array<{
+    jobId: string;
+    company: string;
+    title: string;
+    reason: string;
+    matchedJobId: string;
+    matchedCompany: string;
+    matchedTitle: string;
+  }> = [];
   for (const candidate of candidateJobs) {
     const comparisons = [
-      ...(historicalByCompany.get(jobCompanyKey(candidate.companyName)) || []),
-      ...includedJobs,
+      ...(historicalByCompany.get(jobCompanyKey(candidate.companyName)) || []).map((job) => ({
+        job,
+        jobId: cleanText(job.jobId),
+      })),
+      ...includedJobs.map((job) => ({ job, jobId: job.id })),
     ];
-    const duplicateReason = comparisons
-      .map((existing) => duplicateJobReason(candidate, existing))
-      .find(Boolean);
-    if (duplicateReason) {
+    const duplicateMatch = comparisons
+      .map(({ job, jobId }) => ({ job, jobId, reason: duplicateJobReason(candidate, job) }))
+      .find((match) => Boolean(match.reason));
+    if (duplicateMatch?.reason) {
       suppressedDuplicateCount += 1;
-      duplicateReasons[duplicateReason] = (duplicateReasons[duplicateReason] || 0) + 1;
+      duplicateReasons[duplicateMatch.reason] = (duplicateReasons[duplicateMatch.reason] || 0) + 1;
+      suppressedJobs.push({
+        jobId: candidate.id,
+        company: candidate.companyName,
+        title: candidate.title,
+        reason: duplicateMatch.reason,
+        matchedJobId: duplicateMatch.jobId,
+        matchedCompany: duplicateMatch.job.companyName,
+        matchedTitle: duplicateMatch.job.title,
+      });
     } else {
       includedJobs.push(candidate);
     }
@@ -557,6 +578,7 @@ export async function slackDigest(db: D1Database, requestUrl: URL) {
       includedCount: jobs.length,
       suppressedCount: suppressedDuplicateCount,
       reasons: duplicateReasons,
+      suppressedJobs,
     },
     siteUrl: new URL('/', requestUrl).toString(),
     challenges: [
