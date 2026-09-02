@@ -52,6 +52,11 @@ off-peak 시각에 먼저 요청되므로, 08:01에 예약 이벤트를 처음 �
 - 전체 unit/regression 256개, Playwright 34개, production Sites build 및 bundle budget 통과
 - 오늘 복구 전송 1회, 운영 전송 원장 `SENT`, 채용 항목 10건
 
+최초 Sites 저장본은 병합 전 만들어 둔 server artifact를 재사용해, 소스 버전은 최신인데
+readiness의 build commit은 이전 값으로 남았다. 최종 커밋에서 server bundle을 다시 만들고
+`sites:verify-provenance`가 `git HEAD`와 `dist/build-provenance.json`을 대조하도록 추가했다.
+앞으로 두 값이 다르면 패키징·배포 전에 실패한다.
+
 세부 근거는
 [`docs/evidence/slack-early-reservation-trigger-2026-09-02.json`](../evidence/slack-early-reservation-trigger-2026-09-02.json)에
 고정했다.
