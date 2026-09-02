@@ -32,6 +32,8 @@
     "playwrightTestsPassed": 34,
     "productionBuild": "PASS",
     "bundleBudget": "PASS",
+    "initialSitesBuildCommit": "d4acaab3fc324a85e7daa96a74656d3cbe6617a6",
+    "sitesProvenanceGateAdded": true,
     "slackVerificationMessagesSent": 0
   }
 }

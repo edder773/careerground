@@ -45,6 +45,7 @@
     "docs:build": "pnpm --filter @careerground/docs build",
     "sites:build": "pnpm --filter @careerground/contracts build && pnpm --filter @careerground/web build:sites && node --import tsx deployment/sites/build.mjs",
     "sites:stage": "node --import tsx deployment/sites/prepare-package-stage.ts",
+    "sites:verify-provenance": "node scripts/operations/verify-sites-build-provenance.mjs",
     "sites:typecheck": "tsc --noEmit --strict --skipLibCheck --target ES2022 --module NodeNext --moduleResolution NodeNext --types node --lib ES2022,DOM deployment/sites/d1.ts deployment/sites/d1-api.ts deployment/sites/d1-jobs-v5-discovery-contract.ts deployment/sites/d1-jobs-v5.ts deployment/sites/worker.ts deployment/sites/local-d1.ts deployment/sites/local-d1-server.ts deployment/sites/dev.ts deployment/sites/prepare-package-stage.ts deployment/sites/migration-authority.ts",
     "evidence:collect": "node --import tsx scripts/troubleshooting/collect-evidence.ts",
     "troubleshoot:generate": "node --import tsx scripts/troubleshooting/generate.ts",
