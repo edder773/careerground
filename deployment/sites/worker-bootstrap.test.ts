@@ -55,9 +55,6 @@ describe('Sites worker public catalog bootstrap', () => {
 
   const env = () => ({
     DB: db,
-    ADMIN_EMAILS: '',
-    AUTH_TEST_MODE: 'true',
-    MAX_ACTIVE_USERS: '100',
     REQUEST_LOGGING: 'false',
     ASSETS: { fetch: async () => new Response(null, { status: 404 }) },
   });
@@ -74,7 +71,7 @@ describe('Sites worker public catalog bootstrap', () => {
 
   afterEach(() => db.close());
 
-  it('loads the public jobs catalog without creating a session', async () => {
+  it('loads the public jobs catalog without legacy identity queries', async () => {
     db.resetQueryCount();
     db.resetBatchCount();
     db.resetPreparedSql();
@@ -92,7 +89,7 @@ describe('Sites worker public catalog bootstrap', () => {
     });
     expect(db.getQueryCount()).toBeGreaterThan(0);
     expect(db.getBatchCount()).toBe(1);
-    expect(db.preparedSql.join('\n')).not.toContain('JOIN auth_sessions');
+    expect(db.preparedSql.join('\n')).not.toMatch(/auth_sessions|users|saved_jobs/);
     expect(
       db.preparedSql.some((sql) => /sqlite_schema|pragma_table_info|pragma_index_list/i.test(sql)),
     ).toBe(false);
@@ -137,29 +134,16 @@ describe('Sites worker public catalog bootstrap', () => {
       env(),
       context,
     );
-    expect(legacy.status).toBe(401);
+    expect(legacy.status).toBe(404);
+    expect(await legacy.json()).toMatchObject({ code: 'NOT_FOUND' });
   });
 });
 
 describe('Sites worker schema readiness gate', () => {
-  it('returns 503 for an invalid migration ledger without changing user data', async () => {
+  it('returns 503 for an invalid migration ledger without changing catalog data', async () => {
     const db = new LocalD1();
     try {
-      await db
-        .prepare(
-          `INSERT INTO users
-             (id, site_user_id, email, display_name, role, preferred_language, created_at, updated_at)
-           VALUES (?, ?, ?, ?, 'MEMBER', 'javascript', ?, ?)`,
-        )
-        .bind(
-          'worker-schema-sentinel',
-          'worker-schema-sentinel',
-          'worker-schema-sentinel@example.test',
-          'Schema Sentinel',
-          '2026-08-25',
-          '2026-08-25',
-        )
-        .run();
+      const countBefore = await db.prepare('SELECT COUNT(*) AS count FROM jobs').first();
       await db
         .prepare('DELETE FROM app_schema_migrations WHERE version = ?')
         .bind(EXPECTED_SCHEMA_VERSION)
@@ -177,17 +161,11 @@ describe('Sites worker schema readiness gate', () => {
 
       expect(response.status).toBe(503);
       expect(await response.json()).toMatchObject({ code: 'DB_SCHEMA_NOT_READY' });
-      const sentinel = await db
-        .prepare(
-          "SELECT display_name AS displayName FROM users WHERE id = 'worker-schema-sentinel'",
-        )
-        .first<{ displayName: string }>();
-      expect(sentinel).toEqual({ displayName: 'Schema Sentinel' });
+      const countAfter = await db.prepare('SELECT COUNT(*) AS count FROM jobs').first();
+      expect(countAfter).toEqual(countBefore);
       expect(
         db.preparedSql.some((sql) =>
-          /DELETE FROM (users|saved_jobs|collections|learning_progress|notifications|auth_sessions)/i.test(
-            sql,
-          ),
+          /DELETE FROM (jobs|coding_problems|daily_challenges|slack_digest_deliveries)/i.test(sql),
         ),
       ).toBe(false);
     } finally {

@@ -23,7 +23,7 @@ jobs:
         with:
           node-version-file: .node-version
 
-      - name: Check public catalogs, retired auth boundary, security and D1 readiness
+      - name: Check public catalogs, removed API boundary, security and D1 readiness
         id: slo
         continue-on-error: true
         env:

@@ -558,19 +558,15 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
     if (priorRun.status !== 'VERIFIED') {
       throw new Error(`The existing discovery run is not publishable: ${priorRun.status}.`);
     }
-    const [savedBeforeRetry, jobsBeforeRetry] = await Promise.all([
-      first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM saved_jobs'),
-      first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM jobs'),
-    ]);
+    const jobsBeforeRetry = await first<{ count: number }>(
+      db,
+      'SELECT COUNT(*) AS count FROM jobs',
+    );
     const publication = await publishVerifiedRun(db, priorManifest);
-    const [savedAfterRetry, jobsAfterRetry] = await Promise.all([
-      first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM saved_jobs'),
-      first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM jobs'),
-    ]);
+    const jobsAfterRetry = await first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM jobs');
     if (
-      Number(savedAfterRetry?.count || 0) !== Number(savedBeforeRetry?.count || 0) ||
       Number(jobsAfterRetry?.count || 0) !==
-        Number(jobsBeforeRetry?.count || 0) + Number(priorManifest.counts?.new || 0)
+      Number(jobsBeforeRetry?.count || 0) + Number(priorManifest.counts?.new || 0)
     ) {
       throw new Error('Post-publish D1 retry verification failed.');
     }
@@ -580,12 +576,11 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
       inserted: Number(priorManifest.counts?.new || 0),
       skippedExisting: Number(priorManifest.counts?.excluded || 0),
       sourceChecksum: validated.sourceChecksum,
-      savedJobsUnchanged: true,
       deletedJobs: 0,
     };
   }
 
-  const [baseline, comparableBaseline, savedBefore, jobsBefore] = await Promise.all([
+  const [baseline, comparableBaseline, jobsBefore] = await Promise.all([
     all<ExistingJobIdentity>(
       db,
       `SELECT id, source_url AS sourceUrl, source_posting_id AS sourcePostingId, fingerprint,
@@ -602,7 +597,6 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
           AND (rolling = 1 OR deadline_at IS NULL OR deadline_at > ?)`,
       now.toISOString(),
     ),
-    first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM saved_jobs'),
     first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM jobs'),
   ]);
   const byId = new Map(baseline.map((row) => [row.id, row]));
@@ -739,8 +733,7 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
   };
   await stageVerifiedRun(db, manifest, verified);
   const publication = await publishVerifiedRun(db, manifest);
-  const [savedAfter, jobsAfter, publicationCount, batchCount] = await Promise.all([
-    first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM saved_jobs'),
+  const [jobsAfter, publicationCount, batchCount] = await Promise.all([
     first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM jobs'),
     first<{ count: number }>(
       db,
@@ -754,7 +747,6 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
     ),
   ]);
   if (
-    Number(savedAfter?.count || 0) !== Number(savedBefore?.count || 0) ||
     Number(jobsAfter?.count || 0) !== Number(jobsBefore?.count || 0) + newJobs.length ||
     Number(publicationCount?.count || 0) !== 1 ||
     Number(batchCount?.count || 0) !== 1
@@ -767,7 +759,6 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
     inserted: newJobs.length,
     skippedExisting,
     sourceChecksum: validated.sourceChecksum,
-    savedJobsUnchanged: true,
     deletedJobs: 0,
   };
 }

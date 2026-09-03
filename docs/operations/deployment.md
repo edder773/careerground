@@ -47,8 +47,8 @@ E2E는 `deployment/sites/local-d1-server.ts`가 메모리 D1 fixture를 직접 �
 6. **같은 commit SHA와 archive**를 새 Sites version으로 저장한다.
 7. visibility를 `public`으로 지정해 운영 배포한다.
 8. 배포 상태가 완료될 때까지 확인하고 `pnpm slo:check`로 schema/canary, cold-start와 warm p95,
-   정적·API 보안 정책, 공개 카탈로그와 폐기된 인증 경계를 함께 검사한다.
-9. 비로그인 브라우저로 홈·채용·코딩·학습의 공개 조회와 기기별 즐겨찾기를 smoke test한다.
+   정적·API 보안 정책, 공개 카탈로그와 제거된 API 경계를 함께 검사한다.
+9. 비로그인 브라우저로 홈·채용·코딩의 공개 조회와 기기별 즐겨찾기를 smoke test한다.
 
 정기 점검은 `.github/workflows/production-smoke.yml`이 같은 검사기를 실행한다. 실패 JSON은 30일
 artifact로 남고 하나의 열린 incident에 이력이 누적되며, 복구 실행이 incident를 자동으로 닫는다.
@@ -66,4 +66,4 @@ artifact로 남고 하나의 열린 incident에 이력이 누적되며, 복구 �
 
 D1 migration은 기존 파일을 수정하지 않고 새 순방향 SQL만 `drizzle/`에 추가한다. 운영 적용이 끝난 과거 SQL은 `drizzle-history/`에 보존하며 배포 archive에는 포함하지 않는다. 운영 archive의 유일한 순서·포함 권위는 `deployment/sites/migration-authority.ts`다. 새 SQL을 추가할 때 이 목록과 최신 expected version/checksum을 함께 갱신해야 하며, build와 staging은 누락되거나 목록에 없는 SQL을 거부한다. `db/schema.ts`는 Drizzle 타입과 신규 migration 생성의 단일 schema 정의다.
 
-배포 전 export를 확보하고, migration 이후 원장 version/checksum, canonical job key 중복, Slack delivery 상태, 공통·개인 데이터 집계를 비교한다. 애플리케이션 rollback은 이전 정상 Sites version을 다시 배포하되, 이미 적용된 스키마는 되돌리지 않고 호환 가능한 forward-fix migration을 만든다. 상세 절차는 `docs/operations/backup-restore.md`를 따른다.
+배포 전 export를 확보하고, migration 이후 원장 version/checksum, canonical job key 중복, Slack delivery 상태와 공개 카탈로그 집계를 비교한다. 애플리케이션 rollback은 이전 정상 Sites version을 다시 배포하되, 이미 적용된 스키마는 되돌리지 않고 호환 가능한 forward-fix migration을 만든다. 상세 절차는 `docs/operations/backup-restore.md`를 따른다.

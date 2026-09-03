@@ -31,7 +31,7 @@ const healthyReady = {
     expectedVersion: SOURCE_SCHEMA_VERSION,
     appliedVersion: SOURCE_SCHEMA_VERSION,
   },
-  canary: { jobs: 147, problems: 427, learning: 102, searchRows: 679 },
+  canary: { jobs: 147, problems: 427 },
 };
 
 const jsonResponse = (body, init = {}) =>
@@ -58,12 +58,21 @@ const requestFixture = ({ ready = healthyReady, html = staticHtml, readinessMs =
     if (path === '/api/v1/jobs') {
       return { response: jsonResponse([]), durationMs: 90 };
     }
-    if (path === '/api/v1/learning' || path === '/api/v1/coding/problems') {
+    if (path === '/api/v1/coding/problems') {
       return { response: jsonResponse([]), durationMs: 70 };
     }
-    if (path === '/api/v1/auth/config') {
+    if (
+      [
+        '/api/v1/auth/config',
+        '/api/v1/learning',
+        '/api/v1/collections',
+        '/api/v1/coding/solutions',
+        '/api/v1/notifications',
+        '/api/v1/search',
+      ].includes(path)
+    ) {
       return {
-        response: jsonResponse({ code: 'ROUTE_RETIRED' }, { status: 404 }),
+        response: jsonResponse({ code: 'NOT_FOUND' }, { status: 404 }),
         durationMs: 30,
       };
     }
@@ -93,7 +102,7 @@ describe('production SLO checker', () => {
     expect(report.latency.readinessWarmP95Ms).toBe(140);
     expect(report.schema?.sourceVersion).toBe(SOURCE_SCHEMA_VERSION);
     expect(report.schema?.appliedVersion).toBe(SOURCE_SCHEMA_VERSION);
-    expect(request).toHaveBeenCalledTimes(13);
+    expect(request).toHaveBeenCalledTimes(17);
     expect(formatSloSummary(report)).toContain('Result: **PASS**');
   });
 
@@ -207,10 +216,10 @@ describe('production SLO checker', () => {
 
     expect(report.passed).toBe(false);
     expect(report.failures).toContain('static-favicon.request: network timeout');
-    expect(report.checks.some((check) => check.id === 'retired-auth.contract')).toBe(true);
+    expect(report.checks.some((check) => check.id === 'removed-api.auth.contract')).toBe(true);
   });
 
-  it('fails when a public catalog is unavailable or the retired auth route reappears', async () => {
+  it('fails when a public catalog is unavailable or a removed API route reappears', async () => {
     const fixture = requestFixture();
     const request = vi.fn(async (url, init) => {
       const path = new globalThis.URL(url).pathname;
@@ -235,9 +244,9 @@ describe('production SLO checker', () => {
     expect(
       report.failures.some((failure) => failure.startsWith('public-catalog.jobs.contract:')),
     ).toBe(true);
-    expect(report.failures.some((failure) => failure.startsWith('retired-auth.contract:'))).toBe(
-      true,
-    );
+    expect(
+      report.failures.some((failure) => failure.startsWith('removed-api.auth.contract:')),
+    ).toBe(true);
   });
 
   it('fails when a browser deep link is redirected to the home page', async () => {

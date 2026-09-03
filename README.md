@@ -31,7 +31,7 @@ pnpm dev
 
 ```bash
 pnpm dev                 # web + 메모리 D1 API 동시 실행, Docker 불필요
-pnpm build               # contracts/ui/web/docs/Sites production build
+pnpm build               # ui/web/docs/Sites production build
 pnpm lint
 pnpm typecheck
 pnpm test                # unit/component/provider mock
@@ -87,7 +87,7 @@ pnpm troubleshoot:validate --file docs/troubleshooting/2026-08-12-pr-123-evidenc
 
 ## 배포
 
-`pnpm sites:build`는 React production build와 SPA fallback Worker를 `dist`에 만든다. 운영 Sites에서는 `DB` 논리 바인딩으로 전용 D1을 프로비저닝하고 `drizzle/` migration을 적용한다. 카탈로그 조회 API는 공개하고 Slack digest 내부 API만 전용 Bearer token으로 보호한다. 과거 인증 경로는 `ROUTE_RETIRED`로 응답한다. 상세 절차는 `docs/operations/deployment.md`를 따른다.
+`pnpm sites:build`는 React production build와 SPA fallback Worker를 `dist`에 만든다. 운영 Sites에서는 `DB` 논리 바인딩으로 전용 D1을 프로비저닝하고 `drizzle/` migration을 적용한다. 채용·코딩 카탈로그 조회 API는 공개하고 Slack digest와 검증된 채용 게시 내부 API만 각각의 전용 Bearer token으로 보호한다. 삭제된 레거시 경로는 세부 구현을 노출하지 않는 일반 `404 NOT_FOUND`로 응답한다. 상세 절차는 `docs/operations/deployment.md`를 따른다.
 
 ## 저장소 운영
 

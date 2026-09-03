@@ -9,8 +9,8 @@ import {
   type D1Database,
 } from './d1.js';
 import { normalizedText, sha256 } from './domain.js';
-import { hashSessionToken, newSessionToken } from './google-auth.js';
 import { RouteError, type D1Env } from './d1-api-contract.js';
+import { hashToken, newOpaqueToken } from './security-token.js';
 import {
   duplicateJobReason,
   jobCompanyKey,
@@ -112,18 +112,14 @@ type DailyChallengeRow = {
   level: number;
   track: 'ALGORITHM' | 'SQL';
   tags: string;
-  favorite: number | boolean | null;
 };
 
 const dailyChallengeRowsSql = `SELECT dc.id, dc.problem_id AS problemId,
                                       dc.level_slot AS levelSlot, dc.created_at AS createdAt,
                                       p.source_url AS sourceUrl,
-                                      p.display_title AS displayTitle, p.level, p.track, p.tags,
-                                      pp.favorite
+                                      p.display_title AS displayTitle, p.level, p.track, p.tags
                                  FROM daily_challenges dc
                                  JOIN coding_problems p ON p.id = dc.problem_id AND p.active = 1
-                                 LEFT JOIN problem_progress pp
-                                   ON pp.problem_id = p.id AND pp.user_id = ?
                                 WHERE dc.kst_date = ? AND dc.level_slot IN (1, 2, 34)
                                 ORDER BY CASE dc.level_slot
                                            WHEN 1 THEN 1 WHEN 2 THEN 2 ELSE 3 END`;
@@ -171,7 +167,6 @@ const dailyChallengeValue = (row: DailyChallengeRow) => ({
     level: row.level,
     track: row.track,
     tags: parseArray(row.tags),
-    progress: row.favorite === null ? [] : [{ favorite: asBoolean(row.favorite) }],
   },
 });
 
@@ -295,13 +290,12 @@ async function selectMissingDailyChallenges(
   await db.batch(inserts);
 }
 
-async function dailyChallengeRows(db: D1Database, userId: string, today: string) {
-  return all<DailyChallengeRow>(db, dailyChallengeRowsSql, userId, today);
+async function dailyChallengeRows(db: D1Database, today: string) {
+  return all<DailyChallengeRow>(db, dailyChallengeRowsSql, today);
 }
 
 async function completeDailyChallenges(
   db: D1Database,
-  userId: string,
   today: string,
   rows: DailyChallengeRow[],
   setting?: DailyChallengeSettingRow,
@@ -310,7 +304,7 @@ async function completeDailyChallenges(
   if (!hasEveryDailyChallenge(rows)) {
     setting ??= (await first<DailyChallengeSettingRow>(db, dailyChallengeSettingSql)) || undefined;
     await selectMissingDailyChallenges(db, today, rows, setting);
-    rows = await dailyChallengeRows(db, userId, today);
+    rows = await dailyChallengeRows(db, today);
   }
   if (!hasEveryDailyChallenge(rows)) {
     throw new RouteError(500, '오늘의 문제를 준비하지 못했습니다.');
@@ -318,26 +312,14 @@ async function completeDailyChallenges(
   return rows.map(dailyChallengeValue);
 }
 
-export const dailyChallengeBootstrapStatement = (db: D1Database, userId: string, today: string) =>
-  db.prepare(dailyChallengeRowsSql).bind(userId, today);
-
-export async function completeDailyChallengeBootstrap(
-  db: D1Database,
-  userId: string,
-  today: string,
-  result: { results?: Record<string, unknown>[] } | undefined,
-) {
-  return completeDailyChallenges(db, userId, today, (result?.results || []) as DailyChallengeRow[]);
-}
-
-export async function dailyChallenges(db: D1Database, userId: string) {
+export async function dailyChallenges(db: D1Database) {
   const today = kstDate();
-  const rows = await dailyChallengeRows(db, userId, today);
-  return completeDailyChallenges(db, userId, today, rows);
+  const rows = await dailyChallengeRows(db, today);
+  return completeDailyChallenges(db, today, rows);
 }
 
-export async function dailyChallenge(db: D1Database, userId: string) {
-  const challenges = await dailyChallenges(db, userId);
+export async function dailyChallenge(db: D1Database) {
+  const challenges = await dailyChallenges(db);
   const challenge = challenges.find((value) => value.levelSlot === 1);
   if (!challenge) throw new RouteError(500, '오늘의 문제를 준비하지 못했습니다.');
   return challenge;
@@ -460,8 +442,8 @@ async function deliveredSlackJobs(db: D1Database) {
 export async function slackDigest(db: D1Database, requestUrl: URL) {
   const today = kstDate();
   const generatedAt = nowIso();
-  const rows = await dailyChallengeRows(db, '', today);
-  const challenges = await completeDailyChallenges(db, '', today, rows);
+  const rows = await dailyChallengeRows(db, today);
+  const challenges = await completeDailyChallenges(db, today, rows);
   const advancedChallenge = await slackLv3Challenge(db, today);
   const snapshotCreatedAtInput = cleanText(requestUrl.searchParams.get('snapshotCreatedAt'));
   let snapshotCreatedAt: string | null = null;
@@ -725,8 +707,8 @@ export async function claimSlackDigest(db: D1Database, requestUrl: URL, input: u
   }
   const serializedPayload = JSON.stringify(payload);
   const payloadChecksum = await sha256(serializedPayload);
-  const claimToken = newSessionToken();
-  const claimTokenHash = await hashSessionToken(claimToken);
+  const claimToken = newOpaqueToken();
+  const claimTokenHash = await hashToken(claimToken);
   const timestamp = nowIso();
   const claimed = await all<SlackDigestDeliveryRow>(
     db,
@@ -789,7 +771,7 @@ export async function settleSlackDigestDelivery(
   if (!deliveryKey || !claimToken) {
     throw new RouteError(400, '발송 식별자와 claim token이 필요합니다.', 'DELIVERY_CLAIM_REQUIRED');
   }
-  const claimTokenHash = await hashSessionToken(claimToken);
+  const claimTokenHash = await hashToken(claimToken);
   const timestamp = nowIso();
   const error = cleanText(body.error).slice(0, 500) || null;
   const claimedDelivery = await first<{ payload: string }>(
