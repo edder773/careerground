@@ -6,8 +6,8 @@
 flowchart TD
   PR["pull_request"] --> CI["lint / typecheck / test / build / D1 e2e"]
   CI --> Evidence["종료 코드 + redacted manifest + screenshots"]
-  Merge["trusted merged PR"] --> Candidate["fix / perf / refactor / feat 판정"]
-  Candidate --> Collect["base/head evidence 수집"]
+  Merge["trusted merged PR"] --> Candidate["troubleshooting-doc 라벨 확인"]
+  Candidate --> Collect["opt-in 시 base/head evidence 수집"]
   Collect --> Generate["결정론적 초안 또는 선택적 AI 재작성"]
   Generate --> Validate["frontmatter / privacy / evidence 검증"]
   Validate --> Publish["문서 PR, 실패 시 원본 PR 댓글"]
@@ -18,7 +18,7 @@ flowchart TD
 
 `OPENAI_API_KEY`와 `OPENAI_TROUBLESHOOTING_MODEL`은 문장을 선택적으로 재구성할 때만 사용한다. 없으면 `--provider mock`이 동일 evidence에서 결정론적 기록을 만든다. 코드 수정 과정, 종료 코드, benchmark, screenshot을 저장하는 데 API key가 필요하지 않다.
 
-외부 fork PR에서는 secret을 읽지 않는다. AI workflow는 같은 저장소에서 merge된 신뢰 PR에만 실행한다. `skip-ai-doc`, `no-public-doc`, `force-ai-doc` 라벨이 후보 판정보다 우선한다.
+외부 fork PR에서는 secret을 읽지 않는다. AI workflow는 같은 저장소에서 merge되고 `troubleshooting-doc` 라벨이 붙은 신뢰 PR에만 실행한다. `skip-ai-doc`은 실행을 취소하고, `no-public-doc`은 공개 문서 생성을 막는다.
 
 ## 증거 판정 규칙
 

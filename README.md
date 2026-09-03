@@ -82,6 +82,8 @@ pnpm troubleshoot:validate --file docs/troubleshooting/2026-08-12-pr-123-evidenc
 
 기본 provider는 실제 API를 호출하지 않는 mock이다. OpenAI provider는 공식 Responses API의 strict JSON schema output을 사용하며 evidence manifest 밖의 수치·원인·성공을 주장하지 않도록 prompt와 validator 양쪽에서 제한한다.
 
+병합 후 자동 문서화는 PR에 `troubleshooting-doc` 라벨이 있을 때만 실행한다. 일반 변경은 CI 증거만 남기며 문서 PR을 자동 생성하지 않는다.
+
 운영 장애 사례와 재발 방지 검증은 `docs/troubleshooting/`에 모은다. 최근 jobs v5 게시·Slack 복구 기록은 [Jobs v5 회사 규모 계약 불일치와 Slack 누락 복구](docs/troubleshooting/2026-09-01-jobs-v5-company-size-publish-recovery.md)에서 확인할 수 있다.
 
 ## 배포
@@ -92,7 +94,7 @@ pnpm troubleshoot:validate --file docs/troubleshooting/2026-08-12-pr-123-evidenc
 
 - 영어 Conventional Commits, commitlint, lint-staged, Husky pre-commit/commit-msg/pre-push가 적용된다. 저장소 커밋 작성자는 `edder773`으로 설정한다.
 - branch protection 권장: PR 필수, 1명 review, `CI / validate`, `CodeQL` 필수, force push와 branch delete 금지.
-- fork PR에서는 secret을 사용하지 않는다. AI 문서 생성은 같은 저장소에서 merge된 뒤의 신뢰된 workflow에서만 실행한다.
+- fork PR에서는 secret을 사용하지 않는다. AI 문서 생성은 `troubleshooting-doc` 라벨이 붙은 같은 저장소 PR이 merge된 경우에만 실행한다.
 - artifact retention은 일반 검증 14일, troubleshooting evidence 30일이다.
 
 ## 알려진 초기 제한

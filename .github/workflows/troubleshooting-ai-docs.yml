@@ -17,6 +17,7 @@ jobs:
     if: >-
       github.event.pull_request.merged == true &&
       github.event.pull_request.head.repo.full_name == github.repository &&
+      contains(github.event.pull_request.labels.*.name, 'troubleshooting-doc') &&
       !contains(github.event.pull_request.labels.*.name, 'skip-ai-doc')
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -27,47 +28,29 @@ jobs:
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       HEAD_SHA: ${{ github.event.pull_request.merge_commit_sha }}
     steps:
-      - name: Decide whether this change is a documentation candidate
-        id: candidate
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          FORCE: ${{ contains(github.event.pull_request.labels.*.name, 'force-ai-doc') }}
-        run: |
-          if [[ "$FORCE" == "true" || "$PR_TITLE" =~ ^(fix|perf|refactor|feat)(\(.+\))?: ]]; then
-            echo "eligible=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "eligible=false" >> "$GITHUB_OUTPUT"
-          fi
       - uses: actions/checkout@v6
-        if: steps.candidate.outputs.eligible == 'true'
         with:
           ref: ${{ github.event.pull_request.merge_commit_sha }}
           fetch-depth: 0
       - uses: pnpm/action-setup@v6
-        if: steps.candidate.outputs.eligible == 'true'
         with:
           version: 11.21.0
           run_install: false
       - uses: actions/setup-node@v7
-        if: steps.candidate.outputs.eligible == 'true'
         with:
           node-version-file: .node-version
           cache: pnpm
-      - if: steps.candidate.outputs.eligible == 'true'
-        run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
       - name: Verify base and head are independently addressable
-        if: steps.candidate.outputs.eligible == 'true'
         run: |
           git worktree add /tmp/careerground-before "$BASE_SHA"
           git worktree add /tmp/careerground-after "$HEAD_SHA"
           test "$(git -C /tmp/careerground-before rev-parse HEAD)" = "$BASE_SHA"
           test "$(git -C /tmp/careerground-after rev-parse HEAD)" = "$HEAD_SHA"
       - name: Collect and redact trusted evidence
-        if: steps.candidate.outputs.eligible == 'true'
         run: pnpm evidence:collect --pr "$PR_NUMBER" --base "$BASE_SHA"
       - name: Generate AI-assisted structured output
         if: >-
-          steps.candidate.outputs.eligible == 'true' &&
           env.OPENAI_API_KEY != '' &&
           env.OPENAI_TROUBLESHOOTING_MODEL != ''
         run: >-
@@ -76,14 +59,12 @@ jobs:
           ${{ contains(github.event.pull_request.labels.*.name, 'no-public-doc') && '--no-public-doc' || '' }}
       - name: Generate deterministic evidence record without API credentials
         if: >-
-          steps.candidate.outputs.eligible == 'true' &&
           (env.OPENAI_API_KEY == '' || env.OPENAI_TROUBLESHOOTING_MODEL == '')
         run: >-
           pnpm troubleshoot:generate --manifest "docs/evidence/$PR_NUMBER/manifest.json"
           --provider mock
           ${{ contains(github.event.pull_request.labels.*.name, 'no-public-doc') && '--no-public-doc' || '' }}
       - name: Validate generated documents
-        if: steps.candidate.outputs.eligible == 'true'
         run: |
           git ls-files --others --modified --exclude-standard -- \
             docs/troubleshooting docs/blog | while read -r file; do
@@ -91,7 +72,6 @@ jobs:
           done
       - name: Open a separate documentation PR
         id: publish_docs
-        if: steps.candidate.outputs.eligible == 'true'
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
@@ -112,7 +92,6 @@ jobs:
           echo "url=$url" >> "$GITHUB_OUTPUT"
       - name: Link the documentation PR
         if: >-
-          steps.candidate.outputs.eligible == 'true' &&
           steps.publish_docs.outcome == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -121,7 +100,6 @@ jobs:
             --body "트러블슈팅 문서 초안 PR: ${{ steps.publish_docs.outputs.url }}"
       - name: Record documentation on the source PR when bot PRs are disabled
         if: >-
-          steps.candidate.outputs.eligible == 'true' &&
           steps.publish_docs.outcome == 'failure'
         env:
           GH_TOKEN: ${{ github.token }}
