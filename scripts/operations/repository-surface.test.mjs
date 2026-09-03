@@ -41,8 +41,25 @@ describe('repository operational surface', () => {
     ).rejects.toThrow();
     expect(ci.match(/pnpm install --frozen-lockfile/gu)).toHaveLength(1);
     expect(ci.match(/^\s+- run: pnpm build$/gmu)).toHaveLength(1);
-    expect(ci.match(/^\s+- run: pnpm test:e2e$/gmu)).toHaveLength(1);
+    expect(ci.match(/^\s+run: pnpm test:e2e$/gmu)).toHaveLength(1);
+    expect(ci).toContain('pnpm test:e2e --project=chromium --project=chromium-mobile-375');
+    expect(ci).not.toContain('pnpm test:e2e -- --project=');
+    expect(ci).toContain("if: github.event_name == 'pull_request'");
+    expect(ci).toContain("if: github.event_name == 'push'");
+    expect(ci).toContain('playwright install --with-deps chromium');
     expect(ci).toContain('playwright install --with-deps chromium firefox webkit');
     expect(ci).not.toMatch(/^\s+- run: pnpm sites:build$/gmu);
+  });
+
+  it('generates troubleshooting documents only for an explicitly labelled merge', async () => {
+    const workflow = await readFile(
+      fromRoot('.github/workflows/troubleshooting-ai-docs.yml'),
+      'utf8',
+    );
+
+    expect(workflow).toContain(
+      "contains(github.event.pull_request.labels.*.name, 'troubleshooting-doc')",
+    );
+    expect(workflow).not.toMatch(/PR_TITLE|fix\|perf\|refactor\|feat/u);
   });
 });

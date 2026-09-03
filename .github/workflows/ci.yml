@@ -37,8 +37,18 @@ jobs:
       - run: pnpm recovery:drill
       - run: pnpm build
       - run: pnpm bundle:budget
-      - run: pnpm exec playwright install --with-deps chromium firefox webkit
-      - run: pnpm test:e2e
+      - name: Install Chromium for pull-request E2E
+        if: github.event_name == 'pull_request'
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Run pull-request E2E
+        if: github.event_name == 'pull_request'
+        run: pnpm test:e2e --project=chromium --project=chromium-mobile-375
+      - name: Install the full browser set after merge
+        if: github.event_name == 'push'
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Run the full cross-browser E2E suite after merge
+        if: github.event_name == 'push'
+        run: pnpm test:e2e
       - name: Upload Playwright report and visual evidence
         if: always()
         uses: actions/upload-artifact@v6
