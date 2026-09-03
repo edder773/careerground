@@ -12,6 +12,10 @@ const deliveryMigration = readFileSync(
   'drizzle/0038_slack_digest_delivery_history.sql',
   'utf8',
 ).replaceAll('\r\n', '\n');
+const retirementMigration = readFileSync(
+  'drizzle/0039_retire_legacy_product_surface.sql',
+  'utf8',
+).replaceAll('\r\n', '\n');
 const collectorPrompt = readFileSync(
   'docs/operations/careerground-v5-stable-collector-prompts.md',
   'utf8',
@@ -32,6 +36,57 @@ describe('CareerGround v5 production workflow policy', () => {
     expect(deliveryMigration).toContain(`sha256:${checksum}`);
     expect(deliveryMigration).toContain('CREATE TABLE `slack_digest_items`');
     expect(deliveryMigration).not.toMatch(/DELETE\s+FROM/iu);
+  });
+
+  it('retires only the unused product schema with a verified forward migration', () => {
+    const ddl = retirementMigration.split('INSERT INTO `app_schema_migrations`')[0];
+    const checksum = createHash('sha256').update(ddl).digest('hex');
+    const droppedTables = [...ddl.matchAll(/DROP TABLE IF EXISTS `([^`]+)`/gu)].map(
+      (match) => match[1],
+    );
+
+    expect(retirementMigration).toContain(`sha256:${checksum}`);
+    expect(droppedTables).toEqual([
+      'workspace_search',
+      'daily_challenge_participations',
+      'solution_comments',
+      'solution_reactions',
+      'solution_revisions',
+      'solutions',
+      'collection_items',
+      'collections',
+      'auth_sessions',
+      'auth_identities',
+      'problem_progress',
+      'saved_jobs',
+      'learning_question_attempts',
+      'learning_review_events',
+      'learning_progress',
+      'flashcards',
+      'learning_questions',
+      'learning_units',
+      'learning_sources',
+      'notifications',
+      'request_rate_limits',
+      'audit_logs',
+      'import_previews',
+      'job_source_snapshot_items',
+      'job_source_snapshots',
+      'scheduler_leases',
+      'users',
+    ]);
+    expect(droppedTables).not.toEqual(
+      expect.arrayContaining([
+        'jobs',
+        'job_tech_stacks',
+        'coding_problems',
+        'daily_challenges',
+        'import_batches',
+        'workflow_runs',
+        'slack_digest_deliveries',
+        'slack_digest_items',
+      ]),
+    );
   });
 
   it('accepts only schema 2.0 partition pointers, publishes through the protected endpoint, and never sends Slack', () => {

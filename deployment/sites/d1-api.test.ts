@@ -100,14 +100,11 @@ describe('Sites D1 active API', () => {
   });
 
   it('returns only generic NOT_FOUND responses for every removed legacy API family', async () => {
-    const countsBefore = await db
+    const activeCountsBefore = await db
       .prepare(
         `SELECT
-           (SELECT COUNT(*) FROM users) AS users,
-           (SELECT COUNT(*) FROM learning_progress) AS learningProgress,
-           (SELECT COUNT(*) FROM collections) AS collections,
-           (SELECT COUNT(*) FROM solutions) AS solutions,
-           (SELECT COUNT(*) FROM notifications) AS notifications`,
+           (SELECT COUNT(*) FROM jobs) AS jobs,
+           (SELECT COUNT(*) FROM coding_problems) AS codingProblems`,
       )
       .first<Record<string, number>>();
     const removedRoutes: Array<[string, RequestInit?]> = [
@@ -139,17 +136,24 @@ describe('Sites D1 active API', () => {
       expect(JSON.stringify(result.body), path).not.toContain('ROUTE_RETIRED');
     }
 
-    const countsAfter = await db
+    const activeCountsAfter = await db
       .prepare(
         `SELECT
-           (SELECT COUNT(*) FROM users) AS users,
-           (SELECT COUNT(*) FROM learning_progress) AS learningProgress,
-           (SELECT COUNT(*) FROM collections) AS collections,
-           (SELECT COUNT(*) FROM solutions) AS solutions,
-           (SELECT COUNT(*) FROM notifications) AS notifications`,
+           (SELECT COUNT(*) FROM jobs) AS jobs,
+           (SELECT COUNT(*) FROM coding_problems) AS codingProblems`,
       )
       .first<Record<string, number>>();
-    expect(countsAfter).toEqual(countsBefore);
+    expect(activeCountsAfter).toEqual(activeCountsBefore);
+
+    const retiredTables = await db
+      .prepare(
+        `SELECT name FROM sqlite_schema
+          WHERE type = 'table'
+            AND (name IN ('users', 'collections', 'solutions', 'learning_units', 'notifications')
+                 OR name LIKE 'workspace_search%')`,
+      )
+      .all<Record<string, string>>();
+    expect(retiredTables.results).toEqual([]);
   });
 
   it('keeps Slack and job publication routes private', async () => {

@@ -66,4 +66,10 @@ artifact로 남고 하나의 열린 incident에 이력이 누적되며, 복구 �
 
 D1 migration은 기존 파일을 수정하지 않고 새 순방향 SQL만 `drizzle/`에 추가한다. 운영 적용이 끝난 과거 SQL은 `drizzle-history/`에 보존하며 배포 archive에는 포함하지 않는다. 운영 archive의 유일한 순서·포함 권위는 `deployment/sites/migration-authority.ts`다. 새 SQL을 추가할 때 이 목록과 최신 expected version/checksum을 함께 갱신해야 하며, build와 staging은 누락되거나 목록에 없는 SQL을 거부한다. `db/schema.ts`는 Drizzle 타입과 신규 migration 생성의 단일 schema 정의다.
 
+`0039_retire_legacy_product_surface`부터 운영 D1은 공개 채용·코딩 카탈로그, 일일 추천,
+채용 handoff, Slack digest 원장에 필요한 15개 테이블만 유지한다. 제거된 로그인·학습·풀이·컬렉션·
+인앱 알림 테이블과 FTS는 애플리케이션 rollback으로 복원되지 않는다. 이 범위의 배포 전에는
+정확한 제거 목록과 활성 테이블 비참조를 테스트로 확인하고, 필요한 데이터 보존 여부를 별도로
+판단해야 한다.
+
 배포 전 export를 확보하고, migration 이후 원장 version/checksum, canonical job key 중복, Slack delivery 상태와 공개 카탈로그 집계를 비교한다. 애플리케이션 rollback은 이전 정상 Sites version을 다시 배포하되, 이미 적용된 스키마는 되돌리지 않고 호환 가능한 forward-fix migration을 만든다. 상세 절차는 `docs/operations/backup-restore.md`를 따른다.

@@ -9,36 +9,18 @@ import { performance } from 'node:perf_hooks';
 import { LocalD1 } from '../../deployment/sites/local-d1.js';
 
 const tableNames = [
-  'users',
-  'collections',
-  'collection_items',
   'jobs',
-  'saved_jobs',
+  'job_tech_stacks',
   'coding_problems',
-  'problem_progress',
-  'solutions',
-  'solution_comments',
-  'solution_reactions',
-  'solution_revisions',
-  'learning_sources',
-  'learning_units',
-  'learning_progress',
-  'learning_questions',
-  'learning_question_attempts',
-  'learning_review_events',
-  'flashcards',
-  'notifications',
-  'audit_logs',
   'daily_challenge_settings',
   'daily_challenges',
-  'daily_challenge_participations',
   'import_batches',
-  'import_previews',
-  'job_tech_stacks',
-  'job_source_snapshots',
-  'job_source_snapshot_items',
-  'request_rate_limits',
-  'scheduler_leases',
+  'workflow_runs',
+  'workflow_staged_jobs',
+  'workflow_publications',
+  'workflow_pointers',
+  'workflow_notifications',
+  'workflow_publish_assertions',
   'slack_digest_deliveries',
   'slack_digest_items',
   'app_schema_migrations',
@@ -55,10 +37,10 @@ function tableCounts(database) {
 
 function contentChecksum(database) {
   const fixture = {
-    collections: database
+    jobs: database
       .prepare(
-        `SELECT id, user_id AS userId, name, icon, color, position
-           FROM collections WHERE id = 'restore-drill-collection'`,
+        `SELECT id, company_name AS companyName, title, source_url AS sourceUrl
+           FROM jobs ORDER BY id LIMIT 1`,
       )
       .all(),
     deliveries: database
@@ -77,7 +59,7 @@ function contentChecksum(database) {
     authority: database
       .prepare(
         `SELECT version, checksum FROM app_schema_migrations
-          WHERE version = '0034_migration_authority_and_delivery_integrity'`,
+          WHERE version = '0039_retire_legacy_product_surface'`,
       )
       .all(),
   };
@@ -105,24 +87,6 @@ try {
   const timestamp = new Date().toISOString();
   await source
     .prepare(
-      `INSERT INTO users
-         (id, site_user_id, email, display_name, role, is_active, preferred_language,
-          onboarding_completed_at, ranking_opt_in, comment_notifications,
-          deadline_notifications, review_notifications, created_at, updated_at)
-       VALUES (?, ?, ?, ?, 'MEMBER', 1, 'javascript', ?, 1, 1, 1, 1, ?, ?)`,
-    )
-    .bind(
-      'restore-drill-user',
-      'restore-drill-user',
-      'restore-drill@example.invalid',
-      'Restore Drill',
-      timestamp,
-      timestamp,
-      timestamp,
-    )
-    .run();
-  await source
-    .prepare(
       `INSERT INTO slack_digest_deliveries
          (delivery_key, delivery_mode, status, claim_token_hash, payload, payload_checksum,
           attempt_count, claimed_at, completed_at)
@@ -141,15 +105,6 @@ try {
                'Backend Engineer', ?)`,
     )
     .bind(timestamp)
-    .run();
-  await source
-    .prepare(
-      `INSERT INTO collections
-         (id, user_id, name, icon, color, position, created_at, updated_at)
-       VALUES ('restore-drill-collection', 'restore-drill-user', '복구 훈련',
-               'folder', 'amber', 0, ?, ?)`,
-    )
-    .bind(timestamp, timestamp)
     .run();
   source.close();
 
