@@ -51,6 +51,7 @@ import {
 } from '../features/jobs/job-domain';
 import { api } from '../lib/api';
 import { useLocalFavorites } from '../lib/local-favorites';
+import '../styles/jobs.css';
 
 export function JobsPage() {
   const client = useQueryClient();
