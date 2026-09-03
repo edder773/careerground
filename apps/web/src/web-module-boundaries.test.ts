@@ -22,7 +22,6 @@ describe('web module boundaries', () => {
       "@import './styles/foundation.css';",
       "@import './styles/workspace.css';",
       "@import './styles/workflows.css';",
-      "@import './styles/jobs.css';",
     ];
 
     expect(manifest).toEqual(expected);
@@ -31,5 +30,13 @@ describe('web module boundaries', () => {
       expect(path).toBeTruthy();
       expect(lineCount(readSource(path!))).toBeLessThanOrEqual(3500);
     }
+  });
+
+  it('loads job-only styles from the jobs route', () => {
+    const page = readSource('pages/JobsPage.tsx');
+
+    expect(page).toContain("import '../styles/jobs.css';");
+    expect(readSource('styles.css')).not.toContain('jobs.css');
+    expect(lineCount(readSource('styles/jobs.css'))).toBeLessThanOrEqual(3500);
   });
 });

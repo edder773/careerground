@@ -36,7 +36,7 @@ await build({
 });
 await writeFile(
   'dist/build-provenance.json',
-  `${JSON.stringify({ commitSha: buildCommitSha, featureVersion: 'slack-digest-history-v1' }, null, 2)}\n`,
+  `${JSON.stringify({ commitSha: buildCommitSha, featureVersion: 'lean-public-surface-v1' }, null, 2)}\n`,
 );
 const hosting = JSON.parse(await readFile('.openai/hosting.json', 'utf8'));
 await mkdir('dist/.openai', { recursive: true });
