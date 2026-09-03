@@ -28,28 +28,24 @@ describe('active D1 runtime schema', () => {
     await expect(ensureRuntimeSchema(db)).resolves.toMatchObject({ ready: true });
   });
 
-  it('does not depend on retired auth, learning or collection tables', async () => {
-    for (const table of [
-      'auth_sessions',
-      'auth_identities',
-      'learning_question_attempts',
-      'learning_review_events',
-      'learning_progress',
-      'learning_questions',
-      'flashcards',
-      'learning_units',
-      'learning_sources',
-      'collection_items',
-      'collections',
-      'notifications',
-      'solution_comments',
-      'solution_reactions',
-      'solution_revisions',
-      'solutions',
-    ]) {
-      await run(db, `DROP TABLE IF EXISTS ${table}`);
-    }
+  it('removes every retired product table and search index', async () => {
+    const retired = await db
+      .prepare(
+        `SELECT name FROM sqlite_schema
+          WHERE type IN ('table', 'trigger')
+            AND (name IN (
+              'users', 'auth_sessions', 'auth_identities', 'collections', 'collection_items',
+              'problem_progress', 'daily_challenge_participations', 'solutions',
+              'solution_revisions', 'solution_reactions', 'solution_comments', 'saved_jobs',
+              'learning_sources', 'learning_units', 'flashcards', 'learning_questions',
+              'learning_progress', 'learning_review_events', 'learning_question_attempts',
+              'notifications', 'request_rate_limits', 'audit_logs', 'import_previews',
+              'job_source_snapshots', 'job_source_snapshot_items', 'scheduler_leases'
+            ) OR name LIKE 'workspace_search%' OR name LIKE '%_search_%')`,
+      )
+      .all<{ name: string }>();
 
+    expect(retired.results).toEqual([]);
     await expect(inspectRuntimeSchema(db)).resolves.toMatchObject({ ready: true });
   });
 

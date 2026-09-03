@@ -1,0 +1,1426 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "70d83c4e-0ab4-4840-99bb-cb6367c51abd",
+  "prevId": "39cbbb57-9ae3-4711-b13e-dad5014d584f",
+  "tables": {
+    "coding_problems": {
+      "name": "coding_problems",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_url": {
+          "name": "source_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_title": {
+          "name": "display_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "level": {
+          "name": "level",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "track": {
+          "name": "track",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'ALGORITHM'"
+        },
+        "tags": {
+          "name": "tags",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "active": {
+          "name": "active",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_coding_problems_source_url": {
+          "name": "idx_coding_problems_source_url",
+          "columns": [
+            "source_url"
+          ],
+          "isUnique": true
+        },
+        "idx_coding_problems_level_position": {
+          "name": "idx_coding_problems_level_position",
+          "columns": [
+            "level",
+            "position"
+          ],
+          "isUnique": false
+        },
+        "idx_coding_problems_track_level_position": {
+          "name": "idx_coding_problems_track_level_position",
+          "columns": [
+            "track",
+            "level",
+            "position"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "chk_coding_problems_level": {
+          "name": "chk_coding_problems_level",
+          "value": "\"coding_problems\".\"level\" BETWEEN 0 AND 5"
+        },
+        "chk_coding_problems_track": {
+          "name": "chk_coding_problems_track",
+          "value": "\"coding_problems\".\"track\" IN ('ALGORITHM', 'SQL')"
+        },
+        "chk_coding_problems_active": {
+          "name": "chk_coding_problems_active",
+          "value": "\"coding_problems\".\"active\" IN (0, 1)"
+        }
+      }
+    },
+    "daily_challenge_settings": {
+      "name": "daily_challenge_settings",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "allowed_levels": {
+          "name": "allowed_levels",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[1,2]'"
+        },
+        "repeat_exclusion_days": {
+          "name": "repeat_exclusion_days",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 60
+        },
+        "allow_repeat_relaxation": {
+          "name": "allow_repeat_relaxation",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "daily_challenges": {
+      "name": "daily_challenges",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "kst_date": {
+          "name": "kst_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "level_slot": {
+          "name": "level_slot",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "problem_id": {
+          "name": "problem_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_daily_challenges_date_level": {
+          "name": "idx_daily_challenges_date_level",
+          "columns": [
+            "kst_date",
+            "level_slot"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "daily_challenges_problem_id_coding_problems_id_fk": {
+          "name": "daily_challenges_problem_id_coding_problems_id_fk",
+          "tableFrom": "daily_challenges",
+          "tableTo": "coding_problems",
+          "columnsFrom": [
+            "problem_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "import_batches": {
+      "name": "import_batches",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "checksum": {
+          "name": "checksum",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'COMMITTED'"
+        },
+        "original_count": {
+          "name": "original_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "rejected_count": {
+          "name": "rejected_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "result": {
+          "name": "result",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'{}'"
+        },
+        "committed_at": {
+          "name": "committed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_import_batches_kind_checksum": {
+          "name": "idx_import_batches_kind_checksum",
+          "columns": [
+            "kind",
+            "checksum"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "job_tech_stacks": {
+      "name": "job_tech_stacks",
+      "columns": {
+        "job_id": {
+          "name": "job_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_job_tech_stacks_job_name": {
+          "name": "idx_job_tech_stacks_job_name",
+          "columns": [
+            "job_id",
+            "name"
+          ],
+          "isUnique": true
+        },
+        "idx_job_tech_stacks_name_job": {
+          "name": "idx_job_tech_stacks_name_job",
+          "columns": [
+            "name",
+            "job_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "job_tech_stacks_job_id_jobs_id_fk": {
+          "name": "job_tech_stacks_job_id_jobs_id_fk",
+          "tableFrom": "job_tech_stacks",
+          "tableTo": "jobs",
+          "columnsFrom": [
+            "job_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "chk_job_tech_stacks_name": {
+          "name": "chk_job_tech_stacks_name",
+          "value": "length(trim(\"job_tech_stacks\".\"name\")) BETWEEN 1 AND 50"
+        }
+      }
+    },
+    "jobs": {
+      "name": "jobs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "company_name": {
+          "name": "company_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "company_size": {
+          "name": "company_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'UNCLASSIFIED'"
+        },
+        "company_size_evidence": {
+          "name": "company_size_evidence",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "source_name": {
+          "name": "source_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_posting_id": {
+          "name": "source_posting_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "source_url": {
+          "name": "source_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "canonical_key": {
+          "name": "canonical_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "generated": {
+            "as": "(CASE\n        WHEN length(trim(coalesce(source_posting_id, ''))) > 0 THEN\n          'source:' || lower(substr(substr(source_url, instr(source_url, '://') + 3), 1, instr(substr(source_url, instr(source_url, '://') + 3) || '/', '/') - 1)) || ':' || lower(trim(source_posting_id))\n        ELSE 'url:' || lower(trim(source_url))\n      END)",
+            "type": "virtual"
+          }
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "career_scope": {
+          "name": "career_scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'NEW_GRAD_ELIGIBLE'"
+        },
+        "career_evidence": {
+          "name": "career_evidence",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "''"
+        },
+        "employment_type": {
+          "name": "employment_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'FULL_TIME'"
+        },
+        "region": {
+          "name": "region",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "remote": {
+          "name": "remote",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "tech_stack": {
+          "name": "tech_stack",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "application_start_at": {
+          "name": "application_start_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "deadline_at": {
+          "name": "deadline_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "rolling": {
+          "name": "rolling",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "summary": {
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'ACTIVE'"
+        },
+        "fingerprint": {
+          "name": "fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "collected_at": {
+          "name": "collected_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "last_verified_at": {
+          "name": "last_verified_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_jobs_source_url": {
+          "name": "idx_jobs_source_url",
+          "columns": [
+            "source_url"
+          ],
+          "isUnique": true
+        },
+        "idx_jobs_canonical_key": {
+          "name": "idx_jobs_canonical_key",
+          "columns": [
+            "canonical_key"
+          ],
+          "isUnique": true,
+          "where": "\"jobs\".\"canonical_key\" IS NOT NULL"
+        },
+        "idx_jobs_status_deadline": {
+          "name": "idx_jobs_status_deadline",
+          "columns": [
+            "status",
+            "deadline_at"
+          ],
+          "isUnique": false
+        },
+        "idx_jobs_category_created": {
+          "name": "idx_jobs_category_created",
+          "columns": [
+            "category",
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "idx_jobs_created_status": {
+          "name": "idx_jobs_created_status",
+          "columns": [
+            "created_at",
+            "status"
+          ],
+          "isUnique": false
+        },
+        "idx_jobs_category_created_status": {
+          "name": "idx_jobs_category_created_status",
+          "columns": [
+            "category",
+            "created_at",
+            "status"
+          ],
+          "isUnique": false
+        },
+        "idx_jobs_size_created_status": {
+          "name": "idx_jobs_size_created_status",
+          "columns": [
+            "company_size",
+            "created_at",
+            "status"
+          ],
+          "isUnique": false
+        },
+        "idx_jobs_company_status": {
+          "name": "idx_jobs_company_status",
+          "columns": [
+            "company_name",
+            "status"
+          ],
+          "isUnique": false
+        },
+        "idx_jobs_deadline_status": {
+          "name": "idx_jobs_deadline_status",
+          "columns": [
+            "deadline_at",
+            "status"
+          ],
+          "isUnique": false
+        },
+        "idx_jobs_calendar_deadline": {
+          "name": "idx_jobs_calendar_deadline",
+          "columns": [
+            "deadline_at"
+          ],
+          "isUnique": false,
+          "where": "\"jobs\".\"status\" IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND \"jobs\".\"career_scope\" IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')"
+        },
+        "idx_jobs_calendar_published": {
+          "name": "idx_jobs_calendar_published",
+          "columns": [
+            "published_at"
+          ],
+          "isUnique": false,
+          "where": "\"jobs\".\"status\" IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND \"jobs\".\"career_scope\" IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')"
+        },
+        "idx_jobs_calendar_application_start": {
+          "name": "idx_jobs_calendar_application_start",
+          "columns": [
+            "application_start_at"
+          ],
+          "isUnique": false,
+          "where": "\"jobs\".\"status\" IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND \"jobs\".\"career_scope\" IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')"
+        },
+        "idx_jobs_feed_collected_id": {
+          "name": "idx_jobs_feed_collected_id",
+          "columns": [
+            "collected_at",
+            "id"
+          ],
+          "isUnique": false,
+          "where": "\"jobs\".\"status\" IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND \"jobs\".\"career_scope\" IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')"
+        },
+        "idx_jobs_active_category": {
+          "name": "idx_jobs_active_category",
+          "columns": [
+            "category"
+          ],
+          "isUnique": false,
+          "where": "\"jobs\".\"status\" IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND \"jobs\".\"career_scope\" IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')"
+        },
+        "idx_jobs_calendar_rolling": {
+          "name": "idx_jobs_calendar_rolling",
+          "columns": [
+            "id"
+          ],
+          "isUnique": false,
+          "where": "\"jobs\".\"status\" IN ('ACTIVE', 'DEADLINE_UNKNOWN') AND \"jobs\".\"career_scope\" IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE') AND \"jobs\".\"rolling\" = 1"
+        },
+        "idx_jobs_fingerprint": {
+          "name": "idx_jobs_fingerprint",
+          "columns": [
+            "fingerprint"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "chk_jobs_company_size": {
+          "name": "chk_jobs_company_size",
+          "value": "\"jobs\".\"company_size\" IN ('LARGE', 'PUBLIC', 'MID', 'SMALL', 'STARTUP', 'FOREIGN', 'UNCLASSIFIED')"
+        },
+        "chk_jobs_career_scope": {
+          "name": "chk_jobs_career_scope",
+          "value": "\"jobs\".\"career_scope\" IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE', 'CAREER_ONLY')"
+        },
+        "chk_jobs_status": {
+          "name": "chk_jobs_status",
+          "value": "\"jobs\".\"status\" IN ('ACTIVE', 'DEADLINE_UNKNOWN', 'EXPIRED', 'REMOVED', 'NEEDS_REVIEW')"
+        },
+        "chk_jobs_remote": {
+          "name": "chk_jobs_remote",
+          "value": "\"jobs\".\"remote\" IN (0, 1)"
+        },
+        "chk_jobs_rolling": {
+          "name": "chk_jobs_rolling",
+          "value": "\"jobs\".\"rolling\" IN (0, 1)"
+        }
+      }
+    },
+    "slack_digest_deliveries": {
+      "name": "slack_digest_deliveries",
+      "columns": {
+        "delivery_key": {
+          "name": "delivery_key",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "delivery_mode": {
+          "name": "delivery_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "claim_token_hash": {
+          "name": "claim_token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "payload": {
+          "name": "payload",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "payload_checksum": {
+          "name": "payload_checksum",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "attempt_count": {
+          "name": "attempt_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "claimed_at": {
+          "name": "claimed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "failed_at": {
+          "name": "failed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_slack_digest_deliveries_status_claimed": {
+          "name": "idx_slack_digest_deliveries_status_claimed",
+          "columns": [
+            "status",
+            "claimed_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "chk_slack_digest_delivery_mode": {
+          "name": "chk_slack_digest_delivery_mode",
+          "value": "\"slack_digest_deliveries\".\"delivery_mode\" IN ('DAILY', 'SNAPSHOT')"
+        },
+        "chk_slack_digest_delivery_status": {
+          "name": "chk_slack_digest_delivery_status",
+          "value": "\"slack_digest_deliveries\".\"status\" IN ('CLAIMED', 'SENT', 'FAILED', 'UNCERTAIN')"
+        },
+        "chk_slack_digest_delivery_attempt_count": {
+          "name": "chk_slack_digest_delivery_attempt_count",
+          "value": "\"slack_digest_deliveries\".\"attempt_count\" >= 1"
+        }
+      }
+    },
+    "workflow_notifications": {
+      "name": "workflow_notifications",
+      "columns": {
+        "run_id": {
+          "name": "run_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "attempt_count": {
+          "name": "attempt_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "payload_checksum": {
+          "name": "payload_checksum",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "last_error": {
+          "name": "last_error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workflow_notifications_run_id_workflow_runs_run_id_fk": {
+          "name": "workflow_notifications_run_id_workflow_runs_run_id_fk",
+          "tableFrom": "workflow_notifications",
+          "tableTo": "workflow_runs",
+          "columnsFrom": [
+            "run_id"
+          ],
+          "columnsTo": [
+            "run_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "chk_workflow_notification_status": {
+          "name": "chk_workflow_notification_status",
+          "value": "\"workflow_notifications\".\"status\" IN ('PENDING', 'SENT', 'FAILED', 'SKIPPED')"
+        },
+        "chk_workflow_notification_attempt": {
+          "name": "chk_workflow_notification_attempt",
+          "value": "\"workflow_notifications\".\"attempt_count\" >= 0"
+        }
+      }
+    },
+    "workflow_pointers": {
+      "name": "workflow_pointers",
+      "columns": {
+        "workflow_id": {
+          "name": "workflow_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "pointer_name": {
+          "name": "pointer_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "run_id": {
+          "name": "run_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workflow_pointers_run_id_workflow_runs_run_id_fk": {
+          "name": "workflow_pointers_run_id_workflow_runs_run_id_fk",
+          "tableFrom": "workflow_pointers",
+          "tableTo": "workflow_runs",
+          "columnsFrom": [
+            "run_id"
+          ],
+          "columnsTo": [
+            "run_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "workflow_pointers_workflow_id_pointer_name_pk": {
+          "columns": [
+            "workflow_id",
+            "pointer_name"
+          ],
+          "name": "workflow_pointers_workflow_id_pointer_name_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "chk_workflow_pointer_name": {
+          "name": "chk_workflow_pointer_name",
+          "value": "\"workflow_pointers\".\"pointer_name\" IN ('current', 'last-success')"
+        }
+      }
+    },
+    "workflow_publications": {
+      "name": "workflow_publications",
+      "columns": {
+        "idempotency_key": {
+          "name": "idempotency_key",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "run_id": {
+          "name": "run_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "manifest_checksum": {
+          "name": "manifest_checksum",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "inserted_count": {
+          "name": "inserted_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_count": {
+          "name": "updated_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ended_count": {
+          "name": "ended_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "workflow_publications_run_id_unique": {
+          "name": "workflow_publications_run_id_unique",
+          "columns": [
+            "run_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "workflow_publications_run_id_workflow_runs_run_id_fk": {
+          "name": "workflow_publications_run_id_workflow_runs_run_id_fk",
+          "tableFrom": "workflow_publications",
+          "tableTo": "workflow_runs",
+          "columnsFrom": [
+            "run_id"
+          ],
+          "columnsTo": [
+            "run_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "workflow_publish_assertions": {
+      "name": "workflow_publish_assertions",
+      "columns": {
+        "run_id": {
+          "name": "run_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ok": {
+          "name": "ok",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workflow_publish_assertions_run_id_workflow_runs_run_id_fk": {
+          "name": "workflow_publish_assertions_run_id_workflow_runs_run_id_fk",
+          "tableFrom": "workflow_publish_assertions",
+          "tableTo": "workflow_runs",
+          "columnsFrom": [
+            "run_id"
+          ],
+          "columnsTo": [
+            "run_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "chk_workflow_publish_assertion": {
+          "name": "chk_workflow_publish_assertion",
+          "value": "\"workflow_publish_assertions\".\"ok\" = 1"
+        }
+      }
+    },
+    "workflow_runs": {
+      "name": "workflow_runs",
+      "columns": {
+        "run_id": {
+          "name": "run_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "schema_version": {
+          "name": "schema_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "workflow_id": {
+          "name": "workflow_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "run_group_key": {
+          "name": "run_group_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "target_as_of_date": {
+          "name": "target_as_of_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "attempt": {
+          "name": "attempt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mode": {
+          "name": "mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "previous_successful_run_id": {
+          "name": "previous_successful_run_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "error_code": {
+          "name": "error_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "error_message": {
+          "name": "error_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "manifest": {
+          "name": "manifest",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "manifest_checksum": {
+          "name": "manifest_checksum",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "validated_at": {
+          "name": "validated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_workflow_runs_group_attempt": {
+          "name": "idx_workflow_runs_group_attempt",
+          "columns": [
+            "workflow_id",
+            "run_group_key",
+            "attempt"
+          ],
+          "isUnique": true
+        },
+        "idx_workflow_runs_group_status": {
+          "name": "idx_workflow_runs_group_status",
+          "columns": [
+            "workflow_id",
+            "run_group_key",
+            "status",
+            "attempt"
+          ],
+          "isUnique": false
+        },
+        "idx_workflow_runs_target_status": {
+          "name": "idx_workflow_runs_target_status",
+          "columns": [
+            "workflow_id",
+            "target_as_of_date",
+            "status",
+            "published_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "chk_workflow_runs_attempt": {
+          "name": "chk_workflow_runs_attempt",
+          "value": "\"workflow_runs\".\"attempt\" >= 1"
+        },
+        "chk_workflow_runs_mode": {
+          "name": "chk_workflow_runs_mode",
+          "value": "\"workflow_runs\".\"mode\" IN ('DRY_RUN', 'RESUME', 'PUBLISH')"
+        }
+      }
+    },
+    "workflow_staged_jobs": {
+      "name": "workflow_staged_jobs",
+      "columns": {
+        "run_id": {
+          "name": "run_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "job_id": {
+          "name": "job_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "canonical_job_key": {
+          "name": "canonical_job_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "operation": {
+          "name": "operation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "payload": {
+          "name": "payload",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expected_before": {
+          "name": "expected_before",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "evidence": {
+          "name": "evidence",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'{}'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_workflow_staged_jobs_run_operation": {
+          "name": "idx_workflow_staged_jobs_run_operation",
+          "columns": [
+            "run_id",
+            "operation"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "workflow_staged_jobs_run_id_workflow_runs_run_id_fk": {
+          "name": "workflow_staged_jobs_run_id_workflow_runs_run_id_fk",
+          "tableFrom": "workflow_staged_jobs",
+          "tableTo": "workflow_runs",
+          "columnsFrom": [
+            "run_id"
+          ],
+          "columnsTo": [
+            "run_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "workflow_staged_jobs_run_id_job_id_operation_pk": {
+          "columns": [
+            "run_id",
+            "job_id",
+            "operation"
+          ],
+          "name": "workflow_staged_jobs_run_id_job_id_operation_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "chk_workflow_staged_jobs_operation": {
+          "name": "chk_workflow_staged_jobs_operation",
+          "value": "\"workflow_staged_jobs\".\"operation\" IN ('INSERT', 'UPDATE', 'END')"
+        }
+      }
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

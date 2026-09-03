@@ -16,8 +16,9 @@ export const PRODUCTION_MIGRATIONS = [
   '0036_sync_validator_jobs_20260826.sql',
   '0037_careerground_jobs_v5_workflow.sql',
   '0038_slack_digest_delivery_history.sql',
+  '0039_retire_legacy_product_surface.sql',
 ] as const;
 
-export const EXPECTED_SCHEMA_VERSION = '0038_slack_digest_delivery_history';
+export const EXPECTED_SCHEMA_VERSION = '0039_retire_legacy_product_surface';
 export const EXPECTED_SCHEMA_CHECKSUM =
-  'sha256:7ced2b9151cbeeb97cd51079893afa7fdfa7da4031519a3e46b8a2360c8e015a';
+  'sha256:3ed76a3f8082ad34477ed903b31bb7743e2df6e70c2202c5788f964be39d5816';

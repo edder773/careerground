@@ -188,12 +188,10 @@ async function removeInvalidDailyChallengeRows(db: D1Database, rows: DailyChalle
   const invalidIds = rows.filter((row) => !dailyChallengeRowMatchesSlot(row)).map((row) => row.id);
   if (!invalidIds.length) return rows;
   const placeholders = invalidIds.map(() => '?').join(', ');
-  await db.batch([
-    db
-      .prepare(`DELETE FROM daily_challenge_participations WHERE challenge_id IN (${placeholders})`)
-      .bind(...invalidIds),
-    db.prepare(`DELETE FROM daily_challenges WHERE id IN (${placeholders})`).bind(...invalidIds),
-  ]);
+  await db
+    .prepare(`DELETE FROM daily_challenges WHERE id IN (${placeholders})`)
+    .bind(...invalidIds)
+    .run();
   return rows.filter(dailyChallengeRowMatchesSlot);
 }
 

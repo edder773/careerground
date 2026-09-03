@@ -15,37 +15,7 @@ if (sourcePath.endsWith('.sql')) database.exec(readFileSync(sourcePath, 'utf8'))
 database.exec('PRAGMA foreign_keys = ON');
 
 const checks = {
-  orphanSavedJobs: `SELECT COUNT(*) AS count FROM saved_jobs sj
-    LEFT JOIN users u ON u.id = sj.user_id LEFT JOIN jobs j ON j.id = sj.job_id
-    WHERE u.id IS NULL OR j.id IS NULL`,
-  orphanProblemProgress: `SELECT COUNT(*) AS count FROM problem_progress pp
-    LEFT JOIN users u ON u.id = pp.user_id
-    LEFT JOIN coding_problems p ON p.id = pp.problem_id
-    WHERE u.id IS NULL OR p.id IS NULL`,
-  orphanSolutions: `SELECT COUNT(*) AS count FROM solutions s
-    LEFT JOIN users u ON u.id = s.author_id
-    LEFT JOIN coding_problems p ON p.id = s.problem_id
-    WHERE u.id IS NULL OR p.id IS NULL`,
-  orphanComments: `SELECT COUNT(*) AS count FROM solution_comments c
-    LEFT JOIN users u ON u.id = c.author_id LEFT JOIN solutions s ON s.id = c.solution_id
-    WHERE u.id IS NULL OR s.id IS NULL`,
-  crossSolutionReplies: `SELECT COUNT(*) AS count FROM solution_comments reply
-    JOIN solution_comments parent ON parent.id = reply.parent_id
-    WHERE reply.solution_id <> parent.solution_id`,
-  crossUserFolderParents: `SELECT COUNT(*) AS count FROM collections child
-    JOIN collections parent ON parent.id = child.parent_id
-    WHERE child.user_id <> parent.user_id`,
-  invalidCollectionTargets: `SELECT COUNT(*) AS count FROM collection_items item
-    JOIN collections folder ON folder.id = item.collection_id
-    LEFT JOIN jobs job ON item.item_type = 'JOB_POSTING' AND job.id = item.target_id
-    LEFT JOIN coding_problems problem ON item.item_type = 'CODING_PROBLEM' AND problem.id = item.target_id
-    LEFT JOIN learning_units unit ON item.item_type = 'LEARNING_UNIT' AND unit.id = item.target_id
-    LEFT JOIN solutions solution ON item.item_type = 'SOLUTION' AND solution.id = item.target_id
-    WHERE (item.item_type = 'JOB_POSTING' AND job.id IS NULL)
-       OR (item.item_type = 'CODING_PROBLEM' AND problem.id IS NULL)
-       OR (item.item_type = 'LEARNING_UNIT' AND unit.id IS NULL)
-       OR (item.item_type = 'SOLUTION' AND solution.id IS NULL)
-       OR (item.item_type = 'EXTERNAL_LINK' AND item.target_id NOT LIKE 'https://%')`,
+  foreignKeyViolations: `SELECT COUNT(*) AS count FROM pragma_foreign_key_check`,
   duplicateJobUrls: `SELECT COUNT(*) AS count FROM (
     SELECT source_url FROM jobs GROUP BY source_url HAVING COUNT(*) > 1)`,
   duplicateJobFingerprints: `SELECT COUNT(*) AS count FROM (
@@ -54,22 +24,15 @@ const checks = {
   duplicateCanonicalJobKeys: `SELECT COUNT(*) AS count FROM (
     SELECT canonical_key FROM jobs WHERE canonical_key IS NOT NULL
     GROUP BY canonical_key HAVING COUNT(*) > 1)`,
-  duplicateLearningPackages: `SELECT COUNT(*) AS count FROM (
-    SELECT source_checksum, source_version FROM learning_sources
-    WHERE source_checksum IS NOT NULL AND source_version IS NOT NULL
-    GROUP BY source_checksum, source_version HAVING COUNT(*) > 1)`,
   invalidJsonFields: `SELECT
     (SELECT COUNT(*) FROM jobs WHERE json_valid(tech_stack) = 0) +
-    (SELECT COUNT(*) FROM coding_problems WHERE json_valid(tags) = 0) +
-    (SELECT COUNT(*) FROM learning_units WHERE json_valid(concepts) = 0) AS count`,
-  invalidProblemProgress: `SELECT COUNT(*) AS count FROM problem_progress
-    WHERE status NOT IN ('UNTRIED', 'IN_PROGRESS', 'SOLVED')
-       OR favorite NOT IN (0, 1)`,
-  invalidApplicationStatus: `SELECT COUNT(*) AS count FROM saved_jobs
-    WHERE status NOT IN ('INTERESTED', 'APPLIED', 'INTERVIEW', 'ACCEPTED', 'REJECTED', 'WITHDRAWN')
-       OR bookmarked NOT IN (0, 1)`,
-  expiredUnconsumedPreviews: `SELECT COUNT(*) AS count FROM import_previews
-    WHERE consumed_at IS NULL AND expires_at < datetime('now')`,
+    (SELECT COUNT(*) FROM coding_problems WHERE json_valid(tags) = 0) AS count`,
+  invalidWorkflowPointers: `SELECT COUNT(*) AS count FROM workflow_pointers
+    WHERE pointer_name NOT IN ('current', 'last-success')`,
+  invalidWorkflowNotifications: `SELECT COUNT(*) AS count FROM workflow_notifications
+    WHERE status NOT IN ('PENDING', 'SENT', 'FAILED', 'SKIPPED') OR attempt_count < 0`,
+  invalidWorkflowAssertions: `SELECT COUNT(*) AS count FROM workflow_publish_assertions
+    WHERE ok <> 1`,
   invalidSlackDigestDeliveries: `SELECT COUNT(*) AS count FROM slack_digest_deliveries
     WHERE status NOT IN ('CLAIMED', 'SENT', 'FAILED', 'UNCERTAIN')
        OR delivery_mode NOT IN ('DAILY', 'SNAPSHOT')
@@ -83,8 +46,8 @@ const checks = {
        OR length(trim(item.role_key)) = 0 OR length(trim(item.source_url)) = 0`,
   missingMigrationAuthority: `SELECT CASE WHEN EXISTS (
     SELECT 1 FROM app_schema_migrations
-     WHERE version = '0038_slack_digest_delivery_history'
-       AND checksum = 'sha256:7ced2b9151cbeeb97cd51079893afa7fdfa7da4031519a3e46b8a2360c8e015a'
+     WHERE version = '0039_retire_legacy_product_surface'
+       AND checksum = 'sha256:3ed76a3f8082ad34477ed903b31bb7743e2df6e70c2202c5788f964be39d5816'
   ) THEN 0 ELSE 1 END AS count`,
 };
 
@@ -96,12 +59,10 @@ const results = Object.fromEntries(
 );
 const violations = Object.values(results).reduce((sum, value) => sum + value, 0);
 const tableCounts = Object.fromEntries(
-  ['users', 'jobs', 'coding_problems', 'solutions', 'solution_comments', 'notifications'].map(
-    (table) => [
-      table,
-      Number(database.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get().count),
-    ],
-  ),
+  ['jobs', 'coding_problems', 'workflow_runs', 'slack_digest_deliveries'].map((table) => [
+    table,
+    Number(database.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get().count),
+  ]),
 );
 
 console.log(
