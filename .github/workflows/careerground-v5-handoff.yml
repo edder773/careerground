@@ -155,3 +155,36 @@ jobs:
         run: >-
           pnpm jobs:v5:handoff mark-processed
           --report work/jobs-v5/handoff/handoff-report.json
+      - name: Open or update the handoff failure incident
+        if: failure()
+        uses: actions/github-script@v8
+        env:
+          INCIDENT_TITLE: '[운영 경보] CareerGround v5 handoff 실패'
+        with:
+          script: |
+            const title = process.env.INCIDENT_TITLE;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const sourceIssueUrl = context.payload.issue?.html_url || 'unknown';
+            const body = [
+              '채용공고 파티션의 검증 또는 운영 발행이 실패했습니다.',
+              '',
+              `- 감지: ${new Date().toISOString()}`,
+              `- 입력 Issue: ${sourceIssueUrl}`,
+              `- 실패 실행: ${runUrl}`,
+              '- 조치: 로그의 FAILED_DISCOVERY 또는 PUBLISH 오류 전체를 확인하고 같은 날짜의 다음 attempt로 세 파티션을 함께 재제출하세요.',
+            ].join('\n');
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              ...context.repo,
+              state: 'open',
+              per_page: 100,
+            });
+            const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
+            if (existing) {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: existing.number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({ ...context.repo, title, body });
+            }

@@ -84,6 +84,17 @@ enum은 번역하거나 새 값을 만들지 않고 다음 canonical 값만 사�
 
 GitHub 전달 전에 완성된 JSON을 다시 읽고 모든 items의 enum을 전수 검사한다. 특히 회사 규모가 중견기업이거나 `MIDSIZE_ENTERPRISE`, `MID_SIZED_ENTERPRISE`, `MID-SIZE ENTERPRISE`, `MEDIUM_SIZED_ENTERPRISE` 같은 동의 표현으로 조사되었더라도 최종 JSON의 companySize에는 반드시 `MID`만 기록한다. 허용 목록 밖의 enum이 하나라도 있으면 blob 또는 Issue를 만들지 말고 먼저 canonical 값으로 고친다. 이 검사가 통과하지 않으면 qualityGates.overall을 PASS 또는 PASS_WITH_PARTIAL_COVERAGE로 기록하지 않는다.
 
+다음 조사 표현은 그대로 출력하지 말고 반드시 오른쪽 canonical 값으로 치환한다.
+- `PUBLIC_RESEARCH_INSTITUTE`, `GOVERNMENT_RESEARCH_INSTITUTE`, 공공연구기관, 정부출연연구기관 → `PUBLIC`
+- `LARGE_ENTERPRISE`, 대기업 → `LARGE`
+- `MID_SIZE`, `MID_SIZED_ENTERPRISE`, 중견기업 → `MID`
+- `SMALL_BUSINESS`, 중소기업 → `SMALL`
+- 미상, `UNKNOWN`, `UNKNOWN_COMPANY_SIZE`, `N/A`, 금융권, 기타/미확인 → `UNCLASSIFIED`
+- 신입, 신입 공개경쟁, 신입(공개경쟁) → `NEW_GRAD_ONLY`
+- 정규직·신입사원·신입행원 → `FULL_TIME`, 체험형 인턴 → `INTERNSHIP`, 채용 전환형 인턴 → `INTERN_TO_FULL_TIME`, 고용형태 미확인 → `UNCONFIRMED`
+
+`companySize`, `careerScope`, `employmentType` 세 필드는 JSON을 만든 뒤 `items` 전체를 다시 순회해 허용 집합 밖의 서로 다른 값과 해당 item index를 모두 출력 전 검사한다. 첫 오류만 확인하고 종료하지 않는다.
+
 [5. GitHub 자동 전달]
 완성된 JSON 문자열 자체를 careerground-partition-N-YYYY-MM-DD.json의 내용으로 확정한다. Library 저장이나 로컬 파일 생성을 성공 조건으로 삼지 않는다. GitHub 연결 도구로 edder773/careerground에 create_blob을 encoding=utf-8로 한 번 호출해 커밋에 연결되지 않은 blob을 만든다. 예약 작업에서 SHA-256 또는 byteLength를 계산하지 않고, hash 계산을 위해 Python이나 파일시스템을 호출하지 않는다.
 

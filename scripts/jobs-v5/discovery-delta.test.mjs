@@ -126,6 +126,7 @@ describe('CareerGround discovery-only collector contract', () => {
 
   it.each([
     'MID_SIZED',
+    'MID_SIZE',
     'MID_SIZED_ENTERPRISE',
     'MIDSIZE_ENTERPRISE',
     'MIDSIZEDENTERPRISE',
@@ -146,6 +147,44 @@ describe('CareerGround discovery-only collector contract', () => {
     expect(loaded.descriptor.itemAliasesNormalized).toBe(1);
   });
 
+  it.each([
+    ['PUBLIC_RESEARCH_INSTITUTE', 'PUBLIC'],
+    ['government-funded research institute', 'PUBLIC'],
+    ['공공연구기관', 'PUBLIC'],
+    ['정부출연연구기관', 'PUBLIC'],
+    ['미상', 'UNCLASSIFIED'],
+    ['UNKNOWN_COMPANY_SIZE', 'UNCLASSIFIED'],
+    ['N/A', 'UNCLASSIFIED'],
+  ])('normalizes the observed company-size alias %s to %s', (alias, expected) => {
+    const value = delta(1, [
+      {
+        ...item('JobKorea', 'observed-company-size'),
+        companySize: alias,
+      },
+    ]);
+    const loaded = validateDiscoveryDelta(value, {
+      partitionPolicy: sourcePolicy.partitions[0],
+      targetAsOfDate,
+    });
+    expect(loaded.normalizedItems[0].companySize).toBe(expected);
+    expect(loaded.descriptor.itemAliasesNormalized).toBe(1);
+  });
+
+  it('normalizes the observed parenthesized new-grad scope', () => {
+    const value = delta(3, [
+      {
+        ...item('Jasoseol', 'parenthesized-new-grad'),
+        careerScope: '신입(공개경쟁)',
+      },
+    ]);
+    const loaded = validateDiscoveryDelta(value, {
+      partitionPolicy: sourcePolicy.partitions[2],
+      targetAsOfDate,
+    });
+    expect(loaded.normalizedItems[0].careerScope).toBe('NEW_GRAD_ONLY');
+    expect(loaded.descriptor.itemAliasesNormalized).toBe(1);
+  });
+
   it('rejects unknown company-size values before production publish', () => {
     const value = delta(1, [
       { ...item('JobKorea', 'unknown-company-size'), companySize: 'ENTERPRISE_PLUS' },
@@ -156,6 +195,47 @@ describe('CareerGround discovery-only collector contract', () => {
         targetAsOfDate,
       }),
     ).toThrow(expect.objectContaining({ code: 'DISCOVERY_POLICY_INVALID' }));
+  });
+
+  it('rejects an unknown employment type before production publish', () => {
+    const value = delta(1, [
+      { ...item('JobKorea', 'unknown-employment-type'), employmentType: 'PERMANENT_EMPLOYEE' },
+    ]);
+    expect(() =>
+      validateDiscoveryDelta(value, {
+        partitionPolicy: sourcePolicy.partitions[0],
+        targetAsOfDate,
+      }),
+    ).toThrow(expect.objectContaining({ code: 'DISCOVERY_POLICY_INVALID' }));
+  });
+
+  it('reports every unsupported enum across all partitions in one failure', () => {
+    const paths = writeBundle([
+      delta(1, [{ ...item('JobKorea', 'unknown-company-size'), companySize: 'ENTERPRISE_PLUS' }]),
+      delta(2),
+      delta(3, [
+        { ...item('Jasoseol', 'unknown-career-scope'), careerScope: 'GRADUATE_CANDIDATE' },
+      ]),
+    ]);
+    try {
+      validateDiscoveryBundle({
+        partitionPaths: paths,
+        targetAsOfDate,
+        sourcePolicy,
+        runId: 'CG-2026-08-28-A1-enum-audit',
+      });
+      throw new Error('expected validateDiscoveryBundle to reject unsupported enum values');
+    } catch (error) {
+      expect(error).toMatchObject({
+        code: 'DISCOVERY_POLICY_INVALID',
+        details: {
+          violations: [
+            expect.objectContaining({ partitionId: 1, field: 'companySize' }),
+            expect.objectContaining({ partitionId: 3, field: 'careerScope' }),
+          ],
+        },
+      });
+    }
   });
 
   it('allows one blocked source while preserving a successful partition', () => {

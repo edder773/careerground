@@ -7,6 +7,13 @@ const DISCOVERY_SCHEMA_VERSION = '5.1';
 const DISCOVERY_PUBLISH_ARTIFACT_TYPE = 'CAREERGROUND_DISCOVERY_PUBLISH_REQUEST';
 const MAX_DISCOVERY_ITEMS = 500;
 const ALLOWED_CAREER_SCOPES = new Set(['NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE']);
+const ALLOWED_EMPLOYMENT_TYPES = new Set([
+  'FULL_TIME',
+  'INTERNSHIP',
+  'INTERN_TO_FULL_TIME',
+  'CONTRACT',
+  'UNCONFIRMED',
+]);
 const ALLOWED_COMPANY_SIZES = new Set([
   'LARGE',
   'PUBLIC',
@@ -130,6 +137,9 @@ async function validateDiscoveryJob(
   }
   if (!ALLOWED_COMPANY_SIZES.has(companySize)) {
     throw new Error(`${field}.companySize is not supported.`);
+  }
+  if (!ALLOWED_EMPLOYMENT_TYPES.has(employmentType)) {
+    throw new Error(`${field}.employmentType is not supported.`);
   }
   const rolling = value.rolling === true;
   const deadlineAt = optionalIso(value.deadlineAt, `${field}.deadlineAt`);
