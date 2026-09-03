@@ -57,4 +57,5 @@ PR 본문과 GitHub CI는 lint/typecheck/71 tests/14 Playwright/build/sites:buil
 
 - [PR #19](https://github.com/edder773/careerground/pull/19)
 - `docs/evidence/archive/pr-19-manifest.json`
-- `data/imports/careerground_job_postings_120_2026-08-13.json`
+- 원본 import는 migration 반영 후 현재 운영 경로에서 제거했다. 당시 바이트는
+  `git show 04cfb6e2:data/imports/careerground_job_postings_120_2026-08-13.json`으로 재현한다.

@@ -9,7 +9,6 @@ import { pathToFileURL, URLSearchParams } from 'node:url';
 export const HANDOFF_LABEL = 'careerground-v5-handoff';
 export const PROCESSED_LABEL = 'careerground-v5-handoff-processed';
 export const HANDOFF_SCHEMA_VERSION = '2.0';
-export const LEGACY_HANDOFF_SCHEMA_VERSION = '1.0';
 export const HANDOFF_WORKFLOW_ID = 'CG-JOBS-PROD-V5';
 
 export const processedIssueUpdate = () => ({ state: 'closed', state_reason: 'completed' });
@@ -17,19 +16,6 @@ export const processedIssueUpdate = () => ({ state: 'closed', state_reason: 'com
 const MAX_ARTIFACT_BYTES = 1_000_000;
 const TRUSTED_AUTHOR_ASSOCIATIONS = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
 const PARTITION_ARTIFACT_KINDS = ['PARTITION_1', 'PARTITION_2', 'PARTITION_3'];
-const LEGACY_ARTIFACT_KINDS = [
-  'PARTITION_1',
-  'PARTITION_2',
-  'PARTITION_3',
-  'LEGACY_FINAL',
-  'LEGACY_AUDIT',
-];
-
-function requiredArtifactKinds(schemaVersion) {
-  return schemaVersion === LEGACY_HANDOFF_SCHEMA_VERSION
-    ? LEGACY_ARTIFACT_KINDS
-    : PARTITION_ARTIFACT_KINDS;
-}
 
 function fail(code, message, details = undefined) {
   const error = new Error(message);
@@ -51,13 +37,7 @@ function labelsFor(issue) {
 }
 
 function expectedFileName(kind, targetAsOfDate) {
-  if (kind.startsWith('PARTITION_')) {
-    return `careerground-partition-${kind.at(-1)}-${targetAsOfDate}.json`;
-  }
-  if (kind === 'LEGACY_FINAL') {
-    return `careerground-jobs-live-${targetAsOfDate}-final.json`;
-  }
-  return `careerground-merge-audit-${targetAsOfDate}.json`;
+  return `careerground-partition-${kind.at(-1)}-${targetAsOfDate}.json`;
 }
 
 export function rawSha256(bytes) {
@@ -82,8 +62,6 @@ export function parseHandoffPointer(body) {
     'artifactKind',
     'attempt',
     'blobSha',
-    'rawSha256',
-    'byteLength',
     'fileName',
   ]);
   const unexpected = Object.keys(pointer).filter((field) => !allowedFields.has(field));
@@ -93,7 +71,7 @@ export function parseHandoffPointer(body) {
     });
   }
   if (
-    ![HANDOFF_SCHEMA_VERSION, LEGACY_HANDOFF_SCHEMA_VERSION].includes(pointer.schemaVersion) ||
+    pointer.schemaVersion !== HANDOFF_SCHEMA_VERSION ||
     pointer.workflowId !== HANDOFF_WORKFLOW_ID
   ) {
     fail('HANDOFF_IDENTITY_INVALID', 'Handoff schemaVersion or workflowId is invalid.');
@@ -101,7 +79,7 @@ export function parseHandoffPointer(body) {
   if (!/^\d{4}-\d{2}-\d{2}$/u.test(String(pointer.targetAsOfDate))) {
     fail('HANDOFF_DATE_INVALID', 'targetAsOfDate must be YYYY-MM-DD.');
   }
-  if (!requiredArtifactKinds(pointer.schemaVersion).includes(pointer.artifactKind)) {
+  if (!PARTITION_ARTIFACT_KINDS.includes(pointer.artifactKind)) {
     fail('HANDOFF_KIND_INVALID', 'artifactKind is invalid.');
   }
   if (!Number.isInteger(pointer.attempt) || pointer.attempt < 1 || pointer.attempt > 99) {
@@ -109,23 +87,6 @@ export function parseHandoffPointer(body) {
   }
   if (!/^[a-f0-9]{40}$/u.test(String(pointer.blobSha))) {
     fail('HANDOFF_BLOB_SHA_INVALID', 'blobSha must be a lowercase 40-character Git SHA.');
-  }
-  if (pointer.schemaVersion === LEGACY_HANDOFF_SCHEMA_VERSION) {
-    if (!/^[a-f0-9]{64}$/u.test(String(pointer.rawSha256))) {
-      fail('HANDOFF_RAW_SHA_INVALID', 'rawSha256 must be a lowercase SHA-256 digest.');
-    }
-    if (
-      !Number.isInteger(pointer.byteLength) ||
-      pointer.byteLength < 2 ||
-      pointer.byteLength > MAX_ARTIFACT_BYTES
-    ) {
-      fail('HANDOFF_SIZE_INVALID', `byteLength must be between 2 and ${MAX_ARTIFACT_BYTES}.`);
-    }
-  } else if (pointer.rawSha256 !== undefined || pointer.byteLength !== undefined) {
-    fail(
-      'HANDOFF_POINTER_FIELD_FORBIDDEN',
-      'Schema 2.0 pointers must let GitHub calculate rawSha256 and byteLength.',
-    );
   }
   const expected = expectedFileName(pointer.artifactKind, pointer.targetAsOfDate);
   if (pointer.fileName !== expected || basename(pointer.fileName) !== pointer.fileName) {
@@ -147,11 +108,7 @@ export function assertTrustedHandoffIssue(issue) {
   return parseHandoffPointer(issue.body);
 }
 
-export function resolveHandoffIssues(
-  issues,
-  targetAsOfDate,
-  schemaVersion = HANDOFF_SCHEMA_VERSION,
-) {
+export function resolveHandoffIssues(issues, targetAsOfDate) {
   const candidates = [];
   const rejectedIssueNumbers = [];
   for (const issue of issues) {
@@ -164,14 +121,13 @@ export function resolveHandoffIssues(
       rejectedIssueNumbers.push(issue.number);
       continue;
     }
-    if (pointer.targetAsOfDate !== targetAsOfDate || pointer.schemaVersion !== schemaVersion)
-      continue;
+    if (pointer.targetAsOfDate !== targetAsOfDate) continue;
     candidates.push({ issue, pointer });
   }
 
   const selected = [];
   const missingArtifactKinds = [];
-  for (const artifactKind of requiredArtifactKinds(schemaVersion)) {
+  for (const artifactKind of PARTITION_ARTIFACT_KINDS) {
     const matches = candidates.filter((entry) => entry.pointer.artifactKind === artifactKind);
     if (!matches.length) {
       missingArtifactKinds.push(artifactKind);
@@ -179,12 +135,7 @@ export function resolveHandoffIssues(
     }
     const highestAttempt = Math.max(...matches.map((entry) => entry.pointer.attempt));
     const newestAttempt = matches.filter((entry) => entry.pointer.attempt === highestAttempt);
-    const identities = new Set(
-      newestAttempt.map(
-        (entry) =>
-          `${entry.pointer.blobSha}:${entry.pointer.rawSha256}:${entry.pointer.byteLength}`,
-      ),
-    );
+    const identities = new Set(newestAttempt.map((entry) => entry.pointer.blobSha));
     if (identities.size !== 1) {
       fail(
         'HANDOFF_DUPLICATE_CONFLICT',
@@ -210,7 +161,7 @@ export function resolveHandoffIssues(
     .sort((left, right) => left - right);
   return {
     status: missingArtifactKinds.length ? 'WAITING' : 'READY',
-    schemaVersion,
+    schemaVersion: HANDOFF_SCHEMA_VERSION,
     targetAsOfDate,
     selected,
     supersededIssueNumbers,
@@ -288,12 +239,6 @@ async function downloadBlob(repository, token, pointer) {
     fail('HANDOFF_SIZE_INVALID', `${pointer.artifactKind} blob size is outside the safe limit.`);
   }
   const computedRawSha256 = rawSha256(bytes);
-  if (pointer.byteLength !== undefined && bytes.byteLength !== pointer.byteLength) {
-    fail('HANDOFF_BLOB_SIZE_MISMATCH', `${pointer.artifactKind} byteLength does not match.`);
-  }
-  if (pointer.rawSha256 !== undefined && computedRawSha256 !== pointer.rawSha256) {
-    fail('HANDOFF_BLOB_HASH_MISMATCH', `${pointer.artifactKind} raw SHA-256 does not match.`);
-  }
   try {
     JSON.parse(bytes.toString('utf8'));
   } catch {
@@ -336,11 +281,7 @@ export async function fetchHandoffBundle({ repository, token, triggerIssueNumber
     };
   }
   const issues = await listOpenHandoffIssues(repository, token);
-  const resolved = resolveHandoffIssues(
-    issues,
-    triggerPointer.targetAsOfDate,
-    triggerPointer.schemaVersion,
-  );
+  const resolved = resolveHandoffIssues(issues, triggerPointer.targetAsOfDate);
   const outputDirectory = resolve(output);
   mkdirSync(outputDirectory, { recursive: true });
   const report = {

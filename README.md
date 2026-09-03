@@ -52,10 +52,11 @@ pnpm docs:build
 
 ## 데이터 가져오기
 
-관리자 화면 대신 저장소의 catalog 생성기와 검증 테스트를 사용한다. 동일 checksum은 idempotent하게 기존 batch를 반환한다. 경력직 전용 공고는 거절 보고서에 남고 공개 목록에는 들어가지 않는다. 회사 규모가 미분류인 항목은 `NEEDS_REVIEW`가 된다. 검증된 JSON은 새 순방향 D1 migration으로 만들며 운영 데이터 변경은 Sites 배포를 통해서만 적용한다.
+채용공고는 세 ChatGPT 예약 수집기가 신규 후보 delta를 임시 Git blob으로 전달하고, GitHub Actions가 출처·정책·중복을 검증한 뒤 보호된 Sites API를 통해 운영 D1에 반영한다. 저장소에 원본 채용 JSON을 커밋하거나 최신 파일을 이름으로 선택하지 않는다. 동일 run은 idempotent하며 신규 `ACTIVE`만 추가하고 기존 `jobs`와 `saved_jobs`는 변경하지 않는다.
 
-- 채용 스키마: `docs/operations/job-import-schema.md`
-- ChatGPT Work 수집 프롬프트: `docs/operations/job-collection-work-prompt.md`
+- 운영 Runbook: `docs/operations/careerground-v5-runbook.md`
+- 자동 전달 계약: `docs/operations/careerground-v5-automatic-handoff.md`
+- 예약 수집 프롬프트: `docs/operations/careerground-v5-stable-collector-prompts.md`
 
 ## 오늘의 문제와 cron
 
@@ -90,7 +91,7 @@ pnpm troubleshoot:validate --file docs/troubleshooting/2026-08-12-pr-123-evidenc
 ## 저장소 운영
 
 - 영어 Conventional Commits, commitlint, lint-staged, Husky pre-commit/commit-msg/pre-push가 적용된다. 저장소 커밋 작성자는 `edder773`으로 설정한다.
-- branch protection 권장: PR 필수, 1명 review, `CI / validate`, `E2E / browser`, `CodeQL` 필수, force push와 branch delete 금지.
+- branch protection 권장: PR 필수, 1명 review, `CI / validate`, `CodeQL` 필수, force push와 branch delete 금지.
 - fork PR에서는 secret을 사용하지 않는다. AI 문서 생성은 같은 저장소에서 merge된 뒤의 신뢰된 workflow에서만 실행한다.
 - artifact retention은 일반 검증 14일, troubleshooting evidence 30일이다.
 

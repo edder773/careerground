@@ -113,6 +113,6 @@ targetAsOfDate, partitionId, 후보 수, uncertain·excluded 수, 출처별 cove
 
 - 예약 작업 성공: 웹 조사가 끝나고 schema 5.1 JSON과 schema 2.0 포인터 Issue가 생성됨
 - GitHub 수신 성공: 세 파티션이 모두 모여 `VERIFIED_DISCOVERY` artifact가 생성됨
-- 운영 반영 성공: 별도 Pro 검증과 PUBLISH 게이트를 통과함
+- 운영 반영 성공: 보호된 publish API의 기준선 대조와 PUBLISH 게이트를 통과함
 
 세 상태를 같은 성공으로 표현하지 않는다.

@@ -40,9 +40,7 @@ jobs:
           --output work/jobs-v5/handoff
           --github-output "$GITHUB_OUTPUT"
       - name: Validate the baseline-free discovery bundle
-        if: >-
-          steps.handoff.outputs.status == 'READY' &&
-          steps.handoff.outputs.handoff_schema_version == '2.0'
+        if: steps.handoff.outputs.status == 'READY'
         env:
           TARGET_DATE: ${{ steps.handoff.outputs.target_as_of_date }}
           HANDOFF_ATTEMPT: ${{ steps.handoff.outputs.handoff_attempt }}
@@ -56,24 +54,6 @@ jobs:
             --partition3 "work/jobs-v5/handoff/careerground-partition-3-$TARGET_DATE.json" \
             --output work/jobs-v5/discovery
           ! grep -R -E 'hooks\.slack\.com/services|gh[pousr]_[A-Za-z0-9]+' work/jobs-v5/discovery
-      - name: Convert the verified legacy v4 bundle to v5 partition artifacts
-        if: >-
-          steps.handoff.outputs.status == 'READY' &&
-          steps.handoff.outputs.handoff_schema_version == '1.0'
-        env:
-          TARGET_DATE: ${{ steps.handoff.outputs.target_as_of_date }}
-          RUN_ID: CG-${{ steps.handoff.outputs.target_as_of_date }}-A1-handoff${{ github.run_id }}
-        run: |
-          pnpm jobs:v5:adapt-v4 \
-            --target-as-of-date "$TARGET_DATE" \
-            --run-id "$RUN_ID" \
-            --partition1 "work/jobs-v5/handoff/careerground-partition-1-$TARGET_DATE.json" \
-            --partition2 "work/jobs-v5/handoff/careerground-partition-2-$TARGET_DATE.json" \
-            --partition3 "work/jobs-v5/handoff/careerground-partition-3-$TARGET_DATE.json" \
-            --final "work/jobs-v5/handoff/careerground-jobs-live-$TARGET_DATE-final.json" \
-            --audit "work/jobs-v5/handoff/careerground-merge-audit-$TARGET_DATE.json" \
-            --output work/jobs-v5/converted
-          ! grep -R -E 'hooks\.slack\.com/services|gh[pousr]_[A-Za-z0-9]+' work/jobs-v5/converted
       - name: Save only the pointer report while waiting
         if: steps.handoff.outputs.status == 'WAITING'
         uses: actions/upload-artifact@v6
@@ -83,9 +63,7 @@ jobs:
           if-no-files-found: error
           retention-days: 7
       - name: Save the validated discovery bundle
-        if: >-
-          steps.handoff.outputs.status == 'READY' &&
-          steps.handoff.outputs.handoff_schema_version == '2.0'
+        if: steps.handoff.outputs.status == 'READY'
         uses: actions/upload-artifact@v6
         with:
           name: careerground-v5-${{ steps.handoff.outputs.target_as_of_date }}-discovery-ready
@@ -94,22 +72,8 @@ jobs:
             work/jobs-v5/discovery
           if-no-files-found: error
           retention-days: 30
-      - name: Save the converted legacy compatibility bundle
-        if: >-
-          steps.handoff.outputs.status == 'READY' &&
-          steps.handoff.outputs.handoff_schema_version == '1.0'
-        uses: actions/upload-artifact@v6
-        with:
-          name: careerground-v5-${{ steps.handoff.outputs.target_as_of_date }}-legacy-compatible
-          path: |
-            work/jobs-v5/handoff/handoff-report.json
-            work/jobs-v5/converted
-          if-no-files-found: error
-          retention-days: 30
       - name: Publish the verified discovery bundle to production D1
-        if: >-
-          steps.handoff.outputs.status == 'READY' &&
-          steps.handoff.outputs.handoff_schema_version == '2.0'
+        if: steps.handoff.outputs.status == 'READY'
         env:
           CAREERGROUND_PUBLISH_URL: https://careerground-workspace.edder773.chatgpt.site/api/v1/internal/jobs-v5/publish
           CAREERGROUND_PUBLISH_TOKEN: ${{ secrets.CAREERGROUND_PUBLISH_TOKEN }}
@@ -124,9 +88,7 @@ jobs:
             --output work/jobs-v5/discovery/publish-receipt.json
           ! grep -R -E 'hooks\.slack\.com/services|gh[pousr]_[A-Za-z0-9]+' work/jobs-v5/discovery
       - name: Save the production publish receipt
-        if: >-
-          steps.handoff.outputs.status == 'READY' &&
-          steps.handoff.outputs.handoff_schema_version == '2.0'
+        if: steps.handoff.outputs.status == 'READY'
         uses: actions/upload-artifact@v6
         with:
           name: careerground-v5-${{ steps.handoff.outputs.target_as_of_date }}-publish-receipt
@@ -134,9 +96,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
       - name: Wake the idempotent Slack digest after a production publish
-        if: >-
-          steps.handoff.outputs.status == 'READY' &&
-          steps.handoff.outputs.handoff_schema_version == '2.0'
+        if: steps.handoff.outputs.status == 'READY'
         uses: actions/github-script@v8
         with:
           script: |
