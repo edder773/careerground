@@ -3,39 +3,6 @@
   margin: 0 auto;
 }
 
-.favorites-today-strip {
-  grid-template-columns: minmax(0, 1fr);
-  max-width: 760px;
-  margin-bottom: 24px;
-}
-
-.favorites-home .today-feature {
-  min-height: 0;
-  padding: 14px;
-  gap: 11px;
-  border-radius: 16px;
-}
-
-.favorites-home .today-feature .today-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 13px;
-}
-
-.favorites-home .today-feature .today-icon svg {
-  width: 20px;
-}
-
-.favorites-home .today-problem-list {
-  gap: 6px;
-}
-
-.favorites-home .today-feature .today-problem-list a {
-  min-height: 36px;
-  padding: 7px 9px;
-  border-radius: 9px;
-}
-
 .favorites-home .finder-canvas-heading {
   min-height: 0;
   margin-bottom: 16px;
@@ -155,15 +122,6 @@
 }
 
 @media (max-width: 720px) {
-  .favorites-today-strip {
-    max-width: none;
-    margin-bottom: 20px;
-  }
-
-  .favorites-home .today-feature {
-    padding: 12px;
-  }
-
   .favorite-shortcuts,
   .favorite-item-grid {
     grid-template-columns: 1fr;
