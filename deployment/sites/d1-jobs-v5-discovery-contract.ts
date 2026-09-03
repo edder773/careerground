@@ -1,28 +1,12 @@
 import { RouteError, type D1Env } from './d1-api-contract.js';
 import { secureTokenMatch } from './d1-daily-challenges.js';
 import { sha256 } from './domain.js';
+import { inspectDiscoveryEnums } from '../../scripts/jobs-v5/canonical-policy.mjs';
 
 const V5_WORKFLOW_ID = 'CG-JOBS-PROD-V5';
 const DISCOVERY_SCHEMA_VERSION = '5.1';
 const DISCOVERY_PUBLISH_ARTIFACT_TYPE = 'CAREERGROUND_DISCOVERY_PUBLISH_REQUEST';
 const MAX_DISCOVERY_ITEMS = 500;
-const ALLOWED_CAREER_SCOPES = new Set(['NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE']);
-const ALLOWED_EMPLOYMENT_TYPES = new Set([
-  'FULL_TIME',
-  'INTERNSHIP',
-  'INTERN_TO_FULL_TIME',
-  'CONTRACT',
-  'UNCONFIRMED',
-]);
-const ALLOWED_COMPANY_SIZES = new Set([
-  'LARGE',
-  'PUBLIC',
-  'MID',
-  'SMALL',
-  'STARTUP',
-  'FOREIGN',
-  'UNCLASSIFIED',
-]);
 const UNORDERED_ARRAY_KEYS = new Set(['sources', 'techStack', 'tags', 'excludedReasons']);
 
 export type V5DiscoveryPublishRequest = {
@@ -132,14 +116,13 @@ async function validateDiscoveryJob(
     `${field}.companySize`,
     32,
   );
-  if (!ALLOWED_CAREER_SCOPES.has(careerScope) || value.status !== 'ACTIVE') {
+  const enumInspection = inspectDiscoveryEnums({ careerScope, employmentType, companySize });
+  const enumProblem = enumInspection.violations[0] ?? enumInspection.changes[0];
+  if (enumProblem) {
+    throw new Error(`${field}.${enumProblem.field} must use a supported canonical value.`);
+  }
+  if (value.status !== 'ACTIVE') {
     throw new Error(`${field} must be an ACTIVE new-grad posting.`);
-  }
-  if (!ALLOWED_COMPANY_SIZES.has(companySize)) {
-    throw new Error(`${field}.companySize is not supported.`);
-  }
-  if (!ALLOWED_EMPLOYMENT_TYPES.has(employmentType)) {
-    throw new Error(`${field}.employmentType is not supported.`);
   }
   const rolling = value.rolling === true;
   const deadlineAt = optionalIso(value.deadlineAt, `${field}.deadlineAt`);

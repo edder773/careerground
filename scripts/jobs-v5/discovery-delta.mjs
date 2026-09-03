@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import process from 'node:process';
 import { pathToFileURL, URL } from 'node:url';
 import { canonicalSha256, canonicalizeHttpUrl, rawSha256, sha256 } from './canonical-json.mjs';
+import { inspectDiscoveryEnums, unsupportedDiscoveryEnumValues } from './canonical-policy.mjs';
 
 export const DISCOVERY_SCHEMA_VERSION = '5.1';
 export const DISCOVERY_ARTIFACT_TYPE = 'CAREERGROUND_DISCOVERY_DELTA';
@@ -11,98 +12,6 @@ export const DISCOVERY_WORKFLOW_ID = 'CG-JOBS-PROD-V5';
 
 const ALLOWED_GATE_STATUSES = new Set(['PASS', 'PASS_WITH_PARTIAL_COVERAGE']);
 const ALLOWED_COVERAGE_STATUSES = new Set(['COMPLETE', 'PARTIAL', 'BLOCKED', 'NO_ACCESS', 'ERROR']);
-const ALLOWED_CAREER_SCOPES = new Set(['NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE']);
-const ALLOWED_EMPLOYMENT_TYPES = new Set([
-  'FULL_TIME',
-  'INTERNSHIP',
-  'INTERN_TO_FULL_TIME',
-  'CONTRACT',
-  'UNCONFIRMED',
-]);
-const ALLOWED_COMPANY_SIZES = new Set([
-  'LARGE',
-  'PUBLIC',
-  'MID',
-  'SMALL',
-  'STARTUP',
-  'FOREIGN',
-  'UNCLASSIFIED',
-]);
-const CAREER_SCOPE_ALIASES = new Map([
-  ['신입', 'NEW_GRAD_ONLY'],
-  ['신입 공개경쟁', 'NEW_GRAD_ONLY'],
-  ['신입(공개경쟁)', 'NEW_GRAD_ONLY'],
-  ['채용연계형 인턴', 'NEW_GRAD_ONLY'],
-  ['신입/경력', 'NEW_GRAD_ELIGIBLE'],
-  ['신입·경력', 'NEW_GRAD_ELIGIBLE'],
-  ['경력무관', 'NEW_GRAD_ELIGIBLE'],
-  ['0~2년', 'NEW_GRAD_ELIGIBLE'],
-]);
-const COMPANY_SIZE_ALIASES = new Map([
-  ['LARGE_ENTERPRISE', 'LARGE'],
-  ['대기업', 'LARGE'],
-  ['PUBLIC_INSTITUTION', 'PUBLIC'],
-  ['PUBLIC_RESEARCH_INSTITUTE', 'PUBLIC'],
-  ['GOVERNMENT_RESEARCH_INSTITUTE', 'PUBLIC'],
-  ['GOVERNMENT_FUNDED_RESEARCH_INSTITUTE', 'PUBLIC'],
-  ['공공기관', 'PUBLIC'],
-  ['공공연구기관', 'PUBLIC'],
-  ['정부출연연구기관', 'PUBLIC'],
-  ['MID_SIZED', 'MID'],
-  ['MID_SIZED_ENTERPRISE', 'MID'],
-  ['중견기업', 'MID'],
-  ['SMALL_BUSINESS', 'SMALL'],
-  ['중소기업', 'SMALL'],
-  ['스타트업', 'STARTUP'],
-  ['외국계기업', 'FOREIGN'],
-  ['금융권', 'UNCLASSIFIED'],
-  ['미상', 'UNCLASSIFIED'],
-  ['미확인', 'UNCLASSIFIED'],
-  ['UNKNOWN', 'UNCLASSIFIED'],
-  ['UNKNOWN_COMPANY_SIZE', 'UNCLASSIFIED'],
-  ['N/A', 'UNCLASSIFIED'],
-  ['기타/미확인', 'UNCLASSIFIED'],
-]);
-const COMPANY_SIZE_COMPACT_ALIASES = new Map([
-  ['LARGEENTERPRISE', 'LARGE'],
-  ['PUBLICINSTITUTION', 'PUBLIC'],
-  ['PUBLICRESEARCHINSTITUTE', 'PUBLIC'],
-  ['GOVERNMENTRESEARCHINSTITUTE', 'PUBLIC'],
-  ['GOVERNMENTFUNDEDRESEARCHINSTITUTE', 'PUBLIC'],
-  ['MIDSIZE', 'MID'],
-  ['MIDSIZED', 'MID'],
-  ['MIDSIZEENTERPRISE', 'MID'],
-  ['MIDSIZEDENTERPRISE', 'MID'],
-  ['MEDIUMSIZE', 'MID'],
-  ['MEDIUMSIZED', 'MID'],
-  ['MEDIUMSIZEENTERPRISE', 'MID'],
-  ['MEDIUMSIZEDENTERPRISE', 'MID'],
-  ['SMALLBUSINESS', 'SMALL'],
-  ['UNKNOWNCOMPANYSIZE', 'UNCLASSIFIED'],
-  ['UNKNOWN', 'UNCLASSIFIED'],
-  ['NA', 'UNCLASSIFIED'],
-]);
-const EMPLOYMENT_TYPE_ALIASES = new Map([
-  ['신입', 'FULL_TIME'],
-  ['신입사원', 'FULL_TIME'],
-  ['신입행원', 'FULL_TIME'],
-  ['정규직', 'FULL_TIME'],
-  ['정규직(신입)', 'FULL_TIME'],
-  ['신입 정규직', 'FULL_TIME'],
-  ['인턴', 'INTERNSHIP'],
-  ['인턴십', 'INTERNSHIP'],
-  ['체험형인턴', 'INTERNSHIP'],
-  ['체험형 인턴', 'INTERNSHIP'],
-  ['채용연계형 인턴', 'INTERN_TO_FULL_TIME'],
-  ['채용 전환형 인턴', 'INTERN_TO_FULL_TIME'],
-  ['전환형 인턴', 'INTERN_TO_FULL_TIME'],
-  ['정규직 전환형 인턴', 'INTERN_TO_FULL_TIME'],
-  ['계약직', 'CONTRACT'],
-  ['계약직(신입)', 'CONTRACT'],
-  ['미상', 'UNCONFIRMED'],
-  ['미확인', 'UNCONFIRMED'],
-  ['UNKNOWN', 'UNCONFIRMED'],
-]);
 const REQUIRED_ITEM_FIELDS = [
   'sourceUrl',
   'sourceName',
@@ -172,65 +81,8 @@ function candidateFingerprint(item) {
   );
 }
 
-function normalizeAlias(value, aliases) {
-  const normalized = String(value ?? '')
-    .normalize('NFKC')
-    .trim();
-  return aliases.get(normalized) ?? normalized;
-}
-
-function normalizeCareerScope(value) {
-  const normalized = normalizeAlias(value, CAREER_SCOPE_ALIASES);
-  if (ALLOWED_CAREER_SCOPES.has(normalized)) return normalized;
-  const compact = normalized.replace(/[\s()[\]{}_-]+/gu, '');
-  return compact === '신입공개경쟁' ? 'NEW_GRAD_ONLY' : normalized;
-}
-
-function normalizeEmploymentType(value) {
-  return normalizeAlias(value, EMPLOYMENT_TYPE_ALIASES);
-}
-
-function normalizeCompanySize(value) {
-  const normalized =
-    String(value ?? '')
-      .normalize('NFKC')
-      .trim() || 'UNCLASSIFIED';
-  const exactAlias = COMPANY_SIZE_ALIASES.get(normalized);
-  if (exactAlias) return exactAlias;
-
-  const enumToken = normalized
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/gu, '_')
-    .replace(/^_+|_+$/gu, '');
-  if (ALLOWED_COMPANY_SIZES.has(enumToken)) return enumToken;
-
-  const compactToken = enumToken.replaceAll('_', '');
-  return COMPANY_SIZE_COMPACT_ALIASES.get(compactToken) ?? normalized;
-}
-
-function unsupportedEnumValues(items, partitionId = undefined) {
-  if (!Array.isArray(items)) return [];
-  return items.flatMap((item, index) => {
-    if (!isRecord(item)) return [];
-    const values = [
-      ['careerScope', normalizeCareerScope(item.careerScope), ALLOWED_CAREER_SCOPES],
-      ['companySize', normalizeCompanySize(item.companySize), ALLOWED_COMPANY_SIZES],
-      ['employmentType', normalizeEmploymentType(item.employmentType), ALLOWED_EMPLOYMENT_TYPES],
-    ];
-    return values
-      .filter(([, normalized, allowed]) => !allowed.has(normalized))
-      .map(([field, normalized]) => ({
-        ...(partitionId === undefined ? {} : { partitionId }),
-        itemIndex: index,
-        field,
-        value: String(item[field] ?? ''),
-        normalized,
-      }));
-  });
-}
-
 function assertSupportedEnums(items, partitionId = undefined) {
-  const violations = unsupportedEnumValues(items, partitionId);
+  const violations = unsupportedDiscoveryEnumValues(items, partitionId);
   if (violations.length) {
     fail(
       'DISCOVERY_POLICY_INVALID',
@@ -249,8 +101,9 @@ function normalizeItem(item, targetAsOfDate, index) {
   if (!isRecord(item)) fail('DISCOVERY_SCHEMA_INVALID', `items[${index}] must be an object.`);
   for (const field of REQUIRED_ITEM_FIELDS) requireText(item[field], `items[${index}].${field}`);
   const sourceUrl = canonicalizeHttpUrl(item.sourceUrl);
-  const careerScope = normalizeCareerScope(item.careerScope);
-  if (!ALLOWED_CAREER_SCOPES.has(careerScope)) {
+  const enumInspection = inspectDiscoveryEnums(item);
+  const { careerScope, employmentType, companySize } = enumInspection.values;
+  if (enumInspection.violations.some((entry) => entry.field === 'careerScope')) {
     fail('DISCOVERY_POLICY_INVALID', `items[${index}].careerScope is not allowed.`);
   }
   if (item.status !== 'ACTIVE') {
@@ -273,12 +126,10 @@ function normalizeItem(item, targetAsOfDate, index) {
     ? `source:${new URL(sourceUrl).hostname}:${sourcePostingId}`
     : `url:${sourceUrl}`;
   const timestamp = item.lastVerifiedAt;
-  const employmentType = normalizeEmploymentType(item.employmentType);
-  if (!ALLOWED_EMPLOYMENT_TYPES.has(employmentType)) {
+  if (enumInspection.violations.some((entry) => entry.field === 'employmentType')) {
     fail('DISCOVERY_POLICY_INVALID', `items[${index}].employmentType is not allowed.`);
   }
-  const companySize = normalizeCompanySize(item.companySize);
-  if (!ALLOWED_COMPANY_SIZES.has(companySize)) {
+  if (enumInspection.violations.some((entry) => entry.field === 'companySize')) {
     fail('DISCOVERY_POLICY_INVALID', `items[${index}].companySize is not allowed.`);
   }
   const fingerprint = candidateFingerprint({ ...item, employmentType });
@@ -413,13 +264,7 @@ export function validateDiscoveryDelta(value, { partitionPolicy, targetAsOfDate 
     normalizeItem(item, targetAsOfDate, index),
   );
   const itemAliasesNormalized = normalizedItems.reduce((count, item, index) => {
-    const original = value.items[index];
-    return (
-      count +
-      Number(String(original.careerScope).trim() !== item.careerScope) +
-      Number(String(original.companySize || 'UNCLASSIFIED').trim() !== item.companySize) +
-      Number(String(original.employmentType).trim() !== item.employmentType)
-    );
+    return count + inspectDiscoveryEnums(value.items[index]).changes.length;
   }, 0);
   const seenUrls = new Set();
   for (const [index, item] of normalizedItems.entries()) {
@@ -460,7 +305,7 @@ export function validateDiscoveryBundle({ partitionPaths, targetAsOfDate, source
     return { raw, value };
   });
   const enumViolations = inputs.flatMap(({ value }, index) =>
-    unsupportedEnumValues(value?.items, value?.partitionId ?? index + 1),
+    unsupportedDiscoveryEnumValues(value?.items, value?.partitionId ?? index + 1),
   );
   if (enumViolations.length) {
     fail(

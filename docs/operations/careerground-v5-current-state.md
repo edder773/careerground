@@ -8,7 +8,7 @@
 2. `.github/workflows/careerground-v5-handoff.yml`이 세 포인터를 모아 blob 크기·SHA-256·출처 소유권·정책·중복을 검증하고 ID·canonical key·fingerprint를 결정적으로 만든다.
 3. 검증 성공 시 GitHub Actions가 별도 Bearer token으로 Sites의 `/api/v1/internal/jobs-v5/publish`를 호출한다. endpoint가 운영 D1 기준선과 다시 대조하고 신규 ACTIVE만 stage/publish한다.
 4. 게시 과정은 `workflow_runs`, `workflow_staged_jobs`, `workflow_publications`, `workflow_pointers`, `import_batches`에 원장을 남긴다. 기존 `jobs` UPDATE·DELETE와 모든 `saved_jobs` mutation은 금지한다.
-5. `.github/workflows/daily-slack-digest.yml`이 평일 08:01~08:51의 10분 fallback과 09:17(Asia/Seoul), Production SLO 완료, v5 게시 완료 이벤트에서 배포 API를 호출한다. 08:51부터는 채용 import 지연 여부와 무관하게 코딩 문제 알림을 보장하고, `scripts/slack/send-daily-digest.mjs`가 응답을 Slack Webhook으로 전송한다.
+5. `.github/workflows/daily-slack-digest.yml`이 평일 07:55 runner를 선점해 08:01(Asia/Seoul)에 실행하고 08:31 감시 예약, Production SLO 완료, v5 게시 완료 이벤트에서 배포 API를 호출한다. 08:31 감시는 채용 import 지연 여부와 무관하게 코딩 문제 알림을 보장하고, `scripts/slack/send-daily-digest.mjs`가 응답을 Slack Webhook으로 전송한다.
 6. 공휴일은 `scripts/slack/korean-business-day.mjs`의 2026 고정 목록으로 판정한다.
 
 ## 의존 지점
@@ -33,7 +33,7 @@ Slack은 직전 성공 발송 이후 `created_at` window를 사용하며 08:01·
 
 ## 기존 예약과 workflow
 
-- `daily-slack-digest.yml`: 평일 08:01~08:51/09:17 digest, 게시 완료 wake-up과 incident 관리.
+- `daily-slack-digest.yml`: 평일 08:01 목표 실행·08:31 감시, 게시 완료 wake-up과 incident 관리.
 - `production-smoke.yml`: 매시 17분 운영 smoke.
 - `recovery-drill.yml`: 월요일 04:41 복구 훈련.
 - `security.yml`: 월요일 18:17 보안 검사.

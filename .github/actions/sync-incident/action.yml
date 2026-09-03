@@ -1,0 +1,48 @@
+name: Sync workflow incident
+description: Open, update, or close one repository incident by its exact title.
+
+inputs:
+  title:
+    description: Exact incident issue title
+    required: true
+  mode:
+    description: open or close
+    required: true
+  body:
+    description: Incident or recovery detail without secrets
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/github-script@v8
+      env:
+        INCIDENT_TITLE: ${{ inputs.title }}
+        INCIDENT_MODE: ${{ inputs.mode }}
+        INCIDENT_BODY: ${{ inputs.body }}
+      with:
+        script: |
+          const title = process.env.INCIDENT_TITLE;
+          const mode = process.env.INCIDENT_MODE;
+          if (!['open', 'close'].includes(mode)) throw new Error(`Unsupported incident mode: ${mode}`);
+          const issues = await github.paginate(github.rest.issues.listForRepo, {
+            ...context.repo, state: 'open', per_page: 100,
+          });
+          const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
+          if (mode === 'close' && !existing) return;
+          const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+          const body = `${process.env.INCIDENT_BODY}\n\n- 확인 시각: ${new Date().toISOString()}\n- 실행: ${runUrl}`;
+          if (mode === 'open') {
+            if (existing) {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: existing.number, body });
+            } else {
+              await github.rest.issues.create({ ...context.repo, title, body });
+            }
+            return;
+          }
+          await github.rest.issues.createComment({
+            ...context.repo, issue_number: existing.number, body,
+          });
+          await github.rest.issues.update({
+            ...context.repo, issue_number: existing.number, state: 'closed', state_reason: 'completed',
+          });

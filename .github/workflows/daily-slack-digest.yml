@@ -8,24 +8,10 @@ on:
     types: [jobs-v5-published]
   schedule:
     # GitHub documents that top-of-hour schedules can be delayed or dropped.
-    # Reserve runners off-peak, then hold them until the 08:01 KST delivery target.
-    - cron: '45 7 * * 1-5'
-      timezone: 'Asia/Seoul'
+    # Reserve one runner off-peak, hold it until 08:01, and retain one watchdog.
     - cron: '55 7 * * 1-5'
       timezone: 'Asia/Seoul'
-    - cron: '1 8 * * 1-5'
-      timezone: 'Asia/Seoul'
-    - cron: '11 8 * * 1-5'
-      timezone: 'Asia/Seoul'
-    - cron: '21 8 * * 1-5'
-      timezone: 'Asia/Seoul'
     - cron: '31 8 * * 1-5'
-      timezone: 'Asia/Seoul'
-    - cron: '41 8 * * 1-5'
-      timezone: 'Asia/Seoul'
-    - cron: '51 8 * * 1-5'
-      timezone: 'Asia/Seoul'
-    - cron: '17 9 * * 1-5'
       timezone: 'Asia/Seoul'
   workflow_dispatch:
     inputs:
@@ -66,7 +52,7 @@ jobs:
           node-version-file: '.node-version'
 
       - name: Hold the early reservation until 08:01 KST
-        if: github.event_name == 'schedule' && (github.event.schedule == '45 7 * * 1-5' || github.event.schedule == '55 7 * * 1-5')
+        if: github.event_name == 'schedule' && github.event.schedule == '55 7 * * 1-5'
         env:
           RESERVATION_TARGET_HOUR: '8'
           RESERVATION_TARGET_MINUTE: '1'
@@ -88,61 +74,34 @@ jobs:
           SLACK_DIGEST_WINDOW_START: ${{ (github.event_name == 'workflow_run' || github.event_name == 'repository_dispatch') && '08:01' || '' }}
           SLACK_DIGEST_WINDOW_END: ${{ (github.event_name == 'workflow_run' || github.event_name == 'repository_dispatch') && '10:30' || '' }}
           SLACK_DIGEST_FRESH_UNTIL: ${{ (github.event_name == 'workflow_run' || github.event_name == 'repository_dispatch') && '08:31' || '' }}
-          SLACK_DIGEST_REQUIRE_FRESH_JOBS: ${{ github.event_name == 'schedule' && github.event.schedule != '51 8 * * 1-5' && github.event.schedule != '17 9 * * 1-5' }}
+          SLACK_DIGEST_REQUIRE_FRESH_JOBS: ${{ github.event_name == 'schedule' && github.event.schedule == '55 7 * * 1-5' }}
         run: node scripts/slack/send-daily-digest.mjs
 
       - name: Open or update the jobs refresh incident
         if: always() && github.event_name != 'workflow_dispatch' && steps.digest.outputs.delivery_status == 'job-import-not-ready'
         continue-on-error: true
-        uses: actions/github-script@v8
-        env:
-          INCIDENT_TITLE: '[운영 경보] 채용 DB 갱신 지연'
+        uses: ./.github/actions/sync-incident
         with:
-          script: |
-            const title = process.env.INCIDENT_TITLE;
-            const issues = await github.paginate(github.rest.issues.listForRepo, {
-              ...context.repo, state: 'open', per_page: 100,
-            });
-            const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const body = `직전 성공 알림 이후 채용 import가 아직 COMMITTED 상태가 아니어서 Slack 발송을 보류했습니다. 다음 fallback 예약이 재확인합니다.\n\n- 감지: ${new Date().toISOString()}\n- 실행: ${runUrl}`;
-            if (existing) {
-              await github.rest.issues.createComment({ ...context.repo, issue_number: existing.number, body });
-            } else {
-              await github.rest.issues.create({ ...context.repo, title, body });
-            }
+          title: '[운영 경보] 채용 DB 갱신 지연'
+          mode: open
+          body: 직전 성공 알림 이후 채용 import가 아직 COMMITTED 상태가 아니어서 Slack 발송을 보류했습니다. 08:31 감시 실행이 재확인합니다.
 
       - name: Close the jobs refresh incident after readiness recovery
         if: always() && github.event_name != 'workflow_dispatch' && (steps.digest.outputs.delivery_status == 'sent' || steps.digest.outputs.delivery_status == 'already-sent')
         continue-on-error: true
-        uses: actions/github-script@v8
-        env:
-          INCIDENT_TITLE: '[운영 경보] 채용 DB 갱신 지연'
+        uses: ./.github/actions/sync-incident
         with:
-          script: |
-            const title = process.env.INCIDENT_TITLE;
-            const issues = await github.paginate(github.rest.issues.listForRepo, {
-              ...context.repo, state: 'open', per_page: 100,
-            });
-            const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
-            if (!existing) return;
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            await github.rest.issues.createComment({
-              ...context.repo, issue_number: existing.number,
-              body: `채용 DB 준비 상태가 정상화되었습니다.\n\n- 확인: ${new Date().toISOString()}\n- 실행: ${runUrl}`,
-            });
-            await github.rest.issues.update({
-              ...context.repo, issue_number: existing.number, state: 'closed', state_reason: 'completed',
-            });
+          title: '[운영 경보] 채용 DB 갱신 지연'
+          mode: close
+          body: 채용 DB 준비 상태가 정상화되었습니다.
 
       - name: Measure the 08:01 KST schedule delay
         id: schedule_delay
-        if: github.event_name == 'schedule' && github.event.schedule == '1 8 * * 1-5' && (steps.digest.outputs.delivery_status == 'sent' || steps.digest.outputs.delivery_status == 'already-sent' || steps.digest.outputs.delivery_status == 'job-import-not-ready')
+        if: github.event_name == 'schedule' && github.event.schedule == '55 7 * * 1-5' && (steps.digest.outputs.delivery_status == 'sent' || steps.digest.outputs.delivery_status == 'already-sent' || steps.digest.outputs.delivery_status == 'job-import-not-ready')
         continue-on-error: true
         env:
           SCHEDULE_EXPECTED_HOUR: '8'
           SCHEDULE_EXPECTED_MINUTE: '1'
-          SCHEDULE_CRON: ${{ github.event.schedule }}
           SCHEDULE_DELAY_BUDGET_MINUTES: '15'
           SCHEDULE_DELAY_OUTPUT_FILE: work/operations/daily-schedule-delay.json
         run: node scripts/operations/check-schedule-delay.mjs
@@ -160,120 +119,50 @@ jobs:
       - name: Open or update the schedule delay incident
         if: always() && steps.schedule_delay.outcome == 'failure'
         continue-on-error: true
-        uses: actions/github-script@v8
-        env:
-          INCIDENT_TITLE: '[운영 경보] Daily Slack digest 예약 지연'
-          REPORT_PATH: work/operations/daily-schedule-delay.json
+        uses: ./.github/actions/sync-incident
         with:
-          script: |
-            const fs = require('fs');
-            const title = process.env.INCIDENT_TITLE;
-            const report = fs.existsSync(process.env.REPORT_PATH)
-              ? JSON.parse(fs.readFileSync(process.env.REPORT_PATH, 'utf8'))
-              : {};
-            const issues = await github.paginate(github.rest.issues.listForRepo, {
-              ...context.repo, state: 'open', per_page: 100,
-            });
-            const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const body = [
-              '오전 8시 1분 KST 목표 시각이 허용 지연 시간을 넘었습니다. fallback 예약으로 메시지 전송을 계속 시도합니다.',
-              '',
-              `- 예정 시각: ${report.expectedAt || '측정 실패'}`,
-              `- 감지 시각: ${report.observedAt || new Date().toISOString()}`,
-              `- 지연: ${report.delayMinutes ?? '측정 실패'}분 (기준 ${report.thresholdMinutes ?? 15}분)`,
-              `- 실행: ${runUrl}`,
-              '',
-              `원본 JSON은 실행의 \`daily-schedule-delay-${context.runId}\` 아티팩트에 30일간 보관됩니다.`,
-            ].join('\n');
-            if (existing) {
-              await github.rest.issues.createComment({ ...context.repo, issue_number: existing.number, body });
-            } else {
-              await github.rest.issues.create({ ...context.repo, title, body });
-            }
+          title: '[운영 경보] Daily Slack digest 예약 지연'
+          mode: open
+          body: |
+            오전 8시 1분 KST 목표 시각이 허용 지연 시간을 넘었습니다. 08:31 감시 실행이 전송을 재시도합니다.
+
+            - 예정 시각: ${{ steps.schedule_delay.outputs.expected_at }}
+            - 감지 시각: ${{ steps.schedule_delay.outputs.observed_at }}
+            - 지연: ${{ steps.schedule_delay.outputs.delay_minutes }}분 (기준 ${{ steps.schedule_delay.outputs.threshold_minutes }}분)
+
+            원본 JSON은 실행의 `daily-schedule-delay-${{ github.run_id }}` 아티팩트에 30일간 보관됩니다.
 
       - name: Close the schedule delay incident after an on-time start
         if: always() && steps.schedule_delay.outcome == 'success'
         continue-on-error: true
-        uses: actions/github-script@v8
-        env:
-          INCIDENT_TITLE: '[운영 경보] Daily Slack digest 예약 지연'
+        uses: ./.github/actions/sync-incident
         with:
-          script: |
-            const title = process.env.INCIDENT_TITLE;
-            const issues = await github.paginate(github.rest.issues.listForRepo, {
-              ...context.repo, state: 'open', per_page: 100,
-            });
-            const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
-            if (!existing) return;
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            await github.rest.issues.createComment({
-              ...context.repo, issue_number: existing.number,
-              body: `08:01 목표 예약이 15분 이내로 정상화되었습니다.\n\n- 확인: ${new Date().toISOString()}\n- 실행: ${runUrl}`,
-            });
-            await github.rest.issues.update({
-              ...context.repo, issue_number: existing.number, state: 'closed', state_reason: 'completed',
-            });
+          title: '[운영 경보] Daily Slack digest 예약 지연'
+          mode: close
+          body: 08:01 목표 예약이 15분 이내로 정상화되었습니다.
 
       - name: Open or update the digest delivery incident
         if: always() && steps.digest.outcome == 'failure' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
         continue-on-error: true
-        uses: actions/github-script@v8
-        env:
-          INCIDENT_TITLE: '[운영 경보] Daily Slack digest 전송 실패'
+        uses: ./.github/actions/sync-incident
         with:
-          script: |
-            const title = process.env.INCIDENT_TITLE;
-            const issues = await github.paginate(github.rest.issues.listForRepo, {
-              ...context.repo,
-              state: 'open',
-              per_page: 100,
-            });
-            const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const body = [
-              'CareerGround 일일 요약 전송이 실패했습니다. 민감한 token과 webhook 원문은 기록하지 않습니다.',
-              '',
-              `- 감지 시각: ${new Date().toISOString()}`,
-              `- 기준 커밋: \`${context.sha}\``,
-              `- 실행: ${runUrl}`,
-              '',
-              'Slack 4xx, digest API 인증, 또는 UNCERTAIN delivery 상태를 실행 로그의 상태 코드로 확인하세요.',
-            ].join('\n');
-            if (existing) {
-              await github.rest.issues.createComment({ ...context.repo, issue_number: existing.number, body });
-            } else {
-              await github.rest.issues.create({ ...context.repo, title, body });
-            }
+          title: '[운영 경보] Daily Slack digest 전송 실패'
+          mode: open
+          body: |
+            CareerGround 일일 요약 전송이 실패했습니다. 민감한 token과 webhook 원문은 기록하지 않습니다.
+
+            - 기준 커밋: `${{ github.sha }}`
+
+            Slack 4xx, digest API 인증, 또는 UNCERTAIN delivery 상태를 실행 로그의 상태 코드로 확인하세요.
 
       - name: Close the digest delivery incident after recovery
         if: always() && (steps.digest.outputs.delivery_status == 'sent' || steps.digest.outputs.delivery_status == 'already-sent')
         continue-on-error: true
-        uses: actions/github-script@v8
-        env:
-          INCIDENT_TITLE: '[운영 경보] Daily Slack digest 전송 실패'
+        uses: ./.github/actions/sync-incident
         with:
-          script: |
-            const title = process.env.INCIDENT_TITLE;
-            const issues = await github.paginate(github.rest.issues.listForRepo, {
-              ...context.repo,
-              state: 'open',
-              per_page: 100,
-            });
-            const existing = issues.find((issue) => !issue.pull_request && issue.title === title);
-            if (!existing) return;
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            await github.rest.issues.createComment({
-              ...context.repo,
-              issue_number: existing.number,
-              body: `일일 요약 전송이 정상화되었습니다.\n\n- 확인: ${new Date().toISOString()}\n- 실행: ${runUrl}`,
-            });
-            await github.rest.issues.update({
-              ...context.repo,
-              issue_number: existing.number,
-              state: 'closed',
-              state_reason: 'completed',
-            });
+          title: '[운영 경보] Daily Slack digest 전송 실패'
+          mode: close
+          body: 일일 요약 전송이 정상화되었습니다.
 
       - name: Fail when digest delivery fails
         if: always() && steps.digest.outcome == 'failure' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run)

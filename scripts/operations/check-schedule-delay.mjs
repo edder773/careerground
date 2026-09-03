@@ -83,6 +83,15 @@ export const formatScheduleDelaySummary = (report) =>
     '',
   ].join('\n');
 
+export const formatScheduleDelayOutputs = (report) =>
+  [
+    `expected_at=${report.expectedAt}`,
+    `observed_at=${report.observedAt}`,
+    `delay_minutes=${report.delayMinutes}`,
+    `threshold_minutes=${report.thresholdMinutes}`,
+    '',
+  ].join('\n');
+
 const isMain = process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url;
 if (isMain) {
   const report = evaluateScheduleDelay({
@@ -97,6 +106,9 @@ if (isMain) {
   writeFileSync(outputPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
   const summary = formatScheduleDelaySummary(report);
   process.stdout.write(summary);
+  if (process.env.GITHUB_OUTPUT) {
+    appendFileSync(process.env.GITHUB_OUTPUT, formatScheduleDelayOutputs(report), 'utf8');
+  }
   if (process.env.GITHUB_STEP_SUMMARY)
     appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary, 'utf8');
   if (report.status === 'fail') process.exitCode = 1;

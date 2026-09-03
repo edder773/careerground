@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   evaluateScheduleDelay,
+  formatScheduleDelayOutputs,
   formatScheduleDelaySummary,
   scheduleClockFromCron,
 } from './check-schedule-delay.mjs';
@@ -16,6 +17,15 @@ describe('daily digest schedule delay checker', () => {
       status: 'pass',
     });
     expect(formatScheduleDelaySummary(report)).toContain('Result: **PASS**');
+    expect(formatScheduleDelayOutputs(report)).toBe(
+      [
+        'expected_at=2026-08-26T23:01:00.000Z',
+        'observed_at=2026-08-26T23:02:00.000Z',
+        'delay_minutes=1',
+        'threshold_minutes=15',
+        '',
+      ].join('\n'),
+    );
   });
 
   it('flags the reported 08:27 KST start as a 26 minute delay', () => {
