@@ -141,6 +141,27 @@ describe('CareerGround v5 discovery production boundary', () => {
     });
   });
 
+  it('rolls back a failed staging batch without changing jobs or publication ledgers', async () => {
+    const input = await request(now);
+    const before = await first<{ jobs: number }>(db, 'SELECT COUNT(*) AS jobs FROM jobs');
+    db.failNextBatch(1);
+
+    await expect(publishDiscoveryBundle(db, input, now)).rejects.toThrow(
+      'injected D1 batch failure',
+    );
+
+    const after = await first<{ jobs: number; runs: number; publications: number }>(
+      db,
+      `SELECT
+         (SELECT COUNT(*) FROM jobs) AS jobs,
+         (SELECT COUNT(*) FROM workflow_runs WHERE run_id = ?) AS runs,
+         (SELECT COUNT(*) FROM workflow_publications WHERE run_id = ?) AS publications`,
+      input.runId,
+      input.runId,
+    );
+    expect(after).toEqual({ jobs: before?.jobs, runs: 0, publications: 0 });
+  });
+
   it('fails closed when a new URL collides with an existing fingerprint', async () => {
     const original = await discoveryJob(now, 'collision-a', {
       companyName: '동일 회사',

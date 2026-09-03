@@ -47,12 +47,11 @@ Issue 본문에는 다음 주석 블록 하나만 넣는다.
 
 schema 2.0에서 `artifactKind`와 파일명 조합은 다음 세 개만 허용한다.
 
-| artifactKind                                                                                                    | 파일명                                     |
-| --------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| `PARTITION_1`                                                                                                   | `careerground-partition-1-YYYY-MM-DD.json` |
-| `PARTITION_2`                                                                                                   | `careerground-partition-2-YYYY-MM-DD.json` |
-| `PARTITION_3`                                                                                                   | `careerground-partition-3-YYYY-MM-DD.json` |
-| schema 1.0의 기존 5파일 v4 호환 전달은 회귀와 롤백 목적으로 계속 허용하지만 신규 예약 작업에는 사용하지 않는다. |
+| artifactKind  | 파일명                                     |
+| ------------- | ------------------------------------------ |
+| `PARTITION_1` | `careerground-partition-1-YYYY-MM-DD.json` |
+| `PARTITION_2` | `careerground-partition-2-YYYY-MM-DD.json` |
+| `PARTITION_3` | `careerground-partition-3-YYYY-MM-DD.json` |
 
 ## 파티션 예약 작업에 추가할 전달 지시문
 
@@ -66,16 +65,6 @@ schema 2.0에서 `artifactKind`와 파일명 조합은 다음 세 개만 허용�
 
 같은 날짜를 다시 수집하면 `attempt`와 제목의 `A` 번호를 함께 1씩 올린다. 이전 Issue를 수정하거나 삭제하지 않는다.
 
-## 기존 Pro 병합·검증기
-
-Pro 검증기는 운영 자동 연결의 필수 단계가 아니다. 필요할 때 `discovery-ready` artifact를 읽기 전용으로 재검토하는 보조 감사 경로로 사용할 수 있다. 기존 schema 1.0 final/audit 전달은 롤백 호환 경로로만 유지하며 자동 D1 게시에는 사용하지 않는다.
-
-```text
-자동 전달: GitHub 연결 도구를 사용해 edder773/careerground로 final과 audit을 각각 독립 전달하라. 각 파일의 실제 전체 UTF-8 원본 바이트에 대해 SHA-256과 byteLength를 계산하고 GitHub create_blob을 encoding=utf-8로 호출한다. 저장소 파일을 생성·수정하거나 JSON 내용을 Issue 본문에 넣지 마라.
-
-final은 artifactKind=LEGACY_FINAL, audit은 artifactKind=LEGACY_AUDIT로 하여 [CG-JOBS-V5][YYYY-MM-DD][ARTIFACT_KIND][A1] Issue를 각각 만들고 careerground-v5-handoff 라벨을 붙인다. 각 본문에는 docs/operations/careerground-v5-automatic-handoff.md의 CAREERGROUND_V5_HANDOFF JSON 주석만 넣는다. 두 전달 중 하나라도 실패하면 자동 전달 완료로 보고하지 마라.
-```
-
 ## 현재 활성화 범위
 
-schema 2.0 연결은 신규 후보 자동 수신, 결정적 정규화, 출처·정책·중복 검증, 운영 기준선 대조, D1 신규 INSERT와 게시 원장 기록까지 활성화한다. `VERIFIED_DISCOVERY`는 중간 검증 상태이며 최종 성공은 endpoint receipt의 `PUBLISHED` 또는 동일 입력 재실행의 `ALREADY_PUBLISHED`다. 이 workflow는 Slack webhook을 직접 호출하지 않고 게시 성공 이벤트로 기존 digest workflow를 깨운다.
+schema 2.0 연결은 유일한 운영 인입이다. 신규 후보 자동 수신, 결정적 정규화, 출처·정책·중복 검증, 운영 기준선 대조, D1 신규 INSERT와 게시 원장 기록까지 활성화한다. schema 1.0과 v4 final/audit 포인터는 수신 단계에서 거부한다. `VERIFIED_DISCOVERY`는 중간 검증 상태이며 최종 성공은 endpoint receipt의 `PUBLISHED` 또는 동일 입력 재실행의 `ALREADY_PUBLISHED`다. 이 workflow는 Slack webhook을 직접 호출하지 않고 게시 성공 이벤트로 기존 digest workflow를 깨운다.

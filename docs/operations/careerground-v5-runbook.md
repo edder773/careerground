@@ -1,59 +1,40 @@
-# CareerGround 채용 자동화 v5 운영 Runbook
+# CareerGround 채용 자동화 운영 Runbook
 
-## 목적과 불변식
+## 단일 운영 경로
 
-v5의 운영 기준은 채팅, 파일명, 최근 수정 시각이 아니라 D1의 `workflow_runs`와 검증된 Manifest다. `workflowId`는 `CG-JOBS-PROD-V5`, Schema는 `5.0`, 시간대는 `Asia/Seoul`이다. 날짜별 `runGroupKey`는 `CG-YYYY-MM-DD`이며 재시도는 같은 key와 target date를 유지하고 `runId`, `attempt`만 바꾼다.
+운영 채용공고는 schema 5.1 파티션 세 개를 schema 2.0 GitHub Issue 포인터로 전달하는 경로만
+사용한다. v4 final/audit, File Library 선택, SQL 생성기, pre-cutover fixture workflow는 지원하지
+않는다.
 
-운영 수집 목표는 평일 18:00다. 실제 웹 수집은 저장소 밖의 ChatGPT 예약 작업 3개가 수행하고, GitHub Issue handoff가 세 결과를 모아 검증·게시한다. 저장소의 `careerground-jobs-v5.yml`은 fixture DRY_RUN 회귀용 pre-cutover workflow로 유지한다.
-
-## 단계별 계약
-
-1. `preflight`: 실행 ID, 모드, 날짜, 공휴일 캐시를 검증한다. 주말/공휴일은 각각 별도 skip 상태다.
-2. `collect`: 신규 예약 수집기는 기준선 비의존 schema 5.1 discovery delta를 Git blob으로 전달한다. GitHub가 세 명시적 blob을 받은 뒤 hash·크기·출처 소유권을 검증하고 v5 partition 입력으로 정규화한다. 파일명이나 최신 Library 파일을 찾지 않는다.
-3. `merge`: 세 파티션의 workflow/run group/date/schema/hash/rowCount를 다시 검사하고 canonical key, URL, fingerprint, id를 중복 제거한다. 새 공고를 검색하지 않는다.
-4. `validate`: CareerGround 정책과 임계값을 적용한다. DB나 Slack을 변경하지 않는다.
-5. `stage`: VERIFIED 결과를 `workflow_staged_jobs`에 넣고 before-image를 보존한다.
-6. `publish`: PUBLISH 모드와 승인된 VERIFIED run만 D1 atomic batch로 반영한다. `jobs` DELETE와 `saved_jobs` mutation은 없다.
-7. `notify`: v5 게시 단계는 Slack을 직접 전송하지 않는다. 다음 날 기존 08:01 digest가 당일 `jobs-v5` COMMITTED 기록과 DB의 신규 `created_at` window를 소비한다.
-
-## canonical JSON
-
-- object key는 Unicode 문자열 순으로 정렬하고 UTF-8 단일행 JSON으로 직렬화한다.
-- `sources`, `techStack`, `tags`, `excludedReasons`는 의미 없는 순서로 선언되어 canonical 값 기준 정렬한다.
-- `items`는 `canonicalJobKey`, 없으면 `id`로 정렬한다.
-- 그 외 배열 순서는 보존한다.
-- `undefined`만 제외하며 타임스탬프 같은 metadata는 계약에서 volatile로 선언하지 않았으므로 포함한다.
-- 원본 바이트 hash와 canonical hash를 모두 보존한다.
-
-다운로드 이름의 `(1)`, ` (2)`, `(3)(1)`은 화면 표시명에서만 제거한다. partitionId는 JSON 내부 metadata와 Manifest로만 결정한다.
-
-## 품질 게이트
-
-임계값은 `config/careerground-validation-policy.json`에 있다. 각 partition 최소 1행, 기존 ACTIVE 대비 35% 초과 급감, 종료 20건 또는 20% 초과, 허용 필드 변경 80개 초과, 지원 도메인 변경 10개 초과, 출처별 50% 초과 감소를 보수적 이상 징후로 격리한다. 이는 초기 안전값으로 운영 관측치가 없어서 개선율을 수치화할 수 없다. 정상 PUBLISHED 표본을 축적한 뒤 PR로 조정한다.
-
-## 명령
-
-```bash
-pnpm jobs:v5:adapt-v4 --target-as-of-date YYYY-MM-DD \
-  --run-id CG-YYYY-MM-DD-A1-example1 \
-  --partition1 /explicit/partition-1.json \
-  --partition2 /explicit/partition-2.json \
-  --partition3 /explicit/partition-3.json \
-  --final /explicit/final.json \
-  --audit /explicit/merge-audit.json \
-  --output /explicit/non-production-output
-
-pnpm jobs:v5:dry-run
-pnpm jobs:v5:run --target-as-of-date 2026-08-27 --run-id CG-2026-08-27-A1-example1 \
-  --partition1 /explicit/partition-1.json \
-  --partition2 /explicit/partition-2.json \
-  --partition3 /explicit/partition-3.json \
-  --baseline /explicit/baseline.json
+```text
+ChatGPT 예약 수집 3개
+  → 임시 Git blob + schema 2.0 Issue 포인터
+  → careerground-v5-handoff.yml
+  → discovery-delta 검증
+  → 보호된 Sites publish API
+  → 운영 D1
+  → 다음 영업일 Slack digest
 ```
 
-`adapt-v4`는 전달된 다섯 파일만 읽고 원본/canonical hash와 audit gate를 검증한다. Library를 검색하지 않으며 DB·Slack을 변경하지 않는다. 자세한 계약은 `careerground-v4-collector-contract.md`를 따른다.
+운영 식별자는 `workflowId=CG-JOBS-PROD-V5`, `runGroupKey=CG-YYYY-MM-DD`,
+`runId=CG-YYYY-MM-DD-A<attempt>-discovery`다. 재시도는 같은 날짜에서 `attempt`만 증가시킨다.
 
-신규 예약 수집기 결과는 다음 명령과 같은 검증 경로를 사용한다.
+## 단계와 성공 조건
+
+1. 세 예약 작업이 각 담당 출처를 조사해 `CAREERGROUND_DISCOVERY_DELTA`를 만든다.
+2. 각 작업은 커밋에 연결되지 않은 Git blob과 `PARTITION_1`~`PARTITION_3` 포인터 Issue를 만든다.
+3. handoff workflow는 세 포인터가 모일 때까지 `WAITING`하고, 완성된 묶음만 내려받는다.
+4. GitHub Actions가 blob 크기·SHA-256·UTF-8 JSON·날짜·출처 소유권·enum·중복을 검증한다.
+5. 검증 결과가 `VERIFIED_DISCOVERY`일 때만 `CAREERGROUND_PUBLISH_TOKEN`으로 운영 API를 호출한다.
+6. 서버는 운영 기준선과 다시 대조해 신규 `ACTIVE`만 최대 75건까지 원자 반영한다.
+7. 게시 원장과 사후 건수 검증이 끝난 `PUBLISHED` 또는 같은 입력의 `ALREADY_PUBLISHED`만 성공이다.
+8. 성공한 Issue는 처리 완료로 닫고 `jobs-v5-published` 이벤트로 기존 Slack digest를 깨운다.
+
+파티션 하나가 없으면 게시하지 않는다. 같은 attempt가 다른 blob을 가리키거나 새 URL이 기존 ID,
+canonical key, fingerprint와 충돌하면 전체 묶음을 fail-closed 처리한다. 기존 `jobs` UPDATE·DELETE와
+모든 `saved_jobs` mutation은 허용하지 않는다.
+
+## 로컬 검증
 
 ```bash
 pnpm jobs:v5:validate-discovery --target-as-of-date YYYY-MM-DD \
@@ -64,17 +45,19 @@ pnpm jobs:v5:validate-discovery --target-as-of-date YYYY-MM-DD \
   --output /explicit/non-production-output
 ```
 
-이 명령은 최종 `id`, `canonicalJobKey`, `fingerprint`, raw/canonical hash를 GitHub 실행 환경에서 생성한다. `rowCount=0`은 정상적인 신규 후보 없음으로 허용하며, 한 출처의 BLOCKED/ERROR는 다른 출처 결과를 폐기하지 않는다. 결과는 중간 상태 `VERIFIED_DISCOVERY`이며 handoff workflow가 보호된 endpoint를 호출한 뒤에만 `PUBLISHED`가 된다.
+`rowCount=0`은 유효하다. 한 출처가 `BLOCKED` 또는 `ERROR`여도 다른 출처 결과를 버리지 않지만,
+출처별 coverage와 오류는 산출물에 남아야 한다. 이 명령은 DB와 Slack을 변경하지 않는다.
 
-`jobs:v5:publish-discovery`는 token을 환경변수에서만 읽고 검증 bundle을 Sites endpoint에 전송한다. endpoint는 같은 bundle 재실행을 `ALREADY_PUBLISHED`로 처리하고, 같은 runId의 다른 bundle·기존 fingerprint/canonical key 충돌·75건 초과 신규 삽입을 거부한다.
+## 장애 처리
 
-## 관측과 성공 판정
+- `WAITING`: 누락된 파티션만 같은 날짜와 더 큰 attempt로 다시 제출한다.
+- `HANDOFF_*`: Issue 포인터의 허용 필드, 날짜, blob SHA, 파일명을 확인한다.
+- `FAILED_DISCOVERY`: 산출물의 enum, 출처 소유권, 날짜, 중복 보고를 수정해 세 파티션을 다시 제출한다.
+- `PUBLISH_*`: 입력을 임의 수정하지 말고 publish receipt와 열린 운영 경보 Issue를 확인한다.
+- Slack 실패: 게시를 되돌리지 않는다. `daily:YYYY-MM-DD` claim과 digest 경보를 확인한다.
 
-- `current`: 가장 최근 시도이며 실패/격리도 가리킬 수 있다.
-- `last-success`: 오직 `PUBLISHED`만 가리킨다.
-- `SUCCESS_NO_CHANGES`: 3개 partition, merge, schema, 정책, baseline 비교가 모두 성공하고 new/change/end/quarantine이 0일 때만 가능하다.
-- Slack 실패는 게시를 되돌리지 않고 notification retry pending으로 남긴다.
+Secret은 로그·artifact·문서에 남기지 않는다. `CAREERGROUND_PUBLISH_TOKEN`,
+`CAREERGROUND_DIGEST_TOKEN`, `SLACK_WEBHOOK_URL`은 서로 재사용하지 않는다.
 
-## 보안
-
-artifact, 로그, 문서에 Secret, webhook, 운영 row를 남기지 않는다. Sites `PUBLISH_API_TOKEN`과 GitHub `CAREERGROUND_PUBLISH_TOKEN`이 없거나 일치하지 않으면 publish는 중단하고 Issue를 닫지 않는다.
+상세 포인터 계약은 `careerground-v5-automatic-handoff.md`, 수집 계약은
+`careerground-v5-stable-collector-prompts.md`, Slack 복구는 `slack-daily-digest.md`를 따른다.

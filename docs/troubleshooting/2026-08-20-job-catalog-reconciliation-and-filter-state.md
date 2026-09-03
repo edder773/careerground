@@ -24,10 +24,10 @@ generatedByAI: false
 | 명시 마감일 경과 |            7 | `EXPIRED` 전환 |
 | 목록 노출        |           51 |             60 |
 
-정량값은
-`data/imports/job-refresh-2026-08-20/reconciliation.json`과 동일 입력을 검증하는
-generator 회귀 테스트에서 산출했다. 응답 시간은 동일한 운영 조건의 전후 측정값이 없어
-개선율을 주장하지 않는다.
+정량값은 당시 `data/imports/job-refresh-2026-08-20/reconciliation.json`과 동일 입력을 검증한
+generator 회귀 테스트에서 산출했다. 해당 v4 원본과 생성기는 schema 2.0 운영 전환 뒤 제거했으며
+이 문서와 Git 이력을 증거로 유지한다. 응답 시간은 동일한 운영 조건의 전후 측정값이 없어 개선율을
+주장하지 않는다.
 
 ## 핵심 이론 1: snapshot의 완전성을 먼저 판정한다
 
@@ -83,12 +83,13 @@ dialog가 창의 stacking context에 갇혀 본문과 겹치는 결함을 발견
 ## 재현과 검증
 
 ```bash
-pnpm jobs:catalog:reconcile
+git show 0dfa3355:data/imports/job-refresh-2026-08-20/reconciliation.json
 pnpm --filter @careerground/web test -- DomainPages.test.tsx
 pnpm exec playwright test e2e/mvp.spec.ts --project=chromium --grep "filters jobs"
 pnpm exec playwright test e2e/visual.spec.ts --project=chromium --grep "captures core domain screens"
 ```
 
-generator는 선언된 수량 불일치, 마감 전 `EXPIRED` 전환, 원문 종료 증거 없는 상시채용
-제거를 실패 처리한다. D1 runtime 테스트는 migration 0024 적용 후 67개 저장, 60개 노출,
-7개 만료와 신규 공고 조회를 검증한다.
+당시 generator는 선언된 수량 불일치, 마감 전 `EXPIRED` 전환, 원문 종료 증거 없는 상시채용
+제거를 실패 처리했다. 현재 회귀는 적용된 migration과 schema 2.0 discovery 게시 테스트가 맡는다.
+D1 runtime 테스트는 migration 0024 적용 후 67개 저장, 60개 노출, 7개 만료와 신규 공고 조회를
+검증한다.
