@@ -11,14 +11,16 @@ import {
   Star,
   X,
 } from 'lucide-react';
-import { brand, productLinks } from '@careerground/config';
 import { ApiStatusRegion } from './ApiStatusRegion';
 import '../styles/shell.css';
+
+const brandName = 'CareerGround';
+const certificationLearningUrl = 'https://baeumzip.site';
 
 const navigation = [
   { to: '/', label: '채용공고', icon: CalendarDays },
   { to: '/coding', label: '코딩테스트', icon: Code2 },
-  { href: productLinks.certificationLearning, label: '자격증', icon: GraduationCap },
+  { href: certificationLearningUrl, label: '자격증', icon: GraduationCap },
   { to: '/favorites', label: '즐겨찾기', icon: Star },
 ] as const;
 
@@ -77,7 +79,7 @@ export function AppShell({ children }: PropsWithChildren) {
           <FolderKanban size={20} />
         </div>
         <div>
-          <strong>{brand.name}</strong>
+          <strong>{brandName}</strong>
           <span>Career workspace</span>
         </div>
       </div>
@@ -129,9 +131,9 @@ export function AppShell({ children }: PropsWithChildren) {
               </button>
             </div>
             <div className="breadcrumb">
-              <span>{brand.shortName}</span>
+              <span>{brandName}</span>
               <ChevronRight size={14} />
-              <strong>{titles[location.pathname] || brand.name}</strong>
+              <strong>{titles[location.pathname] || brandName}</strong>
             </div>
           </div>
         </header>

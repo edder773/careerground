@@ -327,105 +327,6 @@
   border-color: #d5daf2;
 }
 
-.multi-filter-trigger {
-  min-width: 132px;
-  min-height: 38px;
-  padding: 6px 9px 6px 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  color: #444c55;
-  text-align: left;
-  background: #f7f8f9;
-  border: 1px solid #dfe2e6;
-  border-radius: 9px;
-}
-
-.multi-filter-trigger > span {
-  min-width: 0;
-  display: grid;
-  gap: 1px;
-}
-
-.multi-filter-trigger small {
-  color: #858c94;
-  font-size: 7px;
-  font-weight: 750;
-}
-
-.multi-filter-trigger strong {
-  overflow: hidden;
-  max-width: 180px;
-  color: #404751;
-  font-size: 9px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.multi-filter-trigger > svg {
-  width: 13px;
-  flex: 0 0 auto;
-  color: #707780;
-}
-
-.multi-filter-trigger[data-state='open'] {
-  background: #fff;
-  border-color: #7783c6;
-  box-shadow: 0 0 0 3px rgba(86, 101, 185, 0.14);
-}
-
-.multi-filter-menu {
-  position: absolute;
-  z-index: 110;
-  top: calc(100% + 6px);
-  left: 0;
-  min-width: 220px;
-  max-height: min(280px, calc(100dvh - 190px));
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 6px;
-  background: #fff;
-  border: 1px solid #dfe2e7;
-  border-radius: 11px;
-  box-shadow: 0 16px 44px rgba(32, 38, 52, 0.17);
-  animation: filter-menu-in 130ms ease-out;
-}
-
-.multi-filter-menu [role='menuitemcheckbox'],
-.multi-filter-clear {
-  width: 100%;
-  min-height: 34px;
-  padding: 6px 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #424a53;
-  text-align: left;
-  background: transparent;
-  border: 0;
-  border-radius: 7px;
-  font-size: 9px;
-  font-weight: 700;
-  outline: 0;
-  user-select: none;
-}
-
-.multi-filter-menu [role='menuitemcheckbox']:hover,
-.multi-filter-menu [role='menuitemcheckbox']:focus-visible,
-.multi-filter-clear:hover,
-.multi-filter-clear:focus-visible {
-  background: #f0f2f8;
-}
-
-.multi-filter-label {
-  display: block;
-  padding: 5px 8px 7px;
-  color: #7d848d;
-  font-size: 8px;
-  font-weight: 800;
-}
-
 .multi-filter-check {
   width: 17px;
   height: 17px;
@@ -441,28 +342,12 @@
   border-radius: 5px;
 }
 
-.multi-filter-option[data-state='checked'] .multi-filter-check {
-  background: #5867b9;
-  border-color: #5867b9;
-}
-
 .multi-filter-check svg {
   width: 12px;
   height: 12px;
   display: block;
   flex: 0 0 12px;
   margin: 0;
-}
-
-.multi-filter-menu [role='separator'] {
-  height: 1px;
-  margin: 5px 3px;
-  background: #e7e9ec;
-}
-
-.multi-filter-clear {
-  color: #5966ae;
-  justify-content: center;
 }
 
 @keyframes filter-menu-in {
@@ -566,12 +451,6 @@
 
 .job-card-schedule .schedule-application {
   border-left-color: #3d79cf;
-}
-
-.job-card-schedule .schedule-published {
-  background: #f7f4fc;
-  border-color: #e6def3;
-  border-left-color: #8065b8;
 }
 
 .job-card-schedule .schedule-deadline {
@@ -779,11 +658,6 @@
   height: 8px;
   border-radius: 3px;
   content: '';
-}
-
-.job-calendar-legend .schedule-published::before,
-.job-modal-schedule .schedule-published span::before {
-  background: #8065b8;
 }
 
 .job-calendar-legend .schedule-application::before,
@@ -998,12 +872,6 @@
   font-weight: 850;
 }
 
-.calendar-job.schedule-published {
-  color: #654394;
-  background: #f0eafa;
-  border-left: 3px solid #8065b8;
-}
-
 .calendar-job.schedule-application {
   color: #285a9c;
   background: #e7f0fc;
@@ -1064,71 +932,6 @@
 .calendar-empty strong {
   color: #424951;
   font-size: 10px;
-}
-
-.calendar-job-detail {
-  margin: 16px;
-  padding: 16px;
-  display: grid;
-  grid-template-columns: 46px minmax(0, 1fr) auto;
-  gap: 13px;
-  background: #f5f6f8;
-  border: 1px solid #e3e5e9;
-  border-radius: 15px;
-}
-
-.calendar-job-detail .company-tile {
-  width: 46px;
-  height: 46px;
-}
-
-.calendar-detail-deadline {
-  color: #5564bb;
-  font-size: 8px;
-  font-weight: 800;
-}
-
-.calendar-job-detail h3 {
-  margin: 3px 0 1px;
-  font-size: 15px;
-}
-
-.calendar-job-detail > div:nth-child(2) > strong {
-  font-size: 10px;
-}
-
-.calendar-job-detail p {
-  margin: 7px 0 0;
-  color: #687078;
-  font-size: 9px;
-  line-height: 1.5;
-}
-
-.calendar-detail-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.calendar-detail-actions button,
-.calendar-detail-actions a {
-  min-width: 118px;
-  height: 34px;
-  padding: 0 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  color: #5362b8;
-  background: white;
-  border: 1px solid #dfe2e7;
-  border-radius: 9px;
-  font-size: 8px;
-  font-weight: 800;
-}
-
-.calendar-detail-actions svg {
-  width: 13px;
 }
 
 .job-modal-backdrop {
@@ -1394,11 +1197,6 @@
   text-align: center;
 }
 
-.schedule-list-badge.schedule-published {
-  color: #654394;
-  background: #f0eafa;
-}
-
 .schedule-list-badge.schedule-application {
   color: #285a9c;
   background: #e7f0fc;
@@ -1615,9 +1413,22 @@
   }
 }
 
+@media (max-width: 900px) {
+  .jobs-page .job-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .jobs-page .job-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Keep the three-track coding recommendation cards balanced on wide screens. */
-.daily-challenge-grid,
-.today-problem-list {
+.daily-challenge-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 

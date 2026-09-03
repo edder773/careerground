@@ -38,7 +38,13 @@ async function expectKoreanCategoryFilters(filterDialog: Locator) {
   expect(new Set(labels).size).toBe(labels.length);
 }
 
-test('captures the calendar-first home at required viewports', async ({ page }) => {
+async function captureReferenceScreenshot(page: Page, projectName: string, path: string) {
+  if (projectName === 'chromium') {
+    await page.screenshot({ path, fullPage: false });
+  }
+}
+
+test('captures the calendar-first home at required viewports', async ({ page }, testInfo) => {
   await mkdir('test-results/visual', { recursive: true });
   for (const viewport of [
     { name: 'desktop-1440', width: 1440, height: 900 },
@@ -62,15 +68,16 @@ test('captures the calendar-first home at required viewports', async ({ page }) 
         () => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
       ),
     ).toBe(true);
-    await page.screenshot({
-      path: `test-results/visual/home-calendar-${viewport.name}.png`,
-      fullPage: false,
-    });
+    await captureReferenceScreenshot(
+      page,
+      testInfo.project.name,
+      `test-results/visual/home-calendar-${viewport.name}.png`,
+    );
     await expectNoSeriousViolations(page);
   }
 });
 
-test('keeps the searchable and sortable list view', async ({ page }) => {
+test('keeps the searchable and sortable list view', async ({ page }, testInfo) => {
   await mkdir('test-results/visual', { recursive: true });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/?view=list');
@@ -92,15 +99,18 @@ test('keeps the searchable and sortable list view', async ({ page }) => {
   await filterDialog.getByRole('checkbox', { name: '백엔드', exact: true }).check();
   await expectCenteredFilterCheck(largeCompany);
   await expectKoreanCategoryFilters(filterDialog);
-  await page.screenshot({
-    path: 'test-results/visual/jobs-list-filter-desktop-1440.png',
-    fullPage: false,
-  });
+  await captureReferenceScreenshot(
+    page,
+    testInfo.project.name,
+    'test-results/visual/jobs-list-filter-desktop-1440.png',
+  );
   await filterDialog.getByRole('button', { name: '필터 닫기' }).click();
   await expectNoSeriousViolations(page);
 });
 
-test('opens crowded dates, rolling jobs, and job details in dialogs', async ({ page }) => {
+test('opens crowded dates, rolling jobs, and job details in dialogs', async ({
+  page,
+}, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
   await expect(page.locator('.job-calendar-legend')).not.toContainText('등록일');
@@ -111,10 +121,11 @@ test('opens crowded dates, rolling jobs, and job details in dialogs', async ({ p
   await rollingModal.getByRole('button', { name: '닫기' }).click();
   await page.locator('.calendar-job').first().click();
   await expect(page.getByRole('dialog')).toBeVisible();
-  await page.screenshot({
-    path: 'test-results/visual/home-calendar-modal-desktop-1440.png',
-    fullPage: false,
-  });
+  await captureReferenceScreenshot(
+    page,
+    testInfo.project.name,
+    'test-results/visual/home-calendar-modal-desktop-1440.png',
+  );
 });
 
 test('keeps the mobile calendar and filters inside the viewport', async ({ page }) => {
@@ -142,4 +153,34 @@ test('keeps the mobile calendar and filters inside the viewport', async ({ page 
   expect(mobileFilterBox!.y + mobileFilterBox!.height).toBeLessThanOrEqual(812);
   await mobileFilter.getByRole('button', { name: '필터 닫기' }).click();
   await expectNoSeriousViolations(page);
+});
+
+test('captures the coding and favorites routes at required viewports', async ({
+  page,
+}, testInfo) => {
+  await mkdir('test-results/visual', { recursive: true });
+  for (const route of [
+    { path: '/coding', name: 'coding', heading: '코딩테스트' },
+    { path: '/favorites', name: 'favorites', heading: '즐겨찾기' },
+  ]) {
+    for (const viewport of [
+      { name: 'desktop-1440', width: 1440, height: 900 },
+      { name: 'mobile-375', width: 375, height: 812 },
+    ]) {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.goto(route.path);
+      await expect(page.getByRole('heading', { name: route.heading, level: 1 })).toBeVisible();
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+        ),
+      ).toBe(true);
+      await captureReferenceScreenshot(
+        page,
+        testInfo.project.name,
+        `test-results/visual/${route.name}-${viewport.name}.png`,
+      );
+      await expectNoSeriousViolations(page);
+    }
+  }
 });

@@ -31,13 +31,12 @@ pnpm dev
 
 ```bash
 pnpm dev                 # web + 메모리 D1 API 동시 실행, Docker 불필요
-pnpm build               # ui/web/docs/Sites production build
+pnpm build               # web/docs/Sites production build
 pnpm lint
 pnpm typecheck
 pnpm test                # unit/component/provider mock
 pnpm test:e2e            # 격리된 메모리 D1 + 공통 seed Playwright
 pnpm db:d1:generate      # db/schema.ts 변경으로 D1 migration 생성
-pnpm jobs:catalog:refresh <baseline.json> <input.json> <output.sql>
 pnpm docs:dev
 pnpm docs:build
 ```
@@ -57,11 +56,10 @@ pnpm docs:build
 
 - 채용 스키마: `docs/operations/job-import-schema.md`
 - ChatGPT Work 수집 프롬프트: `docs/operations/job-collection-work-prompt.md`
-- 과거 학습 데이터와 가져오기 문서는 운영 이력 보존을 위해 저장소에 남아 있지만 현재 웹 탐색 경로에서는 제공하지 않는다.
 
 ## 오늘의 문제와 cron
 
-오늘의 문제는 첫 공개 조회 또는 Slack digest claim 시 D1에서 idempotent하게 준비된다. Worker scheduled handler는 운영 보조 데이터를 lease로 단일 정리한다. Slack 요약은 GitHub Actions가 `Asia/Seoul` 평일 오전 08:01에 실행하고 국내 공휴일은 발송기에서 건너뛴다.
+오늘의 문제는 첫 공개 조회 또는 Slack digest claim 시 D1에서 idempotent하게 준비된다. Slack 요약은 GitHub Actions가 `Asia/Seoul` 평일 오전 08:01에 실행하고 국내 공휴일은 발송기에서 건너뛴다.
 
 ## 화면 방향
 

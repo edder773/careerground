@@ -19,29 +19,6 @@
   transform: translateY(0);
 }
 
-.recent-searches {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.recent-searches h3 {
-  margin: 0;
-}
-
-.recent-searches header {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.recent-searches header button {
-  padding: 4px 8px;
-  color: var(--muted);
-  font-size: 0.78rem;
-}
-
 @media (max-width: 900px) {
   .bottom-nav {
     grid-template-columns: repeat(4, minmax(0, 1fr));
