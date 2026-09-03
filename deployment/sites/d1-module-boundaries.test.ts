@@ -7,20 +7,20 @@ describe('D1 API module boundaries', () => {
   it('keeps the route orchestrator below the structural size budget', async () => {
     const source = await readSource('./d1-api.ts');
 
-    expect(Buffer.byteLength(source)).toBeLessThan(130_000);
-    expect(source.split('\n').length).toBeLessThan(3_500);
+    expect(Buffer.byteLength(source)).toBeLessThan(20_000);
+    expect(source.split('\n').length).toBeLessThan(400);
   });
 
-  it('delegates auth, daily challenge, Slack and import policies to domain modules', async () => {
+  it('delegates public catalogs, daily challenges and protected operations to domain modules', async () => {
     const source = await readSource('./d1-api.ts');
 
-    expect(source).toContain("from './d1-auth.js'");
+    expect(source).toContain("from './d1-public-catalog.js'");
     expect(source).toContain("from './d1-daily-challenges.js'");
-    expect(source).toContain("from './d1-imports.js'");
+    expect(source).toContain("from './d1-jobs-v5.js'");
     expect(source).toContain("from './d1-api-utils.js'");
-    expect(source).not.toContain('DIGEST_AUTH_NOT_CONFIGURED');
-    expect(source).not.toContain('IMPORT_REVIEW_ACK_REQUIRED');
-    expect(source).not.toContain('GOOGLE_IDENTITY_CONFLICT');
+    expect(source).not.toMatch(
+      /\/auth\/|\/learning\/|\/collections\/|\/solutions\/|\/notifications\//,
+    );
   });
 
   it('keeps extracted modules independent from the route orchestrator', async () => {
@@ -28,13 +28,21 @@ describe('D1 API module boundaries', () => {
       [
         './d1-api-contract.ts',
         './d1-api-utils.ts',
-        './d1-auth.ts',
         './d1-daily-challenges.ts',
-        './d1-imports.ts',
+        './d1-public-catalog.ts',
+        './security-token.ts',
       ].map(readSource),
     );
 
     for (const source of modules) expect(source).not.toContain("from './d1-api.js'");
+  });
+
+  it('does not retain legacy API implementation modules', async () => {
+    await Promise.all(
+      ['./d1-auth.ts', './d1-imports.ts', './google-auth.ts'].map(async (name) => {
+        await expect(access(new URL(name, import.meta.url))).rejects.toThrow();
+      }),
+    );
   });
 
   it('keeps the production Worker independent from alternate backend runtimes', async () => {

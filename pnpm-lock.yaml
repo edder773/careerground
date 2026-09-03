@@ -109,9 +109,6 @@ importers:
       '@careerground/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@careerground/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
       '@careerground/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -181,12 +178,6 @@ importers:
         version: 8.2.2(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)
 
   packages/config: {}
-
-  packages/contracts:
-    dependencies:
-      zod:
-        specifier: 4.4.3
-        version: 4.4.3
 
   packages/testing: {}
 

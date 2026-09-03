@@ -24,6 +24,7 @@ flowchart LR
 - 채용 사이트와 프로그래머스 페이지를 요청하거나 파싱하는 코드가 없다.
 - import 승인은 checksum과 batch report를 남기는 D1 batch다.
 - 별도 queue나 Redis 없이 D1 unique index, compare-and-swap, lease와 idempotency key를 사용한다.
+- 공개·내부 endpoint의 전체 허용 목록은 [운영 API 표면](api-surface.md)에 고정한다.
 
 ## 웹 모듈 경계
 

@@ -125,7 +125,7 @@ export async function runProductionSlo({
     readinessPayload = payload;
     readinessHeaders = result.response.headers;
     const canary = payload?.canary;
-    const canaryIsHealthy = ['jobs', 'problems', 'learning', 'searchRows'].every(
+    const canaryIsHealthy = ['jobs', 'problems'].every(
       (key) => Number.isInteger(canary?.[key]) && canary[key] > 0,
     );
     const contractIsHealthy =
@@ -276,7 +276,6 @@ export async function runProductionSlo({
 
   for (const [name, path] of [
     ['jobs', '/api/v1/jobs?limit=1'],
-    ['learning', '/api/v1/learning'],
     ['coding', '/api/v1/coding/problems?track=ALGORITHM'],
   ]) {
     const result = await perform(`public-catalog.${name}.request`, path);
@@ -290,13 +289,21 @@ export async function runProductionSlo({
     );
   }
 
-  const retiredAuth = await perform('retired-auth.request', '/api/v1/auth/config');
-  if (retiredAuth) {
-    const payload = await safeJson(retiredAuth.response);
+  for (const [name, path] of [
+    ['auth', '/api/v1/auth/config'],
+    ['learning', '/api/v1/learning'],
+    ['collections', '/api/v1/collections'],
+    ['solutions', '/api/v1/coding/solutions'],
+    ['notifications', '/api/v1/notifications'],
+    ['search', '/api/v1/search?q=test'],
+  ]) {
+    const removed = await perform(`removed-api.${name}.request`, path);
+    if (!removed) continue;
+    const payload = await safeJson(removed.response);
     record(
-      'retired-auth.contract',
-      retiredAuth.response.status === 404 && payload?.code === 'ROUTE_RETIRED',
-      `HTTP ${retiredAuth.response.status} code=${payload?.code || 'invalid'}`,
+      `removed-api.${name}.contract`,
+      removed.response.status === 404 && payload?.code === 'NOT_FOUND',
+      `HTTP ${removed.response.status} code=${payload?.code || 'invalid'}`,
     );
   }
 

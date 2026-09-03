@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@careerground/config": "workspace:*",
-    "@careerground/contracts": "workspace:*",
     "@careerground/ui": "workspace:*",
     "@radix-ui/react-dialog": "1.1.23",
     "@radix-ui/react-dropdown-menu": "2.1.24",

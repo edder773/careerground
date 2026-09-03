@@ -18,9 +18,9 @@ if (run.status !== 0) {
 const report = JSON.parse(run.stdout);
 const budgets = {
   jobsCursor: { p95Ms: 250, responseBytes: 80_000, dbQueryCount: 8 },
+  jobsCompanySearch: { p95Ms: 250, responseBytes: 80_000, dbQueryCount: 8 },
   codingProblemsCursor: { p95Ms: 150, responseBytes: 40_000, dbQueryCount: 8 },
-  favoriteProblems: { p95Ms: 150, responseBytes: 40_000, dbQueryCount: 8 },
-  search: { p95Ms: 150, responseBytes: 20_000, dbQueryCount: 5 },
+  codingSqlFilter: { p95Ms: 150, responseBytes: 40_000, dbQueryCount: 8 },
 };
 const failures = [];
 for (const [name, limits] of Object.entries(budgets)) {

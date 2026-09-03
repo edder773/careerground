@@ -2,7 +2,6 @@
 import { performance } from 'node:perf_hooks';
 import { handleD1Api } from '../../deployment/sites/d1-api.ts';
 import { LocalD1 } from '../../deployment/sites/local-d1.ts';
-import { createGoogleTestSession } from './google-test-session.mjs';
 
 const sizes = {
   jobs: 50_000,
@@ -12,25 +11,12 @@ const now = '2026-08-13T00:00:00.000Z';
 const db = new LocalD1();
 const env = {
   DB: db,
-  ADMIN_EMAILS: '',
-  AUTH_TEST_MODE: 'true',
-  MAX_ACTIVE_USERS: '100',
   REQUEST_LOGGING: 'false',
 };
-const sessionCookie = await createGoogleTestSession(env, {
-  subject: 'performance-user',
-  email: 'performance@example.test',
-  displayName: 'Performance User',
-});
-const headers = { cookie: sessionCookie };
 
 async function api(path) {
-  return handleD1Api(new Request(`https://benchmark.invalid/api/v1${path}`, { headers }), env);
+  return handleD1Api(new Request(`https://benchmark.invalid/api/v1${path}`), env);
 }
-
-const auth = await api('/auth/me');
-if (!auth.ok) throw new Error(`benchmark user setup failed: ${auth.status}`);
-await auth.arrayBuffer();
 
 async function insertChunks(count, makeStatements, chunkSize = 500) {
   for (let start = 0; start < count; start += chunkSize) {
@@ -70,14 +56,15 @@ await insertChunks(sizes.codingProblems, (index) => [
   db
     .prepare(
       `INSERT INTO coding_problems
-       (id, source_url, display_title, level, tags, position, active, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)`,
+       (id, source_url, display_title, level, track, tags, position, active, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
     )
     .bind(
       `perf-problem-${index}`,
       `https://benchmark.invalid/problems/${index}`,
       `Synthetic problem ${index}`,
       index % 6,
+      index % 2 ? 'ALGORITHM' : 'SQL',
       JSON.stringify(['synthetic']),
       index,
       now,
@@ -121,10 +108,10 @@ const metrics = {
   jobs: await measure('/jobs'),
   jobsCursor: await measure('/jobs?page=cursor&limit=40'),
   jobsFilter: await measure('/jobs?category=BACKEND'),
+  jobsCompanySearch: await measure('/jobs?q=Company&page=cursor&limit=40'),
   codingProblems: await measure('/coding/problems'),
   codingProblemsCursor: await measure('/coding/problems?page=cursor&limit=60'),
-  favoriteProblems: await measure('/coding/problems?page=cursor&limit=60&favorites=1'),
-  search: await measure('/search?q=Synthetic'),
+  codingSqlFilter: await measure('/coding/problems?page=cursor&limit=60&track=SQL'),
 };
 const payloadReductionPercent = (legacy, cursor) =>
   Number((100 - (cursor.responseBytes / legacy.responseBytes) * 100).toFixed(1));

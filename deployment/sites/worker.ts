@@ -1,4 +1,4 @@
-import { handleD1Api, runScheduledMaintenance } from './d1-api.js';
+import { handleD1Api } from './d1-api.js';
 import type { D1Database } from './d1.js';
 import { ensureRuntimeSchema } from './runtime-schema.js';
 
@@ -7,22 +7,14 @@ type Fetcher = { fetch(request: Request): Promise<Response> };
 type SitesEnv = {
   ASSETS: Fetcher;
   DB?: D1Database;
-  ADMIN_EMAILS?: string;
-  AUTH_TEST_MODE?: string;
   DIGEST_API_TOKEN?: string;
   PUBLISH_API_TOKEN?: string;
-  MAX_ACTIVE_USERS?: string;
   REQUEST_LOGGING?: string;
 };
 
 type SitesExecutionContext = {
   waitUntil(promise: Promise<unknown>): void;
   passThroughOnException(): void;
-};
-
-type SitesScheduledController = {
-  cron: string;
-  scheduledTime: number;
 };
 
 const json = (body: unknown, status = 200) =>
@@ -95,17 +87,6 @@ const worker = {
     if (!acceptsHtml) return withSecurityHeaders(asset);
     return withSecurityHeaders(
       await env.ASSETS.fetch(new Request(new URL('/', request.url), request)),
-    );
-  },
-  async scheduled(
-    _controller: SitesScheduledController,
-    env: SitesEnv,
-    context: SitesExecutionContext,
-  ) {
-    const db = env.DB;
-    if (!db) return;
-    context.waitUntil(
-      ensureRuntimeSchema(db).then(() => runScheduledMaintenance({ ...env, DB: db })),
     );
   },
 };

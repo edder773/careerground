@@ -116,19 +116,14 @@ describe('CareerGround v5 discovery production boundary', () => {
 
   afterEach(() => db.close());
 
-  it('publishes only new ACTIVE jobs, preserves saved_jobs, and is idempotent', async () => {
+  it('publishes only new ACTIVE jobs and is idempotent', async () => {
     const input = await request(now);
-    const before = await first<{ jobs: number; saved: number }>(
-      db,
-      `SELECT (SELECT COUNT(*) FROM jobs) AS jobs,
-              (SELECT COUNT(*) FROM saved_jobs) AS saved`,
-    );
+    const before = await first<{ jobs: number }>(db, 'SELECT COUNT(*) AS jobs FROM jobs');
     const published = await publishDiscoveryBundle(db, input, now);
     const repeated = await publishDiscoveryBundle(db, input, now);
-    const after = await first<{ jobs: number; saved: number; batches: number }>(
+    const after = await first<{ jobs: number; batches: number }>(
       db,
       `SELECT (SELECT COUNT(*) FROM jobs) AS jobs,
-              (SELECT COUNT(*) FROM saved_jobs) AS saved,
               (SELECT COUNT(*) FROM import_batches
                 WHERE id = ?) AS batches`,
       `jobs-v5-${input.runId}`,
@@ -137,13 +132,11 @@ describe('CareerGround v5 discovery production boundary', () => {
       status: 'PUBLISHED',
       inserted: 3,
       skippedExisting: 0,
-      savedJobsUnchanged: true,
       deletedJobs: 0,
     });
     expect(repeated).toMatchObject({ status: 'ALREADY_PUBLISHED', inserted: 3 });
     expect(after).toEqual({
       jobs: Number(before?.jobs || 0) + 3,
-      saved: Number(before?.saved || 0),
       batches: 1,
     });
   });
