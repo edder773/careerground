@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 
-export type FavoriteItemType = 'JOB_POSTING' | 'CODING_PROBLEM' | 'LEARNING_UNIT';
+export type FavoriteItemType = 'JOB_POSTING' | 'CODING_PROBLEM';
 
 export type LocalFavorite = {
   itemType: FavoriteItemType;
@@ -33,7 +33,7 @@ function parseFavorites(raw: string): LocalFavorite[] {
       if (!value || typeof value !== 'object') continue;
       const candidate = value as Partial<LocalFavorite>;
       if (
-        !['JOB_POSTING', 'CODING_PROBLEM', 'LEARNING_UNIT'].includes(String(candidate.itemType)) ||
+        !['JOB_POSTING', 'CODING_PROBLEM'].includes(String(candidate.itemType)) ||
         typeof candidate.targetId !== 'string' ||
         typeof candidate.label !== 'string' ||
         typeof candidate.href !== 'string'

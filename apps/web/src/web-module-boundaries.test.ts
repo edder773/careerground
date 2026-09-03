@@ -23,7 +23,6 @@ describe('web module boundaries', () => {
       "@import './styles/workspace.css';",
       "@import './styles/workflows.css';",
       "@import './styles/jobs.css';",
-      "@import './styles/learning-library.css';",
       "@import './styles/final-overrides.css';",
     ];
 

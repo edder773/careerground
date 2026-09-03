@@ -1468,10 +1468,11 @@
     margin: 0;
     padding: 7px 18px;
     display: block;
-    color: #777e87;
+    color: #5e6670;
     background: #fafafb;
     border-top: 1px solid #eceef1;
-    font-size: 8px;
+    font-size: 9px;
+    font-weight: 700;
   }
 }
 
@@ -1614,8 +1615,234 @@
   }
 }
 
-/* Final responsive overrides for the three-track daily set and compact learning library. */
+/* Keep the three-track coding recommendation cards balanced on wide screens. */
 .daily-challenge-grid,
 .today-problem-list {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Recruitment-first home: a large monthly working surface with a compact list alternative. */
+.workspace-calendar .page-content {
+  max-width: none;
+  padding: 8px clamp(24px, 3vw, 48px) 52px;
+}
+
+.jobs-calendar-home .jobs-heading {
+  min-height: 70px;
+  margin-bottom: 14px;
+  align-items: center;
+}
+
+.jobs-calendar-home .jobs-heading h1 {
+  margin: 4px 0;
+  font-size: clamp(30px, 3vw, 38px);
+}
+
+.jobs-calendar-home .jobs-heading p {
+  max-width: 780px;
+  font-size: 12px;
+}
+
+.jobs-calendar-home .jobs-view-switch {
+  flex: 0 0 auto;
+  background: #f1f2f5;
+  border-color: #e2e4ea;
+}
+
+.jobs-calendar-home .jobs-view-switch button {
+  min-width: 88px;
+  height: 38px;
+}
+
+.jobs-calendar-home .jobs-filter {
+  min-height: 58px;
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  gap: 8px;
+  border-color: #e1e4e9;
+  border-radius: 15px;
+  box-shadow: 0 5px 18px rgba(45, 52, 68, 0.035);
+}
+
+.jobs-calendar-home .job-search-field {
+  min-width: 250px;
+  flex: 1 1 300px;
+  gap: 9px;
+  padding: 0 12px;
+  color: #6a727c;
+  background: #f7f8fa;
+  border: 1px solid #e4e6ea;
+  border-radius: 10px;
+}
+
+.jobs-calendar-home .job-search-field > svg {
+  width: 16px;
+  flex: 0 0 auto;
+  color: #5968bd;
+}
+
+.jobs-calendar-home .job-search-field > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.jobs-calendar-home .job-search-field input {
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 0;
+  color: #303741;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font-size: 11px;
+}
+
+.jobs-calendar-home .job-search-field:focus-within {
+  background: #fff;
+  border-color: #8792d0;
+  box-shadow: 0 0 0 3px rgba(86, 101, 185, 0.12);
+}
+
+.jobs-calendar-home .jobs-list-tools {
+  margin-bottom: 10px;
+  border-color: #e1e4e9;
+  box-shadow: 0 5px 18px rgba(45, 52, 68, 0.025);
+}
+
+.jobs-calendar-home .job-calendar-panel {
+  min-height: calc(100vh - 320px);
+  border-color: #dde1e7;
+  border-radius: 18px;
+  box-shadow: 0 15px 42px rgba(45, 52, 68, 0.075);
+}
+
+.jobs-calendar-home .job-calendar-header {
+  padding: 18px 22px 12px;
+  align-items: center;
+}
+
+.jobs-calendar-home .job-calendar-header h2 {
+  font-size: clamp(25px, 2.3vw, 31px);
+}
+
+.jobs-calendar-home .job-calendar-legend {
+  padding-bottom: 12px;
+}
+
+.jobs-calendar-home .calendar-weekdays {
+  min-height: 38px;
+  align-items: center;
+}
+
+.jobs-calendar-home .calendar-day {
+  min-height: 132px;
+  padding: 8px 7px;
+}
+
+.jobs-calendar-home .calendar-job {
+  height: 27px;
+  padding-inline: 7px;
+  border-radius: 6px;
+}
+
+.jobs-calendar-home .calendar-more {
+  min-height: 26px;
+}
+
+.jobs-calendar-home .job-card-schedule,
+.jobs-calendar-home .job-modal-schedule {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+  .workspace-calendar .page-content {
+    padding: 20px 18px 100px;
+  }
+
+  .jobs-calendar-home .jobs-heading {
+    min-height: 0;
+  }
+
+  .jobs-calendar-home .calendar-day {
+    min-height: 118px;
+  }
+}
+
+@media (max-width: 640px) {
+  .workspace-calendar .page-content {
+    padding: 18px 13px 96px;
+  }
+
+  .jobs-calendar-home .jobs-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+
+  .jobs-calendar-home .jobs-heading h1 {
+    font-size: 30px;
+  }
+
+  .jobs-calendar-home .jobs-heading p {
+    display: none;
+  }
+
+  .jobs-calendar-home .jobs-view-switch {
+    width: auto;
+  }
+
+  .jobs-calendar-home .jobs-view-switch button {
+    min-width: 64px;
+    height: 36px;
+    padding-inline: 9px;
+  }
+
+  .jobs-calendar-home .jobs-filter {
+    align-items: stretch;
+  }
+
+  .jobs-calendar-home .job-search-field {
+    min-width: 100%;
+    flex-basis: 100%;
+  }
+
+  .jobs-calendar-home .job-filter-trigger {
+    min-height: 38px;
+  }
+
+  .jobs-calendar-home .jobs-list-tools {
+    padding: 10px;
+  }
+
+  .jobs-calendar-home .job-calendar-header {
+    padding: 15px 16px 11px;
+  }
+
+  .jobs-calendar-home .job-calendar-header h2 {
+    font-size: 23px;
+  }
+
+  .jobs-calendar-home .job-calendar-legend {
+    padding: 0 16px 11px;
+    flex-wrap: wrap;
+  }
+
+  .jobs-calendar-home .job-calendar-panel {
+    min-height: 560px;
+    border-radius: 16px;
+  }
+
+  .jobs-calendar-home .job-calendar {
+    min-width: 760px;
+  }
+
+  .jobs-calendar-home .job-card-schedule,
+  .jobs-calendar-home .job-modal-schedule {
+    grid-template-columns: 1fr;
+  }
 }

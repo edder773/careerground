@@ -41,3 +41,9 @@
   color: var(--muted);
   font-size: 0.78rem;
 }
+
+@media (max-width: 900px) {
+  .bottom-nav {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

@@ -3,65 +3,30 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
-const normalizedSource = (path: string) => readFileSync(path, 'utf8').replaceAll('\r\n', '\n');
-const css = [
-  'foundation.css',
-  'workspace.css',
-  'workflows.css',
-  'jobs.css',
-  'learning-library.css',
-  'final-overrides.css',
-]
-  .map((file) => normalizedSource(`${repositoryRoot}apps/web/src/styles/${file}`))
-  .join('\n');
-const home = normalizedSource(`${repositoryRoot}apps/web/src/pages/HomePage.tsx`);
-const homeCss = normalizedSource(`${repositoryRoot}apps/web/src/styles/home.css`);
-const jobs = normalizedSource(`${repositoryRoot}apps/web/src/pages/JobsPage.tsx`);
-const learning = normalizedSource(`${repositoryRoot}apps/web/src/pages/LearningPage.tsx`);
-const polish = css.slice(css.indexOf('/* Cohesive UI polish'));
+const source = (path: string) => readFileSync(path, 'utf8').replaceAll('\r\n', '\n');
+const jobsCss = source(`${repositoryRoot}apps/web/src/styles/jobs.css`);
+const shellCss = source(`${repositoryRoot}apps/web/src/styles/shell.css`);
+const shell = source(`${repositoryRoot}apps/web/src/components/AppShell.tsx`);
+const jobs = source(`${repositoryRoot}apps/web/src/pages/JobsPage.tsx`);
 
-describe('UI polish responsive contracts', () => {
-  it('keeps the 1440×900 desktop hierarchy explicit', () => {
-    expect(polish).toContain(
-      'grid-template-columns: minmax(460px, 1.8fr) repeat(2, minmax(160px, 0.55fr))',
-    );
-    expect(polish).toContain('grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr)');
-    expect(polish).toContain('.jobs-page .job-actions {\n  width: 132px;');
-    expect(polish).toContain(
-      '.jobs-page .job-actions .folder-save-trigger,\n.jobs-page .job-actions > button,\n.jobs-page .job-actions > a {\n  width: 100%;',
-    );
-    expect(polish).toContain('grid-column: 1 / -1;\n  grid-row: 2;');
-    expect(polish).toContain('text-overflow: clip;\n  white-space: normal;');
-    expect(home).toContain('className="favorite-shortcuts"');
-    expect(homeCss).toContain('.favorites-today-strip {\n  grid-template-columns: minmax(0, 1fr);');
-    expect(homeCss).toContain('max-width: 760px;\n  margin-bottom: 24px;');
-    expect(homeCss).toContain(
-      '.favorites-home .today-feature .today-problem-list a {\n  min-height: 36px;',
-    );
-    expect(homeCss).toContain(
-      '.favorite-shortcuts {\n  margin-bottom: 16px;\n  display: grid;\n  grid-template-columns: repeat(2, minmax(0, 1fr));',
-    );
-    expect(homeCss).toContain('.favorite-shortcuts > a {\n  min-height: 70px;');
-    expect(home).not.toContain('className="today-summary-link"');
-    expect(home).not.toContain('className="virtual-folders"');
-    expect(home).not.toContain('폴더 만들기');
-    expect(jobs).not.toContain('FolderSaveButton');
-    expect(home).not.toContain('오늘 복습');
-    expect(home).not.toContain('복습 예정');
-    expect(learning).not.toContain(
-      'api<Array<{ unitId: string; title: string; sourceTitle: string',
-    );
-    expect(learning).not.toContain('className="learning-due-copy"');
+describe('recruitment-first responsive contracts', () => {
+  it('keeps the large desktop calendar and the four-destination shell explicit', () => {
+    expect(jobs).toContain("searchParams.get('view') === 'list' ? 'list' : 'calendar'");
+    expect(jobsCss).toContain('.jobs-calendar-home .calendar-day');
+    expect(jobsCss).toContain('min-height: 132px;');
+    expect(shell).toContain("{ to: '/', label: '채용공고'");
+    expect(shell).toContain("{ to: '/coding', label: '코딩테스트'");
+    expect(shell).toContain("{ to: '/favorites', label: '즐겨찾기'");
+    expect(shell).toContain("label: '자격증'");
+    expect(shell).not.toContain("label: '학습'");
+    expect(shell).not.toContain('전체 검색');
   });
 
-  it('keeps the 375×812 mobile reflow explicit', () => {
-    const mobile = polish.slice(polish.indexOf('@media (max-width: 640px)'));
-    expect(mobile).toContain('grid-template-columns: repeat(2, minmax(0, 1fr))');
-    expect(mobile).toContain('grid-column: 1 / -1');
-    const homeMobile = homeCss.slice(homeCss.indexOf('@media (max-width: 720px)'));
-    expect(homeMobile).toContain(
-      '.favorite-shortcuts,\n  .favorite-item-grid {\n    grid-template-columns: 1fr;',
-    );
-    expect(mobile).toContain('.jobs-page .job-actions {\n    grid-template-columns: 1fr;');
+  it('keeps the 375×812 mobile calendar scrollable inside the workspace', () => {
+    const mobile = jobsCss.slice(jobsCss.lastIndexOf('@media (max-width: 640px)'));
+    expect(jobsCss).toContain('.job-calendar-scroll {\n  overflow-x: auto;');
+    expect(mobile).toContain('min-width: 760px;');
+    expect(jobsCss).toContain('.jobs-calendar-home .calendar-day {\n    min-height: 118px;');
+    expect(shellCss).toContain('grid-template-columns: repeat(4, minmax(0, 1fr));');
   });
 });

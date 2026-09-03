@@ -9,6 +9,7 @@ import {
   ExternalLink,
   List,
   MapPin,
+  Search,
   SlidersHorizontal,
   X,
 } from 'lucide-react';
@@ -73,8 +74,8 @@ export function JobsPage() {
   const rawSavedFilter = searchParams.get('saved');
   const savedOnly = rawSavedFilter === '1' || rawSavedFilter === 'true';
   const requestedJob = searchParams.get('job');
+  const viewMode: ViewMode = searchParams.get('view') === 'list' ? 'list' : 'calendar';
   const [fontSize, setFontSize] = useState<JobFontSize>(initialJobFontSize);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [visibleCount, setVisibleCount] = useState(JOB_PAGE_SIZE);
   const [visibleMonth, setVisibleMonth] = useState(monthStart);
   const [selectedJobId, setSelectedJobId] = useState<string>();
@@ -201,7 +202,7 @@ export function JobsPage() {
       itemType: 'JOB_POSTING',
       targetId: job.id,
       label: `${job.company.name} — ${job.title}`,
-      href: `/jobs?job=${encodeURIComponent(job.id)}`,
+      href: `/?job=${encodeURIComponent(job.id)}`,
     });
 
   useEffect(() => {
@@ -278,7 +279,11 @@ export function JobsPage() {
   }, [fontSize]);
 
   const setMode = (mode: ViewMode) => {
-    setViewMode(mode);
+    updateSearchParams((next) => {
+      if (mode === 'list') next.set('view', 'list');
+      else next.delete('view');
+      next.delete('job');
+    });
     setSelectedJobId(undefined);
     setRollingOpen(false);
     setExpandedDateKey(undefined);
@@ -299,16 +304,14 @@ export function JobsPage() {
   };
 
   return (
-    <div className="jobs-page" data-font-size={fontSize}>
+    <div className="jobs-page jobs-calendar-home" data-font-size={fontSize} data-view={viewMode}>
       <section className="page-heading jobs-heading">
         <div>
           <span className="eyebrow">
             <CalendarDays size={15} /> 신입 채용 일정
           </span>
-          <h1>신입 IT 채용공고</h1>
-          <p>
-            달력에는 접수 시작일과 마감일만 표시하며, 확인되지 않은 날짜는 임의로 대체하지 않습니다.
-          </p>
+          <h1>채용 캘린더</h1>
+          <p>신입 IT 공고의 접수 시작일과 마감일을 월별로 살펴보고, 목록으로 전환해 비교하세요.</p>
         </div>
         <div className="jobs-view-switch" role="group" aria-label="채용공고 보기 방식">
           <button
@@ -331,8 +334,9 @@ export function JobsPage() {
       </section>
 
       <div className="filter-bar jobs-filter">
-        <label>
-          회사명 검색
+        <label className="job-search-field">
+          <Search aria-hidden="true" />
+          <span>회사명 검색</span>
           <input
             type="search"
             value={companySearchInput}
@@ -342,8 +346,9 @@ export function JobsPage() {
         </label>
         {viewMode === 'list' && (
           <>
-            <label>
-              공고 검색
+            <label className="job-search-field">
+              <Search aria-hidden="true" />
+              <span>공고 검색</span>
               <input
                 type="search"
                 value={searchInput}
@@ -536,7 +541,9 @@ export function JobsPage() {
                                 aria-label={`${job.company.name} ${job.title} ${calendarEventLabels[type]} 상세 보기`}
                                 onClick={() => openJob(job.id)}
                               >
-                                <span>{calendarEventLabels[type]}</span>
+                                <span aria-hidden="true">
+                                  {type === 'application' ? '시작' : '마감'}
+                                </span>
                                 <strong>{job.company.name}</strong>
                               </button>
                             ))}
@@ -647,10 +654,6 @@ export function JobsPage() {
                       </span>
                     </div>
                     <div className="job-card-schedule" aria-label={`${job.title} 주요 일정`}>
-                      <div className="schedule-published">
-                        <span>등록일</span>
-                        <strong>{latestLabel(job.publishedAt)}</strong>
-                      </div>
                       <div className="schedule-application">
                         <span>접수 시작일</span>
                         <strong>{latestLabel(job.applicationStartAt)}</strong>

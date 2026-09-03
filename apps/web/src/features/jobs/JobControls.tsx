@@ -77,10 +77,6 @@ export function JobDetailModal({
               <p>{job.summary}</p>
             </div>
             <div className="job-modal-schedule" aria-label="채용 일정">
-              <div className="schedule-published">
-                <span>등록일</span>
-                <strong>{job.publishedAt ? deadlineLabel(job.publishedAt) : '확인 필요'}</strong>
-              </div>
               <div className="schedule-application">
                 <span>접수 시작일</span>
                 <strong>

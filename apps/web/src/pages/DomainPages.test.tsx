@@ -2,7 +2,6 @@ import { cleanup, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { JobsPage } from './JobsPage';
-import { LearningPage } from './LearningPage';
 import { renderPage, response } from '../test/render';
 
 describe('domain pages', () => {
@@ -63,6 +62,7 @@ describe('domain pages', () => {
     expect(await screen.findByText('1개 공고')).toBeInTheDocument();
     await user.clear(companySearch);
     expect(await screen.findByText('2개 공고')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '목록' }));
     await user.type(await screen.findByRole('searchbox', { name: '공고 검색' }), 'backend');
     await user.click(await screen.findByRole('button', { name: '채용공고 필터' }));
     const filter = screen.getByRole('dialog', { name: '채용공고 전체 필터' });
@@ -175,6 +175,7 @@ describe('domain pages', () => {
     const user = userEvent.setup();
     renderPage(<JobsPage />);
 
+    await user.click(screen.getByRole('button', { name: '목록' }));
     expect(await screen.findByText('Example Careers')).toBeInTheDocument();
     expect(screen.getByText('careers.example.com')).toBeInTheDocument();
     expect(screen.getByText(/확인일/)).toBeInTheDocument();
@@ -251,7 +252,7 @@ describe('domain pages', () => {
     const user = userEvent.setup();
     renderPage(<JobsPage />);
 
-    await user.click(await screen.findByRole('button', { name: '달력' }));
+    await screen.findByRole('grid', { name: /채용 일정/ });
     await user.click(screen.getByRole('button', { name: /상시채용 확인하기/ }));
     const rollingDialog = screen.getByRole('dialog', { name: '상시채용 공고' });
     expect(rollingDialog).toHaveTextContent('상시회사');
@@ -268,57 +269,5 @@ describe('domain pages', () => {
       within(dayDialog).getByRole('button', { name: '일정회사 1 신입 엔지니어 1 상세 보기' }),
     );
     expect(screen.getByRole('dialog', { name: '일정회사 1' })).toHaveTextContent('신입 엔지니어 1');
-  });
-
-  it('opens learning content without an understanding rating prompt', async () => {
-    const detail = {
-      id: '11111111-1111-4111-8111-111111111111',
-      title: '포커스',
-      summary: '# 포커스의 핵심\n\n키보드 사용자가 흐름을 놓치지 않게 설계합니다.',
-      concepts: ['키보드'],
-      visuals: [],
-      flashcards: [{ id: 'f', front: '포커스란?', back: '현재 입력 위치입니다.' }],
-      questions: [{ id: 'q', prompt: '왜 필요한가요?', attempts: [] }],
-      progress: [],
-    };
-    const source = [
-      {
-        id: 's',
-        title: '접근성 기초',
-        subject: '웹',
-        category: '접근성',
-        units: [
-          {
-            id: '11111111-1111-4111-8111-111111111111',
-            title: '포커스',
-            summaryPreview: detail.summary,
-            flashcardCount: 1,
-            questionCount: 1,
-            progress: [],
-          },
-        ],
-      },
-    ];
-    vi.stubGlobal(
-      'fetch',
-      vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
-        const url = String(input);
-        const body = init?.body ? JSON.parse(String(init.body)) : undefined;
-        calls.push({ url, method: init?.method || 'GET', body });
-        if (url.endsWith('/learning')) return response(source);
-        if (url.endsWith('/learning/due')) return response([]);
-        if (url.endsWith(`/learning/units/${detail.id}`)) return response(detail);
-        return response({});
-      }),
-    );
-    const user = userEvent.setup();
-    renderPage(<LearningPage />);
-    expect(screen.queryByRole('button', { name: /학습 시작|이해도 4점/ })).not.toBeInTheDocument();
-    await user.click(await screen.findByRole('button', { name: '포커스 내용 보기' }));
-    expect(screen.getByRole('dialog', { name: '포커스' })).toHaveTextContent('포커스의 핵심');
-    expect(screen.getByText('포커스란?')).toBeInTheDocument();
-    expect(screen.queryByText('이 단원을 얼마나 이해했나요?')).not.toBeInTheDocument();
-    expect(screen.queryByRole('group', { name: /이해도 기록/ })).not.toBeInTheDocument();
-    expect(calls.some((call) => call.url.endsWith('/learning/review'))).toBe(false);
   });
 });

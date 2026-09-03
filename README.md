@@ -1,6 +1,6 @@
 # CareerGround
 
-학습·신입 IT 채용·코딩 문제를 누구나 바로 둘러보는 공개 성장 워크스페이스다. 외부 사이트를 크롤링하지 않고 검증된 JSON/CSV를 순방향 migration으로 반영하며, 코딩테스트는 오늘의 추천·전체 문제·즐겨찾기와 프로그래머스 원문 링크만 제공한다. 브랜드 기본값은 `packages/config`와 `APP_NAME`/`VITE_APP_NAME` 환경 변수로 관리한다.
+신입 IT 채용 일정과 코딩 문제를 누구나 바로 둘러보는 공개 커리어 워크스페이스다. 첫 화면은 월별 대형 채용 달력이며 목록 보기, 회사명 검색, 복수 필터, 공고 즐겨찾기를 함께 제공한다. 코딩테스트는 오늘의 추천·전체 문제·즐겨찾기와 프로그래머스 원문 링크만 제공하고, 자격증 메뉴는 배움집으로 연결한다. 외부 사이트를 런타임에 크롤링하지 않고 검증된 JSON을 순방향 migration으로 반영한다.
 
 ## 기술 스택과 버전
 
@@ -25,7 +25,7 @@ pnpm dev
 - D1 API: <http://localhost:4000/api/v1>
 - 문서 사이트: `pnpm docs:dev` → <http://localhost:5174>
 
-로그인과 계정 설정은 제공하지 않는다. 채용·학습·코딩 공통 데이터는 익명으로 조회할 수 있고, 관심 공고·코딩 문제·학습자료 즐겨찾기는 현재 브라우저의 `localStorage`에만 저장된다. 따라서 브라우저나 기기를 바꾸면 즐겨찾기가 동기화되지 않는다.
+로그인과 계정 설정은 제공하지 않는다. 채용·코딩 공통 데이터는 익명으로 조회할 수 있고, 관심 공고와 코딩 문제 즐겨찾기는 현재 브라우저의 `localStorage`에만 저장된다. 따라서 브라우저나 기기를 바꾸면 즐겨찾기가 동기화되지 않는다.
 
 ## 필수 명령
 
@@ -38,7 +38,6 @@ pnpm test                # unit/component/provider mock
 pnpm test:e2e            # 격리된 메모리 D1 + 공통 seed Playwright
 pnpm db:d1:generate      # db/schema.ts 변경으로 D1 migration 생성
 pnpm jobs:catalog:refresh <baseline.json> <input.json> <output.sql>
-pnpm learning:catalog:generate
 pnpm docs:dev
 pnpm docs:build
 ```
@@ -58,7 +57,7 @@ pnpm docs:build
 
 - 채용 스키마: `docs/operations/job-import-schema.md`
 - ChatGPT Work 수집 프롬프트: `docs/operations/job-collection-work-prompt.md`
-- 학습 package 프롬프트: `docs/operations/learning-import-prompt.md`
+- 과거 학습 데이터와 가져오기 문서는 운영 이력 보존을 위해 저장소에 남아 있지만 현재 웹 탐색 경로에서는 제공하지 않는다.
 
 ## 오늘의 문제와 cron
 
@@ -66,11 +65,11 @@ pnpm docs:build
 
 ## 화면 방향
 
-요청 시 제공된 Finder 참고 이미지의 공간 구조만 사용했다. 데스크톱에서는 화면 가장자리에 7–8px 여백을 두고, 좌측 사이드바와 작업 영역을 하나의 둥근 창으로 묶었다. 플랫폼 고유 asset은 복제하지 않았으며 중립적인 graphite 색과 CareerGround 고유 accent, 자체 컴포넌트로 재해석했다.
+요청 시 제공된 Finder 참고 이미지의 공간 구조만 사용했다. 데스크톱에서는 화면 가장자리에 7–8px 여백을 두고, 좌측 사이드바와 작업 영역을 하나의 둥근 창으로 묶었다. 첫 화면은 월별 채용 일정을 크게 보여주며 URL 상태를 유지하는 달력/목록 전환을 제공한다. 다른 서비스의 플랫폼 고유 asset은 복제하지 않았으며 중립적인 graphite 색과 CareerGround 고유 accent, 자체 컴포넌트로 재해석했다.
 
-- 데스크톱: `docs/assets/mvp/home-desktop-1440.png`
-- 태블릿: `docs/assets/mvp/home-tablet-1024.png`
-- 모바일: `docs/assets/mvp/home-mobile-375.png`, `docs/assets/mvp/home-mobile-320.png`
+- 데스크톱: `docs/assets/troubleshooting/recruitment-calendar-home-2026-09-03/home-calendar-desktop-1440.webp`
+- 목록·필터: `docs/assets/troubleshooting/recruitment-calendar-home-2026-09-03/jobs-list-filter-desktop-1440.webp`
+- 모바일: `docs/assets/troubleshooting/recruitment-calendar-home-2026-09-03/home-calendar-mobile-375.webp`
 
 ## AI 트러블슈팅 자동화
 
@@ -99,7 +98,6 @@ pnpm troubleshoot:validate --file docs/troubleshooting/2026-08-12-pr-123-evidenc
 
 ## 알려진 초기 제한
 
-- 프로덕션 S3 adapter와 실제 학습 AI worker는 환경별 자격증명·인프라가 필요한 feature flag 경계까지 구현되어 있다. 로컬 storage와 구조화 package import는 완전 동작한다.
 - 인앱·이메일·푸시 알림은 제공하지 않는다. 별도 운영 기능인 Slack 일일 요약만 유지한다.
 - 코드 실행과 정답 판정은 제공하지 않는다. 프로그래머스에서 수행한다.
-- 검색은 10명 규모를 전제로 D1 FTS5와 보조 index를 사용한다. 별도 검색엔진과 Redis는 없다.
+- 채용 검색은 브라우저에 내려받은 검증 카탈로그에서 회사명·공고명 기준으로 수행한다. 별도 검색엔진과 Redis는 없다.
