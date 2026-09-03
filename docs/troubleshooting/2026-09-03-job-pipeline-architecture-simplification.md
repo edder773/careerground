@@ -3,8 +3,8 @@ title: 채용 검증 정책 중복과 Slack 다중 예약 단순화
 date: 2026-09-03
 tags: [jobs-v5, slack, architecture, reliability]
 generatedByAI: false
-pr: pending
-commit: pending
+pr: 132
+commit: c2b6aa05c09e5e84468f2a1950cba28d0485104a
 evidence: docs/evidence/jobs-pipeline-simplification-2026-09-03.json
 ---
 
