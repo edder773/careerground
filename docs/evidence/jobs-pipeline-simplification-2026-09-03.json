@@ -1,0 +1,84 @@
+{
+  "schema": "careerground-jobs-pipeline-simplification-evidence/v1",
+  "capturedAt": "2026-09-03T01:35:29Z",
+  "baseline": {
+    "scheduledCronTriggers": 9,
+    "canonicalEnumPolicySources": 2,
+    "digestWorkflowLines": 280,
+    "focusedRegression": {
+      "testFilesPassed": 6,
+      "testsPassed": 73
+    }
+  },
+  "after": {
+    "scheduledCronTriggers": 2,
+    "scheduleKst": ["07:55 reservation for 08:01", "08:31 watchdog"],
+    "canonicalEnumPolicySources": 1,
+    "digestWorkflowLines": 169,
+    "incidentAdapterLines": 48,
+    "preservedEventTriggers": ["jobs-v5-published", "Production SLO smoke completed"],
+    "preservedSafetyGates": [
+      "canonical id and URL collision rejection",
+      "new ACTIVE rows only",
+      "jobs UPDATE and DELETE prohibited",
+      "saved_jobs mutation prohibited",
+      "atomic daily delivery claim",
+      "SENT resend rejection",
+      "UNCERTAIN automatic retry rejection"
+    ]
+  },
+  "productionInputRegression": {
+    "targetAsOfDate": "2026-09-02",
+    "partitionCount": 3,
+    "rowCount": 37,
+    "enumNormalizations": 63,
+    "potentialDuplicateCount": 0,
+    "productionDatabaseChanged": false,
+    "slackSent": false
+  },
+  "verification": {
+    "focusedRegression": {
+      "testFilesPassed": 7,
+      "testsPassed": 76,
+      "status": "pass"
+    },
+    "fullUnitIntegration": {
+      "contractsTestsPassed": 10,
+      "webTestsPassed": 23,
+      "rootTestsPassed": 253,
+      "totalTestsPassed": 286,
+      "status": "pass"
+    },
+    "e2e": {
+      "testsPassed": 34,
+      "browsers": ["Chromium", "Firefox", "WebKit", "Chromium mobile 375px"],
+      "status": "pass"
+    },
+    "checks": {
+      "format": "pass",
+      "lint": "pass",
+      "typecheck": "pass",
+      "productionBuild": "pass",
+      "yamlParse": "pass",
+      "highSeverityDependencyAudit": "pass"
+    },
+    "bundleBudget": {
+      "initialRouteGzipBytes": 141165,
+      "largestJavaScriptGzipBytes": 71660,
+      "largestCssGzipBytes": 21124,
+      "failures": 0
+    },
+    "performanceBudget": {
+      "runtime": "LocalD1 synthetic fixture",
+      "jobsCursorP95Ms": 4.51,
+      "searchP95Ms": 29.39,
+      "failures": 0
+    },
+    "liveSlackMessagesDuringValidation": 0,
+    "productionDatabaseRowsChangedDuringValidation": 0
+  },
+  "limitations": [
+    "GitHub Actions scheduled events can still be delayed or omitted by the provider.",
+    "The 08:31 watchdog and two independent event triggers reduce, but cannot mathematically eliminate, provider-level schedule omission."
+  ]
+}

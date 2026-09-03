@@ -1,22 +1,23 @@
 # Slack 일일 요약 운영
 
-CareerGround는 GitHub Actions에서 평일 오전 8시 1분(Asia/Seoul, 대한민국 공휴일 제외)을 목표로 운영 Sites API를 조회하고 Slack Incoming Webhook으로 요약을 전송한다. 08:11부터 08:51까지 10분 간격 fallback과 09:17 최종 시도, Production SLO 완료, v5 게시 완료 이벤트가 같은 D1 claim을 재확인한다. 실행 장비가 GitHub이므로 개인 Mac이 꺼져 있어도 동작한다.
+CareerGround는 GitHub Actions에서 평일 오전 8시 1분(Asia/Seoul, 대한민국 공휴일 제외)을 목표로 운영 Sites API를 조회하고 Slack Incoming Webhook으로 요약을 전송한다. 07:55에 runner를 한 번 예약해 08:01까지 대기시키고, 08:31 감시 실행과 Production SLO 완료·v5 게시 완료 이벤트가 같은 D1 claim을 재확인한다. 실행 장비가 GitHub이므로 개인 Mac이 꺼져 있어도 동작한다.
 
 GitHub Actions 예약 실행은 정확한 시각을 보장하지 않고 높은 부하에서는 지연되거나 누락될 수
-있다. 단일 예약 실패가 하루 알림 누락으로 이어지지 않도록 08:11~08:51과 09:17에 독립 fallback을
-등록한다. 모든 실행은 D1의 같은 `daily:YYYY-MM-DD` 발송 키를 claim하므로 먼저 성공한 한 번만
+있다. 정각 부하를 피하는 07:55 선점 예약, 08:31 예약 감시, 서로 독립적인 SLO·게시 완료 이벤트를
+결합한다. 모든 실행은 D1의 같은 `daily:YYYY-MM-DD` 발송 키를 claim하므로 먼저 성공한 한 번만
 Slack을 호출한다.
 
 예약 workflow run 자체가 누락되는 경우를 대비해 독립적으로 실행되는 `Production SLO smoke`의
-성공 완료 이벤트도 watchdog 입력으로 사용한다. watchdog은 08:01~10:30 KST에만 동작한다. 08:31
-전에는 신규 jobs import를 요구하고, 이후에는 코딩 문제 알림을 잃지 않도록 준비 gate 없이
-시도한다. 모든 경로가 같은 D1 발송 키를 사용하므로 실제 Slack 전송은 하루 한 번이다.
+성공 완료 이벤트도 감시 입력으로 사용한다. 이벤트 입력은 08:01~10:30 KST에만 동작하며 08:31
+전에는 신규 jobs import를 요구한다. 08:31 예약 감시는 코딩 문제 알림을 잃지 않도록 준비 gate
+없이 최종 시도한다. 모든 경로가 같은 D1 발송 키를 사용하므로 실제 Slack 전송은 하루 한 번이다.
 
-- 08:01~08:41 fallback: 직전 성공한 일일 Slack 알림 이후 `jobs` 또는 v5 `jobs-v5` import가 새로
-  `COMMITTED`됐는지 먼저 확인한다. 전날 저녁 수집 결과도 정상적인 신규 import로 인정한다. 준비되지
-  않았으면 발송 키를 만들지 않고 다음 fallback에 맡긴다.
-- 08:51·09:17: 그날 수집 결과가 0건이거나 외부 수집이 계속 지연돼도 코딩 문제 알림을 잃지 않도록
-  준비 상태 gate 없이 최종 시도한다. 늦게 반영된 공고는 다음 일일 window에 포함된다.
+- 07:55 선점 → 08:01 실행: 직전 성공한 일일 Slack 알림 이후 `jobs` 또는 v5 `jobs-v5` import가 새로
+  `COMMITTED`됐는지 확인한다. 전날 저녁 수집 결과도 정상적인 신규 import로 인정한다. 준비되지
+  않았으면 발송 키를 만들지 않는다.
+- 08:31 감시 실행: 신규 import가 없거나 외부 수집이 지연돼도 코딩 문제 알림을 잃지 않도록 준비
+  상태 gate 없이 최종 시도한다. 늦게 반영된 공고는 다음 일일 window에 포함된다.
+- 게시 완료·SLO 이벤트: 08:01~10:30 사이에만 실행하며 동일한 발송 키로 누락을 보완한다.
 
 실제로 메시지를 보냈거나 DB 준비 전 상태를 감지한 예약만 시작 시각을 08:01과 비교한다. 15분을
 초과하면 `[운영 경보] Daily Slack digest 예약 지연` 이슈를 하나만 열거나 갱신한다. 당일 import가
@@ -74,7 +75,7 @@ Slack을 보내지 않는 운영 점검은 `force=true`, `dry_run=true`, 빈 sna
 | 채용 섹션 없음                    | 정상일 수 있음. 당일 신규 비상시 공고가 없으면 코딩 문제만 전송                |
 | `delivery-blocked`                | 이전 실행이 `CLAIMED` 또는 `UNCERTAIN`인지 운영 원장을 확인                    |
 | `already-sent`                    | 같은 기준일·스냅샷이 이미 전송된 정상적인 중복 차단                            |
-| `job-import-not-ready`            | 직전 성공 알림 이후 채용 import 미완료. 발송 키 없이 다음 fallback이 재확인    |
+| `job-import-not-ready`            | 직전 성공 알림 이후 채용 import 미완료. 발송 키 없이 08:31 감시가 재확인       |
 | 예약 실행 15분 초과               | schedule delay artifact와 GitHub Actions queue 상태를 확인                     |
 | 예약 run 자체가 없음              | `Production SLO smoke` 완료 watchdog run과 D1의 `daily:YYYY-MM-DD` 상태를 확인 |
 

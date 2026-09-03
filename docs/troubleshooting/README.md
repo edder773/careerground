@@ -60,6 +60,7 @@ generatedByAI: false
 | 08-31 | [Slack 채용공고 반복 전송과 예약 지연 무결성 개선](./2026-08-31-slack-repeat-and-schedule-integrity.md)       | 이번 변경                                               | 반복 4캠페인·영속 원장·예약 다중 기동     |
 | 09-02 | [Slack 예약 이벤트 누락과 선점형 실행 슬롯](./2026-09-02-slack-early-reservation-trigger.md)                  | 이번 변경                                               | 09:08 복구 10건·07:45/07:55 선점          |
 | 09-03 | [Jobs v5 enum 계약 불일치와 Slack 복구](./2026-09-03-jobs-v5-enum-contract-and-slack-recovery.md)             | 이번 변경                                               | 37건 검증·21건 제외·16건 신규 전송        |
+| 09-03 | [채용 검증 정책 중복과 Slack 다중 예약 단순화](./2026-09-03-job-pipeline-architecture-simplification.md)      | 이번 변경                                               | cron 9→2, enum 정책 원천 2→1              |
 
 Dependabot PR #4는 pnpm 11/Node 24를 지원하는 `pnpm/action-setup@6` 갱신이며 별도 장애가 없어 Sites runtime 문서의 도구 체인 맥락에 포함했다. PR #3 이전의 닫힌 #1/#2는 구현이 병합되지 않았으므로 운영 변경 기록에 포함하지 않았다.
 

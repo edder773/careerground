@@ -167,18 +167,19 @@ describe('daily Slack digest', () => {
     expect(rendered).not.toContain('오늘의 코딩 테스트');
   });
 
-  it('reserves off-peak runners before 08:01 and keeps fallback schedules in Seoul', async () => {
+  it('uses one off-peak reservation and one watchdog schedule in Seoul', async () => {
     const workflow = await readFile(
       new URL('../../.github/workflows/daily-slack-digest.yml', import.meta.url),
       'utf8',
     );
-    expect(workflow).toContain("cron: '45 7 * * 1-5'");
+    const incidentAction = await readFile(
+      new URL('../../.github/actions/sync-incident/action.yml', import.meta.url),
+      'utf8',
+    );
     expect(workflow).toContain("cron: '55 7 * * 1-5'");
-    expect(workflow).toContain("cron: '1 8 * * 1-5'");
     expect(workflow).toContain("cron: '31 8 * * 1-5'");
-    expect(workflow).toContain("cron: '17 9 * * 1-5'");
     expect(workflow).toContain("timezone: 'Asia/Seoul'");
-    expect(workflow.match(/timezone: 'Asia\/Seoul'/g)).toHaveLength(9);
+    expect(workflow.match(/timezone: 'Asia\/Seoul'/g)).toHaveLength(2);
     expect(workflow).toContain('Hold the early reservation until 08:01 KST');
     expect(workflow).toContain('node scripts/operations/hold-until-kst.mjs');
     expect(workflow).toContain('timeout-minutes: 25');
@@ -189,14 +190,17 @@ describe('daily Slack digest', () => {
     expect(workflow).toContain('SLACK_DIGEST_WINDOW_START:');
     expect(workflow).toContain('SLACK_DIGEST_FRESH_UNTIL:');
     expect(workflow).toContain('inputs.dry_run');
-    expect(workflow).toContain("github.event.schedule != '17 9 * * 1-5'");
-    expect(workflow).toContain("github.event.schedule != '51 8 * * 1-5'");
+    expect(workflow).toContain("github.event.schedule == '55 7 * * 1-5'");
     expect(workflow).toContain("&& '08:31' || ''");
     expect(workflow).toContain("github.event_name != 'workflow_dispatch'");
     expect(workflow).toContain("steps.digest.outputs.delivery_status == 'job-import-not-ready'");
     expect(workflow).toContain("steps.digest.outputs.delivery_status == 'already-sent'");
     expect(workflow).not.toContain("cron: '0 8 * * 1-5'");
     expect(workflow).not.toContain("cron: '0 7 * * 1-5'");
+    expect(workflow).not.toContain('SCHEDULE_CRON:');
+    expect(workflow.match(/uses: \.\/\.github\/actions\/sync-incident/gu)).toHaveLength(6);
+    expect(incidentAction).toContain("if (!['open', 'close'].includes(mode))");
+    expect(incidentAction).toContain("state: 'closed', state_reason: 'completed'");
   });
 
   it('skips weekends and Korean public holidays in Seoul time', () => {
