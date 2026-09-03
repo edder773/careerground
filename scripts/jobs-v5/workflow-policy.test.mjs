@@ -74,6 +74,8 @@ describe('CareerGround v5 workflow pre-cutover policy', () => {
     expect(handoff).toContain('/api/v1/internal/jobs-v5/publish');
     expect(handoff).toContain("handoff_schema_version == '2.0'");
     expect(handoff).toContain("event_type: 'jobs-v5-published'");
+    expect(handoff).toContain('if: failure()');
+    expect(handoff).toContain('[운영 경보] CareerGround v5 handoff 실패');
     expect(handoff).not.toContain('SLACK_WEBHOOK_URL');
     expect(handoff).not.toContain('DIGEST_API_TOKEN');
     expect(handoff).not.toMatch(/^\s+schedule:/mu);
@@ -89,6 +91,9 @@ describe('CareerGround v5 workflow pre-cutover policy', () => {
     expect(auditIndex).toBeLessThan(handoffIndex);
     expect(collectorPrompt).toContain('MIDSIZE_ENTERPRISE');
     expect(collectorPrompt).toContain('companySize에는 반드시 `MID`만 기록');
+    expect(collectorPrompt).toContain('PUBLIC_RESEARCH_INSTITUTE');
+    expect(collectorPrompt).toContain('신입(공개경쟁)');
+    expect(collectorPrompt).toContain('첫 오류만 확인하고 종료하지 않는다');
     expect(collectorPrompt).toContain('허용 목록 밖의 enum이 하나라도 있으면');
   });
 });

@@ -335,6 +335,31 @@ describe('CareerGround v5 discovery production boundary', () => {
     });
   });
 
+  it('rejects a non-canonical employment type at the protected publish boundary', async () => {
+    const input = await request(now);
+    input.partitions[0].items[0].employmentType = 'PERMANENT_EMPLOYEE';
+    const response = await handleD1Api(
+      new Request('https://careerground.example/api/v1/internal/jobs-v5/publish', {
+        method: 'POST',
+        headers: {
+          authorization: 'Bearer publish-secret',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify(input),
+      }),
+      {
+        DB: db,
+        REQUEST_LOGGING: 'false',
+        PUBLISH_API_TOKEN: 'publish-secret',
+      },
+    );
+    expect(response.status).toBe(422);
+    await expect(response.json()).resolves.toMatchObject({
+      code: 'PUBLISH_VALIDATION_FAILED',
+      details: { reason: expect.stringContaining('employmentType') },
+    });
+  });
+
   it('allows one previous-KST-day replay for an overnight recovery', async () => {
     const collectedAt = new Date('2026-08-31T09:00:00.000Z');
     const recoveredAt = new Date('2026-09-01T00:54:00.000Z');
