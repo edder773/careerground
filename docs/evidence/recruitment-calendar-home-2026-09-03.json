@@ -1,0 +1,64 @@
+{
+  "capturedAt": "2026-09-03T02:34:51Z",
+  "environment": "local-node-24.19.0-pnpm-11.21.0",
+  "scope": "Replace the favorites-first home with a large recruitment calendar while retaining list view, coding, certification, and local favorites",
+  "baseline": {
+    "gitCommit": "a0ec627651273cba5bcc5dade08f53d18c7345f1",
+    "primaryRoute": "favorites-oriented HomePage",
+    "sidebarDestinations": 5,
+    "activeInternalPageModules": 4,
+    "appShellLines": 427,
+    "screenshots": [
+      "docs/assets/troubleshooting/recruitment-calendar-home-2026-09-03/before-home-desktop-1440.webp",
+      "docs/assets/troubleshooting/recruitment-calendar-home-2026-09-03/before-home-mobile-375.webp"
+    ]
+  },
+  "after": {
+    "primaryRoute": "calendar-first JobsPage",
+    "defaultView": "calendar",
+    "alternateView": "list",
+    "sidebarDestinations": 4,
+    "activeInternalPageModules": 3,
+    "appShellLines": 146,
+    "retainedDestinations": ["채용공고", "코딩테스트", "자격증", "즐겨찾기"],
+    "retiredUiRoutes": ["/learning", "/notifications", "/settings", "/admin"],
+    "legacyRedirects": {
+      "/jobs": "/",
+      "/learning": "/",
+      "/solutions": "/coding",
+      "/rankings": "/coding"
+    },
+    "screenshots": [
+      "docs/assets/troubleshooting/recruitment-calendar-home-2026-09-03/home-calendar-desktop-1440.webp",
+      "docs/assets/troubleshooting/recruitment-calendar-home-2026-09-03/home-calendar-mobile-375.webp",
+      "docs/assets/troubleshooting/recruitment-calendar-home-2026-09-03/jobs-list-filter-desktop-1440.webp",
+      "docs/assets/troubleshooting/recruitment-calendar-home-2026-09-03/home-calendar-modal-desktop-1440.webp"
+    ],
+    "validation": {
+      "format": "pass",
+      "lint": "pass",
+      "typecheck": "pass",
+      "contractTests": 10,
+      "webTests": 15,
+      "rootAndOperationalTests": 253,
+      "e2eTests": 31,
+      "browsers": ["Chromium", "Firefox", "WebKit", "Chromium mobile 375x812"],
+      "axeCriticalSeriousModerateViolations": 0,
+      "productionBuild": "pass",
+      "bundleBudgetFailures": 0,
+      "initialRouteGzipBytes": 124731,
+      "largestJavaScriptGzipBytes": 71662,
+      "largestCssGzipBytes": 20996,
+      "performanceBudgetFailures": 0
+    },
+    "databaseSchemaChanges": 0,
+    "slackRequests": 0
+  },
+  "interpretation": [
+    "Navigation destination counts refer to the visible desktop sidebar under the same 1440x900 viewport.",
+    "Active page module counts include user-facing routed page components and exclude compatibility redirects.",
+    "The accessibility result comes from axe checks in the local isolated Playwright environment.",
+    "Performance metrics are local D1-compatible SQLite measurements and are not production network latency claims.",
+    "Historical learning data and migrations remain untouched to avoid destructive database changes; only the active web surface is retired."
+  ]
+}
