@@ -16,3 +16,5 @@ verifyDepsBeforeRun: warn
 overrides:
   # drizzle-kit pulls a legacy esbuild through @esbuild-kit; pin it to the patched runtime API.
   esbuild: 0.28.2
+  # ajv consumers inherit fast-uri; require the SSRF and host-confusion fixes.
+  fast-uri: 3.1.6
