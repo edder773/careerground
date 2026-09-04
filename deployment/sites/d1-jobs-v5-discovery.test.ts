@@ -141,6 +141,35 @@ describe('CareerGround v5 discovery production boundary', () => {
     });
   });
 
+  it('groups every inserted job under the shared publication snapshot timestamp', async () => {
+    const collectedAt = new Date(now.getTime() - 5 * 60_000);
+    const input = await request(collectedAt);
+
+    await publishDiscoveryBundle(db, input, now);
+
+    const snapshot = await first<{
+      createdAt: string;
+      createdAtCount: number;
+      updatedAt: string;
+      updatedAtCount: number;
+    }>(
+      db,
+      `SELECT MIN(created_at) AS createdAt,
+              COUNT(DISTINCT created_at) AS createdAtCount,
+              MIN(updated_at) AS updatedAt,
+              COUNT(DISTINCT updated_at) AS updatedAtCount
+         FROM jobs
+        WHERE source_url LIKE 'https://automation-%'`,
+    );
+
+    expect(snapshot).toEqual({
+      createdAt: now.toISOString(),
+      createdAtCount: 1,
+      updatedAt: now.toISOString(),
+      updatedAtCount: 1,
+    });
+  });
+
   it('rolls back a failed staging batch without changing jobs or publication ledgers', async () => {
     const input = await request(now);
     const before = await first<{ jobs: number }>(db, 'SELECT COUNT(*) AS jobs FROM jobs');
