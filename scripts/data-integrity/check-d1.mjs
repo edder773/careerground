@@ -44,10 +44,25 @@ const checks = {
     WHERE delivery.delivery_key IS NULL OR delivery.status <> 'SENT'
        OR length(trim(item.company_key)) = 0 OR length(trim(item.campaign_key)) = 0
        OR length(trim(item.role_key)) = 0 OR length(trim(item.source_url)) = 0`,
+  invalidSlackDigestReservations: `SELECT COUNT(*) AS count
+    FROM slack_digest_job_reservations reservation
+    LEFT JOIN slack_digest_deliveries delivery ON delivery.delivery_key = reservation.delivery_key
+    WHERE delivery.delivery_key IS NULL
+       OR reservation.status NOT IN ('CLAIMED', 'SENT', 'UNCERTAIN', 'RELEASED')
+       OR (reservation.status = 'CLAIMED' AND delivery.status <> 'CLAIMED')
+       OR (reservation.status = 'SENT' AND (
+         delivery.status <> 'SENT' OR NOT EXISTS (
+           SELECT 1 FROM slack_digest_items item
+            WHERE item.delivery_key = reservation.delivery_key
+              AND item.job_id = reservation.job_id
+         )
+       ))
+       OR (reservation.status = 'UNCERTAIN' AND delivery.status <> 'UNCERTAIN')
+       OR (reservation.status = 'RELEASED' AND delivery.status <> 'FAILED')`,
   missingMigrationAuthority: `SELECT CASE WHEN EXISTS (
     SELECT 1 FROM app_schema_migrations
-     WHERE version = '0039_retire_legacy_product_surface'
-       AND checksum = 'sha256:3ed76a3f8082ad34477ed903b31bb7743e2df6e70c2202c5788f964be39d5816'
+     WHERE version = '0040_slack_digest_job_reservations'
+       AND checksum = 'sha256:427d0b652bba719fa696733ae4f18d5157f164a36666c2fa432193844a831029'
   ) THEN 0 ELSE 1 END AS count`,
 };
 

@@ -22,8 +22,8 @@ describe('active D1 runtime schema', () => {
       ready: true,
       expectedVersion: EXPECTED_SCHEMA_VERSION,
       appliedVersion: EXPECTED_SCHEMA_VERSION,
-      requiredTableCount: 15,
-      requiredIndexCount: 4,
+      requiredTableCount: 16,
+      requiredIndexCount: 5,
     });
     await expect(ensureRuntimeSchema(db)).resolves.toMatchObject({ ready: true });
   });
@@ -53,7 +53,7 @@ describe('active D1 runtime schema', () => {
     await run(db, 'DROP TABLE slack_digest_items');
     await expect(inspectRuntimeSchema(db)).resolves.toMatchObject({
       ready: false,
-      requiredTableCount: 14,
+      requiredTableCount: 15,
     });
 
     db.close();
@@ -61,7 +61,7 @@ describe('active D1 runtime schema', () => {
     await run(db, 'DROP INDEX idx_coding_problems_track_level_position');
     await expect(inspectRuntimeSchema(db)).resolves.toMatchObject({
       ready: false,
-      requiredIndexCount: 3,
+      requiredIndexCount: 4,
     });
   });
 

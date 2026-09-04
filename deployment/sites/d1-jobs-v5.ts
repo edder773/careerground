@@ -590,12 +590,10 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
     all<ComparableJob>(
       db,
       `SELECT company_name AS companyName, title,
-              application_start_at AS applicationStartAt, deadline_at AS deadlineAt
+              application_start_at AS applicationStartAt, deadline_at AS deadlineAt,
+              source_url AS sourceUrl
          FROM jobs
-        WHERE status = 'ACTIVE'
-          AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
-          AND (rolling = 1 OR deadline_at IS NULL OR deadline_at > ?)`,
-      now.toISOString(),
+        WHERE career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')`,
     ),
     first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM jobs'),
   ]);
