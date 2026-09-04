@@ -597,6 +597,12 @@ type SlackDigestDeliveryRow = {
   attemptCount: number;
 };
 
+type SlackDigestReservationRow = {
+  jobId: string;
+  deliveryKey: string;
+  status: 'CLAIMED' | 'SENT' | 'UNCERTAIN';
+};
+
 const slackDigestDeliveryInput = (input: unknown) => {
   const body = parseObject(input);
   const snapshotCreatedAt = cleanText(body.snapshotCreatedAt);
@@ -704,13 +710,14 @@ export async function claimSlackDigest(db: D1Database, requestUrl: URL, input: u
     };
   }
   const serializedPayload = JSON.stringify(payload);
+  const payloadJobs = deliveryPayloadJobs(serializedPayload).filter((job) => cleanText(job.jobId));
   const payloadChecksum = await sha256(serializedPayload);
   const claimToken = newOpaqueToken();
   const claimTokenHash = await hashToken(claimToken);
   const timestamp = nowIso();
-  const claimed = await all<SlackDigestDeliveryRow>(
-    db,
-    `INSERT INTO slack_digest_deliveries
+  const deliveryClaim = db
+    .prepare(
+      `INSERT INTO slack_digest_deliveries
        (delivery_key, delivery_mode, status, claim_token_hash, payload, payload_checksum,
         attempt_count, claimed_at)
      VALUES (?, ?, 'CLAIMED', ?, ?, ?, 1, ?)
@@ -727,21 +734,55 @@ export async function claimSlackDigest(db: D1Database, requestUrl: URL, input: u
        last_error = NULL
      WHERE slack_digest_deliveries.status = 'FAILED'
      RETURNING delivery_key AS deliveryKey, status, payload, attempt_count AS attemptCount`,
-    deliveryKey,
-    deliveryMode,
-    claimTokenHash,
-    serializedPayload,
-    payloadChecksum,
-    timestamp,
+    )
+    .bind(deliveryKey, deliveryMode, claimTokenHash, serializedPayload, payloadChecksum, timestamp);
+  const reservationClaims = payloadJobs.map((job) =>
+    db
+      .prepare(
+        `INSERT INTO slack_digest_job_reservations
+           (delivery_key, job_id, status, claimed_at, settled_at)
+         VALUES (?, ?, 'CLAIMED', ?, NULL)
+         ON CONFLICT(delivery_key, job_id) DO UPDATE SET
+           status = 'CLAIMED', claimed_at = excluded.claimed_at, settled_at = NULL
+         WHERE slack_digest_job_reservations.status = 'RELEASED'`,
+      )
+      .bind(deliveryKey, cleanText(job.jobId), timestamp),
   );
-  if (claimed[0]) {
+  let claimed: SlackDigestDeliveryRow | undefined;
+  try {
+    const results = await db.batch<SlackDigestDeliveryRow>([deliveryClaim, ...reservationClaims]);
+    claimed = results[0]?.results?.[0];
+  } catch (error) {
+    const jobIds = payloadJobs.map((job) => cleanText(job.jobId));
+    const reservationConflict =
+      jobIds.length > 0 && /unique|constraint/iu.test(error instanceof Error ? error.message : '');
+    const conflicts = reservationConflict
+      ? await all<SlackDigestReservationRow>(
+          db,
+          `SELECT job_id AS jobId, delivery_key AS deliveryKey, status
+             FROM slack_digest_job_reservations
+            WHERE status IN ('CLAIMED', 'SENT', 'UNCERTAIN')
+              AND job_id IN (${jobIds.map(() => '?').join(', ')})`,
+          ...jobIds,
+        )
+      : [];
+    if (!conflicts.length) throw error;
+    return {
+      status: 'blocked' as const,
+      deliveryKey,
+      deliveryStatus: 'JOB_RESERVED' as const,
+      reason: 'job-already-reserved' as const,
+      conflictingJobCount: new Set(conflicts.map((row) => row.jobId)).size,
+    };
+  }
+  if (claimed) {
     return {
       status: 'claimed' as const,
       deliveryKey,
       claimToken,
-      attemptCount: Number(claimed[0].attemptCount),
+      attemptCount: Number(claimed.attemptCount),
       jobsOnly: options.jobsOnly,
-      payload: JSON.parse(claimed[0].payload) as Record<string, unknown>,
+      payload: JSON.parse(claimed.payload) as Record<string, unknown>,
     };
   }
   const existing = await first<SlackDigestDeliveryRow>(
@@ -786,6 +827,25 @@ export async function settleSlackDigestDelivery(
       'DELIVERY_CLAIM_CONFLICT',
     );
   }
+  const payloadJobs = deliveryPayloadJobs(claimedDelivery.payload).filter((job) =>
+    cleanText(job.jobId),
+  );
+  if (payloadJobs.length) {
+    const reservationCount = await first<{ count: number }>(
+      db,
+      `SELECT COUNT(*) AS count
+         FROM slack_digest_job_reservations
+        WHERE delivery_key = ? AND status = 'CLAIMED'`,
+      deliveryKey,
+    );
+    if (Number(reservationCount?.count || 0) !== payloadJobs.length) {
+      throw new RouteError(
+        409,
+        '채용공고 발송 예약 원장이 일치하지 않습니다.',
+        'DELIVERY_RESERVATION_CONFLICT',
+      );
+    }
+  }
   const update = db
     .prepare(
       `UPDATE slack_digest_deliveries
@@ -797,8 +857,21 @@ export async function settleSlackDigestDelivery(
     )
     .bind(outcome, outcome, timestamp, outcome, timestamp, error, deliveryKey, claimTokenHash);
   const statements = [update];
+  const reservationStatus =
+    outcome === 'SENT' ? 'SENT' : outcome === 'UNCERTAIN' ? 'UNCERTAIN' : 'RELEASED';
+  for (const job of payloadJobs) {
+    statements.push(
+      db
+        .prepare(
+          `UPDATE slack_digest_job_reservations
+              SET status = ?, settled_at = ?
+            WHERE delivery_key = ? AND job_id = ? AND status = 'CLAIMED'`,
+        )
+        .bind(reservationStatus, timestamp, deliveryKey, cleanText(job.jobId)),
+    );
+  }
   if (outcome === 'SENT') {
-    for (const job of deliveryPayloadJobs(claimedDelivery.payload)) {
+    for (const job of payloadJobs) {
       const jobId = cleanText(job.jobId);
       const sourceUrl = cleanText(job.sourceUrl);
       if (!jobId || !sourceUrl) continue;

@@ -14,6 +14,7 @@ const REQUIRED_TABLES = [
   'import_batches',
   'slack_digest_deliveries',
   'slack_digest_items',
+  'slack_digest_job_reservations',
   'workflow_runs',
   'workflow_staged_jobs',
   'workflow_publications',
@@ -27,6 +28,7 @@ const REQUIRED_INDEXES = [
   'idx_jobs_feed_collected_id',
   'idx_jobs_active_category',
   'idx_coding_problems_track_level_position',
+  'idx_slack_digest_job_reservations_active_job',
 ] as const;
 
 export type RuntimeSchemaState = {

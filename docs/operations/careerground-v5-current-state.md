@@ -24,8 +24,9 @@
 - 신규 공고는 `ACTIVE`, 신입 근거, 미래 마감 또는 상시 조건을 모두 만족해야 한다.
 - 기존 `jobs` UPDATE·DELETE와 모든 `saved_jobs` mutation은 수행하지 않는다.
 - 게시 workflow는 Slack webhook을 직접 호출하지 않는다.
-- Slack의 `SENT` claim은 재전송하지 않고, 전송 결과가 불확실한 `UNCERTAIN`은 자동 재시도하지
-  않는다.
+- Slack의 `SENT` claim은 재전송하지 않는다. 일일·스냅샷 실행이 겹치면 공고별 D1 예약 원장이
+  외부 호출 전에 중복 실행을 차단하고, 전송 결과가 불확실한 `UNCERTAIN`은 예약을 유지해 자동
+  재시도하지 않는다.
 
 ## 활성 workflow
 

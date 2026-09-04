@@ -329,6 +329,33 @@ describe('CareerGround v5 discovery production boundary', () => {
     expect(stored).toEqual({ mirrors: 0, distinctRoles: 1 });
   });
 
+  it('does not reinsert an inactive historical campaign after a corrected deadline', async () => {
+    const previous = await discoveryJob(now, 'historical-kb', {
+      companyName: 'KB국민은행',
+      title: '2026년 하반기 신입행원(L1) IT 부문 채용',
+      applicationStartAt: '2026-08-31T00:00:00.000Z',
+      deadlineAt: new Date(now.getTime() + 7 * 86_400_000).toISOString(),
+    });
+    await publishDiscoveryBundle(db, await request(now, 1, [previous]), now);
+    await db.prepare("UPDATE jobs SET status = 'EXPIRED' WHERE id = ?").bind(previous.id).run();
+
+    const corrected = await discoveryJob(now, 'historical-kb-mirror', {
+      companyName: '(주)국민은행',
+      title: '2026년 하반기 신입행원(L1) IT부문 채용',
+      applicationStartAt: '2026-09-01T00:00:00.000Z',
+      deadlineAt: new Date(now.getTime() + 14 * 86_400_000).toISOString(),
+    });
+    const repeated = await publishDiscoveryBundle(db, await request(now, 2, [corrected]), now);
+    const stored = await first<{ count: number }>(
+      db,
+      'SELECT COUNT(*) AS count FROM jobs WHERE source_url = ?',
+      corrected.sourceUrl,
+    );
+
+    expect(repeated).toMatchObject({ inserted: 0, skippedExisting: 1 });
+    expect(stored).toEqual({ count: 0 });
+  });
+
   it('protects the HTTP publish endpoint with a separate bearer token', async () => {
     const input = await request(now);
     const call = (token?: string, configured = true) =>

@@ -23,6 +23,7 @@ const tableNames = [
   'workflow_publish_assertions',
   'slack_digest_deliveries',
   'slack_digest_items',
+  'slack_digest_job_reservations',
   'app_schema_migrations',
 ];
 
@@ -56,10 +57,16 @@ function contentChecksum(database) {
            FROM slack_digest_items WHERE delivery_key = 'daily:2099-01-01'`,
       )
       .all(),
+    deliveryReservations: database
+      .prepare(
+        `SELECT delivery_key AS deliveryKey, job_id AS jobId, status
+           FROM slack_digest_job_reservations WHERE delivery_key = 'daily:2099-01-01'`,
+      )
+      .all(),
     authority: database
       .prepare(
         `SELECT version, checksum FROM app_schema_migrations
-          WHERE version = '0039_retire_legacy_product_surface'`,
+          WHERE version = '0040_slack_digest_job_reservations'`,
       )
       .all(),
   };
@@ -105,6 +112,14 @@ try {
                'Backend Engineer', ?)`,
     )
     .bind(timestamp)
+    .run();
+  await source
+    .prepare(
+      `INSERT INTO slack_digest_job_reservations
+         (delivery_key, job_id, status, claimed_at, settled_at)
+       VALUES ('daily:2099-01-01', 'restore-drill-job', 'SENT', ?, ?)`,
+    )
+    .bind(timestamp, timestamp)
     .run();
   source.close();
 
