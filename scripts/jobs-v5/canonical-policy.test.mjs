@@ -55,6 +55,37 @@ describe('jobs v5 canonical enum policy', () => {
     ]);
   });
 
+  it('normalizes the observed September collector variants', () => {
+    expect(
+      inspectDiscoveryEnums({
+        careerScope: '신입·채용연계형 인턴',
+        employmentType: '신입·채용연계형 인턴',
+        companySize: 'LARGE',
+      }),
+    ).toMatchObject({
+      values: {
+        careerScope: 'NEW_GRAD_ONLY',
+        employmentType: 'INTERN_TO_FULL_TIME',
+        companySize: 'LARGE',
+      },
+      violations: [],
+    });
+    expect(
+      inspectDiscoveryEnums({
+        careerScope: '신입 종합직',
+        employmentType: 'FULL_TIME_OR_CONTRACT',
+        companySize: 'PUBLIC',
+      }),
+    ).toMatchObject({
+      values: {
+        careerScope: 'NEW_GRAD_ONLY',
+        employmentType: 'UNCONFIRMED',
+        companySize: 'PUBLIC',
+      },
+      violations: [],
+    });
+  });
+
   it('publishes one immutable canonical value catalog', () => {
     expect(CANONICAL_DISCOVERY_ENUMS.careerScope).toEqual(['NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE']);
     expect(Object.isFrozen(CANONICAL_DISCOVERY_ENUMS)).toBe(true);

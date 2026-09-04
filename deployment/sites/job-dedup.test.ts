@@ -10,6 +10,7 @@ describe('job campaign and role identity', () => {
   it.each([
     ['KT', '㈜케이티', 'kt'],
     ['IBK기업은행', '중소기업은행(IBK기업은행)', 'ibk-bank'],
+    ['KB국민은행', '(주)국민은행', 'kb-kookmin-bank'],
   ])('canonicalizes company aliases: %s / %s', (left, right, expected) => {
     expect(jobCompanyKey(left)).toBe(expected);
     expect(jobCompanyKey(right)).toBe(expected);
@@ -105,6 +106,25 @@ describe('job campaign and role identity', () => {
     expect(duplicateJobReason({ ...right, ...window }, { ...left, ...window })).toBe(
       expectedReason,
     );
+  });
+
+  it('blocks a 국민은행 cross-source repeat with a one-day start-date discrepancy', () => {
+    const previous = {
+      companyName: 'KB국민은행',
+      title: '2026년 하반기 신입행원(L1) IT 부문 채용',
+      applicationStartAt: '2026-08-31',
+      deadlineAt: '2026-09-09',
+      sourceUrl: 'https://linkareer.example.test/kb-it',
+    };
+    const current = {
+      companyName: '(주)국민은행',
+      title: '2026년 하반기 신입행원(L1) IT부문 채용',
+      applicationStartAt: '2026-09-01T00:00:00+09:00',
+      deadlineAt: '2026-09-09T18:00:00+09:00',
+      sourceUrl: 'https://saramin.example.test/kb-it',
+    };
+
+    expect(duplicateJobReason(current, previous)).toBe('equivalent-title');
   });
 
   it.each([

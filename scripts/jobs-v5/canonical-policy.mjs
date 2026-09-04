@@ -18,6 +18,8 @@ const CAREER_SCOPE_ALIASES = new Map([
   ['신입 공개경쟁', 'NEW_GRAD_ONLY'],
   ['신입(공개경쟁)', 'NEW_GRAD_ONLY'],
   ['채용연계형 인턴', 'NEW_GRAD_ONLY'],
+  ['신입·채용연계형 인턴', 'NEW_GRAD_ONLY'],
+  ['신입 종합직', 'NEW_GRAD_ONLY'],
   ['신입/경력', 'NEW_GRAD_ELIGIBLE'],
   ['신입·경력', 'NEW_GRAD_ELIGIBLE'],
   ['경력무관', 'NEW_GRAD_ELIGIBLE'],
@@ -82,11 +84,13 @@ const EMPLOYMENT_TYPE_ALIASES = new Map([
   ['채용 전환형 인턴', 'INTERN_TO_FULL_TIME'],
   ['전환형 인턴', 'INTERN_TO_FULL_TIME'],
   ['정규직 전환형 인턴', 'INTERN_TO_FULL_TIME'],
+  ['신입·채용연계형 인턴', 'INTERN_TO_FULL_TIME'],
   ['계약직', 'CONTRACT'],
   ['계약직(신입)', 'CONTRACT'],
   ['미상', 'UNCONFIRMED'],
   ['미확인', 'UNCONFIRMED'],
   ['UNKNOWN', 'UNCONFIRMED'],
+  ['FULL_TIME_OR_CONTRACT', 'UNCONFIRMED'],
 ]);
 
 function normalizedText(value, fallback = '') {

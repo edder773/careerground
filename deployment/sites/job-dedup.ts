@@ -83,6 +83,9 @@ const canonicalCompanyAliases = new Map<string, string>([
   ['miraeassetglobalinvestments', 'mirae-asset-global-investments'],
   ['우리은행', 'woori-bank'],
   ['wooribank', 'woori-bank'],
+  ['국민은행', 'kb-kookmin-bank'],
+  ['kb국민은행', 'kb-kookmin-bank'],
+  ['kbkookminbank', 'kb-kookmin-bank'],
   ['넛지헬스케어', 'nudge-healthcare'],
   ['너지', 'nudge-healthcare'],
   ['nudgehealthcare', 'nudge-healthcare'],
@@ -110,6 +113,7 @@ const normalizedTitle = (value: string) =>
     .replace(/\boms\b/gu, ' 주문관리시스템 ')
     .replace(/주문\s*관리\s*시스템/gu, '주문관리시스템')
     .replace(/it\s*개발/gu, 'it 개발')
+    .replace(/([a-z0-9+#])부문/giu, '$1 부문')
     .replace(/s\s*\/\s*w/gu, 'sw');
 
 const rawTitleTokens = (value: string) =>
@@ -237,8 +241,13 @@ const sameRecruitmentWindow = (left: ComparableJob, right: ComparableJob) => {
   if (leftDeadline && rightDeadline && leftDeadline !== rightDeadline) return false;
   const leftStart = dateKey(left.applicationStartAt);
   const rightStart = dateKey(right.applicationStartAt);
-  if (leftStart && rightStart && leftStart !== rightStart) return false;
-  return Boolean((leftDeadline && rightDeadline) || (leftStart && rightStart));
+  if (leftDeadline && rightDeadline) {
+    if (!leftStart || !rightStart) return true;
+    const leftDay = Date.parse(`${leftStart}T00:00:00Z`);
+    const rightDay = Date.parse(`${rightStart}T00:00:00Z`);
+    return Math.abs(leftDay - rightDay) <= 86_400_000;
+  }
+  return Boolean(leftStart && rightStart && leftStart === rightStart);
 };
 
 const intersection = (left: Set<string>, right: Set<string>) =>
