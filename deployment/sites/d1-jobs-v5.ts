@@ -691,6 +691,11 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
   }
 
   const timestamp = now.toISOString();
+  const snapshotJobs = newJobs.map((job) => ({
+    ...job,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  }));
   const previous = await lastPublishedRun(db, V5_WORKFLOW_ID);
   const manifest: V5Manifest = {
     schemaVersion: '5.0',
@@ -727,7 +732,7 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
     status: 'VERIFIED',
     runId: manifest.runId,
     manifestChecksum: manifest.manifestChecksum,
-    newJobs,
+    newJobs: snapshotJobs,
     updates: [],
     ended: [],
   };
