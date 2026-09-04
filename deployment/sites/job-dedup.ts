@@ -188,6 +188,33 @@ const recruitmentWindowKey = (job: ComparableJob) => {
   return `${start}:${deadline}`;
 };
 
+const campaignEditionTokens = (job: ComparableJob) => {
+  const title = normalizedTitle(job.title);
+  return {
+    years: new Set(title.match(/20\d{2}/gu) || []),
+    periods: new Set(title.match(/(?:상|하)반기|[1-4]분기/gu) || []),
+  };
+};
+
+const hasConflictingCampaignEdition = (left: ComparableJob, right: ComparableJob) => {
+  const leftTokens = campaignEditionTokens(left);
+  const rightTokens = campaignEditionTokens(right);
+  const yearConflict =
+    leftTokens.years.size > 0 &&
+    rightTokens.years.size > 0 &&
+    intersection(leftTokens.years, rightTokens.years).length === 0;
+  const periodConflict =
+    leftTokens.periods.size > 0 &&
+    rightTokens.periods.size > 0 &&
+    intersection(leftTokens.periods, rightTokens.periods).length === 0;
+  return yearConflict || periodConflict;
+};
+
+const dayDistance = (left: string | null, right: string | null) => {
+  if (!left || !right) return null;
+  return Math.abs(Date.parse(`${left}T00:00:00Z`) - Date.parse(`${right}T00:00:00Z`)) / 86_400_000;
+};
+
 const titleLooksUmbrella = (job: ComparableJob, roles: string[]) => {
   const title = normalizedTitle(job.title);
   if (/전\s*(부문|직군)|부문별|관련\s*직무/gu.test(title)) return true;
@@ -236,18 +263,29 @@ export function jobDigestIdentity(job: ComparableJob): JobDigestIdentity {
 }
 
 const sameRecruitmentWindow = (left: ComparableJob, right: ComparableJob) => {
+  if (hasConflictingCampaignEdition(left, right)) return false;
   const leftDeadline = dateKey(left.deadlineAt);
   const rightDeadline = dateKey(right.deadlineAt);
-  if (leftDeadline && rightDeadline && leftDeadline !== rightDeadline) return false;
   const leftStart = dateKey(left.applicationStartAt);
   const rightStart = dateKey(right.applicationStartAt);
+  const startDistance = dayDistance(leftStart, rightStart);
+  const deadlineDistance = dayDistance(leftDeadline, rightDeadline);
   if (leftDeadline && rightDeadline) {
-    if (!leftStart || !rightStart) return true;
-    const leftDay = Date.parse(`${leftStart}T00:00:00Z`);
-    const rightDay = Date.parse(`${rightStart}T00:00:00Z`);
-    return Math.abs(leftDay - rightDay) <= 86_400_000;
+    if (leftDeadline === rightDeadline) return startDistance === null || startDistance <= 1;
+    if (startDistance !== null && startDistance <= 1 && deadlineDistance !== null) {
+      return deadlineDistance <= 31;
+    }
+    return (
+      startDistance !== null &&
+      startDistance <= 7 &&
+      deadlineDistance !== null &&
+      deadlineDistance <= 7
+    );
   }
-  return Boolean(leftStart && rightStart && leftStart === rightStart);
+  if (Boolean(leftDeadline) !== Boolean(rightDeadline)) {
+    return startDistance !== null && startDistance <= 1;
+  }
+  return startDistance !== null && startDistance <= 1;
 };
 
 const intersection = (left: Set<string>, right: Set<string>) =>

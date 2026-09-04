@@ -16,6 +16,10 @@ const retirementMigration = readFileSync(
   'drizzle/0039_retire_legacy_product_surface.sql',
   'utf8',
 ).replaceAll('\r\n', '\n');
+const reservationMigration = readFileSync(
+  'drizzle/0040_slack_digest_job_reservations.sql',
+  'utf8',
+).replaceAll('\r\n', '\n');
 const collectorPrompt = readFileSync(
   'docs/operations/careerground-v5-stable-collector-prompts.md',
   'utf8',
@@ -36,6 +40,15 @@ describe('CareerGround v5 production workflow policy', () => {
     expect(deliveryMigration).toContain(`sha256:${checksum}`);
     expect(deliveryMigration).toContain('CREATE TABLE `slack_digest_items`');
     expect(deliveryMigration).not.toMatch(/DELETE\s+FROM/iu);
+  });
+
+  it('reserves each job before the external Slack side effect', () => {
+    const ddl = reservationMigration.split('INSERT INTO `app_schema_migrations`')[0];
+    const checksum = createHash('sha256').update(ddl).digest('hex');
+    expect(reservationMigration).toContain(`sha256:${checksum}`);
+    expect(reservationMigration).toContain('CREATE TABLE `slack_digest_job_reservations`');
+    expect(reservationMigration).toContain('idx_slack_digest_job_reservations_active_job');
+    expect(reservationMigration).not.toMatch(/DELETE\s+FROM/iu);
   });
 
   it('retires only the unused product schema with a verified forward migration', () => {

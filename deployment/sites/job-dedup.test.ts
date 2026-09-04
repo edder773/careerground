@@ -127,6 +127,42 @@ describe('job campaign and role identity', () => {
     expect(duplicateJobReason(current, previous)).toBe('equivalent-title');
   });
 
+  it('blocks a repeated campaign after a source corrects the deadline', () => {
+    const previous = {
+      companyName: 'KB국민은행',
+      title: '2026년 하반기 신입행원(L1) IT 부문 채용',
+      applicationStartAt: '2026-08-31',
+      deadlineAt: '2026-09-09',
+      sourceUrl: 'https://first.example.test/kb-it',
+    };
+    const corrected = {
+      companyName: '(주)국민은행',
+      title: '2026년 하반기 신입행원(L1) IT부문 채용',
+      applicationStartAt: '2026-09-01',
+      deadlineAt: '2026-09-16',
+      sourceUrl: 'https://second.example.test/kb-it',
+    };
+
+    expect(duplicateJobReason(corrected, previous)).toBe('equivalent-title');
+  });
+
+  it('does not merge campaigns from different half-years even when dates are corrected', () => {
+    const firstHalf = {
+      companyName: '예시회사',
+      title: '2026년 상반기 신입 개발자 채용',
+      applicationStartAt: '2026-08-31',
+      deadlineAt: '2026-09-09',
+    };
+    const secondHalf = {
+      companyName: '예시회사',
+      title: '2026년 하반기 신입 개발자 채용',
+      applicationStartAt: '2026-09-01',
+      deadlineAt: '2026-09-16',
+    };
+
+    expect(duplicateJobReason(secondHalf, firstHalf)).toBeNull();
+  });
+
   it.each([
     ['iOS 엔지니어 인턴', 'Android 엔지니어 인턴'],
     ['데이터 분석가 인턴', 'Flutter 개발자 인턴'],
