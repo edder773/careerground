@@ -84,6 +84,88 @@ describe('jobs v5 canonical enum policy', () => {
       },
       violations: [],
     });
+
+    const observedSeptember4Variants = [
+      {
+        input: {
+          careerScope: 'NEW_GRAD_ONLY',
+          employmentType: 'FULL_TIME_OR_CONVERSION_CONTRACT',
+          companySize: 'LARGE',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ONLY',
+          employmentType: 'UNCONFIRMED',
+          companySize: 'LARGE',
+        },
+      },
+      {
+        input: {
+          careerScope: '인턴·재학생/최근 졸업자',
+          employmentType: 'INTERNSHIP',
+          companySize: '국제기구',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'INTERNSHIP',
+          companySize: 'UNCLASSIFIED',
+        },
+      },
+      {
+        input: {
+          careerScope: '신입·졸업예정',
+          employmentType: '신입 연구원',
+          companySize: 'LARGE',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ONLY',
+          employmentType: 'FULL_TIME',
+          companySize: 'LARGE',
+        },
+      },
+      {
+        input: {
+          careerScope: '체험형 인턴',
+          employmentType: 'INTERNSHIP',
+          companySize: 'STARTUP',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'INTERNSHIP',
+          companySize: 'STARTUP',
+        },
+      },
+      {
+        input: {
+          careerScope: '신입 인턴 포지션',
+          employmentType: 'INTERNSHIP',
+          companySize: 'STARTUP',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'INTERNSHIP',
+          companySize: 'STARTUP',
+        },
+      },
+      {
+        input: {
+          careerScope: '신입 트랙 포함',
+          employmentType: 'FULL_TIME',
+          companySize: 'PUBLIC',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'FULL_TIME',
+          companySize: 'PUBLIC',
+        },
+      },
+    ];
+
+    for (const { input, expected } of observedSeptember4Variants) {
+      expect(inspectDiscoveryEnums(input)).toMatchObject({
+        values: expected,
+        violations: [],
+      });
+    }
   });
 
   it('publishes one immutable canonical value catalog', () => {

@@ -466,7 +466,9 @@ export async function slackDigest(db: D1Database, requestUrl: URL) {
            FROM jobs
           WHERE status = 'ACTIVE'
             AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
-            AND (deadline_at IS NULL OR deadline_at > ?)
+            AND rolling = 0
+            AND deadline_at IS NOT NULL
+            AND deadline_at > ?
             AND created_at = ?
           ORDER BY deadline_at IS NULL, deadline_at, company_name, title, id`
       : `SELECT id, company_name AS companyName, title,

@@ -53,6 +53,7 @@ const roleNoiseWords = new Set([
   '담당자',
   '경력무관',
   '대졸',
+  '연구원',
   '정규직',
   '계약직',
   '전환형',
@@ -149,12 +150,14 @@ const dateKey = (value?: string | null) => {
   return kstDayFormatter.format(parsed);
 };
 
-const companyTokens = (job: ComparableJob) =>
-  new Set([
+const companyTokens = (job: ComparableJob) => {
+  const tokens = [
     compact(job.companyName),
     jobCompanyKey(job.companyName),
     ...rawTitleTokens(job.companyName).map(compact),
-  ]);
+  ].filter(Boolean);
+  return new Set([...tokens, ...tokens.map((token) => `${token}그룹`)]);
+};
 
 const meaningfulTitleTokens = (job: ComparableJob) => {
   const excludedCompanyTokens = companyTokens(job);
