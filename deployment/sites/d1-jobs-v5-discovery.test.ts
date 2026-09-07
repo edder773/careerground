@@ -430,24 +430,33 @@ describe('CareerGround v5 discovery production boundary', () => {
     });
   });
 
-  it('allows one previous-KST-day replay for an overnight recovery', async () => {
-    const collectedAt = new Date('2026-08-31T09:00:00.000Z');
-    const recoveredAt = new Date('2026-09-01T00:54:00.000Z');
-    const input = await request(collectedAt);
+  it('allows a protected seven-day replay and omits jobs that expired before recovery', async () => {
+    const collectedAt = new Date('2026-09-04T01:00:00.000Z');
+    const recoveredAt = new Date('2026-09-07T00:54:00.000Z');
+    const [expired, active] = await Promise.all([
+      discoveryJob(collectedAt, 'expired', {
+        deadlineAt: '2026-09-06T23:59:00+09:00',
+      }),
+      discoveryJob(collectedAt, 'active', {
+        deadlineAt: '2026-09-20T23:59:00+09:00',
+      }),
+    ]);
+    const input = await request(collectedAt, 1, [expired, active]);
     await expect(publishDiscoveryBundle(db, input, recoveredAt)).resolves.toMatchObject({
       status: 'PUBLISHED',
-      inserted: 3,
+      inserted: 1,
+      skippedExpired: 1,
     });
   });
 
-  it('rejects a discovery replay older than the previous KST day', async () => {
-    const collectedAt = new Date('2026-08-30T09:00:00.000Z');
+  it('rejects a discovery replay older than the protected seven-day window', async () => {
+    const collectedAt = new Date('2026-08-24T09:00:00.000Z');
     const recoveredAt = new Date('2026-09-01T00:54:00.000Z');
     const input = await request(collectedAt);
     await expect(publishDiscoveryBundle(db, input, recoveredAt)).rejects.toMatchObject({
       status: 422,
       code: 'PUBLISH_VALIDATION_FAILED',
-      details: { reason: expect.stringContaining('current or previous') },
+      details: { reason: expect.stringContaining('protected 7-day') },
     });
   });
 });

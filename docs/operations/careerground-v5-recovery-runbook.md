@@ -4,12 +4,18 @@
 
 장애를 `runId`로 찾고 `targetAsOfDate`, `runGroupKey`, `attempt`, status, errorCode, partition hash를 기록한다. 현재 날짜로 target date를 바꾸지 않는다. `last-success`를 먼저 기록하고 복구 중 변경하지 않는다.
 
+보호된 게시 API는 원본 날짜를 바꾸지 않는 조건으로 최대 7일 전 bundle까지 복구할 수 있다. 복구
+시점에 이미 마감된 비상시 공고는 식별자·fingerprint·행 수 검증에는 포함하되 `jobs` INSERT 대상에서는
+자동 제외하고 receipt의 `skippedExpired`에 기록한다. 7일을 넘었거나 미래 날짜인 bundle은 거부한다.
+
 ## 단계별 복구
 
 - `FAILED_PREFLIGHT`: 공휴일 cache checksum·유효기간·공식 출처를 확인한다. 불확실하면 게시하지 않는다.
 - `FAILED_INPUT/COLLECTION/PARTITION`: 실패 partition만 다시 수집한다. 성공 artifact는 raw/canonical hash가 Manifest와 일치할 때 RESUME에서 재사용한다.
 - `FAILED_MERGE`: 서로 다른 run group/date/workflow/schema가 섞였는지 확인하고 올바른 세 artifact를 명시한다.
 - `FAILED_VALIDATION/QUARANTINED`: 결과를 수정해 새 run/attempt로 다시 검증한다. 격리 결과를 직접 publish하지 않는다.
+- enum 별칭 오류: `canonical-policy.mjs`가 승인된 표현을 canonical enum으로 변환했는지 전체 violation
+  목록을 확인한다. 알려지지 않은 값은 계속 fail-closed하며 임의 값으로 대체하지 않는다.
 - `FAILED_DB_SYNC`: D1 publication, run status, import batch, last-success를 읽기 전용으로 확인한다. publish batch는 원자적이므로 `VERIFIED` stage만 남고 publication이 없으면 같은 Issue event를 재실행해 동일 bundle을 다시 게시할 수 있다. 부분 반영이 관측되면 즉시 추가 쓰기를 멈추고 checkpoint 복구 절차를 적용한다.
 - notification 실패: DB의 PUBLISHED와 idempotency ledger를 확인한 뒤 알림만 재시도한다. 본 작업에서는 Slack을 전송하지 않는다.
 

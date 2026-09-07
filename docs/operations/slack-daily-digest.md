@@ -65,6 +65,10 @@ Slack을 보내지 않는 운영 점검은 `force=true`, `dry_run=true`, 빈 sna
 전송 실패는 `[운영 경보] Daily Slack digest 전송 실패` 이슈로 누적되고 다음 성공 시 자동으로
 닫힌다. 수동 실행도 전송 실패 감시 대상이지만 예약 지연 계산에서는 제외한다.
 
+누락 import를 복구한 뒤 `snapshot_created_at`, `jobs_only=true`로 수동 발송하면 그 publish snapshot의
+마감일 확정 공고만 전송한다. 일일 정책과 동일하게 상시채용과 이미 마감된 공고는 제외하며, 코딩테스트
+섹션은 만들지 않는다.
+
 발송 전에 Sites API가 `daily:YYYY-MM-DD` 또는 `snapshot:<createdAt>:jobs` 키와 payload의 모든 `job_id`를 하나의 D1 transaction으로 원자적으로 claim한다. 이미 `SENT`인 날짜 키는 import 최신성보다 먼저 `already-sent`를 반환하며, 다른 일일·스냅샷 실행이 같은 공고를 선점한 경우 전체 claim을 취소하고 `job-already-reserved`로 막는다. 따라서 동시에 시작한 예약 실행과 수동 복구 실행도 외부 Slack 호출 전에 한쪽만 진행한다.
 
 성공 완료 시 공고별 회사·캠페인·직무 키를 `slack_digest_items`에 기록하고 공고 예약을 `SENT`로 확정한다. 이후 다른 source URL로 수집된 같은 캠페인·직무도 과거 발송 이력과 대조해 억제한다. 회사 법인 표기와 한·영문 별칭, 캠페인 연도·반기, 접수 기간, 마감일 정정 범위, 포괄 채용 여부, 정규화한 직무 토큰을 공통 기준으로 사용하며, 억제한 공고는 `duplicateAudit.suppressedJobs`에 원본·비교 대상·판정 사유를 남긴다. Slack이 명시적으로 거부한 경우만 예약을 `RELEASED`하고 delivery를 `FAILED`로 기록해 재시도를 허용한다. 네트워크 timeout처럼 Slack 수신 여부를 알 수 없는 경우는 delivery와 예약을 모두 `UNCERTAIN`으로 고정하고 자동 재전송을 막는다.

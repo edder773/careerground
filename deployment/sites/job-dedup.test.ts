@@ -146,6 +146,25 @@ describe('job campaign and role identity', () => {
     expect(duplicateJobReason(corrected, previous)).toBe('equivalent-title');
   });
 
+  it('treats a company-group recruitment title as the same campaign as its specialist posting', () => {
+    const umbrella = {
+      companyName: '포스코',
+      title: '2026년 하반기 포스코그룹 신입사원/연구원 채용',
+      applicationStartAt: '2026-09-01T00:00:00+09:00',
+      deadlineAt: '2026-09-16T15:00:00+09:00',
+      sourceUrl: 'https://jobkorea.example.test/posco-group',
+    };
+    const specialist = {
+      companyName: '포스코',
+      title: '2026년 하반기 신입사원/연구원 채용 - AI',
+      applicationStartAt: '2026-09-01T01:00:00+09:00',
+      deadlineAt: '2026-09-16T06:00:00+09:00',
+      sourceUrl: 'https://jasoseol.example.test/posco-ai',
+    };
+
+    expect(duplicateJobReason(specialist, umbrella)).toBe('equivalent-title');
+  });
+
   it('does not merge campaigns from different half-years even when dates are corrected', () => {
     const firstHalf = {
       companyName: '예시회사',

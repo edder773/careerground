@@ -7,6 +7,7 @@ const V5_WORKFLOW_ID = 'CG-JOBS-PROD-V5';
 const DISCOVERY_SCHEMA_VERSION = '5.1';
 const DISCOVERY_PUBLISH_ARTIFACT_TYPE = 'CAREERGROUND_DISCOVERY_PUBLISH_REQUEST';
 const MAX_DISCOVERY_ITEMS = 500;
+const MAX_DISCOVERY_RECOVERY_AGE_DAYS = 7;
 const UNORDERED_ARRAY_KEYS = new Set(['sources', 'techStack', 'tags', 'excludedReasons']);
 
 export type V5DiscoveryPublishRequest = {
@@ -127,9 +128,6 @@ async function validateDiscoveryJob(
   const rolling = value.rolling === true;
   const deadlineAt = optionalIso(value.deadlineAt, `${field}.deadlineAt`);
   if (!rolling && !deadlineAt) throw new Error(`${field} needs a future deadline or rolling=true.`);
-  if (deadlineAt && new Date(deadlineAt).getTime() <= now.getTime()) {
-    throw new Error(`${field}.deadlineAt has already passed.`);
-  }
   const lastVerifiedAt = requiredString(value.lastVerifiedAt, `${field}.lastVerifiedAt`, 64);
   if (
     Number.isNaN(new Date(lastVerifiedAt).getTime()) ||
@@ -194,12 +192,19 @@ export async function validateDiscoveryPublishRequest(value: unknown, now: Date)
     throw new Error('Discovery publish request identity is invalid.');
   }
   const targetAsOfDate = requiredString(request.targetAsOfDate, 'targetAsOfDate', 10);
-  const acceptedTargetDates = new Set([
-    kstDate(now),
-    kstDate(new Date(now.getTime() - 86_400_000)),
-  ]);
-  if (!/^\d{4}-\d{2}-\d{2}$/u.test(targetAsOfDate) || !acceptedTargetDates.has(targetAsOfDate)) {
-    throw new Error('targetAsOfDate must be the current or previous Asia/Seoul date.');
+  const currentKstDate = kstDate(now);
+  const targetDay = Date.parse(`${targetAsOfDate}T00:00:00+09:00`);
+  const currentDay = Date.parse(`${currentKstDate}T00:00:00+09:00`);
+  const recoveryAgeDays = (currentDay - targetDay) / 86_400_000;
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/u.test(targetAsOfDate) ||
+    !Number.isInteger(recoveryAgeDays) ||
+    recoveryAgeDays < 0 ||
+    recoveryAgeDays > MAX_DISCOVERY_RECOVERY_AGE_DAYS
+  ) {
+    throw new Error(
+      `targetAsOfDate must be within the protected ${MAX_DISCOVERY_RECOVERY_AGE_DAYS}-day Asia/Seoul recovery window.`,
+    );
   }
   const runGroupKey = `CG-${targetAsOfDate}`;
   if (request.runGroupKey !== runGroupKey) throw new Error('runGroupKey is invalid.');
@@ -230,7 +235,7 @@ export async function validateDiscoveryPublishRequest(value: unknown, now: Date)
     throw new Error('Exactly three normalized discovery partitions are required.');
   }
   const partitionIds = new Set<number>();
-  const jobs: Array<Record<string, unknown>> = [];
+  const submittedJobs: Array<Record<string, unknown>> = [];
   let startedAt = now.toISOString();
   for (const [partitionIndex, partitionValue] of request.partitions.entries()) {
     if (!isRecord(partitionValue)) throw new Error(`partitions[${partitionIndex}] is invalid.`);
@@ -256,7 +261,7 @@ export async function validateDiscoveryPublishRequest(value: unknown, now: Date)
     );
     if (partitionStartedAt && partitionStartedAt < startedAt) startedAt = partitionStartedAt;
     for (const [itemIndex, item] of partitionValue.items.entries()) {
-      jobs.push(
+      submittedJobs.push(
         await validateDiscoveryJob(
           item,
           targetAsOfDate,
@@ -266,19 +271,33 @@ export async function validateDiscoveryPublishRequest(value: unknown, now: Date)
       );
     }
   }
-  if (jobs.length > MAX_DISCOVERY_ITEMS || Number(request.report.rowCount) !== jobs.length) {
+  if (
+    submittedJobs.length > MAX_DISCOVERY_ITEMS ||
+    Number(request.report.rowCount) !== submittedJobs.length
+  ) {
     throw new Error(`Discovery row count exceeds ${MAX_DISCOVERY_ITEMS} or does not match.`);
   }
-  const unique = (field: string) => new Set(jobs.map((job) => String(job[field]))).size;
+  const unique = (field: string) => new Set(submittedJobs.map((job) => String(job[field]))).size;
   if (
-    unique('id') !== jobs.length ||
-    unique('sourceUrl') !== jobs.length ||
-    unique('canonicalJobKey') !== jobs.length ||
-    unique('fingerprint') !== jobs.length
+    unique('id') !== submittedJobs.length ||
+    unique('sourceUrl') !== submittedJobs.length ||
+    unique('canonicalJobKey') !== submittedJobs.length ||
+    unique('fingerprint') !== submittedJobs.length
   ) {
     throw new Error('Discovery jobs contain an identifier or fingerprint collision.');
   }
-  return { request, jobs, startedAt, sourceChecksum: await canonicalChecksum(request) };
+  const jobs = submittedJobs.filter((job) => {
+    if (job.rolling === true) return true;
+    const deadlineAt = String(job.deadlineAt || '');
+    return deadlineAt && new Date(deadlineAt).getTime() > now.getTime();
+  });
+  return {
+    request,
+    jobs,
+    startedAt,
+    skippedExpired: submittedJobs.length - jobs.length,
+    sourceChecksum: await canonicalChecksum(request),
+  };
 }
 
 export async function requirePublishToken(request: Request, env: D1Env) {

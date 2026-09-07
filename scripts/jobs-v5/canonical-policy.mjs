@@ -20,8 +20,13 @@ const CAREER_SCOPE_ALIASES = new Map([
   ['채용연계형 인턴', 'NEW_GRAD_ONLY'],
   ['신입·채용연계형 인턴', 'NEW_GRAD_ONLY'],
   ['신입 종합직', 'NEW_GRAD_ONLY'],
+  ['신입·졸업예정', 'NEW_GRAD_ONLY'],
   ['신입/경력', 'NEW_GRAD_ELIGIBLE'],
   ['신입·경력', 'NEW_GRAD_ELIGIBLE'],
+  ['인턴·재학생/최근 졸업자', 'NEW_GRAD_ELIGIBLE'],
+  ['체험형 인턴', 'NEW_GRAD_ELIGIBLE'],
+  ['신입 인턴 포지션', 'NEW_GRAD_ELIGIBLE'],
+  ['신입 트랙 포함', 'NEW_GRAD_ELIGIBLE'],
   ['경력무관', 'NEW_GRAD_ELIGIBLE'],
   ['0~2년', 'NEW_GRAD_ELIGIBLE'],
 ]);
@@ -42,6 +47,7 @@ const COMPANY_SIZE_ALIASES = new Map([
   ['중소기업', 'SMALL'],
   ['스타트업', 'STARTUP'],
   ['외국계기업', 'FOREIGN'],
+  ['국제기구', 'UNCLASSIFIED'],
   ['금융권', 'UNCLASSIFIED'],
   ['미상', 'UNCLASSIFIED'],
   ['미확인', 'UNCLASSIFIED'],
@@ -73,6 +79,7 @@ const EMPLOYMENT_TYPE_ALIASES = new Map([
   ['신입', 'FULL_TIME'],
   ['신입사원', 'FULL_TIME'],
   ['신입행원', 'FULL_TIME'],
+  ['신입 연구원', 'FULL_TIME'],
   ['정규직', 'FULL_TIME'],
   ['정규직(신입)', 'FULL_TIME'],
   ['신입 정규직', 'FULL_TIME'],
@@ -91,6 +98,7 @@ const EMPLOYMENT_TYPE_ALIASES = new Map([
   ['미확인', 'UNCONFIRMED'],
   ['UNKNOWN', 'UNCONFIRMED'],
   ['FULL_TIME_OR_CONTRACT', 'UNCONFIRMED'],
+  ['FULL_TIME_OR_CONVERSION_CONTRACT', 'UNCONFIRMED'],
 ]);
 
 function normalizedText(value, fallback = '') {

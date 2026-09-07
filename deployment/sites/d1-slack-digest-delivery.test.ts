@@ -190,4 +190,38 @@ describe('Slack digest duplicate delivery boundary', () => {
       ],
     });
   });
+
+  it('keeps rolling jobs out of a jobs-only snapshot replay', async () => {
+    const [fixedId, rollingId] = await jobIds(2);
+    const snapshot = new Date().toISOString();
+    const futureDeadline = new Date(Date.now() + 7 * 86_400_000).toISOString();
+    await configureJob(fixedId!, snapshot, {
+      company: '마감 확정 회사',
+      title: '신입 백엔드 개발자',
+      start: snapshot,
+      deadline: futureDeadline,
+      sourceUrl: 'https://example.test/jobs/fixed-deadline',
+    });
+    await configureJob(rollingId!, snapshot, {
+      company: '상시 채용 회사',
+      title: '신입 프론트엔드 개발자',
+      start: snapshot,
+      deadline: futureDeadline,
+      sourceUrl: 'https://example.test/jobs/rolling',
+    });
+    await db
+      .prepare('UPDATE jobs SET rolling = 1, deadline_at = NULL WHERE id = ?')
+      .bind(rollingId)
+      .run();
+
+    const preview = (await claimSlackDigest(db, requestUrl, {
+      snapshotCreatedAt: snapshot,
+      jobsOnly: true,
+      dryRun: true,
+    })) as unknown as { status: string; payload: ClaimedDigest['payload'] };
+
+    expect(preview.status).toBe('preview');
+    expect(preview.payload.jobs.map((job) => job.jobId)).toContain(fixedId);
+    expect(preview.payload.jobs.map((job) => job.jobId)).not.toContain(rollingId);
+  });
 });

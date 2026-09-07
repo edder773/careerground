@@ -27,6 +27,7 @@ export type V5Manifest = {
   publishedAt: string | null;
   manifestChecksum: string;
   counts: { new: number; changed: number; ended: number; excluded: number; active: number };
+  exclusions?: { existing: number; expired: number };
   db: { idempotencyKey: string; status: string; sourceChecksum?: string };
 };
 
@@ -551,7 +552,10 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
         runId: validated.request.runId,
         targetAsOfDate: validated.request.targetAsOfDate,
         inserted: Number(priorManifest.counts?.new || 0),
-        skippedExisting: Number(priorManifest.counts?.excluded || 0),
+        skippedExisting: Number(
+          priorManifest.exclusions?.existing ?? priorManifest.counts?.excluded ?? 0,
+        ),
+        skippedExpired: Number(priorManifest.exclusions?.expired || 0),
         sourceChecksum: validated.sourceChecksum,
       };
     }
@@ -574,7 +578,10 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
       ...publication,
       targetAsOfDate: priorManifest.targetAsOfDate,
       inserted: Number(priorManifest.counts?.new || 0),
-      skippedExisting: Number(priorManifest.counts?.excluded || 0),
+      skippedExisting: Number(
+        priorManifest.exclusions?.existing ?? priorManifest.counts?.excluded ?? 0,
+      ),
+      skippedExpired: Number(priorManifest.exclusions?.expired || 0),
       sourceChecksum: validated.sourceChecksum,
       deletedJobs: 0,
     };
@@ -716,8 +723,12 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
       new: newJobs.length,
       changed: 0,
       ended: 0,
-      excluded: skippedExisting,
+      excluded: skippedExisting + validated.skippedExpired,
       active: newJobs.length,
+    },
+    exclusions: {
+      existing: skippedExisting,
+      expired: validated.skippedExpired,
     },
     db: {
       idempotencyKey: `publish:${V5_WORKFLOW_ID}:${validated.request.runId}`,
@@ -761,6 +772,7 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
     targetAsOfDate: manifest.targetAsOfDate,
     inserted: newJobs.length,
     skippedExisting,
+    skippedExpired: validated.skippedExpired,
     sourceChecksum: validated.sourceChecksum,
     deletedJobs: 0,
   };
