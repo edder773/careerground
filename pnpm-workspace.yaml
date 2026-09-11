@@ -17,3 +17,5 @@ overrides:
   esbuild: 0.28.2
   # ajv consumers inherit fast-uri; require the SSRF and host-confusion fixes.
   fast-uri: 3.1.6
+  # Keep YAML parser consumers on the patched merge-source CPU limit.
+  js-yaml: 4.3.2
