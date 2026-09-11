@@ -108,7 +108,7 @@ const serviceLinks = ({ careergroundUrl, baeumzipUrl }) => ({
     },
     {
       type: 'mrkdwn',
-      text: `*배움집*\n${slackUrl(baeumzipUrl, '자격증 & SW 전공 테스트 준비 →')}`,
+      text: `*모두의 문제집*\n${slackUrl(baeumzipUrl, '자격증 & SW 전공 테스트 준비 →')}`,
     },
   ],
 });
