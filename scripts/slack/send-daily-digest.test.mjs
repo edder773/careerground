@@ -12,7 +12,7 @@ import {
   writeGithubOutputs,
 } from './send-daily-digest.mjs';
 
-const BAEUMZIP_URL = 'https://www.baeumzip.site/';
+const BAEUMZIP_URL = 'https://modumunje.com/';
 const BUSINESS_DAY = () => new Date('2026-08-21T00:00:00.000Z');
 
 const payload = {
@@ -80,7 +80,10 @@ describe('daily Slack digest', () => {
       rendered.indexOf('식품분류별 가장 비싼 식품의 정보 조회하기'),
     );
     expect(rendered).toContain('<https://careerground.example/|코딩테스트·채용공고 전체 보기 →>');
-    expect(rendered).toContain('<https://www.baeumzip.site/|자격증 &amp; SW 전공 테스트 준비 →>');
+    expect(rendered).toContain('*모두의 문제집*');
+    expect(rendered).toContain('<https://modumunje.com/|자격증 &amp; SW 전공 테스트 준비 →>');
+    expect(rendered).not.toContain('배움집');
+    expect(rendered).not.toContain('baeumzip.site');
     expect(rendered).not.toContain('신규 채용 알림 공고');
     expect(rendered).toContain('🔥 *오늘의 코딩 테스트*');
     expect(rendered).not.toContain('💼');
@@ -133,7 +136,10 @@ describe('daily Slack digest', () => {
     expect(rendered).toContain('🔥 *오늘의 코딩 테스트*');
     expect(rendered).toContain('💼 *신규 채용 알림 공고 · 40건*');
     expect(rendered).toContain('직전 일일 알림 이후 새롭게 등록된 마감일 확정 공고입니다.');
-    expect(rendered).toContain('배움집');
+    expect(rendered).toContain('*모두의 문제집*');
+    expect(rendered).toContain('<https://modumunje.com/|자격증 &amp; SW 전공 테스트 준비 →>');
+    expect(rendered).not.toContain('배움집');
+    expect(rendered).not.toContain('baeumzip.site');
     const blocks = messages[0].blocks;
     const jobsHeadingIndex = blocks.findIndex(
       (block) => block.type === 'section' && block.text?.text === '💼 *신규 채용 알림 공고 · 40건*',
@@ -165,6 +171,19 @@ describe('daily Slack digest', () => {
     expect(rendered).toContain('신규 채용 알림 공고 · 1건');
     expect(rendered).toContain('채용 시 마감 · NHN Careers');
     expect(rendered).not.toContain('오늘의 코딩 테스트');
+    expect(rendered).toContain('*모두의 문제집*');
+    expect(rendered).toContain('<https://modumunje.com/|자격증 &amp; SW 전공 테스트 준비 →>');
+    expect(rendered).not.toContain('배움집');
+    expect(rendered).not.toContain('baeumzip.site');
+  });
+
+  it('uses the Modumunje certification URL in the production workflow', async () => {
+    const workflow = await readFile(
+      new URL('../../.github/workflows/daily-slack-digest.yml', import.meta.url),
+      'utf8',
+    );
+    expect(workflow).toContain(`BAEUMZIP_URL: ${BAEUMZIP_URL}`);
+    expect(workflow).not.toContain('baeumzip.site');
   });
 
   it('uses one off-peak reservation and one watchdog schedule in Seoul', async () => {
