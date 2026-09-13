@@ -50,7 +50,7 @@ jobs:
       - name: Open or update the recovery incident
         if: always() && steps.recovery.outcome == 'failure'
         continue-on-error: true
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           INCIDENT_TITLE: '[운영 경보] D1 복구 훈련 실패'
           REPORT_PATH: work/operations/recovery-drill.json
@@ -88,7 +88,7 @@ jobs:
       - name: Close the recovery incident after a successful drill
         if: always() && steps.recovery.outcome == 'success'
         continue-on-error: true
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           INCIDENT_TITLE: '[운영 경보] D1 복구 훈련 실패'
         with:
