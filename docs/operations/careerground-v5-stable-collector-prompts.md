@@ -92,6 +92,10 @@ GitHub 전달 전에 완성된 JSON을 다시 읽고 모든 items의 enum을 전
 - 미상, `UNKNOWN`, `UNKNOWN_COMPANY_SIZE`, `N/A`, 금융권, 기타/미확인 → `UNCLASSIFIED`
 - 신입, 신입 공개경쟁, 신입(공개경쟁) → `NEW_GRAD_ONLY`
 - 정규직·신입사원·신입행원 → `FULL_TIME`, 체험형 인턴 → `INTERNSHIP`, 채용 전환형 인턴 → `INTERN_TO_FULL_TIME`, 고용형태 미확인 → `UNCONFIRMED`
+- 정규직 신입, 정규직(기간의 정함이 없는 근로계약) → `FULL_TIME`
+- 경력무관(신입 포함) → `NEW_GRAD_ELIGIBLE`
+- 신입(계약형태 미표기) → `UNCONFIRMED`. 신입이라는 이유로 계약형태를 추측하지 않는다.
+- 미분류(근로자수 N명) → `UNCLASSIFIED`. 인원수만으로 중소·중견·대기업을 추측하지 않는다.
 
 `companySize`, `careerScope`, `employmentType` 세 필드는 JSON을 만든 뒤 `items` 전체를 다시 순회해 허용 집합 밖의 서로 다른 값과 해당 item index를 모두 출력 전 검사한다. 첫 오류만 확인하고 종료하지 않는다.
 

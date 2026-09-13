@@ -209,6 +209,10 @@ describe('daily Slack digest', () => {
     expect(workflow).toContain('SLACK_DIGEST_WINDOW_START:');
     expect(workflow).toContain('SLACK_DIGEST_FRESH_UNTIL:');
     expect(workflow).toContain('inputs.dry_run');
+    expect(workflow).toContain('inputs.require_fresh_jobs');
+    expect(workflow).toContain(
+      "- name: Fail when digest delivery fails\n        if: always() && steps.digest.outcome == 'failure'\n        run: exit 1",
+    );
     expect(workflow).toContain("github.event.schedule == '55 7 * * 1-5'");
     expect(workflow).toContain("&& '08:31' || ''");
     expect(workflow).toContain("github.event_name != 'workflow_dispatch'");
@@ -513,6 +517,35 @@ describe('daily Slack digest', () => {
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
+
+  it.each(['not-ready', 'claimed', 'blocked'])(
+    'fails a non-preview dry-run without sending or settling: %s',
+    async (status) => {
+      const fetchMock = vi.fn().mockResolvedValueOnce(
+        new globalThis.Response(JSON.stringify({ status, deliveryKey: 'daily:2026-08-21' }), {
+          status: 200,
+        }),
+      );
+      await expect(
+        sendDailyDigest(
+          {
+            CAREERGROUND_DIGEST_URL: 'https://careerground.example/api/v1/internal/slack-digest',
+            CAREERGROUND_DIGEST_TOKEN: 'service-token',
+            BAEUMZIP_URL,
+            SLACK_DIGEST_DRY_RUN: 'true',
+            SLACK_DIGEST_REQUIRE_FRESH_JOBS: 'true',
+          },
+          fetchMock,
+          BUSINESS_DAY,
+        ),
+      ).rejects.toThrow('Slack dry-run failed:');
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
+        dryRun: true,
+        requireFreshJobs: true,
+      });
+    },
+  );
 
   it('writes a non-secret delivery status for later workflow monitoring steps', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'careerground-slack-output-'));

@@ -173,4 +173,51 @@ describe('jobs v5 canonical enum policy', () => {
     expect(Object.isFrozen(CANONICAL_DISCOVERY_ENUMS)).toBe(true);
     expect(Object.isFrozen(CANONICAL_DISCOVERY_ENUMS.companySize)).toBe(true);
   });
+
+  it.each(['정규직 신입', '정규직(기간의 정함이 없는 근로계약)'])(
+    'accepts explicit full-time collector wording: %s',
+    (employmentType) => {
+      expect(
+        inspectDiscoveryEnums({
+          careerScope: '경력무관(신입 포함)',
+          employmentType,
+          companySize: '미분류(근로자수 11명)',
+        }),
+      ).toMatchObject({
+        values: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'FULL_TIME',
+          companySize: 'UNCLASSIFIED',
+        },
+        violations: [],
+      });
+    },
+  );
+
+  it('does not infer an employment contract or company size from unrelated evidence', () => {
+    expect(
+      inspectDiscoveryEnums({
+        careerScope: '신입',
+        employmentType: '신입(계약형태 미표기)',
+        companySize: '미분류(근로자수 10000명)',
+      }),
+    ).toMatchObject({
+      values: {
+        careerScope: 'NEW_GRAD_ONLY',
+        employmentType: 'UNCONFIRMED',
+        companySize: 'UNCLASSIFIED',
+      },
+      violations: [],
+    });
+  });
+
+  it('still rejects unreviewed compound descriptions instead of guessing eligibility', () => {
+    expect(
+      inspectDiscoveryEnums({
+        careerScope: '경력무관(경력자만 지원)',
+        employmentType: '정규직 또는 프리랜서',
+        companySize: '미분류(대기업 추정)',
+      }).violations.map(({ field }) => field),
+    ).toEqual(['careerScope', 'employmentType', 'companySize']);
+  });
 });

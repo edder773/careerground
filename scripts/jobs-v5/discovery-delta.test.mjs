@@ -77,6 +77,36 @@ function writeBundle(values) {
 }
 
 describe('CareerGround discovery-only collector contract', () => {
+  it('accepts reviewed employment aliases throughout a complete three-partition bundle', () => {
+    const values = [
+      delta(1, [
+        {
+          ...item('Work24', 'explicit-contract'),
+          careerScope: '경력무관(신입 포함)',
+          employmentType: '정규직(기간의 정함이 없는 근로계약)',
+          companySize: '미분류(근로자수 11명)',
+        },
+      ]),
+      delta(2),
+      delta(3, [{ ...item('Jasoseol', 'explicit-new-grad'), employmentType: '정규직 신입' }]),
+    ];
+    const bundle = validateDiscoveryBundle({
+      partitionPaths: writeBundle(values),
+      targetAsOfDate,
+      sourcePolicy,
+      runId: 'test-alias-recovery',
+    });
+    expect(bundle.report).toMatchObject({
+      status: 'VERIFIED_DISCOVERY',
+      rowCount: 2,
+      potentialDuplicateCount: 0,
+    });
+    expect(bundle.normalizedPartitions[0].items[0]).toMatchObject({
+      employmentType: 'FULL_TIME',
+      companySize: 'UNCLASSIFIED',
+      careerScope: 'NEW_GRAD_ELIGIBLE',
+    });
+  });
   it('accepts zero new candidates without a baseline file or local hash', () => {
     const value = delta(1);
     const loaded = validateDiscoveryDelta(value, {

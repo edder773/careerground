@@ -28,6 +28,7 @@ const CAREER_SCOPE_ALIASES = new Map([
   ['신입 인턴 포지션', 'NEW_GRAD_ELIGIBLE'],
   ['신입 트랙 포함', 'NEW_GRAD_ELIGIBLE'],
   ['경력무관', 'NEW_GRAD_ELIGIBLE'],
+  ['경력무관(신입 포함)', 'NEW_GRAD_ELIGIBLE'],
   ['0~2년', 'NEW_GRAD_ELIGIBLE'],
 ]);
 const COMPANY_SIZE_ALIASES = new Map([
@@ -51,6 +52,7 @@ const COMPANY_SIZE_ALIASES = new Map([
   ['금융권', 'UNCLASSIFIED'],
   ['미상', 'UNCLASSIFIED'],
   ['미확인', 'UNCLASSIFIED'],
+  ['미분류', 'UNCLASSIFIED'],
   ['UNKNOWN', 'UNCLASSIFIED'],
   ['UNKNOWN_COMPANY_SIZE', 'UNCLASSIFIED'],
   ['N/A', 'UNCLASSIFIED'],
@@ -83,6 +85,8 @@ const EMPLOYMENT_TYPE_ALIASES = new Map([
   ['정규직', 'FULL_TIME'],
   ['정규직(신입)', 'FULL_TIME'],
   ['신입 정규직', 'FULL_TIME'],
+  ['정규직 신입', 'FULL_TIME'],
+  ['정규직(기간의 정함이 없는 근로계약)', 'FULL_TIME'],
   ['인턴', 'INTERNSHIP'],
   ['인턴십', 'INTERNSHIP'],
   ['체험형인턴', 'INTERNSHIP'],
@@ -96,6 +100,7 @@ const EMPLOYMENT_TYPE_ALIASES = new Map([
   ['계약직(신입)', 'CONTRACT'],
   ['미상', 'UNCONFIRMED'],
   ['미확인', 'UNCONFIRMED'],
+  ['신입(계약형태 미표기)', 'UNCONFIRMED'],
   ['UNKNOWN', 'UNCONFIRMED'],
   ['FULL_TIME_OR_CONTRACT', 'UNCONFIRMED'],
   ['FULL_TIME_OR_CONVERSION_CONTRACT', 'UNCONFIRMED'],
@@ -123,6 +128,8 @@ function normalizeCareerScope(value) {
 
 function normalizeCompanySize(value) {
   const normalized = normalizedText(value, 'UNCLASSIFIED');
+  // A headcount annotation is not evidence for a company-size classification.
+  if (/^미분류\(근로자수\s*\d+명\)$/u.test(normalized)) return 'UNCLASSIFIED';
   const exactAlias = COMPANY_SIZE_ALIASES.get(normalized);
   if (exactAlias) return exactAlias;
   const enumToken = normalized
