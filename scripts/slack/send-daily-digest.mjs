@@ -314,7 +314,14 @@ export async function sendDailyDigest(
     throw new Error(`CareerGround 알림 API 오류: HTTP ${digestResponse.status}`);
   }
   const claim = await digestResponse.json();
-  if (dryRun && claim.status === 'preview') {
+  if (dryRun) {
+    if (claim.status !== 'preview') {
+      throw new Error(
+        claim.status === 'not-ready'
+          ? 'Slack dry-run failed: job-import-not-ready'
+          : 'Slack dry-run failed: expected a read-only preview',
+      );
+    }
     const messages = formatSlackMessages(claim.payload, { baeumzipUrl, jobsOnly });
     return {
       messageCount: 0,

@@ -31,6 +31,10 @@ on:
         description: 'Slack 전송·claim 저장 없이 운영 준비 상태와 메시지 형식만 검증'
         type: boolean
         default: false
+      require_fresh_jobs:
+        description: '직전 발송 이후 DB 갱신 완료까지 검사(스냅샷 재전송에는 사용하지 않음)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -74,7 +78,7 @@ jobs:
           SLACK_DIGEST_WINDOW_START: ${{ (github.event_name == 'workflow_run' || github.event_name == 'repository_dispatch') && '08:01' || '' }}
           SLACK_DIGEST_WINDOW_END: ${{ (github.event_name == 'workflow_run' || github.event_name == 'repository_dispatch') && '10:30' || '' }}
           SLACK_DIGEST_FRESH_UNTIL: ${{ (github.event_name == 'workflow_run' || github.event_name == 'repository_dispatch') && '08:31' || '' }}
-          SLACK_DIGEST_REQUIRE_FRESH_JOBS: ${{ github.event_name == 'schedule' && github.event.schedule == '55 7 * * 1-5' }}
+          SLACK_DIGEST_REQUIRE_FRESH_JOBS: ${{ (github.event_name == 'schedule' && github.event.schedule == '55 7 * * 1-5') || (github.event_name == 'workflow_dispatch' && inputs.require_fresh_jobs) }}
         run: node scripts/slack/send-daily-digest.mjs
 
       - name: Open or update the jobs refresh incident
@@ -165,5 +169,5 @@ jobs:
           body: 일일 요약 전송이 정상화되었습니다.
 
       - name: Fail when digest delivery fails
-        if: always() && steps.digest.outcome == 'failure' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
+        if: always() && steps.digest.outcome == 'failure'
         run: exit 1

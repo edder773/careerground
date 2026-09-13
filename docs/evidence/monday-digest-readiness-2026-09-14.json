@@ -1,0 +1,48 @@
+{
+  "schema": "careerground-monday-digest-readiness/v1",
+  "observedAt": "2026-09-14T01:02:00+09:00",
+  "baseline": {
+    "sourceDate": "2026-09-11",
+    "sourceAttempt": 2,
+    "partitionCounts": [12, 5, 18],
+    "unsupportedEnumFields": 21,
+    "jobsCount": 307,
+    "dryRun": { "challenges": 4, "jobs": 0, "messagesSent": 0 },
+    "referenceCommit": "8f55b070388fcf10f163e2290342e5ad6053653c"
+  },
+  "verification": {
+    "sameInputEnumRecheck": { "before": 21, "after": 0, "candidateCount": 35 },
+    "recovery": {
+      "attempt": 3,
+      "targetDatePreserved": true,
+      "newRows": 9,
+      "excludedExistingOrExpired": 26,
+      "newDatedRows": 8,
+      "newRollingRows": 1
+    },
+    "liveDatabase": {
+      "jobsBefore": 307,
+      "jobsAfter": 316,
+      "uniqueIds": 316,
+      "existingRowsChanged": 0,
+      "deletedRows": 0,
+      "projectionWarnings": 0,
+      "committedRecoveryBatchCount": 1
+    },
+    "focusedTests": { "passed": 58, "failed": 0 },
+    "chromiumE2e": { "passed": 10, "failed": 0 },
+    "allTestsBeforeDryRunHardening": { "webPassed": 15, "rootPassed": 185, "failed": 0 },
+    "finalLint": "passed",
+    "finalTypecheck": "passed",
+    "finalAllTests": { "webPassed": 15, "rootPassed": 188, "failed": 0 },
+    "productionBuildBeforeFinalCommit": "passed",
+    "slackReservations": { "sentRows": 80, "unsettledRows": 0, "todayRows": 0 },
+    "workflowActive": true
+  },
+  "limitations": [
+    "The recovery concerns the latest available Friday evening collection, not a new Monday collection.",
+    "The expected eight dated jobs are not a claim that a live Slack message was sent.",
+    "The active target remains 08:01 Asia/Seoul with 07:55 runner reservation and 08:31 watchdog. GitHub queue timing cannot guarantee exact delivery.",
+    "No production rows, full payloads, credentials or screenshots are copied into this evidence file."
+  ]
+}
