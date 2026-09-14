@@ -1,0 +1,2142 @@
+{
+  "version": 1,
+  "verifiedAt": "2026-09-14T01:06:05.340Z",
+  "source": "https://school.programmers.co.kr",
+  "problems": [
+    {
+      "lessonId": 1844,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 1845,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12901,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12903,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12906,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12909,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 12910,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12911,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 12912,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12913,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 12914,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 12915,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12916,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12917,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12918,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12919,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12921,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12922,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12924,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 12925,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12926,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12927,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 12928,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12929,
+      "track": "ALGORITHM",
+      "level": 4
+    },
+    {
+      "lessonId": 12930,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12931,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12932,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12933,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12934,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12935,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12937,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12938,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 12939,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 12940,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12941,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 12943,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12944,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12945,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 12947,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12948,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12949,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 12950,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12951,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 12953,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 12954,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12969,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12971,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 12973,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 12977,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12979,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 12980,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 12981,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 12982,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 12983,
+      "track": "ALGORITHM",
+      "level": 4
+    },
+    {
+      "lessonId": 12984,
+      "track": "ALGORITHM",
+      "level": 4
+    },
+    {
+      "lessonId": 12985,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 12987,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 17677,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 17680,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 17681,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 17682,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 17684,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 17685,
+      "track": "ALGORITHM",
+      "level": 4
+    },
+    {
+      "lessonId": 17686,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 17687,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 42576,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 42577,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 42578,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 42579,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 42584,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 42586,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 42587,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 42626,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 42628,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 42746,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 42747,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 42748,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 42839,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 42840,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 42842,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 42860,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 42861,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 42862,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 42883,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 42884,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 42885,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 42889,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 42891,
+      "track": "ALGORITHM",
+      "level": 4
+    },
+    {
+      "lessonId": 42894,
+      "track": "ALGORITHM",
+      "level": 4
+    },
+    {
+      "lessonId": 42895,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 42897,
+      "track": "ALGORITHM",
+      "level": 4
+    },
+    {
+      "lessonId": 42898,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 43105,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 43162,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 43163,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 43164,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 43165,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 43236,
+      "track": "ALGORITHM",
+      "level": 4
+    },
+    {
+      "lessonId": 43238,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 49189,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 49993,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 49994,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 49995,
+      "track": "ALGORITHM",
+      "level": 4
+    },
+    {
+      "lessonId": 59034,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 59035,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 59036,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 59037,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 59038,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 59039,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 59040,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 59041,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 59042,
+      "track": "SQL",
+      "level": 3
+    },
+    {
+      "lessonId": 59043,
+      "track": "SQL",
+      "level": 3
+    },
+    {
+      "lessonId": 59044,
+      "track": "SQL",
+      "level": 3
+    },
+    {
+      "lessonId": 59045,
+      "track": "SQL",
+      "level": 4
+    },
+    {
+      "lessonId": 59046,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 59047,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 59403,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 59404,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 59405,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 59406,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 59407,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 59408,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 59409,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 59410,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 59411,
+      "track": "SQL",
+      "level": 3
+    },
+    {
+      "lessonId": 59412,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 59414,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 60060,
+      "track": "ALGORITHM",
+      "level": 4
+    },
+    {
+      "lessonId": 64062,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 64063,
+      "track": "ALGORITHM",
+      "level": 4
+    },
+    {
+      "lessonId": 64064,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 64065,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 67258,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 67260,
+      "track": "ALGORITHM",
+      "level": 4
+    },
+    {
+      "lessonId": 68644,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 68935,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 68936,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 70128,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 70129,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 72410,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 76501,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 76502,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 77484,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 77487,
+      "track": "SQL",
+      "level": 3
+    },
+    {
+      "lessonId": 77884,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 81301,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 82612,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 84512,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 86051,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 86491,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 86971,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 87389,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 87390,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 87946,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 92335,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 92341,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 118667,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 120803,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120804,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120805,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120806,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120807,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120808,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120809,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120810,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120813,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120814,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120815,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120818,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120819,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120820,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120823,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120824,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120826,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120830,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120833,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120834,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120838,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120839,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120840,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120842,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120843,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120846,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120847,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120848,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120849,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120850,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120851,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120852,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120853,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120860,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120861,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120863,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120864,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120866,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120868,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120869,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120871,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120882,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120883,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120884,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120885,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120886,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120888,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120889,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120890,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120891,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120894,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120896,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120897,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120898,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120899,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120902,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120903,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120904,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120906,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120908,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120909,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120911,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120912,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120913,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120922,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120924,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 120956,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 131112,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 131113,
+      "track": "SQL",
+      "level": 3
+    },
+    {
+      "lessonId": 131114,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 131115,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 131116,
+      "track": "SQL",
+      "level": 4
+    },
+    {
+      "lessonId": 131117,
+      "track": "SQL",
+      "level": 4
+    },
+    {
+      "lessonId": 131118,
+      "track": "SQL",
+      "level": 4
+    },
+    {
+      "lessonId": 131120,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 131123,
+      "track": "SQL",
+      "level": 3
+    },
+    {
+      "lessonId": 131127,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 131528,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 131529,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 131530,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 131533,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 131535,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 131536,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 131697,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 131701,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 131704,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 131705,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 132201,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 132202,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 132203,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 132265,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 132267,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 133024,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 133025,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 133026,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 133499,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 134240,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 135808,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 136798,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 138476,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 138477,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 140108,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 142086,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 144853,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 144854,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 144855,
+      "track": "SQL",
+      "level": 3
+    },
+    {
+      "lessonId": 147355,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 148653,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 150367,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 150369,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 150370,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 151136,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 151137,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 154538,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 154539,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 155652,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 157341,
+      "track": "SQL",
+      "level": 3
+    },
+    {
+      "lessonId": 159993,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 159994,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 160585,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 160586,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 161989,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 161990,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 164668,
+      "track": "SQL",
+      "level": 3
+    },
+    {
+      "lessonId": 164670,
+      "track": "SQL",
+      "level": 3
+    },
+    {
+      "lessonId": 164671,
+      "track": "SQL",
+      "level": 3
+    },
+    {
+      "lessonId": 164672,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 164673,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 172928,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 176963,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 181829,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181830,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181831,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181832,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181833,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181834,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181835,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181836,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181837,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181838,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181839,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181840,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181841,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181842,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181843,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181844,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181845,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181846,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181847,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181849,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181850,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181851,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181852,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181853,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181854,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181855,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181856,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181857,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181858,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181859,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181860,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181861,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181862,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181863,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181864,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181865,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181866,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181867,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181868,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181869,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181870,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181871,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181872,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181873,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181874,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181875,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181877,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181878,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181879,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181880,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181881,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181882,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181883,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181884,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181885,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181886,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181887,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181888,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181889,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181890,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181891,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181892,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181893,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181894,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181895,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181896,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181897,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181898,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181899,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181900,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181901,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181902,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181903,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181904,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181905,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181906,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181907,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181908,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181909,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181910,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181911,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181912,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181913,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181914,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181915,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181916,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181917,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181918,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181919,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181920,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181921,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181922,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181923,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181924,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181925,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181926,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181927,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181928,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181929,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181931,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181933,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181935,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181937,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181938,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181939,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181940,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181941,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181942,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181943,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181944,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181945,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181946,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181947,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181948,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181949,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181951,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 181952,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 214288,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 214289,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 250132,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 250134,
+      "track": "ALGORITHM",
+      "level": 3
+    },
+    {
+      "lessonId": 250135,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 250136,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 250137,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 258712,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 273709,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 284529,
+      "track": "SQL",
+      "level": 3
+    },
+    {
+      "lessonId": 284530,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 293257,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 293258,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 293261,
+      "track": "SQL",
+      "level": 3
+    },
+    {
+      "lessonId": 298515,
+      "track": "SQL",
+      "level": 1
+    },
+    {
+      "lessonId": 301647,
+      "track": "SQL",
+      "level": 2
+    },
+    {
+      "lessonId": 340199,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 340200,
+      "track": "ALGORITHM",
+      "level": 0
+    },
+    {
+      "lessonId": 340211,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 340212,
+      "track": "ALGORITHM",
+      "level": 2
+    },
+    {
+      "lessonId": 340213,
+      "track": "ALGORITHM",
+      "level": 1
+    },
+    {
+      "lessonId": 389480,
+      "track": "ALGORITHM",
+      "level": 2
+    }
+  ]
+}

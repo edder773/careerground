@@ -63,6 +63,32 @@ const claimed = (value = payload) =>
 const ok = () => new globalThis.Response('ok', { status: 200 });
 
 describe('daily Slack digest', () => {
+  it('never posts an independently misclassified problem and releases the unsent claim', async () => {
+    const invalid = globalThis.structuredClone(payload);
+    invalid.challenges[0].sourceUrl =
+      'https://school.programmers.co.kr/learn/courses/30/lessons/132203';
+    const fetchMock = vi.fn().mockResolvedValueOnce(claimed(invalid)).mockResolvedValueOnce(ok());
+    await expect(
+      sendDailyDigest(
+        {
+          CAREERGROUND_DIGEST_URL: 'https://careerground.example/api/v1/internal/slack-digest',
+          CAREERGROUND_DIGEST_TOKEN: 'service-token',
+          SLACK_WEBHOOK_URL: 'https://hooks.slack.com/services/T000/B000/secret',
+          BAEUMZIP_URL,
+        },
+        fetchMock,
+        BUSINESS_DAY,
+      ),
+    ).rejects.toThrow('원문 검증');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(
+      fetchMock.mock.calls.every(([url]) => new URL(String(url)).hostname !== 'hooks.slack.com'),
+    ).toBe(true);
+    expect(new URL(String(fetchMock.mock.calls[1][0])).pathname).toBe(
+      '/api/v1/internal/slack-digest/fail',
+    );
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toMatchObject({ uncertain: false });
+  });
   it('shows the digest date, links coding-test titles, and omits an empty jobs section', () => {
     const messages = formatSlackMessages(payload, { baeumzipUrl: BAEUMZIP_URL });
     const [message] = messages;

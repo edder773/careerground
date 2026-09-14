@@ -18,7 +18,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r --if-present typecheck && pnpm sites:typecheck",
-    "test": "pnpm -r --if-present test && vitest run scripts/troubleshooting scripts/slack scripts/operations scripts/performance scripts/jobs-v5 deployment/sites",
+    "test": "pnpm -r --if-present test && vitest run scripts/troubleshooting scripts/slack scripts/coding scripts/operations scripts/performance scripts/jobs-v5 deployment/sites",
     "test:e2e": "playwright test",
     "test:e2e:visual": "playwright test e2e/visual.spec.ts",
     "db:d1:generate": "drizzle-kit generate",

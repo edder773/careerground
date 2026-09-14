@@ -2,6 +2,10 @@ import { appendFileSync } from 'node:fs';
 import process from 'node:process';
 import { URL, pathToFileURL } from 'node:url';
 import { getKoreanDispatchDecision } from './korean-business-day.mjs';
+import {
+  isVerifiedCodingProblem,
+  verifiedCodingMetadata,
+} from '../../shared/verified-coding-problem.mjs';
 
 const MAX_SECTION_LENGTH = 2_800;
 
@@ -192,9 +196,18 @@ const validateDigestPayload = (payload) => {
     advanced.track !== 'ALGORITHM' ||
     Number(advanced.level) !== 3 ||
     advanced.isChallenge !== true ||
-    sql.track !== 'SQL'
+    sql.track !== 'SQL' ||
+    ![3, 4].includes(Number(sql.level))
   ) {
     throw new Error('Slack 코딩테스트 순서는 Lv.1, Lv.2, 도전 Lv.3, SQL이어야 합니다.');
+  }
+  if (
+    payload.challenges.some((challenge) => !isVerifiedCodingProblem(challenge)) ||
+    new Set(
+      payload.challenges.map((challenge) => verifiedCodingMetadata(challenge.sourceUrl)?.lessonId),
+    ).size !== 4
+  ) {
+    throw new Error('원문 검증 분류와 코딩테스트가 일치하지 않습니다. Slack 전송을 차단합니다.');
   }
 };
 
@@ -364,7 +377,18 @@ export async function sendDailyDigest(
     });
     if (!response.ok) throw new Error(`CareerGround 발송 확정 API 오류: HTTP ${response.status}`);
   };
-  const messages = formatSlackMessages(claim.payload, { baeumzipUrl, jobsOnly });
+  let messages;
+  try {
+    messages = formatSlackMessages(claim.payload, { baeumzipUrl, jobsOnly });
+  } catch (error) {
+    // No webhook request has occurred, so release the claim rather than leaving
+    // the next retry blocked as an uncertain send.
+    await settle('fail', {
+      uncertain: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
   for (const message of messages) {
     let slackResponse;
     try {

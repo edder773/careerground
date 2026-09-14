@@ -1,0 +1,44 @@
+name: Verify coding catalog
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: '원문 확인 기준과 다른 DB 분류만 조건부 정정 (Slack 발송 없음)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: careerground-coding-catalog-reconcile
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: '.node-version'
+      - name: Verify or reconcile source-checked classifications (never sends Slack)
+        env:
+          CAREERGROUND_DIGEST_TOKEN: ${{ secrets.CAREERGROUND_DIGEST_TOKEN }}
+          CATALOG_APPLY: ${{ inputs.apply }}
+        run: |
+          node --input-type=module <<'JS'
+          const response = await fetch('https://careerground-workspace.edder773.chatgpt.site/api/v1/internal/coding-catalog/reconcile', {
+            method: 'POST',
+            headers: { authorization: `Bearer ${process.env.CAREERGROUND_DIGEST_TOKEN}`, 'content-type': 'application/json' },
+            body: JSON.stringify({ apply: process.env.CATALOG_APPLY === 'true' }),
+            signal: AbortSignal.timeout(30000),
+          });
+          if (!response.ok) throw new Error(`Catalog reconciliation failed: HTTP ${response.status}`);
+          const result = await response.json();
+          console.log(JSON.stringify(result));
+          if (result.unverifiedIds.length) throw new Error('Unverified coding problems');
+          if (process.env.CATALOG_APPLY !== 'true' && result.differences.length) throw new Error('Catalog drift detected');
+          JS
