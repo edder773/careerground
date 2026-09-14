@@ -11,6 +11,7 @@ import {
 import { normalizedText, sha256 } from './domain.js';
 import { RouteError, type D1Env } from './d1-api-contract.js';
 import { hashToken, newOpaqueToken } from './security-token.js';
+import { isVerifiedCodingProblem } from '../../shared/verified-coding-problem.mjs';
 import {
   duplicateJobReason,
   jobCompanyKey,
@@ -171,6 +172,7 @@ const dailyChallengeValue = (row: DailyChallengeRow) => ({
 });
 
 const dailyChallengeRowMatchesSlot = (row: DailyChallengeRow) => {
+  if (!isVerifiedCodingProblem(row)) return false;
   if (row.levelSlot === 1) return row.track === 'ALGORITHM' && row.level === 1;
   if (row.levelSlot === 2) return row.track === 'ALGORITHM' && row.level === 2;
   if (row.levelSlot === 34) return row.track === 'SQL' && [3, 4].includes(row.level);
@@ -212,7 +214,10 @@ async function availableCandidates(
   today: string,
   allowRepeatRelaxation: boolean,
 ) {
-  const strict = await all<{ id: string }>(db, sql, ...bindings, strictCutoff);
+  type Candidate = { id: string; sourceUrl: string; track: string; level: number };
+  const strict = (await all<Candidate>(db, sql, ...bindings, strictCutoff)).filter(
+    isVerifiedCodingProblem,
+  );
   if (strict.length) return strict;
 
   // Availability is more important than the preferred repeat window. A finite
@@ -226,7 +231,7 @@ async function availableCandidates(
       today,
     });
   }
-  return all<{ id: string }>(db, sql, ...bindings, today);
+  return (await all<Candidate>(db, sql, ...bindings, today)).filter(isVerifiedCodingProblem);
 }
 
 async function selectMissingDailyChallenges(
@@ -244,7 +249,7 @@ async function selectMissingDailyChallenges(
   const candidatesBySpec: Array<Promise<{ id: string }[]>> = [];
   for (const spec of missing) {
     const placeholders = spec.levels.map(() => '?').join(', ');
-    const sql = `SELECT id FROM coding_problems
+    const sql = `SELECT id, source_url AS sourceUrl, track, level FROM coding_problems
                   WHERE active = 1 AND track = ? AND level IN (${placeholders})
                     AND id NOT IN (
                       SELECT problem_id FROM daily_challenges WHERE kst_date >= ?
@@ -341,13 +346,14 @@ const slackChallengeSql = `SELECT p.id AS problemId, p.source_url AS sourceUrl,
 
 async function slackLv3Challenge(db: D1Database, today: string) {
   let selected = await first<SlackChallengeRow>(db, slackChallengeSql, today);
+  if (selected && !isVerifiedCodingProblem(selected)) selected = null;
   if (!selected) {
     const setting =
       (await first<DailyChallengeSettingRow>(db, dailyChallengeSettingSql)) || undefined;
     const configuration = dailyChallengeConfiguration(setting);
     const cutoff = new Date(`${today}T00:00:00.000Z`);
     cutoff.setUTCDate(cutoff.getUTCDate() - configuration.repeatExclusionDays);
-    const candidateSql = `SELECT id FROM coding_problems
+    const candidateSql = `SELECT id, source_url AS sourceUrl, track, level FROM coding_problems
                             WHERE active = 1 AND track = 'ALGORITHM' AND level = 3
                               AND id NOT IN (
                                 SELECT problem_id FROM daily_challenges WHERE kst_date >= ?
@@ -377,7 +383,9 @@ async function slackLv3Challenge(db: D1Database, today: string) {
       .run();
     selected = await first<SlackChallengeRow>(db, slackChallengeSql, today);
   }
-  if (!selected) throw new RouteError(500, 'Slack 도전 문제를 준비하지 못했습니다.');
+  if (!selected || !isVerifiedCodingProblem(selected)) {
+    throw new RouteError(500, '검증된 Slack 도전 문제를 준비하지 못했습니다.');
+  }
   return selected;
 }
 

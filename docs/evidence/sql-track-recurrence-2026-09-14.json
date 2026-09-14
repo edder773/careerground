@@ -1,0 +1,55 @@
+{
+  "schema": "careerground-evidence/v1",
+  "date": "2026-09-14",
+  "scope": "coding classification and Slack pre-send validation",
+  "sourceVerification": {
+    "verifiedAt": "2026-09-14T01:06:05.340Z",
+    "method": "Fetch each official lesson; require matching data-challenge-category and data-challengeable-type plus an integer data-challenge-level",
+    "catalog": "shared/verified-programmers-catalog.json",
+    "attempted": 427,
+    "verified": 427,
+    "failures": 0,
+    "algorithm": 360,
+    "sql": 67
+  },
+  "baseline": {
+    "revision": "0e4f514600a14ec232090f9d335ed76c299deab5",
+    "fixtureCatalogRows": 427,
+    "algorithm": 361,
+    "sql": 66,
+    "trackMismatches": 1,
+    "levelMismatches": 0,
+    "lessonId": 132203,
+    "sourceUrl": "https://school.programmers.co.kr/learn/courses/30/lessons/132203",
+    "previousPatchIds": [132201, 133024, 133025, 151136],
+    "regressionCommand": "pnpm exec vitest run deployment/sites/d1-verified-challenges.test.ts",
+    "reproducedFailuresBefore": 2,
+    "sameReproductionsPassingAfter": 2
+  },
+  "validation": {
+    "lint": "pass",
+    "typecheck": "pass",
+    "webTests": 15,
+    "rootTests": 203,
+    "focusedTests": 40,
+    "performanceBudgets": "pass",
+    "recoveryDrill": "pass",
+    "e2eInitial": {
+      "workers": 5,
+      "passed": 32,
+      "failed": 3,
+      "failure": "45-second visual test timeout while other checks ran concurrently"
+    },
+    "e2eFinal": { "workers": 2, "passed": 35, "failed": 0, "durationSeconds": 90, "retries": 0 },
+    "build": "pass; existing docs chunk-size warning remains"
+  },
+  "boundaries": {
+    "unknownSource": "excluded from recommendations and rejected before Slack POST",
+    "repeatFallback": "only source-verified candidates",
+    "sourceVerificationFailure": "no partial manifest emitted",
+    "databaseCorrection": "separate authenticated conditional update; no migration rewrite or seed replay",
+    "unpostedInvalidPayload": "mark FAILED with uncertain=false; never POST to Slack",
+    "sentHistory": "preserved; no retry or correction message requested"
+  },
+  "performanceImprovement": "정량 측정 불가"
+}

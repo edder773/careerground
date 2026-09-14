@@ -1,6 +1,7 @@
 import { first, newId, nowIso } from './d1.js';
 import { RouteError, type D1Env } from './d1-api-contract.js';
 import { BUILD_INFO } from './build-info.js';
+import { reconcileCodingCatalog } from './d1-coding-catalog-integrity.js';
 import {
   claimSlackDigest,
   dailyChallenge,
@@ -70,6 +71,15 @@ async function activePublicRoute(request: Request, env: D1Env, url: URL) {
 }
 
 async function internalRoute(request: Request, env: D1Env, url: URL) {
+  if (url.pathname === '/api/v1/internal/coding-catalog/reconcile') {
+    if (request.method !== 'POST') methodNotAllowed('POST');
+    await requireDigestToken(request, env);
+    const body = await readJson(request);
+    if (body.apply !== undefined && typeof body.apply !== 'boolean') {
+      throw new RouteError(400, 'apply는 boolean이어야 합니다.', 'INVALID_APPLY');
+    }
+    return reconcileCodingCatalog(env.DB, body.apply === true);
+  }
   if (url.pathname === '/api/v1/internal/slack-digest') {
     if (request.method !== 'GET') methodNotAllowed('GET');
     await requireDigestToken(request, env);
