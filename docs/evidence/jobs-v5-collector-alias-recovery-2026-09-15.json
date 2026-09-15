@@ -1,0 +1,26 @@
+{
+  "schema": "careerground-jobs-v5-collector-alias-recovery/v1",
+  "date": "2026-09-15",
+  "scope": "September 14 immutable collector bundle validation before production publish",
+  "baseline": {
+    "bundleRows": 28,
+    "unsupportedEnumFields": 27,
+    "validationStatus": "FAILED_DISCOVERY",
+    "productionJobRows": 316,
+    "jobsCreatedAfterPreviousDigest": 0,
+    "slackMessagesSentDuringValidation": 0
+  },
+  "after": {
+    "bundleRows": 28,
+    "unsupportedEnumFields": 0,
+    "validationStatus": "VERIFIED_DISCOVERY",
+    "potentialDuplicateCountWithinBundle": 0,
+    "enumNormalizations": 84,
+    "slackMessagesSentDuringValidation": 0
+  },
+  "verification": [
+    "pnpm exec vitest run scripts/jobs-v5/canonical-policy.test.mjs scripts/jobs-v5/discovery-delta.test.mjs",
+    "pnpm jobs:v5:validate-discovery --target-as-of-date 2026-09-14 --run-id CG-2026-09-14-A1-discovery --partition1 <redacted> --partition2 <redacted> --partition3 <redacted> --output <redacted>"
+  ],
+  "privacy": "Company names, job titles, source URLs, credentials, and production row contents are intentionally omitted."
+}
