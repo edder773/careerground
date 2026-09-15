@@ -21,8 +21,17 @@ const CAREER_SCOPE_ALIASES = new Map([
   ['신입·채용연계형 인턴', 'NEW_GRAD_ONLY'],
   ['신입 종합직', 'NEW_GRAD_ONLY'],
   ['신입·졸업예정', 'NEW_GRAD_ONLY'],
+  ['신입·졸업예정자 가능', 'NEW_GRAD_ONLY'],
+  ['신입·졸업예정자 지원 가능', 'NEW_GRAD_ONLY'],
+  ['채용연계형 인턴·신입 지원 가능', 'NEW_GRAD_ONLY'],
+  ['신입사원', 'NEW_GRAD_ONLY'],
+  ['대졸수준 신입', 'NEW_GRAD_ONLY'],
   ['신입/경력', 'NEW_GRAD_ELIGIBLE'],
   ['신입·경력', 'NEW_GRAD_ELIGIBLE'],
+  ['신입+경력(청년인턴)', 'NEW_GRAD_ELIGIBLE'],
+  ['신입 지원 가능', 'NEW_GRAD_ELIGIBLE'],
+  ['신입 지원 가능·경력 연수 제한 없음', 'NEW_GRAD_ELIGIBLE'],
+  ['인턴/최근 졸업자', 'NEW_GRAD_ELIGIBLE'],
   ['인턴·재학생/최근 졸업자', 'NEW_GRAD_ELIGIBLE'],
   ['체험형 인턴', 'NEW_GRAD_ELIGIBLE'],
   ['신입 인턴 포지션', 'NEW_GRAD_ELIGIBLE'],
@@ -87,15 +96,25 @@ const EMPLOYMENT_TYPE_ALIASES = new Map([
   ['신입 정규직', 'FULL_TIME'],
   ['정규직 신입', 'FULL_TIME'],
   ['정규직(기간의 정함이 없는 근로계약)', 'FULL_TIME'],
+  ['기간의 정함이 없는 근로계약', 'FULL_TIME'],
+  ['정규직(수습 3개월)', 'FULL_TIME'],
+  ['정규직(신입, 3개월 수습)', 'FULL_TIME'],
+  ['정규직(3개월 수습)', 'FULL_TIME'],
+  ['정규직(수습기간 운영)', 'FULL_TIME'],
+  ['정규직(일반직 5급)', 'FULL_TIME'],
   ['인턴', 'INTERNSHIP'],
   ['인턴십', 'INTERNSHIP'],
   ['체험형인턴', 'INTERNSHIP'],
   ['체험형 인턴', 'INTERNSHIP'],
+  ['체험형 청년인턴', 'INTERNSHIP'],
+  ['인턴(풀타임)', 'INTERNSHIP'],
   ['채용연계형 인턴', 'INTERN_TO_FULL_TIME'],
   ['채용 전환형 인턴', 'INTERN_TO_FULL_TIME'],
   ['전환형 인턴', 'INTERN_TO_FULL_TIME'],
   ['정규직 전환형 인턴', 'INTERN_TO_FULL_TIME'],
   ['신입·채용연계형 인턴', 'INTERN_TO_FULL_TIME'],
+  ['인턴(수습 3개월, 정규직전환가능)', 'INTERN_TO_FULL_TIME'],
+  ['인턴(6개월, 정규직 전환 기회)', 'INTERN_TO_FULL_TIME'],
   ['계약직', 'CONTRACT'],
   ['계약직(신입)', 'CONTRACT'],
   ['미상', 'UNCONFIRMED'],
@@ -130,6 +149,10 @@ function normalizeCompanySize(value) {
   const normalized = normalizedText(value, 'UNCLASSIFIED');
   // A headcount annotation is not evidence for a company-size classification.
   if (/^미분류\(근로자수\s*\d+명\)$/u.test(normalized)) return 'UNCLASSIFIED';
+  if (/^\d[\d,]*명\s*(?:이상|이하|내외)?$/u.test(normalized)) return 'UNCLASSIFIED';
+  // Preserve an explicit Korean classification while discarding only its parenthetical evidence.
+  if (/^중견기업\s*\([^)]*\)$/u.test(normalized)) return 'MID';
+  if (/^중소기업\s*\([^)]*\)$/u.test(normalized)) return 'SMALL';
   const exactAlias = COMPANY_SIZE_ALIASES.get(normalized);
   if (exactAlias) return exactAlias;
   const enumToken = normalized

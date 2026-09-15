@@ -211,6 +211,105 @@ describe('jobs v5 canonical enum policy', () => {
     });
   });
 
+  it('normalizes the reviewed September 14 collector descriptions without widening inference', () => {
+    const reviewed = [
+      {
+        input: {
+          careerScope: '신입·졸업예정자 가능',
+          employmentType: '정규직(수습 3개월)',
+          companySize: '중견기업(301~500명)',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ONLY',
+          employmentType: 'FULL_TIME',
+          companySize: 'MID',
+        },
+      },
+      {
+        input: {
+          careerScope: '채용연계형 인턴·신입 지원 가능',
+          employmentType: '인턴(6개월, 정규직 전환 기회)',
+          companySize: '중견기업(747명)',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ONLY',
+          employmentType: 'INTERN_TO_FULL_TIME',
+          companySize: 'MID',
+        },
+      },
+      {
+        input: {
+          careerScope: '신입 지원 가능·경력 연수 제한 없음',
+          employmentType: '정규직(일반직 5급)',
+          companySize: '중소기업(89명)',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'FULL_TIME',
+          companySize: 'SMALL',
+        },
+      },
+      {
+        input: {
+          careerScope: '인턴/최근 졸업자',
+          employmentType: '인턴(풀타임)',
+          companySize: 'UNCLASSIFIED',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'INTERNSHIP',
+          companySize: 'UNCLASSIFIED',
+        },
+      },
+      {
+        input: {
+          careerScope: '신입+경력(청년인턴)',
+          employmentType: '체험형 청년인턴',
+          companySize: 'PUBLIC',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'INTERNSHIP',
+          companySize: 'PUBLIC',
+        },
+      },
+      {
+        input: {
+          careerScope: '대졸수준 신입',
+          employmentType: '기간의 정함이 없는 근로계약',
+          companySize: 'LARGE',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ONLY',
+          employmentType: 'FULL_TIME',
+          companySize: 'LARGE',
+        },
+      },
+    ];
+
+    for (const { input, expected } of reviewed) {
+      expect(inspectDiscoveryEnums(input)).toMatchObject({
+        values: expected,
+        violations: [],
+      });
+    }
+
+    expect(
+      inspectDiscoveryEnums({
+        careerScope: '경력자 우대',
+        employmentType: '근무 조건 협의',
+        companySize: '300명 이상',
+      }).violations.map(({ field }) => field),
+    ).toEqual(['careerScope', 'employmentType']);
+    expect(
+      inspectDiscoveryEnums({
+        careerScope: 'NEW_GRAD_ELIGIBLE',
+        employmentType: 'INTERNSHIP',
+        companySize: '300명 이상',
+      }).values.companySize,
+    ).toBe('UNCLASSIFIED');
+  });
+
   it('still rejects unreviewed compound descriptions instead of guessing eligibility', () => {
     expect(
       inspectDiscoveryEnums({
