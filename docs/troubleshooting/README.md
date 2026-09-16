@@ -63,6 +63,7 @@ generatedByAI: false
 | 09-03 | [채용 검증 정책 중복과 Slack 다중 예약 단순화](./2026-09-03-job-pipeline-architecture-simplification.md)      | 이번 변경                                               | cron 9→2, enum 정책 원천 2→1              |
 | 09-03 | [채용 달력 중심 홈과 제품 표면 단순화](./2026-09-03-recruitment-calendar-home.md)                             | 이번 변경                                               | 홈 달력 기본·탐색 5→4·E2E 31건            |
 | 09-15 | [채용 수집 자유 서술 enum으로 인한 전체 게시 차단 복구](./2026-09-15-jobs-v5-collector-alias-recovery.md)     | 이번 변경                                               | 미지원 enum 27→0·동일 28건 검증 통과      |
+| 09-16 | [채용 수집 표현형 enum 재발과 보수적 정규화 확장](./2026-09-16-jobs-v5-collector-alias-recovery.md)           | 이번 변경                                               | 미지원 enum 15→0·동일 26건 검증 통과      |
 
 Dependabot PR #4는 pnpm 11/Node 24를 지원하는 `pnpm/action-setup@6` 갱신이며 별도 장애가 없어 Sites runtime 문서의 도구 체인 맥락에 포함했다. PR #3 이전의 닫힌 #1/#2는 구현이 병합되지 않았으므로 운영 변경 기록에 포함하지 않았다.
 
