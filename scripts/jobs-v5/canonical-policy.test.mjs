@@ -319,4 +319,88 @@ describe('jobs v5 canonical enum policy', () => {
       }).violations.map(({ field }) => field),
     ).toEqual(['careerScope', 'employmentType', 'companySize']);
   });
+
+  it('normalizes the reviewed September 15 collector descriptions conservatively', () => {
+    const reviewed = [
+      {
+        input: {
+          careerScope: '신입/경력 중 신입 지원 직무 포함',
+          employmentType: '정규직·계약직',
+          companySize: '중기업',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'UNCONFIRMED',
+          companySize: 'SMALL',
+        },
+      },
+      {
+        input: {
+          careerScope: "Intern; enrolled or recently graduated master's students eligible",
+          employmentType: 'Full-time internship',
+          companySize: '300+ employees',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'INTERNSHIP',
+          companySize: 'UNCLASSIFIED',
+        },
+      },
+      {
+        input: {
+          careerScope: 'NEW_GRAD_ONLY',
+          employmentType: '신입/경력 공채 (신입 트랙)',
+          companySize: 'Large enterprise (10,406 employees)',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ONLY',
+          employmentType: 'UNCONFIRMED',
+          companySize: 'LARGE',
+        },
+      },
+      {
+        input: {
+          careerScope: '신입/경력 중 신입 트랙',
+          employmentType: '신입/경력',
+          companySize: 'Mid-sized enterprise (430 employees)',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'UNCONFIRMED',
+          companySize: 'MID',
+        },
+      },
+      {
+        input: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: '청년인턴(채용형)',
+          companySize: 'Public corporation',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'INTERN_TO_FULL_TIME',
+          companySize: 'PUBLIC',
+        },
+      },
+      {
+        input: {
+          careerScope: 'NEW_GRAD_ONLY',
+          employmentType: 'FULL_TIME',
+          companySize: 'Financial institution',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ONLY',
+          employmentType: 'FULL_TIME',
+          companySize: 'UNCLASSIFIED',
+        },
+      },
+    ];
+
+    for (const { input, expected } of reviewed) {
+      expect(inspectDiscoveryEnums(input)).toMatchObject({
+        values: expected,
+        violations: [],
+      });
+    }
+  });
 });

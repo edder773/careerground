@@ -36,6 +36,9 @@ const CAREER_SCOPE_ALIASES = new Map([
   ['체험형 인턴', 'NEW_GRAD_ELIGIBLE'],
   ['신입 인턴 포지션', 'NEW_GRAD_ELIGIBLE'],
   ['신입 트랙 포함', 'NEW_GRAD_ELIGIBLE'],
+  ['신입/경력 중 신입 지원 직무 포함', 'NEW_GRAD_ELIGIBLE'],
+  ['신입/경력 중 신입 트랙', 'NEW_GRAD_ELIGIBLE'],
+  ["Intern; enrolled or recently graduated master's students eligible", 'NEW_GRAD_ELIGIBLE'],
   ['경력무관', 'NEW_GRAD_ELIGIBLE'],
   ['경력무관(신입 포함)', 'NEW_GRAD_ELIGIBLE'],
   ['0~2년', 'NEW_GRAD_ELIGIBLE'],
@@ -59,6 +62,7 @@ const COMPANY_SIZE_ALIASES = new Map([
   ['외국계기업', 'FOREIGN'],
   ['국제기구', 'UNCLASSIFIED'],
   ['금융권', 'UNCLASSIFIED'],
+  ['Financial institution', 'UNCLASSIFIED'],
   ['미상', 'UNCLASSIFIED'],
   ['미확인', 'UNCLASSIFIED'],
   ['미분류', 'UNCLASSIFIED'],
@@ -66,6 +70,8 @@ const COMPANY_SIZE_ALIASES = new Map([
   ['UNKNOWN_COMPANY_SIZE', 'UNCLASSIFIED'],
   ['N/A', 'UNCLASSIFIED'],
   ['기타/미확인', 'UNCLASSIFIED'],
+  ['중기업', 'SMALL'],
+  ['Public corporation', 'PUBLIC'],
 ]);
 const COMPANY_SIZE_COMPACT_ALIASES = new Map([
   ['LARGEENTERPRISE', 'LARGE'],
@@ -113,16 +119,21 @@ const EMPLOYMENT_TYPE_ALIASES = new Map([
   ['전환형 인턴', 'INTERN_TO_FULL_TIME'],
   ['정규직 전환형 인턴', 'INTERN_TO_FULL_TIME'],
   ['신입·채용연계형 인턴', 'INTERN_TO_FULL_TIME'],
+  ['청년인턴(채용형)', 'INTERN_TO_FULL_TIME'],
   ['인턴(수습 3개월, 정규직전환가능)', 'INTERN_TO_FULL_TIME'],
   ['인턴(6개월, 정규직 전환 기회)', 'INTERN_TO_FULL_TIME'],
   ['계약직', 'CONTRACT'],
   ['계약직(신입)', 'CONTRACT'],
+  ['Full-time internship', 'INTERNSHIP'],
   ['미상', 'UNCONFIRMED'],
   ['미확인', 'UNCONFIRMED'],
   ['신입(계약형태 미표기)', 'UNCONFIRMED'],
   ['UNKNOWN', 'UNCONFIRMED'],
   ['FULL_TIME_OR_CONTRACT', 'UNCONFIRMED'],
   ['FULL_TIME_OR_CONVERSION_CONTRACT', 'UNCONFIRMED'],
+  ['정규직·계약직', 'UNCONFIRMED'],
+  ['신입/경력 공채 (신입 트랙)', 'UNCONFIRMED'],
+  ['신입/경력', 'UNCONFIRMED'],
 ]);
 
 function normalizedText(value, fallback = '') {
@@ -150,9 +161,12 @@ function normalizeCompanySize(value) {
   // A headcount annotation is not evidence for a company-size classification.
   if (/^미분류\(근로자수\s*\d+명\)$/u.test(normalized)) return 'UNCLASSIFIED';
   if (/^\d[\d,]*명\s*(?:이상|이하|내외)?$/u.test(normalized)) return 'UNCLASSIFIED';
+  if (/^\d[\d,]*\+\s*employees$/iu.test(normalized)) return 'UNCLASSIFIED';
   // Preserve an explicit Korean classification while discarding only its parenthetical evidence.
   if (/^중견기업\s*\([^)]*\)$/u.test(normalized)) return 'MID';
   if (/^중소기업\s*\([^)]*\)$/u.test(normalized)) return 'SMALL';
+  if (/^Large enterprise\s*\([^)]*\)$/iu.test(normalized)) return 'LARGE';
+  if (/^Mid-sized enterprise\s*\([^)]*\)$/iu.test(normalized)) return 'MID';
   const exactAlias = COMPANY_SIZE_ALIASES.get(normalized);
   if (exactAlias) return exactAlias;
   const enumToken = normalized
