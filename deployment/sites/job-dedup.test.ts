@@ -146,6 +146,44 @@ describe('job campaign and role identity', () => {
     expect(duplicateJobReason(corrected, previous)).toBe('equivalent-title');
   });
 
+  it('blocks a 코스콤 employee-recruitment umbrella after its IT role was delivered', () => {
+    const previous = {
+      companyName: '㈜코스콤',
+      title: '(주) 코스콤 2026년 하반기 신입직원 채용 - IT 개발',
+      applicationStartAt: '2026-09-07T00:00:00+09:00',
+      deadlineAt: '2026-09-21T17:00:00+09:00',
+      sourceUrl: 'https://m.jobkorea.co.kr/Recruit/GI_Read/49928921',
+    };
+    const current = {
+      companyName: '(주)코스콤',
+      title: '2026년 하반기 직원(신입/경력/기술) 채용 공고',
+      applicationStartAt: '2026-09-07T09:00:00+09:00',
+      deadlineAt: '2026-09-21T17:00:00+09:00',
+      sourceUrl: 'https://job.incruit.com/jobdb_info/jobpost.asp?job=2609040001963',
+    };
+
+    expect(duplicateJobReason(current, previous)).toBe('umbrella-campaign');
+  });
+
+  it('blocks a 한국전력기술 umbrella when sources disagree on the opening date', () => {
+    const previous = {
+      companyName: '한국전력기술주식회사',
+      title: '2026년도 하반기 정규직(신입사원) - 전산',
+      applicationStartAt: '2026-09-07',
+      deadlineAt: '2026-09-22',
+      sourceUrl: 'https://m.ncs.go.kr/blind/bl04/RecrtNotifDetail.do?recrtNo=20260908114754',
+    };
+    const current = {
+      companyName: '한국전력기술(주)',
+      title: '2026년도 하반기 정규직(신입사원) 채용공고 - IT 직군 포함',
+      applicationStartAt: '2026-09-14',
+      deadlineAt: '2026-09-22T11:00:00+09:00',
+      sourceUrl: 'https://lab.incruit.com/jobs/2609080000146',
+    };
+
+    expect(duplicateJobReason(current, previous)).toBe('umbrella-campaign');
+  });
+
   it('treats a company-group recruitment title as the same campaign as its specialist posting', () => {
     const umbrella = {
       companyName: '포스코',

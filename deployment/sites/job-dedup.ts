@@ -220,7 +220,8 @@ const dayDistance = (left: string | null, right: string | null) => {
 
 const titleLooksUmbrella = (job: ComparableJob, roles: string[]) => {
   const title = normalizedTitle(job.title);
-  if (/전\s*(부문|직군)|부문별|관련\s*직무/gu.test(title)) return true;
+  if (/전\s*(부문|직군)|부문별|관련\s*직무|직군\s*포함/gu.test(title)) return true;
+  if (/(?:신입|신규)?직원[^\n]{0,24}채용/u.test(title)) return true;
   if (/(신입(?:사원|행원)?\s*채용|공채|공개채용|수시채용)/u.test(title)) {
     const broadDomains = new Set(
       roles.filter((token) => ['it', 'sw', 'ai', 'tech', '개발', '데이터'].includes(token)),
@@ -274,7 +275,11 @@ const sameRecruitmentWindow = (left: ComparableJob, right: ComparableJob) => {
   const startDistance = dayDistance(leftStart, rightStart);
   const deadlineDistance = dayDistance(leftDeadline, rightDeadline);
   if (leftDeadline && rightDeadline) {
-    if (leftDeadline === rightDeadline) return startDistance === null || startDistance <= 1;
+    // Aggregators sometimes expose the announcement date while the official source exposes the
+    // actual application opening date. A matching deadline and campaign edition are therefore a
+    // stronger signal than a small start-date discrepancy. The title/role checks below still
+    // prevent distinct specialist roles from being collapsed.
+    if (leftDeadline === rightDeadline) return startDistance === null || startDistance <= 7;
     if (startDistance !== null && startDistance <= 1 && deadlineDistance !== null) {
       return deadlineDistance <= 31;
     }
