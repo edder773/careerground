@@ -403,4 +403,136 @@ describe('jobs v5 canonical enum policy', () => {
       });
     }
   });
+
+  it('normalizes the reviewed September 16 collector descriptions conservatively', () => {
+    const reviewed = [
+      {
+        input: {
+          careerScope: '경력무관(1년 이상 경력 우대)',
+          employmentType: 'FULL_TIME',
+          companySize: '근로자수 8명',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'FULL_TIME',
+          companySize: 'UNCLASSIFIED',
+        },
+      },
+      {
+        input: {
+          careerScope: '경력무관(신입포함)',
+          employmentType: '정규직(정규직 전환 평가기간 3개월 계약직 운영)',
+          companySize: '51~300명 이하',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'UNCONFIRMED',
+          companySize: 'UNCLASSIFIED',
+        },
+      },
+      {
+        input: {
+          careerScope: '신입/경력 5년 이하',
+          employmentType: '계약직(3~6개월, 신입 6개월 후 정규직 전환 검토)',
+          companySize: '301~500명 이하',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'CONTRACT',
+          companySize: 'UNCLASSIFIED',
+        },
+      },
+      {
+        input: {
+          careerScope: '인턴·재학/최근 졸업',
+          employmentType: '인턴(6개월)',
+          companySize: '300+',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'INTERNSHIP',
+          companySize: 'UNCLASSIFIED',
+        },
+      },
+      {
+        input: {
+          careerScope: '체험형 인턴',
+          employmentType: '체험형 인턴(6개월)',
+          companySize: 'LARGE',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'INTERNSHIP',
+          companySize: 'LARGE',
+        },
+      },
+      {
+        input: {
+          careerScope: '신입/경력 혼합(신입 포함)',
+          employmentType: '신입/경력직',
+          companySize: 'LARGE',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'UNCONFIRMED',
+          companySize: 'LARGE',
+        },
+      },
+      {
+        input: {
+          careerScope: '신입·채용연계형 인턴',
+          employmentType: '채용연계형 인턴/신입',
+          companySize: 'LARGE',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ONLY',
+          employmentType: 'UNCONFIRMED',
+          companySize: 'LARGE',
+        },
+      },
+      {
+        input: {
+          careerScope: '청년인턴',
+          employmentType: '체험형 인턴',
+          companySize: 'UNCLASSIFIED',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'INTERNSHIP',
+          companySize: 'UNCLASSIFIED',
+        },
+      },
+      {
+        input: {
+          careerScope: '신입 5급',
+          employmentType: '정규직·무기계약직 공고',
+          companySize: 'PUBLIC',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ONLY',
+          employmentType: 'UNCONFIRMED',
+          companySize: 'PUBLIC',
+        },
+      },
+      {
+        input: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: '계약직(6개월, 정규직 전환형 인턴 기회)',
+          companySize: 'SMALL',
+        },
+        expected: {
+          careerScope: 'NEW_GRAD_ELIGIBLE',
+          employmentType: 'CONTRACT',
+          companySize: 'SMALL',
+        },
+      },
+    ];
+
+    for (const { input, expected } of reviewed) {
+      expect(inspectDiscoveryEnums(input)).toMatchObject({
+        values: expected,
+        violations: [],
+      });
+    }
+  });
 });
