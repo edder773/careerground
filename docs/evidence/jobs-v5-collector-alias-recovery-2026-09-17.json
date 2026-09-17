@@ -1,0 +1,20 @@
+{
+  "date": "2026-09-17",
+  "incidentRun": 35078083338,
+  "targetAsOfDate": "2026-09-16",
+  "partitionIssues": [196, 198, 197],
+  "partitionCounts": [5, 9, 13],
+  "rowCount": 27,
+  "unsupportedEnumFieldsBefore": 19,
+  "unsupportedEnumFieldsAfter": 0,
+  "enumNormalizations": 81,
+  "potentialDuplicateCount": 0,
+  "productionDatabaseChangedDuringValidation": false,
+  "slackSentDuringValidation": false,
+  "policy": {
+    "explicitEligibility": "NEW_GRAD_ELIGIBLE",
+    "ambiguousEmployment": "UNCONFIRMED",
+    "contractWithPossibleConversion": "CONTRACT",
+    "headcountOnlyCompanySize": "UNCLASSIFIED"
+  }
+}
