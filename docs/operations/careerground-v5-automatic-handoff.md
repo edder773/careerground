@@ -1,5 +1,7 @@
 # CareerGround v5 자동 전달 연결
 
+> 현재 운영은 [`job-alert-ready-contract.md`](./job-alert-ready-contract.md)를 따른다. 아래의 예약 작업 3개가 직접 인입하는 설명은 이전 경로의 기록이다. 현재 수집은 Chat 5개가 Drive에 원본을 보존하고, 실제 R1/R2/R3 검증 후 HQ가 동일 bundleId의 schema 5.1 파티션 3개를 이 handoff 경로로 전달한다. 포인터에는 선택적 `bundleId`(64자리 SHA-256)를 넣으며, 새 경로에서는 반드시 넣는다. 세 파티션은 같은 attempt와 bundleId를 사용해야 한다. 목표 발송 시각은 평일 08:00 KST, 감시는 08:30 KST다.
+
 ## 목표와 경계
 
 ChatGPT 예약 작업의 신규 후보 결과를 로컬 다운로드나 저장소 커밋 없이 GitHub Actions로 넘기고, 검증을 통과한 신규 ACTIVE 공고만 운영 D1에 반영한다. 일일 실행은 Sites를 다시 배포하지 않으며 `saved_jobs`, 기존 `jobs`, Slack을 변경하지 않는다.

@@ -244,7 +244,10 @@ export function validateDiscoveryDelta(value, { partitionPolicy, targetAsOfDate 
       notes: String(coverage.notes ?? coverage.note ?? coverage.detail ?? ''),
     });
   }
-  if (!normalizedCoverage.some((entry) => ['COMPLETE', 'PARTIAL'].includes(entry.status))) {
+  if (
+    (value.rowCount > 0 || !/^[a-f0-9]{64}$/u.test(String(value.bundleId || ''))) &&
+    !normalizedCoverage.some((entry) => ['COMPLETE', 'PARTIAL'].includes(entry.status))
+  ) {
     fail('DISCOVERY_COVERAGE_INVALID', 'At least one assigned source must be investigated.');
   }
   if (!isRecord(value.qualityGates) || !ALLOWED_GATE_STATUSES.has(value.qualityGates.overall)) {
@@ -322,6 +325,10 @@ export function validateDiscoveryBundle({ partitionPaths, targetAsOfDate, source
     loaded.descriptor.rawSha256 = rawSha256(raw);
     return loaded;
   });
+  const attempts = new Set(partitions.map((partition) => partition.value.attempt));
+  if (attempts.size !== 1) {
+    fail('DISCOVERY_MIXED_ATTEMPT', 'All three partitions must belong to one attempt.');
+  }
   const byUrl = new Map();
   const byFingerprint = new Map();
   const potentialDuplicates = [];
