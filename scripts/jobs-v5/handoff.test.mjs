@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import {
   HANDOFF_LABEL,
+  assertHandoffBundleIdentity,
   assertTrustedHandoffIssue,
   parseHandoffPointer,
   processedIssueUpdate,
@@ -60,7 +61,7 @@ describe('CareerGround v5 GitHub artifact handoff', () => {
     expect(result.missingArtifactKinds).toEqual(['PARTITION_3']);
   });
 
-  it('selects the highest retry attempt and is ready only with one complete bundle', () => {
+  it('waits for all partitions of the highest retry attempt', () => {
     const result = resolveHandoffIssues(
       [
         issue(1, 'PARTITION_1'),
@@ -70,12 +71,39 @@ describe('CareerGround v5 GitHub artifact handoff', () => {
       ],
       date,
     );
-    expect(result.status).toBe('READY');
-    expect(result.selected).toHaveLength(3);
+    expect(result.status).toBe('WAITING');
+    expect(result.selected).toHaveLength(1);
     expect(
       result.selected.find(({ pointer: value }) => value.artifactKind === 'PARTITION_1'),
     ).toMatchObject({ issue: { number: 2 }, pointer: { attempt: 2 } });
+    expect(result.missingArtifactKinds).toEqual(['PARTITION_2', 'PARTITION_3']);
     expect(result.supersededIssueNumbers).toEqual([1]);
+  });
+
+  it('accepts one complete reviewed bundle and rejects a mixed bundle identifier', () => {
+    const first = 'a'.repeat(64);
+    const second = 'b'.repeat(64);
+    const entries = [1, 2, 3].map((n) =>
+      issue(n, `PARTITION_${n}`, { pointer: { attempt: 2, bundleId: first } }),
+    );
+    expect(resolveHandoffIssues(entries, date)).toMatchObject({
+      status: 'READY',
+      attempt: 2,
+      bundleId: first,
+    });
+    entries[2] = issue(3, 'PARTITION_3', { pointer: { attempt: 2, bundleId: second } });
+    expect(() => resolveHandoffIssues(entries, date)).toThrow(
+      expect.objectContaining({ code: 'HANDOFF_BUNDLE_ID_CONFLICT' }),
+    );
+  });
+
+  it('rejects a blob whose embedded bundle differs from its pointer', () => {
+    const frozen = 'a'.repeat(64);
+    const parsed = pointer('PARTITION_1', { bundleId: frozen });
+    expect(() => assertHandoffBundleIdentity(parsed, { bundleId: 'b'.repeat(64) })).toThrow(
+      expect.objectContaining({ code: 'HANDOFF_BUNDLE_ID_MISMATCH' }),
+    );
+    expect(() => assertHandoffBundleIdentity(parsed, { bundleId: frozen })).not.toThrow();
   });
 
   it('fails closed when the same retry attempt points at different bytes', () => {
@@ -134,8 +162,9 @@ describe('CareerGround v5 GitHub artifact handoff', () => {
       date,
     );
 
-    expect(result.status).toBe('READY');
-    expect(result.selected.map(({ issue: value }) => value.number)).toEqual([11, 12, 13]);
+    expect(result.status).toBe('WAITING');
+    expect(result.selected.map(({ issue: value }) => value.number)).toEqual([11]);
+    expect(result.missingArtifactKinds).toEqual(['PARTITION_2', 'PARTITION_3']);
     expect(result.supersededIssueNumbers).toEqual([10]);
   });
 });

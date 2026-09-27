@@ -18,8 +18,9 @@ export const PRODUCTION_MIGRATIONS = [
   '0038_slack_digest_delivery_history.sql',
   '0039_retire_legacy_product_surface.sql',
   '0040_slack_digest_job_reservations.sql',
+  '0041_job_alert_candidates_view.sql',
 ] as const;
 
-export const EXPECTED_SCHEMA_VERSION = '0040_slack_digest_job_reservations';
+export const EXPECTED_SCHEMA_VERSION = '0041_job_alert_candidates_view';
 export const EXPECTED_SCHEMA_CHECKSUM =
-  'sha256:427d0b652bba719fa696733ae4f18d5157f164a36666c2fa432193844a831029';
+  'sha256:3ca4931376cca0ff5ad0be0a87bd065e5451a880a7f9307caf452468cef49e93';

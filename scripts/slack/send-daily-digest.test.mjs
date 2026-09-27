@@ -222,10 +222,13 @@ describe('daily Slack digest', () => {
       'utf8',
     );
     expect(workflow).toContain("cron: '55 7 * * 1-5'");
-    expect(workflow).toContain("cron: '31 8 * * 1-5'");
+    expect(workflow).toContain("cron: '30 8 * * 1-5'");
     expect(workflow).toContain("timezone: 'Asia/Seoul'");
     expect(workflow.match(/timezone: 'Asia\/Seoul'/g)).toHaveLength(2);
-    expect(workflow).toContain('Hold the early reservation until 08:01 KST');
+    expect(workflow).toContain('Hold the early reservation until 08:00 KST');
+    expect(workflow).toContain(
+      "SLACK_DIGEST_REQUIRE_FRESH_JOBS: ${{ github.event_name != 'workflow_dispatch'",
+    );
     expect(workflow).toContain('node scripts/operations/hold-until-kst.mjs');
     expect(workflow).toContain('timeout-minutes: 25');
     expect(workflow).toContain('SLACK_DIGEST_REQUIRE_FRESH_JOBS:');

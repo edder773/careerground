@@ -77,6 +77,17 @@ function writeBundle(values) {
 }
 
 describe('CareerGround discovery-only collector contract', () => {
+  it('rejects partitions assembled from different collection attempts', () => {
+    const values = [delta(1), delta(2), { ...delta(3), attempt: 2 }];
+    expect(() =>
+      validateDiscoveryBundle({
+        partitionPaths: writeBundle(values),
+        targetAsOfDate,
+        sourcePolicy,
+        runId: 'CG-2026-08-28-A2-discovery',
+      }),
+    ).toThrow(expect.objectContaining({ code: 'DISCOVERY_MIXED_ATTEMPT' }));
+  });
   it('accepts reviewed employment aliases throughout a complete three-partition bundle', () => {
     const values = [
       delta(1, [

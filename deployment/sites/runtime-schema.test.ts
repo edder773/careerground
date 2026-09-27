@@ -24,6 +24,7 @@ describe('active D1 runtime schema', () => {
       appliedVersion: EXPECTED_SCHEMA_VERSION,
       requiredTableCount: 16,
       requiredIndexCount: 5,
+      requiredViewCount: 1,
     });
     await expect(ensureRuntimeSchema(db)).resolves.toMatchObject({ ready: true });
   });
@@ -62,6 +63,13 @@ describe('active D1 runtime schema', () => {
     await expect(inspectRuntimeSchema(db)).resolves.toMatchObject({
       ready: false,
       requiredIndexCount: 4,
+    });
+    db.close();
+    db = new LocalD1();
+    await run(db, 'DROP VIEW job_alert_candidates');
+    await expect(inspectRuntimeSchema(db)).resolves.toMatchObject({
+      ready: false,
+      requiredViewCount: 0,
     });
   });
 

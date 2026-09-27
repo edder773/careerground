@@ -468,10 +468,10 @@ export async function slackDigest(db: D1Database, requestUrl: URL) {
   const candidateJobs = await all<SlackDigestJobRow>(
     db,
     snapshotCreatedAt
-      ? `SELECT id, company_name AS companyName, title,
+      ? `SELECT job_id AS id, company_name AS companyName, title,
                 application_start_at AS applicationStartAt, deadline_at AS deadlineAt, rolling,
                 source_name AS sourceName, source_url AS sourceUrl
-           FROM jobs
+           FROM job_alert_candidates
           WHERE status = 'ACTIVE'
             AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
             AND rolling = 0
@@ -479,10 +479,10 @@ export async function slackDigest(db: D1Database, requestUrl: URL) {
             AND deadline_at > ?
             AND created_at = ?
           ORDER BY deadline_at IS NULL, deadline_at, company_name, title, id`
-      : `SELECT id, company_name AS companyName, title,
+      : `SELECT job_id AS id, company_name AS companyName, title,
                 application_start_at AS applicationStartAt, deadline_at AS deadlineAt, rolling,
                 source_name AS sourceName, source_url AS sourceUrl
-           FROM jobs
+           FROM job_alert_candidates
           WHERE status = 'ACTIVE'
             AND career_scope IN ('NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE')
             AND rolling = 0

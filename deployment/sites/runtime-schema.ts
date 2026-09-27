@@ -30,6 +30,7 @@ const REQUIRED_INDEXES = [
   'idx_coding_problems_track_level_position',
   'idx_slack_digest_job_reservations_active_job',
 ] as const;
+const REQUIRED_VIEWS = ['job_alert_candidates'] as const;
 
 export type RuntimeSchemaState = {
   ready: boolean;
@@ -37,22 +38,31 @@ export type RuntimeSchemaState = {
   appliedVersion: string | null;
   requiredTableCount: number;
   requiredIndexCount: number;
+  requiredViewCount: number;
 };
 
 export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchemaState> {
   const placeholders = (values: readonly string[]) => values.map(() => '?').join(', ');
-  const inventory = await first<{ requiredTableCount: number; requiredIndexCount: number }>(
+  const inventory = await first<{
+    requiredTableCount: number;
+    requiredIndexCount: number;
+    requiredViewCount: number;
+  }>(
     db,
     `SELECT
        (SELECT COUNT(*) FROM sqlite_schema
          WHERE type = 'table' AND name IN (${placeholders(REQUIRED_TABLES)})) AS requiredTableCount,
        (SELECT COUNT(*) FROM sqlite_schema
-         WHERE type = 'index' AND name IN (${placeholders(REQUIRED_INDEXES)})) AS requiredIndexCount`,
+         WHERE type = 'index' AND name IN (${placeholders(REQUIRED_INDEXES)})) AS requiredIndexCount,
+       (SELECT COUNT(*) FROM sqlite_schema
+         WHERE type = 'view' AND name IN (${placeholders(REQUIRED_VIEWS)})) AS requiredViewCount`,
     ...REQUIRED_TABLES,
     ...REQUIRED_INDEXES,
+    ...REQUIRED_VIEWS,
   );
   const requiredTableCount = Number(inventory?.requiredTableCount || 0);
   const requiredIndexCount = Number(inventory?.requiredIndexCount || 0);
+  const requiredViewCount = Number(inventory?.requiredViewCount || 0);
   const hasMigrationLedger = requiredTableCount === REQUIRED_TABLES.length;
   const ledger = hasMigrationLedger
     ? await first<{ version: string; checksum: string }>(
@@ -66,12 +76,14 @@ export async function inspectRuntimeSchema(db: D1Database): Promise<RuntimeSchem
     ready:
       requiredTableCount === REQUIRED_TABLES.length &&
       requiredIndexCount === REQUIRED_INDEXES.length &&
+      requiredViewCount === REQUIRED_VIEWS.length &&
       appliedVersion === EXPECTED_SCHEMA_VERSION &&
       ledger?.checksum === EXPECTED_SCHEMA_CHECKSUM,
     expectedVersion: EXPECTED_SCHEMA_VERSION,
     appliedVersion,
     requiredTableCount,
     requiredIndexCount,
+    requiredViewCount,
   };
 }
 

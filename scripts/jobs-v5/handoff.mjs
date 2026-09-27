@@ -44,6 +44,15 @@ export function rawSha256(bytes) {
   return createHash('sha256').update(bytes).digest('hex');
 }
 
+export function assertHandoffBundleIdentity(pointer, payload) {
+  if (pointer.bundleId && payload?.bundleId !== pointer.bundleId) {
+    fail(
+      'HANDOFF_BUNDLE_ID_MISMATCH',
+      `${pointer.artifactKind} blob does not match its reviewed bundle.`,
+    );
+  }
+}
+
 export function parseHandoffPointer(body) {
   if (typeof body !== 'string') fail('HANDOFF_BODY_MISSING', 'Handoff issue body is missing.');
   const match = body.match(/<!--\s*CAREERGROUND_V5_HANDOFF\s*([\s\S]*?)\s*-->/u);
@@ -63,6 +72,7 @@ export function parseHandoffPointer(body) {
     'attempt',
     'blobSha',
     'fileName',
+    'bundleId',
   ]);
   const unexpected = Object.keys(pointer).filter((field) => !allowedFields.has(field));
   if (unexpected.length) {
@@ -91,6 +101,9 @@ export function parseHandoffPointer(body) {
   const expected = expectedFileName(pointer.artifactKind, pointer.targetAsOfDate);
   if (pointer.fileName !== expected || basename(pointer.fileName) !== pointer.fileName) {
     fail('HANDOFF_FILE_NAME_INVALID', `fileName must be ${expected}.`);
+  }
+  if (pointer.bundleId !== undefined && !/^[a-f0-9]{64}$/u.test(String(pointer.bundleId))) {
+    fail('HANDOFF_BUNDLE_ID_INVALID', 'bundleId must be a SHA-256 digest.');
   }
   return pointer;
 }
@@ -127,15 +140,22 @@ export function resolveHandoffIssues(issues, targetAsOfDate) {
 
   const selected = [];
   const missingArtifactKinds = [];
+  const highestAttempt = candidates.length
+    ? Math.max(...candidates.map((entry) => entry.pointer.attempt))
+    : 0;
   for (const artifactKind of PARTITION_ARTIFACT_KINDS) {
-    const matches = candidates.filter((entry) => entry.pointer.artifactKind === artifactKind);
+    const matches = candidates.filter(
+      (entry) =>
+        entry.pointer.artifactKind === artifactKind && entry.pointer.attempt === highestAttempt,
+    );
     if (!matches.length) {
       missingArtifactKinds.push(artifactKind);
       continue;
     }
-    const highestAttempt = Math.max(...matches.map((entry) => entry.pointer.attempt));
-    const newestAttempt = matches.filter((entry) => entry.pointer.attempt === highestAttempt);
-    const identities = new Set(newestAttempt.map((entry) => entry.pointer.blobSha));
+    const newestAttempt = matches;
+    const identities = new Set(
+      newestAttempt.map((entry) => `${entry.pointer.blobSha}:${entry.pointer.bundleId || ''}`),
+    );
     if (identities.size !== 1) {
       fail(
         'HANDOFF_DUPLICATE_CONFLICT',
@@ -145,6 +165,12 @@ export function resolveHandoffIssues(issues, targetAsOfDate) {
     }
     newestAttempt.sort((left, right) => Number(right.issue.number) - Number(left.issue.number));
     selected.push(newestAttempt[0]);
+  }
+  if (selected.length === PARTITION_ARTIFACT_KINDS.length) {
+    const bundleIds = new Set(selected.map((entry) => entry.pointer.bundleId || null));
+    if (bundleIds.size !== 1) {
+      fail('HANDOFF_BUNDLE_ID_CONFLICT', 'All partitions must reference one reviewed bundle.');
+    }
   }
   const selectedIssueNumbers = new Set(selected.map((entry) => Number(entry.issue.number)));
   const selectedAttempts = new Map(
@@ -164,6 +190,11 @@ export function resolveHandoffIssues(issues, targetAsOfDate) {
     schemaVersion: HANDOFF_SCHEMA_VERSION,
     targetAsOfDate,
     selected,
+    attempt: highestAttempt,
+    bundleId:
+      selected.length === PARTITION_ARTIFACT_KINDS.length
+        ? selected[0].pointer.bundleId || null
+        : null,
     supersededIssueNumbers,
     missingArtifactKinds,
     rejectedIssueNumbers,
@@ -239,11 +270,13 @@ async function downloadBlob(repository, token, pointer) {
     fail('HANDOFF_SIZE_INVALID', `${pointer.artifactKind} blob size is outside the safe limit.`);
   }
   const computedRawSha256 = rawSha256(bytes);
+  let payload;
   try {
-    JSON.parse(bytes.toString('utf8'));
+    payload = JSON.parse(bytes.toString('utf8'));
   } catch {
     fail('HANDOFF_BLOB_JSON_INVALID', `${pointer.artifactKind} blob is not valid UTF-8 JSON.`);
   }
+  assertHandoffBundleIdentity(pointer, payload);
   return { bytes, rawSha256: computedRawSha256, byteLength: bytes.byteLength };
 }
 
@@ -289,9 +322,8 @@ export async function fetchHandoffBundle({ repository, token, triggerIssueNumber
     workflowId: HANDOFF_WORKFLOW_ID,
     status: resolved.status,
     targetAsOfDate: resolved.targetAsOfDate,
-    attempt: resolved.selected.length
-      ? Math.max(...resolved.selected.map((entry) => Number(entry.pointer.attempt)))
-      : 0,
+    attempt: resolved.attempt,
+    bundleId: resolved.bundleId,
     issueNumbers: resolved.selected.map((entry) => Number(entry.issue.number)),
     supersededIssueNumbers: resolved.supersededIssueNumbers,
     missingArtifactKinds: resolved.missingArtifactKinds,
@@ -299,6 +331,7 @@ export async function fetchHandoffBundle({ repository, token, triggerIssueNumber
     artifacts: resolved.selected.map(({ pointer }) => ({
       artifactKind: pointer.artifactKind,
       attempt: pointer.attempt,
+      bundleId: pointer.bundleId || null,
       fileName: pointer.fileName,
       blobSha: pointer.blobSha,
       rawSha256: pointer.rawSha256 || null,
