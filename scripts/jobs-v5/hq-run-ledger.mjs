@@ -14,6 +14,8 @@ const iso = (value) =>
   /(Z|[+-]\d\d:\d\d)$/u.test(value) &&
   Number.isFinite(Date.parse(value));
 const rawHash = (bytes) => createHash('sha256').update(bytes).digest('hex');
+const baselineFileId = '1l08BzJYaFzrDWg4d3OV9b3DPdDpU_8Cc';
+const baselineSha256 = '7773b227a6c37335282fbeea48f479a294e8f71585b5dbc5644aaf5f445cfa57';
 const collectionSources = [
   ['JobKorea', 'Wanted', 'Catch'],
   ['Superookie', 'Work24', 'Saramin'],
@@ -25,6 +27,27 @@ const collectionSources = [
 function readRawJson(path) {
   const bytes = readFileSync(resolve(path));
   return { bytes, value: JSON.parse(bytes.toString('utf8').replace(/^\uFEFF/u, '')) };
+}
+
+function baselineMatches(baseline) {
+  if (!baseline || baseline.fileId !== baselineFileId) return false;
+  if (
+    (baseline.rowCount !== undefined && baseline.rowCount !== 392) ||
+    (baseline.expectedRowCount !== undefined && baseline.expectedRowCount !== 392) ||
+    (baseline.actualRowCount !== undefined && baseline.actualRowCount !== 392) ||
+    (baseline.expectedSha256 !== undefined && baseline.expectedSha256 !== baselineSha256) ||
+    (baseline.actualSha256 !== undefined && baseline.actualSha256 !== baselineSha256)
+  ) {
+    return false;
+  }
+  return (
+    baseline.rowCount === 392 ||
+    (baseline.status === 'VERIFIED' &&
+      baseline.expectedRowCount === 392 &&
+      baseline.actualRowCount === 392 &&
+      baseline.expectedSha256 === baselineSha256 &&
+      baseline.actualSha256 === baselineSha256)
+  );
 }
 
 export function freezeRunInputs({
@@ -57,8 +80,7 @@ export function freezeRunInputs({
       value.attempt !== attempt ||
       value.partitionId !== index + 1 ||
       !['COMPLETE', 'PARTIAL'].includes(value.status) ||
-      value.baseline?.fileId !== '1l08BzJYaFzrDWg4d3OV9b3DPdDpU_8Cc' ||
-      value.baseline?.rowCount !== 392 ||
+      !baselineMatches(value.baseline) ||
       !Array.isArray(value.items) ||
       value.rowCount !== value.items.length ||
       JSON.stringify([...(value.assignedSources || [])].sort()) !==

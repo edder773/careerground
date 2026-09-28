@@ -116,6 +116,30 @@ describe('two-wake HQ ledger', () => {
     expect(frozen.collections).toHaveLength(5);
     expect(frozen.collections[0]).toMatchObject({ partitionId: 1, fileId: 'collection-1' });
     expect(frozen.currentState).toMatchObject({ fileId: 'state-id' });
+    const verifiedBaseline = JSON.parse(readFileSync(collections[2].path, 'utf8'));
+    verifiedBaseline.baseline = {
+      fileId: '1l08BzJYaFzrDWg4d3OV9b3DPdDpU_8Cc',
+      status: 'VERIFIED',
+      expectedRowCount: 392,
+      actualRowCount: 392,
+      expectedSha256: '7773b227a6c37335282fbeea48f479a294e8f71585b5dbc5644aaf5f445cfa57',
+      actualSha256: '7773b227a6c37335282fbeea48f479a294e8f71585b5dbc5644aaf5f445cfa57',
+    };
+    writeFileSync(collections[2].path, JSON.stringify(verifiedBaseline));
+    expect(freezeRunInputs(input).candidateCount).toBe(0);
+    verifiedBaseline.baseline.actualSha256 = '0'.repeat(64);
+    writeFileSync(collections[2].path, JSON.stringify(verifiedBaseline));
+    expect(() => freezeRunInputs(input)).toThrow(
+      expect.objectContaining({ code: 'INPUT_NOT_READY' }),
+    );
+    verifiedBaseline.baseline.actualSha256 = verifiedBaseline.baseline.expectedSha256;
+    verifiedBaseline.baseline.rowCount = 391;
+    writeFileSync(collections[2].path, JSON.stringify(verifiedBaseline));
+    expect(() => freezeRunInputs(input)).toThrow(
+      expect.objectContaining({ code: 'INPUT_NOT_READY' }),
+    );
+    delete verifiedBaseline.baseline.rowCount;
+    writeFileSync(collections[2].path, JSON.stringify(verifiedBaseline));
     const changed = JSON.parse(readFileSync(collections[4].path, 'utf8'));
     changed.rowCount = 1;
     writeFileSync(collections[4].path, JSON.stringify(changed));
