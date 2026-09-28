@@ -191,7 +191,7 @@ describe('CareerGround v5 discovery production boundary', () => {
     expect(after).toEqual({ jobs: before?.jobs, runs: 0, publications: 0 });
   });
 
-  it('fails closed when a new URL collides with an existing fingerprint', async () => {
+  it('skips a fingerprint collision without blocking a distinct job in the same bundle', async () => {
     const original = await discoveryJob(now, 'collision-a', {
       companyName: '동일 회사',
       title: '동일 공고',
@@ -201,13 +201,114 @@ describe('CareerGround v5 discovery production boundary', () => {
       companyName: '동일 회사',
       title: '동일 공고',
     });
-    await expect(
-      publishDiscoveryBundle(db, await request(now, 2, [collision]), now),
-    ).rejects.toMatchObject({
-      status: 422,
-      code: 'PUBLISH_IDENTITY_CONFLICT',
-      details: { reason: 'FINGERPRINT_COLLISION' },
+    const distinct = await discoveryJob(now, 'distinct-role', {
+      companyName: '다른 회사',
+      title: '신입 데이터 엔지니어',
     });
+    const input = await request(now, 2, [collision, distinct]);
+    const published = await publishDiscoveryBundle(db, input, now);
+    const repeated = await publishDiscoveryBundle(db, input, now);
+    const stored = await first<{ duplicate: number; valid: number }>(
+      db,
+      `SELECT
+         (SELECT COUNT(*) FROM jobs WHERE source_url = ?) AS duplicate,
+         (SELECT COUNT(*) FROM jobs WHERE source_url = ?) AS valid`,
+      collision.sourceUrl,
+      distinct.sourceUrl,
+    );
+    const run = await first<{ manifest: string }>(
+      db,
+      'SELECT manifest FROM workflow_runs WHERE run_id = ?',
+      input.runId,
+    );
+    expect(published).toMatchObject({
+      status: 'PUBLISHED',
+      inserted: 1,
+      skippedExisting: 1,
+      skippedFingerprintCollision: 1,
+    });
+    expect(repeated).toMatchObject({
+      status: 'ALREADY_PUBLISHED',
+      inserted: 1,
+      skippedExisting: 1,
+      skippedFingerprintCollision: 1,
+    });
+    expect(stored).toEqual({ duplicate: 0, valid: 1 });
+    expect(JSON.parse(run!.manifest).exclusions).toMatchObject({
+      existing: 1,
+      fingerprintCollision: 1,
+    });
+  });
+
+  it('completes an all-collision bundle with zero inserts and preserves the original row', async () => {
+    const original = await discoveryJob(now, 'repeat-a', {
+      companyName: '반복 회사',
+      title: '신입 개발자',
+    });
+    await publishDiscoveryBundle(db, await request(now, 1, [original]), now);
+    const before = await first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM jobs');
+    const collision = await discoveryJob(now, 'repeat-b', {
+      companyName: '반복 회사',
+      title: '신입 개발자',
+    });
+    const input = await request(now, 2, [collision]);
+    const published = await publishDiscoveryBundle(db, input, now);
+    const repeated = await publishDiscoveryBundle(db, input, now);
+    const stored = await first<{ count: number }>(db, 'SELECT COUNT(*) AS count FROM jobs');
+    expect(published).toMatchObject({
+      status: 'PUBLISHED',
+      inserted: 0,
+      skippedExisting: 1,
+      skippedFingerprintCollision: 1,
+    });
+    expect(repeated).toMatchObject({
+      status: 'ALREADY_PUBLISHED',
+      inserted: 0,
+      skippedExisting: 1,
+      skippedFingerprintCollision: 1,
+    });
+    expect(stored).toEqual(before);
+  });
+
+  it('skips a second same-fingerprint candidate inside one bundle and inserts other jobs', async () => {
+    const firstCandidate = await discoveryJob(now, 'same-bundle-a', {
+      companyName: '묶음 회사',
+      title: '신입 서버 개발자',
+    });
+    const duplicate = await discoveryJob(now, 'same-bundle-b', {
+      companyName: '묶음 회사',
+      title: '신입 서버 개발자',
+    });
+    const distinct = await discoveryJob(now, 'same-bundle-c', {
+      companyName: '별도 회사',
+      title: '신입 프론트엔드',
+    });
+    const input = await request(now, 1, [firstCandidate, duplicate, distinct]);
+    const published = await publishDiscoveryBundle(db, input, now);
+    const stored = await first<{ first: number; duplicate: number; distinctJob: number }>(
+      db,
+      `SELECT
+         (SELECT COUNT(*) FROM jobs WHERE source_url = ?) AS first,
+         (SELECT COUNT(*) FROM jobs WHERE source_url = ?) AS duplicate,
+         (SELECT COUNT(*) FROM jobs WHERE source_url = ?) AS distinctJob`,
+      firstCandidate.sourceUrl,
+      duplicate.sourceUrl,
+      distinct.sourceUrl,
+    );
+    expect(published).toMatchObject({
+      status: 'PUBLISHED',
+      inserted: 2,
+      skippedExisting: 1,
+      skippedFingerprintCollision: 1,
+    });
+    expect(stored).toEqual({ first: 1, duplicate: 0, distinctJob: 1 });
+  });
+
+  it('still rejects a duplicate exact source URL in one submitted bundle', async () => {
+    const candidate = await discoveryJob(now, 'same-url');
+    await expect(
+      publishDiscoveryBundle(db, await request(now, 1, [candidate, candidate]), now),
+    ).rejects.toMatchObject({ code: 'PUBLISH_VALIDATION_FAILED' });
   });
 
   it('skips an alternate platform URL when its stable source posting key already exists', async () => {

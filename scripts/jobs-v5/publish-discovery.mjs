@@ -146,7 +146,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   main()
     .then((receipt) => {
       process.stdout.write(
-        `CareerGround discovery publish: ${receipt.status}, inserted=${Number(receipt.inserted || 0)}, skippedExisting=${Number(receipt.skippedExisting || 0)}\n`,
+        `CareerGround discovery publish: ${receipt.status}, inserted=${Number(receipt.inserted || 0)}, skippedExisting=${Number(receipt.skippedExisting || 0)}, skippedFingerprintCollision=${Number(receipt.skippedFingerprintCollision || 0)}\n`,
       );
     })
     .catch((error) => {

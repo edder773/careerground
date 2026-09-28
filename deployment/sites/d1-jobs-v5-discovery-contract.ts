@@ -281,11 +281,11 @@ export async function validateDiscoveryPublishRequest(value: unknown, now: Date)
   if (
     unique('id') !== submittedJobs.length ||
     unique('sourceUrl') !== submittedJobs.length ||
-    unique('canonicalJobKey') !== submittedJobs.length ||
-    unique('fingerprint') !== submittedJobs.length
+    unique('canonicalJobKey') !== submittedJobs.length
   ) {
-    throw new Error('Discovery jobs contain an identifier or fingerprint collision.');
+    throw new Error('Discovery jobs contain an identifier collision.');
   }
+  // Fingerprint collisions are excluded per candidate after the current DB is read.
   const jobs = submittedJobs.filter((job) => {
     if (job.rolling === true) return true;
     const deadlineAt = String(job.deadlineAt || '');
