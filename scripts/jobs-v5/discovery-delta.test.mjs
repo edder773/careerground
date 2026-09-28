@@ -128,6 +128,27 @@ describe('CareerGround discovery-only collector contract', () => {
     expect(loaded.descriptor).toMatchObject({ partitionId: 1, rowCount: 0 });
   });
 
+  it('compares deadline instants across timezones and requires timezone-qualified timestamps', () => {
+    const expired = delta(1, [
+      { ...item('JobKorea', 'expired-offset'), deadlineAt: '2026-08-27T23:30:00+09:00' },
+    ]);
+    expect(() =>
+      validateDiscoveryDelta(expired, {
+        partitionPolicy: sourcePolicy.partitions[0],
+        targetAsOfDate,
+      }),
+    ).toThrow(expect.objectContaining({ code: 'DISCOVERY_POLICY_INVALID' }));
+    const imprecise = delta(1, [
+      { ...item('JobKorea', 'no-zone'), deadlineAt: '2026-09-01T18:00:00' },
+    ]);
+    expect(() =>
+      validateDiscoveryDelta(imprecise, {
+        partitionPolicy: sourcePolicy.partitions[0],
+        targetAsOfDate,
+      }),
+    ).toThrow(expect.objectContaining({ code: 'DISCOVERY_TIMESTAMP_INVALID' }));
+  });
+
   it('normalizes deterministic identifiers in GitHub instead of the ChatGPT task', () => {
     const value = delta(1, [item('JobKorea', 'jobkorea-101')]);
     const [normalized] = validateDiscoveryDelta(value, {

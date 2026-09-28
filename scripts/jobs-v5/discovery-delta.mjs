@@ -46,8 +46,8 @@ function requireText(value, field) {
 
 function requireIso(value, field) {
   requireText(value, field);
-  if (Number.isNaN(new Date(value).getTime())) {
-    fail('DISCOVERY_TIMESTAMP_INVALID', `${field} must be an ISO-8601 timestamp.`);
+  if (!/(Z|[+-]\d\d:\d\d)$/u.test(value) || Number.isNaN(new Date(value).getTime())) {
+    fail('DISCOVERY_TIMESTAMP_INVALID', `${field} must have an explicit timezone.`);
   }
   return value;
 }
@@ -116,7 +116,7 @@ function normalizeItem(item, targetAsOfDate, index) {
   }
   if (deadlineAt) {
     requireIso(deadlineAt, `items[${index}].deadlineAt`);
-    if (deadlineAt.slice(0, 10) < targetAsOfDate) {
+    if (Date.parse(deadlineAt) <= Date.parse(`${targetAsOfDate}T00:00:00+09:00`)) {
       fail('DISCOVERY_POLICY_INVALID', `items[${index}] is already expired.`);
     }
   }
@@ -188,7 +188,14 @@ export function validateDiscoveryDelta(value, { partitionPolicy, targetAsOfDate 
   }
   if (value.status !== 'SUCCESS') fail('DISCOVERY_REPORTED_FAILURE', 'Discovery did not succeed.');
   for (const field of ['startedAt', 'completedAt', 'exportedAt']) requireIso(value[field], field);
-  if (value.exportedAt.slice(0, 10) !== targetAsOfDate) {
+  if (
+    new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date(value.exportedAt)) !== targetAsOfDate
+  ) {
     fail('DISCOVERY_DATE_INVALID', 'exportedAt must use the target Asia/Seoul date.');
   }
   if (!Array.isArray(value.sources) || !Array.isArray(value.items)) {

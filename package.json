@@ -23,6 +23,7 @@
     "test:e2e:visual": "playwright test e2e/visual.spec.ts",
     "db:d1:generate": "drizzle-kit generate",
     "jobs:v5:handoff": "node scripts/jobs-v5/handoff.mjs",
+    "jobs:v5:hq": "node scripts/jobs-v5/hq-run-ledger.mjs",
     "jobs:v5:validate-discovery": "node scripts/jobs-v5/discovery-delta.mjs",
     "jobs:v5:publish-discovery": "node scripts/jobs-v5/publish-discovery.mjs",
     "docs:dev": "pnpm --filter @careerground/docs dev",

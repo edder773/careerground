@@ -52,11 +52,12 @@ pnpm docs:build
 
 ## 데이터 가져오기
 
-채용공고는 세 ChatGPT 예약 수집기가 신규 후보 delta를 임시 Git blob으로 전달하고, GitHub Actions가 출처·정책·중복을 검증한 뒤 보호된 Sites API를 통해 운영 D1에 반영한다. 저장소에 원본 채용 JSON을 커밋하거나 최신 파일을 이름으로 선택하지 않는다. 동일 run은 idempotent하며 신규 `ACTIVE`만 추가하고 기존 `jobs`와 `saved_jobs`는 변경하지 않는다.
+기존 Chat 수집기 5개가 평일 18:00 KST에 원본을 Drive에 저장한다. Codex HQ는 20:00에 동일 입력을 실제 Chat R1/R2/R3에 각각 한 번 검증 요청하고, 20:30에 세 결과를 한 번 회수한다. 고정 코드가 세 검증의 PASS 교집합으로 최소 알림 데이터와 운영 schema 5.1 파티션 3개를 만든다. 기존 Git blob + schema 2.0 Issue handoff와 GitHub Actions가 보호된 Sites API를 통해 운영 D1에 신규 `ACTIVE`만 반영한다. 원본 JSON은 저장소에 커밋하지 않고, 기존 `jobs`와 `saved_jobs`는 변경하지 않는다.
 
 - 운영 Runbook: `docs/operations/careerground-v5-runbook.md`
-- 자동 전달 계약: `docs/operations/careerground-v5-automatic-handoff.md`
-- 예약 수집 프롬프트: `docs/operations/careerground-v5-stable-collector-prompts.md`
+- HQ 요청·회수 절차: `docs/operations/job-alert-hq-two-wakes.md`
+- 알림 준비 데이터 계약: `docs/operations/job-alert-ready-contract.md`
+- 기존 GitHub 운영 인입 포인터: `docs/operations/careerground-v5-automatic-handoff.md`
 
 ## 오늘의 문제와 cron
 
