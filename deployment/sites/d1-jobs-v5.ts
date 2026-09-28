@@ -27,7 +27,7 @@ export type V5Manifest = {
   publishedAt: string | null;
   manifestChecksum: string;
   counts: { new: number; changed: number; ended: number; excluded: number; active: number };
-  exclusions?: { existing: number; expired: number };
+  exclusions?: { existing: number; expired: number; fingerprintCollision?: number };
   db: { idempotencyKey: string; status: string; sourceChecksum?: string };
 };
 
@@ -556,6 +556,7 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
           priorManifest.exclusions?.existing ?? priorManifest.counts?.excluded ?? 0,
         ),
         skippedExpired: Number(priorManifest.exclusions?.expired || 0),
+        skippedFingerprintCollision: Number(priorManifest.exclusions?.fingerprintCollision || 0),
         sourceChecksum: validated.sourceChecksum,
       };
     }
@@ -582,6 +583,7 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
         priorManifest.exclusions?.existing ?? priorManifest.counts?.excluded ?? 0,
       ),
       skippedExpired: Number(priorManifest.exclusions?.expired || 0),
+      skippedFingerprintCollision: Number(priorManifest.exclusions?.fingerprintCollision || 0),
       sourceChecksum: validated.sourceChecksum,
       deletedJobs: 0,
     };
@@ -621,6 +623,7 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
   }
   const newJobs: Array<Record<string, unknown>> = [];
   let skippedExisting = 0;
+  let skippedFingerprintCollision = 0;
   for (const job of validated.jobs) {
     const id = String(job.id);
     const sourceUrl = String(job.sourceUrl);
@@ -656,16 +659,9 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
         skippedExisting += 1;
         continue;
       }
-      throw new RouteError(
-        422,
-        '운영 채용공고 내용이 기존 공고와 충돌했습니다.',
-        'PUBLISH_IDENTITY_CONFLICT',
-        {
-          reason: 'FINGERPRINT_COLLISION',
-          sourceUrl,
-          existingSourceUrl: sameFingerprint.sourceUrl,
-        },
-      );
+      skippedExisting += 1;
+      skippedFingerprintCollision += 1;
+      continue;
     }
     const comparable: ComparableJob = {
       companyName: String(job.companyName),
@@ -682,6 +678,13 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
       continue;
     }
     newJobs.push(job);
+    byFingerprint.set(fingerprint, {
+      id,
+      sourceUrl,
+      sourcePostingId: job.sourcePostingId ? String(job.sourcePostingId) : null,
+      fingerprint,
+      canonicalJobKey: key,
+    });
     const companyJobs = comparableByCompany.get(companyKey) || [];
     companyJobs.push(comparable);
     comparableByCompany.set(companyKey, companyJobs);
@@ -729,6 +732,7 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
     exclusions: {
       existing: skippedExisting,
       expired: validated.skippedExpired,
+      fingerprintCollision: skippedFingerprintCollision,
     },
     db: {
       idempotencyKey: `publish:${V5_WORKFLOW_ID}:${validated.request.runId}`,
@@ -773,6 +777,7 @@ export async function publishDiscoveryBundle(db: D1Database, input: unknown, now
     inserted: newJobs.length,
     skippedExisting,
     skippedExpired: validated.skippedExpired,
+    skippedFingerprintCollision,
     sourceChecksum: validated.sourceChecksum,
     deletedJobs: 0,
   };
