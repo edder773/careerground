@@ -8,11 +8,14 @@ import { buildAlertMessage } from './slack-message.mjs';
 
 export const REVIEW_SEND_EARLIEST = 7 * 60; // 07:00 KST
 export const PARTIAL_REVIEW_SEND_AFTER = 8 * 60 + 30; // 08:30 KST
+export const SUBMISSION_SEND_LATEST = 12 * 60; // 12:00 KST
 const REQUEST_TIMEOUT_MS = 15_000;
 
-// One alert per Korean business day. After any submission the alert goes out
-// as soon as all three reviewers are in; after 08:30 two are enough. Scheduled
-// and manual triggers send with whatever has arrived, so nothing waits on cron.
+// One alert per Korean business day. Reviewers run in the evening and the
+// 07:45 [send] issue delivers the morning alert. A submission that arrives in
+// the morning also sends once all three reviewers are in (two after 08:30);
+// one that arrives later waits for the next morning instead of alerting at
+// night. Scheduled and manual triggers send with whatever has arrived.
 export function sendDecision({ trigger, now, ledger, reviewCount, live, force = false }) {
   const today = kstDateKey(now);
   const delivery = ledger.deliveries[today];
@@ -27,6 +30,9 @@ export function sendDecision({ trigger, now, ledger, reviewCount, live, force = 
     }
     const minutes = kstMinutes(now);
     if (minutes < REVIEW_SEND_EARLIEST) return { send: false, reason: 'too-early', today };
+    if (trigger === 'submission' && minutes >= SUBMISSION_SEND_LATEST) {
+      return { send: false, reason: 'waiting-for-morning', today };
+    }
     if (
       trigger === 'submission' &&
       reviewCount < 3 &&

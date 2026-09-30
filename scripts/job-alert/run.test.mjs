@@ -192,6 +192,26 @@ describe('job alert delivery', () => {
     expect(result.final.jobs).toHaveLength(1);
   });
 
+  it('holds evening reviews until the morning send signal', async () => {
+    await collect();
+    const evening = new Date('2026-10-01T11:30:00Z'); // Thu 20:30 KST
+    for (const slot of [1, 2, 3]) {
+      const title = `[JOB-ALERT][2026-10-01][reviewer-${slot}]`;
+      const { result } = await issue(title, [job(1), job(2)], { now: evening, live: true });
+      expect(result.reason).toBe('waiting-for-morning');
+    }
+    expect(slackPosts()).toHaveLength(0);
+
+    const signal = new Date('2026-10-01T22:47:00Z'); // Fri 07:47 KST
+    const { result } = await issue('[JOB-ALERT][2026-10-02][send]', [], {
+      now: signal,
+      live: true,
+    });
+    expect(result.status).toBe('sent');
+    expect(result.final.jobs.map((item) => item.companyName)).toEqual(['회사1', '회사2']);
+    expect(slackPosts()).toHaveLength(1);
+  });
+
   it('previews without posting while the old digest is still live', async () => {
     await collect();
     for (const slot of [1, 2, 3]) {
