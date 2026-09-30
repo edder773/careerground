@@ -3,12 +3,76 @@
   "batches": [
     "2026-09-30"
   ],
-  "generatedAt": "2026-09-30T14:14:28.044Z",
+  "generatedAt": "2026-09-30T14:30:42.623Z",
   "collectorCount": 5,
   "skipped": {
     "notAlertable": 0,
-    "alreadySent": 3,
+    "alreadySent": 0,
     "duplicate": 0
   },
-  "jobs": []
+  "jobs": [
+    {
+      "companyName": "플리토",
+      "title": "Product Platform PO/운영지원 인턴",
+      "sourceName": "Superookie",
+      "sourceUrl": "https://www.superookie.com/jobs/6ab277f32ae5d560e4101f52",
+      "deadlineAt": "2026-09-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "삼일회계법인",
+      "title": "AC Digital팀 [삼일피더블유씨엑셀러레이션센터] 웹서비스 개발자 신입 채용",
+      "sourceName": "Superookie",
+      "sourceUrl": "https://www.superookie.com/jobs/6aba06acd7b7aa31a34174c2",
+      "deadlineAt": "2026-10-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)데이터스트림즈",
+      "title": "데이터통합 솔루션 개발자 신입/경력 채용",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55149046",
+      "deadlineAt": "2026-10-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)크리스아이티",
+      "title": "AI/웹개발자(경력/신입) 모집",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55143276",
+      "deadlineAt": "2026-10-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)펨트론",
+      "title": "[펨트론] AI 비전·딥러닝 알고리즘 개발자 채용",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55150489",
+      "deadlineAt": "2026-10-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "주식회사 티이에프",
+      "title": "자사 SW현장설치 및 유지보수 엔지니어 채용",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=KJ21832609300009",
+      "deadlineAt": "2026-10-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "주식회사 휴인텍",
+      "title": "임베디드 펌웨어 개발자 채용",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=KJ21832609300008",
+      "deadlineAt": "2026-10-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    }
+  ]
 }
