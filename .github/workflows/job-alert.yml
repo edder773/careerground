@@ -53,7 +53,9 @@ jobs:
           JOB_ALERT_REPORT_FILE: ${{ runner.temp }}/job-alert-report.md
         run: node scripts/job-alert/run.mjs receive
       - name: Save alert data
-        run: bash scripts/job-alert/data-branch.sh save "receive #${{ github.event.issue.number }}"
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: bash scripts/job-alert/data-branch.sh save "receive issue $ISSUE_NUMBER"
       - name: Reply to the submission issue
         if: always()
         env:
