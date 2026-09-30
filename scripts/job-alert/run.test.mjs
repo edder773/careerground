@@ -122,6 +122,8 @@ describe('job alert submissions', () => {
     const pending = JSON.parse(readFileSync(join(dir, 'pending.json'), 'utf8'));
     expect(pending.date).toBe('2026-10-01');
     expect(pending.jobs.map((item) => item.companyName)).toEqual(['회사1', '회사2', '회사3']);
+    const dated = JSON.parse(readFileSync(join(dir, 'pending', '2026-10-01.json'), 'utf8'));
+    expect(dated).toEqual(pending);
     expect(report.join('\n')).toContain('수집기 1 (2026-10-01): 공고 4건 접수');
     expect(slackPosts()).toHaveLength(0);
   });
