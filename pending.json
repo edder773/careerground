@@ -3,10 +3,10 @@
   "batches": [
     "2026-09-30"
   ],
-  "generatedAt": "2026-09-30T14:35:14.618Z",
+  "generatedAt": "2026-09-30T14:43:29.327Z",
   "collectorCount": 5,
   "skipped": {
-    "notAlertable": 0,
+    "notAlertable": 5,
     "alreadySent": 1,
     "duplicate": 0
   },
@@ -28,6 +28,15 @@
       "deadlineAt": "2026-10-03T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "삼일피더블유씨엑셀러레이션센터",
+      "title": "[삼일피더블유씨엑셀러레이션센터] 웹서비스 개발자 신입 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2609280001170",
+      "deadlineAt": "2026-10-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
     },
     {
       "companyName": "삼일회계법인",
@@ -73,6 +82,15 @@
       "deadlineAt": "2026-10-12T17:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)더존비즈온",
+      "title": "[IT인프라]더존비즈온 솔루션 인프라 및 서비스 운영 인재 채용(신입/경력)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2609280000917",
+      "deadlineAt": "2026-10-13T23:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
       "companyName": "(주)지에프씨코리아",
