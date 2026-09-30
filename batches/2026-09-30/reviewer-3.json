@@ -1,0 +1,153 @@
+{
+  "kind": "reviewer",
+  "slot": 3,
+  "date": "2026-09-30",
+  "receivedAt": "2026-09-30T14:56:47.502Z",
+  "jobs": [
+    {
+      "companyName": "(주)아이엠에스나노텍",
+      "title": "딥러닝, 모션제어, 영상처리, MFC, Embedded, C, C++ 개발자 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50029992",
+      "deadlineAt": "2026-10-03T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "삼일피더블유씨엑셀러레이션센터",
+      "title": "[삼일피더블유씨엑셀러레이션센터] 웹서비스 개발자 신입 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2609280001170",
+      "deadlineAt": "2026-10-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "삼일회계법인",
+      "title": "AC Digital팀 [삼일피더블유씨엑셀러레이션센터] 웹서비스 개발자 신입 채용",
+      "sourceName": "Superookie",
+      "sourceUrl": "https://www.superookie.com/jobs/6aba06acd7b7aa31a34174c2",
+      "deadlineAt": "2026-10-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "코오롱베니트",
+      "title": "2026 하반기 채용연계형 인턴 모집",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106432",
+      "deadlineAt": "2026-10-07T14:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "신협중앙회",
+      "title": "2027년 신입직원(일반직군 및 IT직군) 채용",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/352149",
+      "deadlineAt": "2026-10-07T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "한솔그룹",
+      "title": "2026 신입사원 공개채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106344",
+      "deadlineAt": "2026-10-11T14:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "HS효성그룹",
+      "title": "2026년 하반기 신입공채",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106418",
+      "deadlineAt": "2026-10-11T14:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "다날",
+      "title": "AI 개발자 (경력 무관)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/399647",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "한화비전",
+      "title": "2026 테크&라이프 부문 신입사원 채용",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/352123",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "현대오토에버",
+      "title": "2026 4분기 신입사원 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106477",
+      "deadlineAt": "2026-10-12T04:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "원익그룹",
+      "title": "2026 신입공채 (학석사)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106388",
+      "deadlineAt": "2026-10-12T14:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "신세계디에프",
+      "title": "2027 신세계디에프(면세점) 신입사원 모집",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/351755",
+      "deadlineAt": "2026-10-12T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)더존비즈온",
+      "title": "[IT인프라]더존비즈온 솔루션 인프라 및 서비스 운영 인재 채용(신입/경력)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2609280000917",
+      "deadlineAt": "2026-10-13T23:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "한국농수산식품유통공사",
+      "title": "2026년 신입직원 채용공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305395",
+      "deadlineAt": "2026-10-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)지에프씨코리아",
+      "title": "[가산동] 추천모델 AI 개발자 (2-3개월)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50041846",
+      "deadlineAt": "2026-10-22T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "키키코드(주)(KeykyCode",
+      "title": "신입 백엔드 개발자 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50040504",
+      "deadlineAt": "2026-11-20T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
