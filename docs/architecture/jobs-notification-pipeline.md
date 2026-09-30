@@ -1,5 +1,19 @@
 # 채용공고 수집·검증·알림 파이프라인
 
+## 전환 중인 경로
+
+```mermaid
+flowchart LR
+  C[수집기 1~5 · 18:00] -->|같은 JSON, Issue| P[pending.json]
+  P --> R[검증기 1~3 · 07:30]
+  R -->|같은 JSON, Issue| F[2개 이상 통과 · 고정 코드]
+  F --> N[Slack]
+```
+
+수집기, 검증기, 최종 결과가 한 가지 JSON 형식을 쓴다. 형식이 틀린 공고는 그 공고만 빠진다. 세 번째 검증이 도착하면 바로 발송하고, cron은 보조로만 쓴다. CareerGround DB, HQ, Drive를 거치지 않는다. 자세한 내용은 [`job-alert-direct-pipeline.md`](../operations/job-alert-direct-pipeline.md)에 있다.
+
+## 기존 경로 (전환 전까지)
+
 ```mermaid
 flowchart LR
   C[Chat 예약 수집 5개 · 18:00] --> M[Drive 동결 manifest]

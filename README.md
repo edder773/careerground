@@ -52,12 +52,11 @@ pnpm docs:build
 
 ## 데이터 가져오기
 
-기존 Chat 수집기 5개가 평일 18:00 KST에 원본을 Drive에 저장한다. Codex HQ는 20:00에 동일 입력을 실제 Chat R1/R2/R3에 각각 한 번 검증 요청하고, 20:30에 세 결과를 한 번 회수한다. 고정 코드가 세 검증의 PASS 교집합으로 최소 알림 데이터와 운영 schema 5.1 파티션 3개를 만든다. 기존 Git blob + schema 2.0 Issue handoff와 GitHub Actions가 보호된 Sites API를 통해 운영 D1에 신규 `ACTIVE`만 반영한다. 원본 JSON은 저장소에 커밋하지 않고, 기존 `jobs`와 `saved_jobs`는 변경하지 않는다.
+채용공고 알리미는 수집기 5개와 검증기 3개가 같은 JSON 형식을 GitHub Issue로 제출하고, 고정 코드가 검증기 2개 이상이 통과시킨 공고를 Slack으로 보내는 구조로 옮기는 중이다. 전환 전까지 새 경로는 미리보기만 만들고, 기존 HQ·v5 경로가 발송을 담당한다.
 
-- 운영 Runbook: `docs/operations/careerground-v5-runbook.md`
-- HQ 요청·회수 절차: `docs/operations/job-alert-hq-two-wakes.md`
-- 알림 준비 데이터 계약: `docs/operations/job-alert-ready-contract.md`
-- 기존 GitHub 운영 인입 포인터: `docs/operations/careerground-v5-automatic-handoff.md`
+- 새 경로와 ChatGPT 예약 프롬프트, 전환 절차: `docs/operations/job-alert-direct-pipeline.md`
+- 기존 운영 Runbook: `docs/operations/careerground-v5-runbook.md`
+- 기존 HQ 요청·회수 절차: `docs/operations/job-alert-hq-two-wakes.md`
 
 ## 오늘의 문제와 cron
 
