@@ -2,7 +2,17 @@
   "kind": "collector",
   "slot": 3,
   "date": "2026-09-30",
-  "receivedAt": "2026-09-30T14:13:43.033Z",
-  "jobs": [],
+  "receivedAt": "2026-09-30T14:33:24.465Z",
+  "jobs": [
+    {
+      "companyName": "다날",
+      "title": "AI 개발자 (경력 무관)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/399647",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
   "rejected": []
 }
