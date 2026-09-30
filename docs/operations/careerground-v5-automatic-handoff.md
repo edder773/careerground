@@ -1,5 +1,7 @@
 # CareerGround v5 운영 인입
 
+> **전환 예정:** 이 경로는 [수집 5 → 검증 3 → 최종 → Slack 직결 경로](./job-alert-direct-pipeline.md)로 대체된다. 전환 전까지만 유효하다.
+
 이 문서는 [20:00·20:30 HQ 실행 계약](./job-alert-hq-two-wakes.md)이 검증을 마친 뒤 사용하는 유일한 GitHub→운영 DB 경로를 설명한다. 기존 수집 Chat 5개는 Drive에 원본을 보존하며 GitHub 인입을 직접 호출하지 않는다. 실제 Chat R1/R2/R3의 보고서와 원본을 고정 코드가 대조해 만든 운영 schema 5.1 파티션 3개만 전달한다. 검증 역할 3개와 운영 파티션 3개는 서로 다른 단위다.
 
 HQ는 동일 날짜·attempt·bundleId의 세 파티션을 먼저 모두 검증하고 Drive `04_Final`에 저장·읽기 확인한다. 게시 직전에 당일·영업일·현재 마감·최신 DB/SENT·원본 해시·승인된 Slack workflow 상태를 다시 확인한다. 동일 날짜·attempt·bundleId의 GitHub Issue를 조회해 이미 전송됐으면 재생성하지 않고, 같은 키의 다른 내용은 차단한다.

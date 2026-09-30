@@ -1,0 +1,111 @@
+name: Job alert
+
+# Collectors and reviewers submit one shared job-list JSON as [JOB-ALERT] issues.
+# The alert goes out as soon as the reviews are in. Cron is only a late
+# fallback: GitHub drops or delays most scheduled runs in this repository.
+on:
+  issues:
+    types: [opened, edited, reopened]
+  schedule:
+    - cron: '40 8 * * 1-5'
+      timezone: 'Asia/Seoul'
+    - cron: '10 10 * * 1-5'
+      timezone: 'Asia/Seoul'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Slack에 보내지 않고 메시지 미리보기만 만든다'
+        type: boolean
+        default: true
+      force:
+        description: '주말·공휴일·검증 대기와 관계없이 지금 판정한다'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+
+env:
+  JOB_ALERT_DATA_DIR: alert-data
+
+jobs:
+  # No concurrency group: GitHub cancels queued runs in a group, which would
+  # drop submissions that arrive together. Each submission writes its own file.
+  receive:
+    if: >-
+      github.event_name == 'issues' &&
+      startsWith(github.event.issue.title, '[JOB-ALERT]') &&
+      (github.event.issue.author_association == 'OWNER' ||
+       github.event.issue.author_association == 'MEMBER' ||
+       github.event.issue.author_association == 'COLLABORATOR')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: '.node-version'
+      - name: Check out alert data
+        run: bash scripts/job-alert/data-branch.sh checkout
+      - name: Store the submission
+        env:
+          JOB_ALERT_REPORT_FILE: ${{ runner.temp }}/job-alert-report.md
+        run: node scripts/job-alert/run.mjs receive
+      - name: Save alert data
+        run: bash scripts/job-alert/data-branch.sh save "receive #${{ github.event.issue.number }}"
+      - name: Reply to the submission issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPORT_FILE: ${{ runner.temp }}/job-alert-report.md
+        run: |
+          if [ -s "$REPORT_FILE" ]; then
+            gh issue comment "$ISSUE_NUMBER" --body-file "$REPORT_FILE"
+          fi
+          gh issue close "$ISSUE_NUMBER" || true
+
+  # One run at a time. A newer queued run replaces an older one, which is safe
+  # because every run rebuilds the list from all stored submissions.
+  process:
+    needs: receive
+    if: >-
+      always() &&
+      (github.event_name != 'issues' || needs.receive.result == 'success')
+    concurrency:
+      group: job-alert-process
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: '.node-version'
+      - name: Check out alert data
+        run: bash scripts/job-alert/data-branch.sh checkout
+      - name: Build the pending list and send when ready
+        env:
+          JOB_ALERT_REPORT_FILE: ${{ runner.temp }}/job-alert-report.md
+          JOB_ALERT_LIVE: ${{ vars.JOB_ALERT_LIVE }}
+          CAREERGROUND_SITE_URL: https://careerground-workspace.edder773.chatgpt.site/
+          CAREERGROUND_DIGEST_URL: https://careerground-workspace.edder773.chatgpt.site/api/v1/internal/slack-digest
+          CAREERGROUND_DIGEST_TOKEN: ${{ secrets.CAREERGROUND_DIGEST_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          BAEUMZIP_URL: https://modumunje.com/
+        run: node scripts/job-alert/run.mjs process
+      - name: Save alert data
+        if: always()
+        run: bash scripts/job-alert/data-branch.sh save "process ${GITHUB_EVENT_NAME} ${GITHUB_RUN_ID}"
+      - name: Report the result on the issue
+        if: always() && github.event_name == 'issues'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPORT_FILE: ${{ runner.temp }}/job-alert-report.md
+        run: |
+          # Only a send, a preview, or an error is worth a comment.
+          if [ -s "$REPORT_FILE" ] && ! grep -q '^발송 안 함' "$REPORT_FILE"; then
+            gh issue comment "$ISSUE_NUMBER" --body-file "$REPORT_FILE"
+          fi

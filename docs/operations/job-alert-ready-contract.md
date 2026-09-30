@@ -1,5 +1,7 @@
 # CareerGround 알림 준비 데이터 계약
 
+> **전환 예정:** 이 경로는 [수집 5 → 검증 3 → 최종 → Slack 직결 경로](./job-alert-direct-pipeline.md)로 대체된다. 전환 전까지만 유효하다.
+
 채용공고 알림의 경계는 `CAREERGROUND_ALERT_READY` 1.0이다. 월~금 18:00 KST의 기존 Chat 5개가 원본을 수집한다. HQ는 20:00에 동일 manifest로 실제 Chat R1/R2/R3에 각각 한 번 요청하고, 20:30에 세 결과를 한 번 회수한다. 세 검증의 명시적 `PASS` 교집합만 준비 데이터가 된다. 원본과 검증은 Drive에 그대로 보존한다. `alert-ready.json`은 승인 근거와 후보 목록을 기록하는 감사 산출물이며, 기존 운영 DB로는 결정적으로 변환한 schema 5.1 파티션 3개만 전달한다. 실행 절차는 [20:00·20:30 HQ 문서](./job-alert-hq-two-wakes.md)를 따른다.
 
 ## 최소 후보 형식
