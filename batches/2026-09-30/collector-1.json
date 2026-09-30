@@ -2,7 +2,71 @@
   "kind": "collector",
   "slot": 1,
   "date": "2026-09-30",
-  "receivedAt": "2026-09-30T14:13:41.669Z",
-  "jobs": [],
+  "receivedAt": "2026-09-30T14:34:50.537Z",
+  "jobs": [
+    {
+      "companyName": "코리안리재보험",
+      "title": "2026 신입 채용 - AI",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50069990",
+      "deadlineAt": "2026-10-12T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "코리안리재보험",
+      "title": "2026 신입 채용 - 전산",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50070006",
+      "deadlineAt": "2026-10-12T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "키키코드(주)(KeykyCode",
+      "title": "신입 백엔드 개발자 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50040504",
+      "deadlineAt": "2026-11-20T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)이테크시스템",
+      "title": "[에티버스이피에이] AI 시스템 엔지니어 (신입/경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50040580",
+      "deadlineAt": "2026-11-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)지에프씨코리아",
+      "title": "[가산동] 추천모델 AI 개발자 (2-3개월)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50041846",
+      "deadlineAt": "2026-10-22T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)아이엠에스나노텍",
+      "title": "딥러닝, 모션제어, 영상처리, MFC, Embedded, C, C++ 개발자 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50029992",
+      "deadlineAt": "2026-10-03T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "팜스코",
+      "title": "[하림그룹 계열사] 2026년 신입/경력 공개채용 #공채",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/572540",
+      "deadlineAt": "2026-10-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
   "rejected": []
 }
