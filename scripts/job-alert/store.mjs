@@ -8,7 +8,8 @@ import { buildPending } from './pipeline.mjs';
 //   ledger.json                         sent jobs and one delivery per day
 //   batches/<date>/collector-<n>.json   normalized collector lists
 //   batches/<date>/reviewer-<n>.json    normalized reviewer lists for that batch
-//   pending.json                        the list reviewers read
+//   pending.json                        the latest list
+//   pending/<date>.json                 the same list under a path reviewers read
 const OPEN_BATCH_DAYS = 14;
 const SENT_JOB_RETENTION_DAYS = 180;
 const EXPIRED_JOB_RETENTION_DAYS = 7;
@@ -108,5 +109,8 @@ export function rebuildPending(dir, ledger, now) {
     jobs,
   };
   writeJson(join(dir, 'pending.json'), pending);
+  // ChatGPT's fetch and GitHub connector both served a stale pending.json for
+  // hours. A path that is new each day has no stale copy to serve.
+  if (pending.date) writeJson(join(dir, 'pending', `${pending.date}.json`), pending);
   return pending;
 }
