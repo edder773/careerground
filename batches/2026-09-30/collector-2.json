@@ -1,0 +1,36 @@
+{
+  "kind": "collector",
+  "slot": 2,
+  "date": "2026-09-30",
+  "receivedAt": "2026-09-30T14:13:43.811Z",
+  "jobs": [
+    {
+      "companyName": "(주)이카운트",
+      "title": "2026년 이카운트 신입 개발자 채용",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?cn=curation&cns=list&rec_idx=55130970&referNonce=&t_category=m_curation&t_content=generic",
+      "deadlineAt": "2026-10-14T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)소르테크",
+      "title": "[소르테크] AI Native 개발자 채용 (신입·주니어 환영)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55129596&referNonce=3c43cec6cd3dfdab72ca&t_category=ind_recruit&t_content=SRI_M_050_2LV-SCT_MIX_RCT_NONMEM",
+      "deadlineAt": "2026-10-28T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)코어로보틱스",
+      "title": "AI 로보틱스 시뮬레이션 기술 개발자",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55133155&searchword=%EB%A1%9C%EB%B3%B4%ED%8B%B1%EC%8A%A4&t_category=search&t_content=connect_recruit",
+      "deadlineAt": "2026-10-28T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
