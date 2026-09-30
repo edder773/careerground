@@ -3,11 +3,11 @@
   "batches": [
     "2026-09-30"
   ],
-  "generatedAt": "2026-09-30T14:33:46.628Z",
+  "generatedAt": "2026-09-30T14:35:14.618Z",
   "collectorCount": 5,
   "skipped": {
     "notAlertable": 0,
-    "alreadySent": 0,
+    "alreadySent": 1,
     "duplicate": 0
   },
   "jobs": [
@@ -21,10 +21,28 @@
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
+      "companyName": "(주)아이엠에스나노텍",
+      "title": "딥러닝, 모션제어, 영상처리, MFC, Embedded, C, C++ 개발자 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50029992",
+      "deadlineAt": "2026-10-03T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
       "companyName": "삼일회계법인",
       "title": "AC Digital팀 [삼일피더블유씨엑셀러레이션센터] 웹서비스 개발자 신입 채용",
       "sourceName": "Superookie",
       "sourceUrl": "https://www.superookie.com/jobs/6aba06acd7b7aa31a34174c2",
+      "deadlineAt": "2026-10-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "팜스코",
+      "title": "[하림그룹 계열사] 2026년 신입/경력 공개채용 #공채",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/572540",
       "deadlineAt": "2026-10-06T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
@@ -35,6 +53,33 @@
       "sourceName": "Inthiswork",
       "sourceUrl": "https://inthiswork.com/archives/399647",
       "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "코리안리재보험",
+      "title": "2026 신입 채용 - 전산",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50070006",
+      "deadlineAt": "2026-10-12T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "코리안리재보험",
+      "title": "2026 신입 채용 - AI",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50069990",
+      "deadlineAt": "2026-10-12T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)지에프씨코리아",
+      "title": "[가산동] 추천모델 AI 개발자 (2-3개월)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50041846",
+      "deadlineAt": "2026-10-22T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
@@ -82,6 +127,15 @@
       "deadlineAt": "2026-10-29T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "키키코드(주)(KeykyCode",
+      "title": "신입 백엔드 개발자 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50040504",
+      "deadlineAt": "2026-11-20T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
     }
   ]
 }
