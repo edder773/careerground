@@ -2,7 +2,71 @@
   "kind": "collector",
   "slot": 4,
   "date": "2026-09-30",
-  "receivedAt": "2026-09-30T14:13:45.988Z",
-  "jobs": [],
+  "receivedAt": "2026-09-30T14:43:10.170Z",
+  "jobs": [
+    {
+      "companyName": "도슨티",
+      "title": "AI-native Builder (개발자)",
+      "sourceName": "RocketPunch",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/159342",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "삼일피더블유씨엑셀러레이션센터",
+      "title": "[삼일피더블유씨엑셀러레이션센터] 웹서비스 개발자 신입 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2609280001170",
+      "deadlineAt": "2026-10-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)더존비즈온",
+      "title": "[IT인프라]더존비즈온 솔루션 인프라 및 서비스 운영 인재 채용(신입/경력)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2609280000917",
+      "deadlineAt": "2026-10-13T23:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Qualcomm",
+      "title": "Intern - Generative AI model personalization and efficient fine-tuning",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/intern-generative-ai-model-personalization-and-efficient-fine-tuning-at-qualcomm-4432928554",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Moloco",
+      "title": "Machine Learning Engineer Intern (3-month internship)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/machine-learning-engineer-intern-3-month-internship-at-moloco-4374769517",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Moloco",
+      "title": "Software Engineer Intern (3 months)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/software-engineer-intern-3-months-at-moloco-4473091269",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "베링랩",
+      "title": "AI 개발자 인턴(6개월 이상)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/ai-%EA%B0%9C%EB%B0%9C%EC%9E%90-%EC%9D%B8%ED%84%B4-6%EA%B0%9C%EC%9B%94-%EC%9D%B4%EC%83%81-at-bering-lab-4467171858",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
   "rejected": []
 }
