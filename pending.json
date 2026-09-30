@@ -3,7 +3,7 @@
   "batches": [
     "2026-09-30"
   ],
-  "generatedAt": "2026-09-30T14:30:42.623Z",
+  "generatedAt": "2026-09-30T14:33:46.628Z",
   "collectorCount": 5,
   "skipped": {
     "notAlertable": 0,
@@ -26,6 +26,15 @@
       "sourceName": "Superookie",
       "sourceUrl": "https://www.superookie.com/jobs/6aba06acd7b7aa31a34174c2",
       "deadlineAt": "2026-10-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "다날",
+      "title": "AI 개발자 (경력 무관)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/399647",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
