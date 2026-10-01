@@ -70,7 +70,11 @@ export function mergeCatalogBaseline(ledger, catalogJobs) {
 }
 
 const deliveredBatches = (ledger) =>
-  new Set(Object.values(ledger.deliveries).flatMap((delivery) => delivery.batches ?? []));
+  new Set(
+    Object.values(ledger.deliveries)
+      .filter((delivery) => delivery.mode === 'live')
+      .flatMap((delivery) => delivery.batches ?? []),
+  );
 
 export function openBatchDates(dir, ledger, now) {
   const batchesDir = join(dir, 'batches');
@@ -96,8 +100,8 @@ export function loadSubmissions(dir, date, kind) {
 export const saveSubmission = (dir, date, submission) =>
   writeJson(join(dir, 'batches', date, `${submission.kind}-${submission.slot}.json`), submission);
 
-export function rebuildPending(dir, ledger, now) {
-  const batches = openBatchDates(dir, ledger, now);
+export function rebuildPending(dir, ledger, now, batchDate) {
+  const batches = batchDate ? [batchDate] : openBatchDates(dir, ledger, now);
   const collectors = batches.flatMap((date) => loadSubmissions(dir, date, 'collector'));
   const { jobs, skipped } = buildPending({ collectors, sentJobs: ledger.sentJobs, now });
   const pending = {

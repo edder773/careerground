@@ -99,12 +99,13 @@ export async function sendJobAlert({
   force = false,
   fetchImpl = globalThis.fetch,
   now = new Date(),
+  batchDate,
 }) {
   // A live send replaces today's preview, so the batches the preview closed
   // are open again. Otherwise the live alert would go out empty.
   const today = kstDateKey(now);
   if (live && ledger.deliveries[today]?.mode === 'dry-run') delete ledger.deliveries[today];
-  const pending = rebuildPending(dataDir, ledger, now);
+  const pending = rebuildPending(dataDir, ledger, now, batchDate);
   const reviews = pending.date ? loadSubmissions(dataDir, pending.date, 'reviewer') : [];
   const decision = sendDecision({
     trigger,
