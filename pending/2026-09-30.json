@@ -3,12 +3,13 @@
   "batches": [
     "2026-09-30"
   ],
-  "generatedAt": "2026-10-01T00:17:45.113Z",
+  "generatedAt": "2026-10-01T00:31:47.492Z",
   "collectorCount": 5,
   "skipped": {
     "notAlertable": 6,
+    "restricted": 1,
     "alreadySent": 4,
-    "duplicate": 2
+    "duplicate": 3
   },
   "jobs": [
     {
@@ -27,16 +28,8 @@
       "sourceUrl": "https://linkareer.com/activity/353708",
       "deadlineAt": "2026-10-05T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "삼일피더블유씨엑셀러레이션센터",
-      "title": "[삼일피더블유씨엑셀러레이션센터] 웹서비스 개발자 신입 채용",
-      "sourceName": "Incruit",
-      "sourceUrl": "https://jlab.incruit.com/jobs/2609280001170",
-      "deadlineAt": "2026-10-06T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT/개발"
     },
     {
       "companyName": "삼일회계법인",
@@ -66,15 +59,6 @@
       "careerScope": "NEW_GRAD_ONLY"
     },
     {
-      "companyName": "한국전력공사",
-      "title": "2026년도 하반기 보훈 채용공고",
-      "sourceName": "JOB-ALIO",
-      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305239",
-      "deadlineAt": "2026-10-06T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
       "companyName": "코오롱베니트",
       "title": "2026 하반기 채용연계형 인턴 모집",
       "sourceName": "Jasoseol",
@@ -90,7 +74,8 @@
       "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305321",
       "deadlineAt": "2026-10-07T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "정보통신"
     },
     {
       "companyName": "신협중앙회",
@@ -99,7 +84,8 @@
       "sourceUrl": "https://linkareer.com/activity/352149",
       "deadlineAt": "2026-10-07T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT직군"
     },
     {
       "companyName": "우성그룹",
@@ -117,7 +103,8 @@
       "sourceUrl": "https://jasoseol.com/recruit/106344",
       "deadlineAt": "2026-10-11T14:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "[한솔제지] IT기획, [한솔테크닉스] S/W개발, [한솔PNS IT] 웹개발자(AI 서비스)"
     },
     {
       "companyName": "HS효성그룹",
@@ -126,7 +113,8 @@
       "sourceUrl": "https://jasoseol.com/recruit/106418",
       "deadlineAt": "2026-10-11T14:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "[HS효성] IT기획"
     },
     {
       "companyName": "다날",
@@ -144,7 +132,8 @@
       "sourceUrl": "https://linkareer.com/activity/352123",
       "deadlineAt": "2026-10-11T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT/개발"
     },
     {
       "companyName": "현대오토에버",
@@ -162,7 +151,8 @@
       "sourceUrl": "https://jasoseol.com/recruit/106388",
       "deadlineAt": "2026-10-12T14:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "[원익아이피에스] SW개발(AI), SW개발"
     },
     {
       "companyName": "코리안리재보험",
@@ -189,7 +179,8 @@
       "sourceUrl": "https://linkareer.com/activity/351755",
       "deadlineAt": "2026-10-12T18:00:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT/개발"
     },
     {
       "companyName": "(주)더존비즈온",
@@ -207,7 +198,8 @@
       "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305395",
       "deadlineAt": "2026-10-13T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산직"
     },
     {
       "companyName": "한화솔루션/케미칼",
@@ -225,7 +217,8 @@
       "sourceUrl": "https://linkareer.com/activity/353370",
       "deadlineAt": "2026-10-19T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT/개발"
     },
     {
       "companyName": "(주)지에프씨코리아",
