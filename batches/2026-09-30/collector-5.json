@@ -2,7 +2,7 @@
   "kind": "collector",
   "slot": 5,
   "date": "2026-09-30",
-  "receivedAt": "2026-09-30T14:44:14.239Z",
+  "receivedAt": "2026-10-01T00:30:32.953Z",
   "jobs": [
     {
       "companyName": "현대오토에버",
@@ -47,7 +47,8 @@
       "sourceUrl": "https://jasoseol.com/recruit/106418",
       "deadlineAt": "2026-10-11T14:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "[HS효성] IT기획"
     },
     {
       "companyName": "우성그룹",
@@ -65,7 +66,8 @@
       "sourceUrl": "https://jasoseol.com/recruit/106344",
       "deadlineAt": "2026-10-11T14:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "[한솔제지] IT기획, [한솔테크닉스] S/W개발, [한솔PNS IT] 웹개발자(AI 서비스)"
     },
     {
       "companyName": "원익그룹",
@@ -74,7 +76,8 @@
       "sourceUrl": "https://jasoseol.com/recruit/106388",
       "deadlineAt": "2026-10-12T14:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "[원익아이피에스] SW개발(AI), SW개발"
     },
     {
       "companyName": "금융결제원",
@@ -110,7 +113,8 @@
       "sourceUrl": "https://linkareer.com/activity/353708",
       "deadlineAt": "2026-10-05T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT/개발"
     },
     {
       "companyName": "신세계아이앤씨",
@@ -119,7 +123,8 @@
       "sourceUrl": "https://linkareer.com/activity/351725",
       "deadlineAt": "2026-10-12T18:00:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT/개발"
     },
     {
       "companyName": "신세계디에프",
@@ -128,7 +133,8 @@
       "sourceUrl": "https://linkareer.com/activity/351755",
       "deadlineAt": "2026-10-12T18:00:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT/개발"
     },
     {
       "companyName": "한화비전",
@@ -137,7 +143,8 @@
       "sourceUrl": "https://linkareer.com/activity/352123",
       "deadlineAt": "2026-10-11T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT/개발"
     },
     {
       "companyName": "신협중앙회",
@@ -146,7 +153,8 @@
       "sourceUrl": "https://linkareer.com/activity/352149",
       "deadlineAt": "2026-10-07T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT직군"
     },
     {
       "companyName": "서울주택도시공사",
@@ -155,7 +163,8 @@
       "sourceUrl": "https://linkareer.com/activity/353370",
       "deadlineAt": "2026-10-19T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT/개발"
     },
     {
       "companyName": "한국농수산식품유통공사",
@@ -164,7 +173,8 @@
       "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305395",
       "deadlineAt": "2026-10-13T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산직"
     },
     {
       "companyName": "한국교육학술정보원",
@@ -182,7 +192,8 @@
       "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305239",
       "deadlineAt": "2026-10-06T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "ICT"
     },
     {
       "companyName": "국가철도공단",
@@ -191,7 +202,8 @@
       "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305321",
       "deadlineAt": "2026-10-07T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "정보통신"
     }
   ],
   "rejected": []
