@@ -1,0 +1,88 @@
+name: Job alert test and release
+
+on:
+  schedule:
+    - cron: '0 21 * * 1-5'
+      timezone: 'Asia/Seoul'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'test: 테스트 채널 발송 / release: 수신 확인 후 운영 승인'
+        type: choice
+        options: [test, release]
+        default: test
+      batch_date:
+        description: '수집 배치 YYYY-MM-DD (빈 값은 오늘)'
+        type: string
+        default: ''
+      dry_run:
+        description: '실제 테스트 메시지를 보내지 않는다'
+        type: boolean
+        default: true
+      force:
+        description: '주말·공휴일 테스트를 예외로 허용한다'
+        type: boolean
+        default: false
+      retest:
+        description: '확인된 테스트 발송을 개선본으로 다시 테스트한다'
+        type: boolean
+        default: false
+      hold_until_21:
+        description: '미리 시작한 실행을 오늘 21:00 KST까지 대기한다'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: job-alert-test
+  cancel-in-progress: false
+
+env:
+  JOB_ALERT_DATA_DIR: alert-data
+  JOB_ALERT_TEST_DATA_DIR: test-state
+
+jobs:
+  test-and-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: '.node-version'
+      - name: Wait until 21:00 KST
+        if: github.event_name == 'workflow_dispatch' && inputs.hold_until_21 && inputs.mode == 'test'
+        env:
+          RESERVATION_TARGET_HOUR: '21'
+          RESERVATION_TARGET_MINUTE: '0'
+          RESERVATION_MAX_WAIT_MINUTES: '20'
+        run: node scripts/operations/hold-until-kst.mjs
+      - name: Read the production baseline and today's batch
+        run: bash scripts/job-alert/data-branch.sh checkout
+      - name: Check out isolated test records
+        env:
+          JOB_ALERT_DATA_DIR: test-state
+          JOB_ALERT_DATA_BRANCH: job-alert-test-data
+        run: bash scripts/job-alert/data-branch.sh checkout
+      - name: Test the actual notifier or approve a confirmed test
+        env:
+          JOB_ALERT_DESTINATION: test
+          JOB_ALERT_APPROVE: ${{ inputs.mode == 'release' }}
+          JOB_ALERT_BATCH_DATE: ${{ inputs.batch_date }}
+          JOB_ALERT_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+          JOB_ALERT_FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force }}
+          JOB_ALERT_RETEST: ${{ github.event_name == 'workflow_dispatch' && inputs.retest }}
+          CAREERGROUND_SITE_URL: https://careerground-workspace.edder773.chatgpt.site/
+          CAREERGROUND_DIGEST_URL: https://careerground-workspace.edder773.chatgpt.site/api/v1/internal/slack-digest
+          CAREERGROUND_DIGEST_TOKEN: ${{ secrets.CAREERGROUND_DIGEST_TOKEN }}
+          SLACK_TEST_WEBHOOK_URL: ${{ secrets.SLACK_TEST_WEBHOOK_URL }}
+          BAEUMZIP_URL: https://modumunje.com/
+        run: node scripts/job-alert/dispatch.mjs
+      - name: Save test results and release records
+        if: always()
+        env:
+          JOB_ALERT_DATA_DIR: test-state
+          JOB_ALERT_DATA_BRANCH: job-alert-test-data
+        run: bash scripts/job-alert/data-branch.sh save "test ${GITHUB_RUN_ID}"

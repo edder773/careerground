@@ -4,7 +4,8 @@
 #   data-branch.sh save "<commit note>"
 set -euo pipefail
 
-BRANCH=job-alert-data
+BRANCH="${JOB_ALERT_DATA_BRANCH:-job-alert-data}"
+case "$BRANCH" in job-alert-data|job-alert-test-data) ;; *) echo "Unexpected alert data branch" >&2; exit 1 ;; esac
 DIR="${JOB_ALERT_DATA_DIR:?JOB_ALERT_DATA_DIR is required}"
 export GIT_AUTHOR_NAME='github-actions[bot]'
 export GIT_AUTHOR_EMAIL='41898282+github-actions[bot]@users.noreply.github.com'

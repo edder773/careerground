@@ -99,12 +99,14 @@ export async function sendJobAlert({
   force = false,
   fetchImpl = globalThis.fetch,
   now = new Date(),
+  batchDate,
+  allowEmpty = false,
 }) {
   // A live send replaces today's preview, so the batches the preview closed
   // are open again. Otherwise the live alert would go out empty.
   const today = kstDateKey(now);
   if (live && ledger.deliveries[today]?.mode === 'dry-run') delete ledger.deliveries[today];
-  const pending = rebuildPending(dataDir, ledger, now);
+  const pending = rebuildPending(dataDir, ledger, now, batchDate);
   const reviews = pending.date ? loadSubmissions(dataDir, pending.date, 'reviewer') : [];
   const decision = sendDecision({
     trigger,
@@ -118,7 +120,7 @@ export async function sendJobAlert({
 
   const final = buildFinal({ pending, reviews, now });
   const challenges = await loadChallenges(env, fetchImpl);
-  if (final.jobs.length === 0 && final.heldCount === 0 && challenges.length === 0) {
+  if (!allowEmpty && final.jobs.length === 0 && final.heldCount === 0 && challenges.length === 0) {
     return { status: 'skipped', reason: 'nothing-to-send', pending, final };
   }
   const message = buildAlertMessage({
@@ -126,6 +128,7 @@ export async function sendJobAlert({
     jobs: final.jobs,
     challenges,
     heldCount: final.heldCount,
+    showEmptyJobs: allowEmpty,
     siteUrl: env.CAREERGROUND_SITE_URL,
     baeumzipUrl: env.BAEUMZIP_URL,
   });

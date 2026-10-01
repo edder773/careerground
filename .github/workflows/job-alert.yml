@@ -1,15 +1,13 @@
 name: Job alert
 
 # Collectors and reviewers submit one shared job-list JSON as [JOB-ALERT] issues.
-# The alert goes out as soon as the reviews are in. Cron is only a late
-# fallback: GitHub drops or delays most scheduled runs in this repository.
+# Submissions only rebuild today's candidate list. Production requires the
+# same batch and code to have passed the test-channel release gate.
 on:
   issues:
     types: [opened, edited, reopened]
   schedule:
-    - cron: '40 8 * * 1-5'
-      timezone: 'Asia/Seoul'
-    - cron: '10 10 * * 1-5'
+    - cron: '0 8 * * 1-5'
       timezone: 'Asia/Seoul'
   workflow_dispatch:
     inputs:
@@ -18,7 +16,16 @@ on:
         type: boolean
         default: true
       force:
-        description: '주말·공휴일·검증 대기와 관계없이 지금 판정한다'
+        description: '주말·공휴일을 예외로 허용한다. 테스트 승인은 필수다'
+        type: boolean
+        default: false
+
+      batch_date:
+        description: '승인된 수집 배치 날짜 YYYY-MM-DD (빈 값은 최신 배치)'
+        type: string
+        default: ''
+      hold_until_08:
+        description: '미리 시작한 실행을 오늘 08:00 KST까지 대기한다'
         type: boolean
         default: false
 
@@ -28,6 +35,8 @@ permissions:
 
 env:
   JOB_ALERT_DATA_DIR: alert-data
+  JOB_ALERT_TEST_DATA_DIR: test-state
+  JOB_ALERT_STRICT_BATCH: 'true'
 
 jobs:
   # No concurrency group: GitHub cancels queued runs in a group, which would
@@ -74,7 +83,7 @@ jobs:
     needs: receive
     if: >-
       always() &&
-      (github.event_name != 'issues' || needs.receive.result == 'success')
+      github.event_name == 'issues' && needs.receive.result == 'success'
     concurrency:
       group: job-alert-process
       cancel-in-progress: false
@@ -87,14 +96,14 @@ jobs:
           node-version-file: '.node-version'
       - name: Check out alert data
         run: bash scripts/job-alert/data-branch.sh checkout
-      - name: Build the pending list and send when ready
+      - name: Build today's pending list without sending
         env:
           JOB_ALERT_REPORT_FILE: ${{ runner.temp }}/job-alert-report.md
           JOB_ALERT_LIVE: ${{ vars.JOB_ALERT_LIVE }}
+          JOB_ALERT_DEFER_SEND: 'true'
           CAREERGROUND_SITE_URL: https://careerground-workspace.edder773.chatgpt.site/
           CAREERGROUND_DIGEST_URL: https://careerground-workspace.edder773.chatgpt.site/api/v1/internal/slack-digest
           CAREERGROUND_DIGEST_TOKEN: ${{ secrets.CAREERGROUND_DIGEST_TOKEN }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           BAEUMZIP_URL: https://modumunje.com/
         run: node scripts/job-alert/run.mjs process
       - name: Save alert data
@@ -111,3 +120,47 @@ jobs:
           if [ -s "$REPORT_FILE" ] && ! grep -q '^발송 안 함' "$REPORT_FILE"; then
             gh issue comment "$ISSUE_NUMBER" --body-file "$REPORT_FILE"
           fi
+
+  dispatch:
+    if: github.event_name != 'issues'
+    concurrency:
+      group: job-alert-process
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: '.node-version'
+      - name: Wait until 08:00 KST
+        if: github.event_name == 'workflow_dispatch' && inputs.hold_until_08
+        env:
+          RESERVATION_TARGET_HOUR: '8'
+          RESERVATION_TARGET_MINUTE: '0'
+          RESERVATION_MAX_WAIT_MINUTES: '20'
+        run: node scripts/operations/hold-until-kst.mjs
+      - name: Check out alert data
+        run: bash scripts/job-alert/data-branch.sh checkout
+      - name: Read test release records
+        env:
+          JOB_ALERT_DATA_DIR: test-state
+          JOB_ALERT_DATA_BRANCH: job-alert-test-data
+        run: bash scripts/job-alert/data-branch.sh checkout
+      - name: Send the approved prior batch
+        env:
+          JOB_ALERT_DESTINATION: production
+          JOB_ALERT_LIVE: ${{ vars.JOB_ALERT_LIVE }}
+          JOB_ALERT_PRODUCTION_START_DATE: '2026-10-03'
+          JOB_ALERT_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+          JOB_ALERT_FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force }}
+          JOB_ALERT_BATCH_DATE: ${{ inputs.batch_date }}
+          CAREERGROUND_SITE_URL: https://careerground-workspace.edder773.chatgpt.site/
+          CAREERGROUND_DIGEST_URL: https://careerground-workspace.edder773.chatgpt.site/api/v1/internal/slack-digest
+          CAREERGROUND_DIGEST_TOKEN: ${{ secrets.CAREERGROUND_DIGEST_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          BAEUMZIP_URL: https://modumunje.com/
+        run: node scripts/job-alert/dispatch.mjs
+      - name: Save alert data even after an uncertain delivery
+        if: always()
+        run: bash scripts/job-alert/data-branch.sh save "production ${GITHUB_RUN_ID}"

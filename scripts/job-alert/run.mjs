@@ -1,7 +1,7 @@
 import { appendFileSync, readFileSync } from 'node:fs';
 import process from 'node:process';
 import { URL, pathToFileURL } from 'node:url';
-import { parseJobList, parseSubmissionTitle } from './job-list.mjs';
+import { parseJobList, parseSubmissionTitle, kstDateKey } from './job-list.mjs';
 import { sendJobAlert } from './send.mjs';
 import {
   loadLedger,
@@ -9,6 +9,7 @@ import {
   openBatchDates,
   saveLedger,
   saveSubmission,
+  rebuildPending,
 } from './store.mjs';
 
 const TRUSTED_AUTHORS = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
@@ -39,10 +40,11 @@ export function receive({ env = process.env, now = new Date() } = {}) {
   const list = parseJobList(event.issue.body);
   const label = `${KIND_LABEL[parsed.kind]} ${parsed.slot}`;
   if (list.error) return { report: [`❌ ${label}: ${list.error}`] };
-  // A review belongs to the list the reviewer could read, whatever date it typed.
+  // The staged workflow pins reviews to their declared batch. The legacy
+  // compatibility path can still map a morning review to its open batch.
   const ledger = loadLedger(dataDir) ?? EMPTY_LEDGER();
   const date =
-    parsed.kind === 'reviewer'
+    parsed.kind === 'reviewer' && !enabled(env.JOB_ALERT_STRICT_BATCH)
       ? (openBatchDates(dataDir, ledger, now).at(-1) ?? parsed.date)
       : parsed.date;
   saveSubmission(dataDir, date, {
@@ -111,6 +113,13 @@ export async function processAlert({
   const force = eventName === 'workflow_dispatch' && enabled(event.inputs?.force);
 
   const ledger = await prepareLedger({ dataDir, env, live, fetchImpl, now });
+  if (enabled(env.JOB_ALERT_DEFER_SEND)) {
+    const pending = rebuildPending(dataDir, ledger, now, kstDateKey(now));
+    return {
+      report: ['발송 안 함: 제출 저장만 수행'],
+      result: { status: 'skipped', reason: 'submission-only', pending },
+    };
+  }
   const result = await sendJobAlert({ dataDir, ledger, env, trigger, live, force, fetchImpl, now });
   return { report: [describeResult(result)], result };
 }
