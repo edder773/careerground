@@ -3,12 +3,12 @@
   "batches": [
     "2026-10-01"
   ],
-  "generatedAt": "2026-10-01T07:09:42.542Z",
-  "collectorCount": 1,
+  "generatedAt": "2026-10-01T12:16:20.591Z",
+  "collectorCount": 2,
   "skipped": {
     "notAlertable": 0,
     "restricted": 0,
-    "alreadySent": 5,
+    "alreadySent": 9,
     "duplicate": 0
   },
   "jobs": [
@@ -18,6 +18,15 @@
       "sourceName": "JobKorea",
       "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50036705?Oem_Code=C1",
       "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "이카운트",
+      "title": "개발본부 신입 채용",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=OEW&infoTypeGroup=tb_workinfoopen&wantedAuthNo=179802",
+      "deadlineAt": "2026-10-14T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
     },
