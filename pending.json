@@ -3,15 +3,25 @@
   "batches": [
     "2026-10-01"
   ],
-  "generatedAt": "2026-10-01T12:19:37.316Z",
-  "collectorCount": 4,
+  "generatedAt": "2026-10-01T12:24:21.314Z",
+  "collectorCount": 5,
   "skipped": {
     "notAlertable": 16,
-    "restricted": 0,
-    "alreadySent": 11,
+    "restricted": 1,
+    "alreadySent": 14,
     "duplicate": 0
   },
   "jobs": [
+    {
+      "companyName": "우성그룹",
+      "title": "2026 신입 / 경력 모집",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106343",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "[우성] IT/AX"
+    },
     {
       "companyName": "한솔테크닉스",
       "title": "2026년 하반기 신입사원 공개채용 - S/W개발",
@@ -22,6 +32,16 @@
       "careerScope": "NEW_GRAD_ONLY"
     },
     {
+      "companyName": "동서식품",
+      "title": "2026년 대졸 신입/경력사원 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106404",
+      "deadlineAt": "2026-10-12T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산"
+    },
+    {
       "companyName": "이카운트",
       "title": "개발본부 신입 채용",
       "sourceName": "Work24",
@@ -29,6 +49,26 @@
       "deadlineAt": "2026-10-14T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "인동에프엔",
+      "title": "2026년 하반기 INDONG FN 신입사원 채용 (채용연계형 인턴)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/353875",
+      "deadlineAt": "2026-10-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산"
+    },
+    {
+      "companyName": "서울주택도시개발공사",
+      "title": "2026년 하반기 사무·기술직 신입사원 직무중심 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106464",
+      "deadlineAt": "2026-10-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산"
     },
     {
       "companyName": "(주)에이블짐정보",
