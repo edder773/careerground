@@ -3,23 +3,14 @@
   "batches": [
     "2026-09-30"
   ],
-  "generatedAt": "2026-09-30T14:57:10.892Z",
+  "generatedAt": "2026-10-01T00:17:45.113Z",
   "collectorCount": 5,
   "skipped": {
-    "notAlertable": 5,
+    "notAlertable": 6,
     "alreadySent": 4,
     "duplicate": 2
   },
   "jobs": [
-    {
-      "companyName": "플리토",
-      "title": "Product Platform PO/운영지원 인턴",
-      "sourceName": "Superookie",
-      "sourceUrl": "https://www.superookie.com/jobs/6ab277f32ae5d560e4101f52",
-      "deadlineAt": "2026-09-30T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
     {
       "companyName": "(주)아이엠에스나노텍",
       "title": "딥러닝, 모션제어, 영상처리, MFC, Embedded, C, C++ 개발자 모집",

@@ -1259,6 +1259,18 @@
       "reviewCount": 0,
       "batches": [],
       "status": "PREVIEW"
+    },
+    "2026-10-01": {
+      "mode": "dry-run",
+      "trigger": "manual",
+      "at": "2026-10-01T00:17:45.113Z",
+      "jobCount": 25,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-09-30"
+      ],
+      "status": "PREVIEW"
     }
   }
 }
