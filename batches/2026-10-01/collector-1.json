@@ -1,0 +1,73 @@
+{
+  "kind": "collector",
+  "slot": 1,
+  "date": "2026-10-01",
+  "receivedAt": "2026-10-01T01:22:25.034Z",
+  "jobs": [
+    {
+      "companyName": "코리안리재보험",
+      "title": "2026 신입 채용 - AI",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50069990?Oem_Code=C1",
+      "deadlineAt": "2026-10-12T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "코리안리재보험",
+      "title": "2026 신입 채용 - 전산",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50070006?Oem_Code=C1&PageGbn=ST",
+      "deadlineAt": "2026-10-12T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)에이블짐정보",
+      "title": "[신입/경력] JAVA/JSP 백엔드 웹프로그래머 정규직/프리랜서 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50056295?Oem_Code=C1",
+      "deadlineAt": "2026-10-28T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)다날",
+      "title": "(주)다날 [신입/경력] AI 개발자",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50039796?Oem_Code=C1",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "한솔테크닉스",
+      "title": "2026년 하반기 신입사원 공개채용 - S/W개발",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50036705?Oem_Code=C1",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "이카운트",
+      "title": "2026년 이카운트 신입 개발자 채용",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/573375",
+      "deadlineAt": "2026-10-14T14:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "한솔피엔에스",
+      "title": "[한솔PNS IT] 2026년 한솔그룹 하반기 신입사원 공개채용 #공채",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/572566",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "웹 개발자, 프론트엔드 개발자, 서버 개발자, AI/AX엔지니어, 파이썬 개발자, 데이터 엔지니어"
+    }
+  ],
+  "rejected": []
+}
