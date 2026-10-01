@@ -1,0 +1,57 @@
+{
+  "kind": "reviewer",
+  "slot": 3,
+  "date": "2026-10-01",
+  "receivedAt": "2026-10-01T12:26:12.971Z",
+  "jobs": [
+    {
+      "companyName": "우성그룹",
+      "title": "2026 신입 / 경력 모집",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106343",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "[우성] IT/AX"
+    },
+    {
+      "companyName": "동서식품",
+      "title": "2026년 대졸 신입/경력사원 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106404",
+      "deadlineAt": "2026-10-12T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산"
+    },
+    {
+      "companyName": "이카운트",
+      "title": "개발본부 신입 채용",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=OEW&infoTypeGroup=tb_workinfoopen&wantedAuthNo=179802",
+      "deadlineAt": "2026-10-14T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "서울주택도시개발공사",
+      "title": "2026년 하반기 사무·기술직 신입사원 직무중심 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106464",
+      "deadlineAt": "2026-10-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산"
+    },
+    {
+      "companyName": "(주)에이블짐정보",
+      "title": "[신입/경력] JAVA/JSP 백엔드 웹프로그래머 정규직/프리랜서 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50056295?Oem_Code=C1",
+      "deadlineAt": "2026-10-28T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
