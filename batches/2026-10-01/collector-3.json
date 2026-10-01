@@ -1,0 +1,72 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-10-01",
+  "receivedAt": "2026-10-01T12:16:36.754Z",
+  "jobs": [
+    {
+      "companyName": "위니텍",
+      "title": "(주)위니텍 2026년 하반기 개발자 신입사원 공개채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402836",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "Moloco",
+      "title": "Software Engineer Intern (3 months)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402675",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "LG AI연구원",
+      "title": "AI for Chemistry Research Scientist Internship",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402277",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "엘에스이(주)",
+      "title": "2026년 엘에스이(주) 제어그룹 신입사원 채용공고",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402160",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "인터엑스",
+      "title": "AX 인턴 (AX Coordinator)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/401636",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Bear Robotics",
+      "title": "Firmware Engineering Intern",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/399936",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "다날",
+      "title": "AI 개발자 (경력 무관)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/399647",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
