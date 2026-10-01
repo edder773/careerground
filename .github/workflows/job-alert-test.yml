@@ -2,7 +2,7 @@ name: Job alert test and release
 
 on:
   schedule:
-    - cron: '0 9 * * 1-5'
+    - cron: '0 21 * * 1-5'
       timezone: 'Asia/Seoul'
   workflow_dispatch:
     inputs:
@@ -27,8 +27,8 @@ on:
         description: '확인된 테스트 발송을 개선본으로 다시 테스트한다'
         type: boolean
         default: false
-      hold_until_09:
-        description: '미리 시작한 실행을 오늘 09:00 KST까지 대기한다'
+      hold_until_21:
+        description: '미리 시작한 실행을 오늘 21:00 KST까지 대기한다'
         type: boolean
         default: false
 
@@ -52,10 +52,10 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version-file: '.node-version'
-      - name: Wait until 09:00 KST
-        if: github.event_name == 'workflow_dispatch' && inputs.hold_until_09 && inputs.mode == 'test'
+      - name: Wait until 21:00 KST
+        if: github.event_name == 'workflow_dispatch' && inputs.hold_until_21 && inputs.mode == 'test'
         env:
-          RESERVATION_TARGET_HOUR: '9'
+          RESERVATION_TARGET_HOUR: '21'
           RESERVATION_TARGET_MINUTE: '0'
           RESERVATION_MAX_WAIT_MINUTES: '20'
         run: node scripts/operations/hold-until-kst.mjs

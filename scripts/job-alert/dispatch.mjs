@@ -108,6 +108,7 @@ export async function dispatchAlert({
       fetchImpl,
       now,
       batchDate,
+      allowEmpty: true,
     });
     return { destination, batchDate, readiness, ...result };
   }
@@ -161,6 +162,7 @@ export async function dispatchAlert({
         fetchImpl: testFetch,
         now,
         batchDate,
+        allowEmpty: true,
       });
       return { destination, batchDate, readiness, ...result };
     } finally {

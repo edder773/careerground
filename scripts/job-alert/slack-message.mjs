@@ -50,7 +50,15 @@ const packSectionText = (entries) => {
 const section = (text) => ({ type: 'section', text: { type: 'mrkdwn', text } });
 const context = (text) => ({ type: 'context', elements: [{ type: 'mrkdwn', text }] });
 
-export function buildAlertMessage({ date, jobs, challenges, heldCount, siteUrl, baeumzipUrl }) {
+export function buildAlertMessage({
+  date,
+  jobs,
+  challenges,
+  heldCount,
+  siteUrl,
+  baeumzipUrl,
+  showEmptyJobs = false,
+}) {
   const dateLabel = kstLabel(`${date}T12:00:00+09:00`, {
     year: 'numeric',
     month: 'long',
@@ -68,7 +76,7 @@ export function buildAlertMessage({ date, jobs, challenges, heldCount, siteUrl, 
       ...challenges.map((c) => section(challengeText(c))),
     );
   }
-  if (jobs.length > 0 || heldCount > 0) {
+  if (jobs.length > 0 || heldCount > 0 || showEmptyJobs) {
     if (blocks.length > 1) blocks.push({ type: 'divider' });
     blocks.push(section(`💼 *신규 채용 알림 공고 · ${jobs.length}건*`));
     if (jobs.length > 0) {
@@ -76,6 +84,9 @@ export function buildAlertMessage({ date, jobs, challenges, heldCount, siteUrl, 
         context('직전 알림 이후 새로 확인된 마감일 확정 공고입니다.'),
         ...packSectionText(jobs.map(jobText)).map(section),
       );
+    }
+    if (showEmptyJobs && jobs.length === 0 && heldCount === 0) {
+      blocks.push(context('수집과 검증을 완료했으며 이번에 새로 알릴 공고는 없습니다.'));
     }
     if (heldCount > 0) {
       blocks.push(

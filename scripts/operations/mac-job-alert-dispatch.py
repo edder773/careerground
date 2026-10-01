@@ -27,7 +27,7 @@ def stage_at(now):
         return None
     if day >= '2026-10-03' and 470 <= minutes < 500:
         return {'day': day, 'destination': 'production', 'batch': '', 'force': False}
-    if 530 <= minutes < 560:
+    if 1250 <= minutes < 1280:
         return {'day': day, 'destination': 'test', 'batch': day, 'force': False}
     return None
 
@@ -37,7 +37,7 @@ def command_for(stage):
     cmd = [GH, 'workflow', 'run', 'job-alert-test.yml' if test else 'job-alert.yml',
            '-R', REPO, '--ref', 'main', '-f', 'dry_run=false',
            '-f', 'force=' + str(stage['force']).lower(),
-           '-f', 'batch_date=' + stage['batch'], '-f', 'hold_until_09=true' if test else 'hold_until_08=true']
+           '-f', 'batch_date=' + stage['batch'], '-f', 'hold_until_21=true' if test else 'hold_until_08=true']
     if test:
         cmd += ['-f', 'mode=test', '-f', 'retest=false']
     return cmd
@@ -142,7 +142,7 @@ def main():
                  'batch': '2026-10-02', 'force': args.preflight == 'production'}
         log('PREFLIGHT', **stage, **preflight(stage))
         return
-    log('ARMED', testAt='08:50 dispatch → 09:00 KST', productionAt='07:50 dispatch → 08:00 KST', firstProduction='2026-10-03')
+    log('ARMED', testAt='20:50 dispatch → 21:00 KST', productionAt='07:50 dispatch → 08:00 KST', firstProduction='2026-10-03')
     awake_until = dt.datetime(2026, 10, 3, 8, 30, tzinfo=KST)
     seconds = int((awake_until - dt.datetime.now(KST)).total_seconds())
     if seconds > 0:

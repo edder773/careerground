@@ -6,7 +6,7 @@ import { approveTest, batchReadiness, dispatchAlert } from './dispatch.mjs';
 import { processAlert, receive } from './run.mjs';
 import { readJson, saveSubmission, writeJson } from './store.mjs';
 
-const TEST_NOW = new Date('2026-10-02T00:00:00Z');
+const TEST_NOW = new Date('2026-10-02T12:00:00Z');
 const PROD_NOW = new Date('2026-10-02T23:00:00Z');
 const BATCH = '2026-10-02';
 const TEST_HOOK = 'https://hooks.slack.com/services/TTEST/BTEST/fake';
@@ -205,6 +205,18 @@ describe('staged job alert', () => {
     expect(readJson(join(source, 'ledger.json')).deliveries).toEqual({});
     expect(posts).toHaveLength(0);
   });
+  it('reports a completed zero-job batch so receipt can be tested and approved', async () => {
+    for (const kind of ['collector', 'reviewer']) {
+      for (let slot = 1; slot <= (kind === 'collector' ? 5 : 3); slot++)
+        saveSubmission(source, BATCH, { kind, slot, date: BATCH, jobs: [] });
+    }
+    const result = await test();
+    expect(result.status).toBe('sent');
+    expect(result.final.jobs).toHaveLength(0);
+    expect(JSON.stringify(posts[0].body)).toContain('새로 알릴 공고는 없습니다');
+    expect(approveTest({ env, now: TEST_NOW }).status).toBe('READY');
+  });
+
   it('validates calendar dates', () => {
     expect(() => batchReadiness(source, '2026-02-31')).toThrow('유효한');
   });
