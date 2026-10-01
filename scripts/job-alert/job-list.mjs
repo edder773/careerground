@@ -7,6 +7,7 @@ import { inspectDiscoveryEnums } from '../jobs-v5/canonical-policy.mjs';
 export const SUBMISSION_SLOTS = Object.freeze({ collector: 5, reviewer: 3 });
 export const CAREER_SCOPES = Object.freeze(['NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE', 'UNCLASSIFIED']);
 
+const IT_ROLE_MAX_LENGTH = 80;
 const TITLE_PATTERN =
   /^\s*\[JOB-ALERT\]\s*\[(\d{4}-\d{2}-\d{2})\]\s*\[(collector|reviewer)-(\d+)\]\s*$/iu;
 const SEND_TITLE_PATTERN = /^\s*\[JOB-ALERT\]\s*\[(\d{4}-\d{2}-\d{2})\]\s*\[send\]\s*$/iu;
@@ -115,6 +116,9 @@ export function normalizeJob(raw) {
   const deadline = normalizeDeadline(raw.deadlineAt ?? raw.deadline);
   if (deadline.error) return { error: deadline.error };
   const start = raw.applicationStartAt ? normalizeDeadline(raw.applicationStartAt) : {};
+  // A recruitment that hires many roles names its IT roles here, because its
+  // title alone ("2026 신입사원 공개채용") does not say it is an IT posting.
+  const itRole = text(raw.itRole).slice(0, IT_ROLE_MAX_LENGTH);
 
   return {
     job: {
@@ -127,6 +131,7 @@ export function normalizeJob(raw) {
       rolling: deadline.rolling || booleanValue(raw.rolling),
       careerScope: careerScope(raw.careerScope),
       ...(start.deadlineAt ? { applicationStartAt: start.deadlineAt } : {}),
+      ...(itRole && !/^(?:null|none|n\/a|없음)$/iu.test(itRole) ? { itRole } : {}),
     },
   };
 }
