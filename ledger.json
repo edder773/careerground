@@ -1,0 +1,21 @@
+{
+  "deliveries": {
+    "2026-10-02": {
+      "mode": "dry-run",
+      "trigger": "manual",
+      "at": "2026-10-01T15:58:22.978Z",
+      "jobCount": 6,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-10-01"
+      ],
+      "status": "PREVIEW",
+      "destination": "test",
+      "batchDate": "2026-10-01",
+      "fingerprint": "d4f93703656dea249d0891dc888b3af2f4d42d9ce9444e9185bfb90af786c71f",
+      "codeSha": "08a08dc883415649cf88401a525bdd3787f4ee57",
+      "runId": "36888392055"
+    }
+  }
+}
