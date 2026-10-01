@@ -224,6 +224,19 @@ describe('job alert delivery', () => {
     expect(ledger().sentJobs.some((item) => item.sentOn === '2026-10-02')).toBe(false);
   });
 
+  it('sends the previewed jobs when a live run replaces a same-day preview', async () => {
+    await collect();
+    for (const slot of [1, 2, 3]) {
+      await issue(`[JOB-ALERT][2026-10-02][reviewer-${slot}]`, [job(1)], { now: MORNING });
+    }
+    const { result } = await scheduled(LATE_MORNING, { JOB_ALERT_LIVE: 'true' });
+
+    expect(result.status).toBe('sent');
+    expect(result.final.jobs.map((item) => item.companyName)).toEqual(['회사1']);
+    expect(slackPosts()[0].body).toContain('회사1 — 1번 신입 백엔드 개발자');
+    expect(ledger().deliveries['2026-10-02']).toMatchObject({ mode: 'live', status: 'SENT' });
+  });
+
   it('announces held jobs and keeps the batch open when no reviewer answered', async () => {
     await collect();
     const { result } = await scheduled(LATE_MORNING, { JOB_ALERT_LIVE: 'true' });

@@ -149,7 +149,7 @@ CareerGround 채용 알림 발송 신호 작업이다. 조사나 판단은 하�
 
 ## 수동 조작
 
-- **지금 판정해서 보내기:** Actions `Job alert` → Run workflow에서 `dry_run`을 끄고 실행한다. 주말, 공휴일, 검증 대기와 관계없이 보내려면 `force`도 켠다. 또는 제목이 `[JOB-ALERT][YYYY-MM-DD][send]`인 Issue를 만든다.
+- **지금 판정해서 보내기:** Actions `Job alert` → Run workflow에서 `dry_run`을 끄고 실행한다. `JOB_ALERT_LIVE`가 `true`일 때만 Slack에 보내고, 아니면 미리보기만 만든다. 그날 미리보기가 이미 있어도 실제 발송이 그 미리보기를 대신한다. 주말, 공휴일, 검증 대기와 관계없이 보내려면 `force`도 켠다. 또는 제목이 `[JOB-ALERT][YYYY-MM-DD][send]`인 Issue를 만든다.
 - **전송 여부 불명(`UNCERTAIN`):** Slack에 실제로 왔는지 확인한다. 오지 않았으면 `job-alert-data` 브랜치 `ledger.json`에서 그날 `deliveries` 항목을 지우고 다시 실행한다.
 - **수집기나 검증기 재제출:** 같은 제목으로 Issue를 다시 만들면 된다. 같은 번호의 이전 제출을 덮어쓴다.
 - Issue 본문은 GitHub 제한(65,536자) 때문에 공고 약 150건까지 담을 수 있다.
