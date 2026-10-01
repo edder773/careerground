@@ -27,6 +27,7 @@ const challengeText = (challenge) => {
 const jobText = (job) =>
   [
     `• *${slackUrl(job.sourceUrl, `${job.companyName} — ${job.title}`)}*`,
+    ...(job.itRole ? [`  IT 분야: ${escapeSlackText(job.itRole)}`] : []),
     `  마감 ${kstLabel(job.deadlineAt, { month: 'long', day: 'numeric' })} · ${escapeSlackText(job.sourceName)}`,
   ].join('\n');
 

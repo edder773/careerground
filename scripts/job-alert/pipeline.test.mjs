@@ -38,7 +38,43 @@ describe('job alert pending list', () => {
     });
 
     expect(jobs).toEqual([kakao]);
-    expect(skipped).toEqual({ notAlertable: 2, alreadySent: 1, duplicate: 1 });
+    expect(skipped).toEqual({ notAlertable: 2, restricted: 0, alreadySent: 1, duplicate: 1 });
+  });
+
+  it('drops postings open only to a protected group', () => {
+    const veterans = job(1, { title: '2026년도 하반기 보훈 채용공고' });
+    const { jobs, skipped } = buildPending({
+      collectors: [{ jobs: [veterans, job(2, { title: '장애인 제한경쟁 신입 채용' }), job(3)] }],
+      sentJobs: [],
+      now,
+    });
+    expect(jobs).toEqual([job(3)]);
+    expect(skipped.restricted).toBe(2);
+  });
+
+  it('treats a subsidiary posting listed under its parent company as a duplicate', () => {
+    const parentListing = job(1, {
+      companyName: '삼일회계법인',
+      title: 'AC Digital팀 [삼일피더블유씨엑셀러레이션센터] 웹서비스 개발자 신입 채용',
+      deadlineAt: '2026-10-06T23:59:00+09:00',
+    });
+    const subsidiary = job(2, {
+      companyName: '삼일피더블유씨엑셀러레이션센터',
+      title: '[삼일피더블유씨엑셀러레이션센터] 웹서비스 개발자 신입 채용',
+      deadlineAt: '2026-10-06T23:59:00+09:00',
+    });
+    const otherRole = job(3, {
+      companyName: '삼일피더블유씨엑셀러레이션센터',
+      title: '데이터 엔지니어 신입 채용',
+      deadlineAt: '2026-10-06T23:59:00+09:00',
+    });
+    const { jobs, skipped } = buildPending({
+      collectors: [{ jobs: [parentListing] }, { jobs: [subsidiary, otherRole] }],
+      sentJobs: [],
+      now,
+    });
+    expect(jobs).toEqual([otherRole, parentListing]);
+    expect(skipped.duplicate).toBe(1);
   });
 
   it('orders the list by deadline', () => {

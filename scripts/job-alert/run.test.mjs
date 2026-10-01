@@ -103,9 +103,11 @@ const ledger = () => JSON.parse(readFileSync(join(dir, 'ledger.json'), 'utf8'));
 const slackPosts = () => requests.filter((request) => request.href.startsWith(WEBHOOK));
 
 const collect = () =>
-  issue('[JOB-ALERT][2026-10-01][collector-1]', [job(0), job(1), job(2), job(3)], {
-    now: COLLECTED_AT,
-  });
+  issue(
+    '[JOB-ALERT][2026-10-01][collector-1]',
+    [job(0), job(1), job(2, { itRole: 'IT기획, S/W개발' }), job(3)],
+    { now: COLLECTED_AT },
+  );
 
 beforeEach(() => {
   dir = join(mkdtempSync(join(tmpdir(), 'job-alert-')), 'data');
@@ -172,6 +174,7 @@ describe('job alert delivery', () => {
     expect(post.body).toContain('회사2 — 2번 신입 백엔드 개발자');
     expect(post.body).not.toContain('회사3');
     expect(post.body).toContain('과일 장수');
+    expect(post.body).toContain('IT 분야: IT기획, S/W개발');
     expect(ledger().deliveries['2026-10-02']).toMatchObject({
       mode: 'live',
       status: 'SENT',

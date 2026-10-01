@@ -88,6 +88,19 @@ describe('job alert job lists', () => {
     expect(jobs.map((item) => item.careerScope)).toEqual(['NEW_GRAD_ELIGIBLE', 'UNCLASSIFIED']);
   });
 
+  it('keeps the IT roles of a recruitment that hires many roles', () => {
+    const { jobs } = parseJobList(
+      JSON.stringify({
+        jobs: [
+          job({ itRole: ' IT기획,  S/W개발 ' }),
+          job({ sourceUrl: 'https://www.saramin.co.kr/job-search/view?rec_idx=2', itRole: null }),
+        ],
+      }),
+    );
+    expect(jobs[0].itRole).toBe('IT기획, S/W개발');
+    expect(jobs[1]).not.toHaveProperty('itRole');
+  });
+
   it('collapses the same canonical link within one list', () => {
     const { jobs } = parseJobList(
       JSON.stringify({
