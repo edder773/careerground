@@ -1,0 +1,109 @@
+{
+  "kind": "collector",
+  "slot": 4,
+  "date": "2026-10-01",
+  "receivedAt": "2026-10-01T12:19:17.579Z",
+  "jobs": [
+    {
+      "companyName": "한솔피엔에스",
+      "title": "[한솔PNS IT] 한솔그룹 2026년 하반기 신입사원 공개채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://job.incruit.com/jobdb_info/jobpost.asp?job=2609210001080",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "[한솔PNS IT] 웹개발자(AI 서비스), [한솔PNS IT] 웹개발자(AI 응용), [한솔PNS IT] 풀스택 개발자, [한솔PNS IT] "
+    },
+    {
+      "companyName": "Moloco",
+      "title": "Software Engineer Intern (3 months)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/software-engineer-intern-3-months-at-moloco-4473091269",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "다쏘시스템",
+      "title": "Software Engineer (12-month Internship)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/software-engineer-12-month-internship-at-dassault-syst%C3%A8mes-4473746922",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Qualcomm",
+      "title": "Intern- AI Integration & Interoperability",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/intern-ai-integration-interoperability-at-qualcomm-4403602795",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Qualcomm",
+      "title": "Intern – AI Model Efficiency (Quantization) System/Research Engineer",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/intern-%E2%80%93-ai-model-efficiency-quantization-system-research-engineer-at-qualcomm-4442069839",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Qualcomm",
+      "title": "Intern: On-device AgenticAI",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/intern-on-device-agenticai-at-qualcomm-4442070764",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Qualcomm",
+      "title": "Intern - GenAI Benchmarking (MLE) / On-Device Model Deployment (SWE)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/intern-genai-benchmarking-mle-on-device-model-deployment-swe-at-qualcomm-4442076645",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Qualcomm",
+      "title": "Intern- Deep Learning R&D for Automated Driving",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/intern-deep-learning-r-d-for-automated-driving-at-qualcomm-4327652815",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Infineon Technologies",
+      "title": "Internship - Edge AI",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/internship-edge-ai-at-infineon-technologies-4467088408",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "42dot",
+      "title": "[MS/PhD Intern] AI Engineer (정규직 전환형)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/ms-phd-intern-ai-engineer-%EC%A0%95%EA%B7%9C%EC%A7%81-%EC%A0%84%ED%99%98%ED%98%95-at-42dot-4442733248",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Bear Robotics",
+      "title": "Firmware Engineering Intern",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/firmware-engineering-intern-at-bear-robotics-4470692526",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
