@@ -1,0 +1,45 @@
+{
+  "kind": "collector",
+  "slot": 2,
+  "date": "2026-10-02",
+  "receivedAt": "2026-10-02T13:24:33.873Z",
+  "jobs": [
+    {
+      "companyName": "삼일회계법인",
+      "title": "AC Digital팀 [삼일피더블유씨엑셀러레이션센터] 웹서비스 개발자 신입 채용",
+      "sourceName": "Superookie",
+      "sourceUrl": "https://www.superookie.com/jobs/6aba06acd7b7aa31a34174c2",
+      "deadlineAt": "2026-10-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)엘지경영개발원",
+      "title": "AI for Chemistry Research Scientist Internship",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://www.saramin.co.kr/zf_user/jobs/relay/view?rec_idx=55158422&view_type=public-recruit",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)엘지경영개발원",
+      "title": "Speech LLM Research Scientist Internship",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://www.saramin.co.kr/zf_user/jobs/relay/view?rec_idx=55158722&view_type=public-recruit",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "에스케이브로드밴드(주)",
+      "title": "2026년 하반기 SK브로드밴드 Junior Talent 채용(AT/DT)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://www.saramin.co.kr/zf_user/jobs/relay/view?rec_idx=55158820&view_type=public-recruit",
+      "deadlineAt": "2026-10-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
