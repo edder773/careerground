@@ -1,0 +1,126 @@
+{
+  "kind": "collector",
+  "slot": 4,
+  "date": "2026-10-02",
+  "receivedAt": "2026-10-02T13:24:36.615Z",
+  "jobs": [
+    {
+      "companyName": "Moloco",
+      "title": "Software Engineer Intern (3 months)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/software-engineer-intern-3-months-at-moloco-4473091269",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Dassault Systèmes",
+      "title": "Software Engineer (12-month Internship)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/software-engineer-12-month-internship-at-dassault-syst%C3%A8mes-4473746922",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Commvault",
+      "title": "Software Engineer - Backend",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/software-engineer-backend-at-commvault-4439989774",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "GE HealthCare",
+      "title": "Software Engineer",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/software-engineer-at-ge-healthcare-4460465682",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Applied Intuition",
+      "title": "Application Engineer - New Grad",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/application-engineer-new-grad-at-applied-intuition-4469682018",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "Qualcomm",
+      "title": "Intern – AI Model Efficiency (Quantization) System/Research Engineer",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/intern-%E2%80%93-ai-model-efficiency-quantization-system-research-engineer-at-qualcomm-4442069839",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Qualcomm",
+      "title": "Intern: On-device AgenticAI",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/intern-on-device-agenticai-at-qualcomm-4442070764",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Qualcomm",
+      "title": "Intern - Generative AI model personalization and efficient fine-tuning",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/intern-generative-ai-model-personalization-and-efficient-fine-tuning-at-qualcomm-4432928554",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Qualcomm",
+      "title": "Intern- Deep Learning R&D for Automated Driving",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/intern-deep-learning-r-d-for-automated-driving-at-qualcomm-4327652815",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Qualcomm",
+      "title": "Intern - GenAI Benchmarking (MLE) / On-Device Model Deployment (SWE)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/intern-genai-benchmarking-mle-on-device-model-deployment-swe-at-qualcomm-4442076645",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Bear Robotics",
+      "title": "Firmware Engineering Intern",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/firmware-engineering-intern-at-bear-robotics-4470692526",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "BMW Group",
+      "title": "[BMW Korea] IT (Intern)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/bmw-korea-it-intern-at-bmw-group-4474321579",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Thermo Fisher Scientific",
+      "title": "IT Intern (Business Application)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/it-intern-business-application-at-thermo-fisher-scientific-4470571514",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
