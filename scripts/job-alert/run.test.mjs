@@ -285,7 +285,7 @@ describe('job alert delivery', () => {
 describe('job alert send decision', () => {
   const emptyLedger = { deliveries: {} };
 
-  it('skips weekends and Korean public holidays unless forced', () => {
+  it('skips weekends and Korean public holidays even when forced', () => {
     const saturday = new Date('2026-10-02T23:50:00Z');
     const hangulDay = new Date('2026-10-08T23:50:00Z');
     expect(sendDecision({ trigger: 'schedule', now: saturday, ledger: emptyLedger }).reason).toBe(
@@ -296,16 +296,17 @@ describe('job alert send decision', () => {
     );
     expect(
       sendDecision({ trigger: 'manual', now: hangulDay, ledger: emptyLedger, force: true }).send,
-    ).toBe(true);
+    ).toBe(false);
   });
 
-  it('keeps sending on weekdays when the holiday table has no entry for the year', () => {
+  it('does not send when the holiday calendar is unavailable', () => {
     const decision = sendDecision({
       trigger: 'schedule',
       now: new Date('2027-01-04T23:50:00Z'),
       ledger: emptyLedger,
     });
-    expect(decision.send).toBe(true);
+    expect(decision.send).toBe(false);
+    expect(decision.reason).toBe('holiday-calendar-unavailable');
   });
 
   it('never sends before 07:00 KST', () => {

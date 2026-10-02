@@ -21,21 +21,19 @@ class ScheduleTests(unittest.TestCase):
         self.assertEqual(self.stage('2026-10-02T20:50:00')['destination'], 'test')
         self.assertIsNone(self.stage('2026-10-02T21:20:00'))
 
-    def test_first_production_and_weekend_exception_are_scoped(self):
-        stage = self.stage('2026-10-03T07:50:00')
-        self.assertEqual(stage['batch'], '2026-10-02')
-        self.assertTrue(stage['force'])
+    def test_weekend_dispatch_is_never_requested(self):
+        self.assertIsNone(self.stage('2026-10-03T07:50:00'))
         self.assertIsNone(self.stage('2026-10-04T07:50:00'))
-        self.assertFalse(self.stage('2026-10-05T07:50:00')['force'])
+        self.assertFalse(self.stage('2026-10-06T07:50:00')['force'])
 
     def test_commands_only_dispatch_actions_and_request_time_gate(self):
         test = scheduler.command_for(self.stage('2026-10-02T20:50:00'))
-        prod = scheduler.command_for(self.stage('2026-10-03T07:50:00'))
+        prod = scheduler.command_for(self.stage('2026-10-06T07:50:00'))
         self.assertIn('job-alert-test.yml', test)
         self.assertIn('hold_until_21=true', test)
         self.assertIn('job-alert.yml', prod)
         self.assertIn('hold_until_08=true', prod)
-        self.assertIn('force=true', prod)
+        self.assertIn('force=false', prod)
 
     def test_no_retry_for_uncertain_or_sent(self):
         for status in ['SENT', 'UNCERTAIN']:
@@ -50,7 +48,7 @@ class ScheduleTests(unittest.TestCase):
         with patch.object(scheduler, 'remote_json', side_effect=FileNotFoundError):
             self.assertIsNone(scheduler.delivery(self.stage('2026-10-02T20:50:00')))
             with self.assertRaises(FileNotFoundError):
-                scheduler.delivery(self.stage('2026-10-03T07:50:00'))
+                scheduler.delivery(self.stage('2026-10-06T07:50:00'))
 
     def test_test_delivery_reads_the_requested_batch(self):
         stage = self.stage('2026-10-02T20:50:00')

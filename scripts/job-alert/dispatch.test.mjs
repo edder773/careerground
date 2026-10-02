@@ -7,7 +7,7 @@ import { processAlert, receive } from './run.mjs';
 import { readJson, saveSubmission, writeJson } from './store.mjs';
 
 const TEST_NOW = new Date('2026-10-02T12:00:00Z');
-const PROD_NOW = new Date('2026-10-02T23:00:00Z');
+const PROD_NOW = new Date('2026-10-05T23:00:00Z'); // Tue Oct 6, 08:00 KST
 const BATCH = '2026-10-02';
 const TEST_HOOK = 'https://hooks.slack.com/services/TTEST/BTEST/fake';
 const PROD_HOOK = 'https://hooks.slack.com/services/TPROD/BPROD/fake';
@@ -190,23 +190,48 @@ describe('staged job alert', () => {
     expect(() => approveTest({ env, now: TEST_NOW })).toThrow('정상 테스트');
     await expect(prod()).rejects.toThrow('승인 기록');
   });
-  it('sends the approved batch at 08:00 next day once, even for the explicit first holiday override', async () => {
+  it('sends the approved batch once at 08:00 on the next business day', async () => {
     await test();
     approveTest({ env, now: TEST_NOW });
-    expect((await prod({}, new Date('2026-10-02T22:59:59Z'))).reason).toBe('before-08:00');
+    expect((await prod({}, new Date('2026-10-05T22:59:59Z'))).reason).toBe('before-08:00');
     const result = await prod();
     expect(result.status).toBe('sent');
     expect(result.final.jobs).toHaveLength(1);
     expect(posts.map((x) => x.url)).toEqual([TEST_HOOK, PROD_HOOK]);
     expect((await prod()).reason).toBe('already-sent');
-    expect((await prod({}, new Date('2026-10-04T23:00:00Z'))).reason).toBe('batch-closed');
+    expect((await prod({}, new Date('2026-10-06T23:00:00Z'))).reason).toBe('batch-closed');
   });
+  it.each([
+    ['production', '2026-10-02T23:00:00Z', 'weekend'],
+    ['production', '2026-10-04T23:00:00Z', 'public-holiday'],
+    ['production', '2026-10-08T23:00:00Z', 'public-holiday'],
+    ['test', '2026-10-02T23:00:00Z', 'weekend'],
+    ['test', '2026-10-04T23:00:00Z', 'public-holiday'],
+    ['test', '2026-10-08T23:00:00Z', 'public-holiday'],
+  ])(
+    'blocks forced %s delivery on %s (%s) without a Slack POST',
+    async (destination, at, reason) => {
+      await test();
+      approveTest({ env, now: TEST_NOW });
+      const sourceBefore = readFileSync(join(source, 'ledger.json'), 'utf8');
+      const result = await dispatchAlert({
+        env: { ...env, JOB_ALERT_DESTINATION: destination, JOB_ALERT_RETEST: 'true' },
+        now: new Date(at),
+        fetchImpl,
+      });
+      expect(result).toMatchObject({ status: 'skipped', reason });
+      expect(posts).toHaveLength(1);
+      expect(readFileSync(join(source, 'ledger.json'), 'utf8')).toBe(sourceBefore);
+    },
+  );
   it('preserves disabled production, date guard, and normal weekend policy', async () => {
     expect((await prod({ JOB_ALERT_LIVE: 'false' })).reason).toBe('production-disabled');
     expect((await prod({}, TEST_NOW)).reason).toBe('before-production-start');
     await test();
     approveTest({ env, now: TEST_NOW });
-    expect((await prod({ JOB_ALERT_FORCE: 'false' })).reason).toBe('weekend');
+    expect(
+      (await prod({ JOB_ALERT_FORCE: 'false' }, new Date('2026-10-02T23:00:00Z'))).reason,
+    ).toBe('weekend');
   });
   it('ignores old previews when locating a ready prior batch, and pins it separately from today', async () => {
     await test();
@@ -215,7 +240,7 @@ describe('staged job alert', () => {
       sentJobs: [],
       deliveries: { [BATCH]: { mode: 'dry-run', status: 'PREVIEW', batches: [BATCH] } },
     });
-    seed('2026-10-03');
+    seed('2026-10-06');
     const result = await prod({ JOB_ALERT_BATCH_DATE: '' });
     expect(result.status).toBe('sent');
     expect(result.batchDate).toBe(BATCH);

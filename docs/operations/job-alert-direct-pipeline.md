@@ -10,7 +10,7 @@
 | 평일 22:00        | Codex 예약 확인                     | Actions, 테스트 원장, Slack의 실제 알리미 메시지를 확인. 실패 원인 수정 후 개선본 재테스트. 정상 결과만 release 승인 |
 | 다음 영업일 08:00 | GitHub Actions `job-alert.yml`      | 테스트·확인을 통과한 이전 날짜의 배치와 동일 코드로 운영 채널에 한 번 발송                                           |
 
-운영 시작 날짜는 저장소 변수 `JOB_ALERT_PRODUCTION_START_DATE=2026-10-02`다. 10월 2일 오전 누락은 운영을 끄고 시작일을 10월 3일로 잘못 지정한 설정 때문에 발생했다. 복구는 10월 1일 배치를 실제 테스트 채널에서 확인·승인한 뒤 운영 Actions로 실행한다. 10월 2일 18→20→21→22시 일정과 다음날 **2026-10-03 08:00** 발송·확인은 유지한다. 이 10월 3일 발송만 토요일·공휴일 예외 `force=true`를 사용한다. 이후에는 평일·한국 공휴일 정책을 적용한다. 운영 시작 날짜보다 이른 실행과 08:00 이전 실행은 `force`로도 허용되지 않는다.
+운영 시작 날짜는 저장소 변수 `JOB_ALERT_PRODUCTION_START_DATE=2026-10-02`다. 운영과 테스트의 실제 Slack 전송은 대한민국 영업일에만 허용한다. 주말·공휴일·대체공휴일은 `force=true`로도 우회하지 못하며, 해당 연도의 휴일 달력이 없으면 전송하지 않는다. **10월 3일 개천절 발송 예외는 철회됐다. 10월 5일 대체공휴일에도 전송하지 않으며 다음 영업일은 10월 6일이다.** 날짜 근거는 [한국천문연구원 2026년 10월 달력](https://www.kasi.re.kr/file/1764661238731_1.pdf)이다. Mac은 토요일 강제 요청을 만들지 않고, 평일 공휴일에 요청이 시작되더라도 Actions의 휴일 검사에서 실제 전송을 차단한다. 18→20→21→22시 일정은 유지하고 운영은 다음 영업일 08시에만 발송한다. 운영 시작 날짜보다 이른 실행과 08:00 이전 실행도 `force`로 허용되지 않는다.
 
 ## 발송 경로와 기록
 
@@ -62,7 +62,7 @@ job-alert-test-data/
 
 ## 예약 지연 보조 장치
 
-GitHub cron과 함께 Mac의 `scripts/operations/mac-job-alert-dispatch.py`가 실행 요청을 보낸다. 20:50에 테스트 Actions를 미리 시작해 내부에서 21:00까지 기다리고, 07:50에 운영 Actions를 미리 시작해 08:00까지 기다린다. 10월 2일부터 평일 오전 운영 요청을 허용하며 10월 3일은 위 토요일 예외를 명시한다. 최대 3회, 4분 간격으로 실행 요청을 보완하되 `SENT`/`UNCERTAIN`이면 멈춘다. 실제 Slack 전송과 중복 방지는 Actions가 담당한다.
+GitHub cron과 함께 Mac의 `scripts/operations/mac-job-alert-dispatch.py`가 실행 요청을 보낸다. 20:50에 테스트 Actions를 미리 시작해 내부에서 21:00까지 기다리고, 07:50에 운영 Actions를 미리 시작해 08:00까지 기다린다. 10월 2일부터 평일 오전 운영 요청을 허용하며 토요일 예외 요청은 만들지 않는다. 공휴일 전송 여부는 Actions의 공통 영업일 검사가 최종 결정한다. 최대 3회, 4분 간격으로 실행 요청을 보완하되 `SENT`/`UNCERTAIN`이면 멈춘다. 실제 Slack 전송과 중복 방지는 Actions가 담당한다.
 
 Mac 보조 장치와 Codex 22시 확인은 컴퓨터가 켜져 있고 네트워크와 앱이 동작해야 한다. GitHub 실행 대기 때문에 실제 수신 시각은 늦어질 수 있다. prewarm은 그 지연을 줄이며 정확한 초 단위 도착을 보장하지 않는다.
 
@@ -85,9 +85,9 @@ gh variable set JOB_ALERT_PRODUCTION_START_DATE --body 2026-10-02 -R edder773/ca
 
 gh variable set JOB_ALERT_LIVE --body true -R edder773/careerground
 
-# 첫 운영일 07:50경 실행 요청. 실제 전송은 08:00 이후다.
+# 영업일 07:50경 실행 요청. 실제 전송은 08:00 이후다.
 gh workflow run job-alert.yml -R edder773/careerground --ref main \
-  -f batch_date=2026-10-02 -f dry_run=false -f force=true -f hold_until_08=true
+  -f batch_date=2026-10-02 -f dry_run=false -f force=false -f hold_until_08=true
 ```
 
 `UNCERTAIN`은 Slack이 받았을 수도 있는 상태다. 자동 재발송과 승인을 막는다. Slack 실제 수신과 Actions 로그를 먼저 확인하고, 오지 않은 것이 확인된 경우 해당 테스트 또는 운영 원장 기록을 수동 복구한다. 명확한 HTTP 오류는 성공으로 기록하지 않아 수정 후 재시도할 수 있다.

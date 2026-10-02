@@ -21,8 +21,6 @@ def stage_at(now):
     minutes = now.hour * 60 + now.minute
     if day < '2026-10-02':
         return None
-    if day == '2026-10-03' and 470 <= minutes < 500:
-        return {'day': day, 'destination': 'production', 'batch': '2026-10-02', 'force': True}
     if now.weekday() >= 5:
         return None
     if day >= '2026-10-02' and 470 <= minutes < 500:
@@ -141,8 +139,9 @@ def main():
     parser.add_argument('--preflight', choices=['test', 'production'])
     args = parser.parse_args()
     if args.preflight:
-        stage = {'day': '2026-10-02' if args.preflight == 'test' else '2026-10-03', 'destination': args.preflight,
-                 'batch': '2026-10-02', 'force': args.preflight == 'production'}
+        day = dt.datetime.now(KST).date().isoformat()
+        stage = {'day': day, 'destination': args.preflight,
+                 'batch': day if args.preflight == 'test' else '', 'force': False}
         log('PREFLIGHT', **stage, **preflight(stage))
         return
     log('ARMED', testAt='20:50 dispatch → 21:00 KST', productionAt='07:50 dispatch → 08:00 KST', firstProduction='2026-10-02')
