@@ -3,12 +3,12 @@
   "batches": [
     "2026-10-02"
   ],
-  "generatedAt": "2026-10-02T13:17:41.513Z",
-  "collectorCount": 1,
+  "generatedAt": "2026-10-02T13:24:51.106Z",
+  "collectorCount": 4,
   "skipped": {
-    "notAlertable": 0,
+    "notAlertable": 15,
     "restricted": 0,
-    "alreadySent": 3,
+    "alreadySent": 12,
     "duplicate": 0
   },
   "jobs": [
@@ -47,6 +47,65 @@
       "deadlineAt": "2026-10-11T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "인천공항시설관리",
+      "title": "2026년 제3차 정기채용 신입/경력",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://secure.jasoseol.com/recruit/106537",
+      "deadlineAt": "2026-10-12T01:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "정보통신/IT (일근), 정보통신/IT (교대), SW 개발 (일근)"
+    },
+    {
+      "companyName": "에스케이브로드밴드(주)",
+      "title": "2026년 하반기 SK브로드밴드 Junior Talent 채용(AT/DT)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://www.saramin.co.kr/zf_user/jobs/relay/view?rec_idx=55158820&view_type=public-recruit",
+      "deadlineAt": "2026-10-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "농림식품기술기획평가원",
+      "title": "2026년도 2차 정규직 채용 공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305522",
+      "deadlineAt": "2026-10-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "정규직 연구직(정보운영)"
+    },
+    {
+      "companyName": "동북아역사재단",
+      "title": "직원(행정직(일반,전산) 등) 공개채용 공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305584",
+      "deadlineAt": "2026-10-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "행정직(나)_전산관리"
+    },
+    {
+      "companyName": "국립중앙의료원",
+      "title": "기술직 6급 전산행정(정보운영팀) 채용 공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305641",
+      "deadlineAt": "2026-10-16T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "기술직 6급 전산행정(정보운영팀)"
+    },
+    {
+      "companyName": "한국농어촌공사",
+      "title": "2026년도 직무중심 신입사원(5급, 6급) 채용 공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305542",
+      "deadlineAt": "2026-10-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "5급(전산)"
     },
     {
       "companyName": "슈어소프트테크(주)",
