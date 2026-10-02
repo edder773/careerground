@@ -1,0 +1,63 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-10-02",
+  "receivedAt": "2026-10-02T13:25:13.758Z",
+  "jobs": [
+    {
+      "companyName": "이카운트",
+      "title": "개발본부 신입 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/401703",
+      "deadlineAt": "2026-10-14T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "두어스",
+      "title": "AX 인턴 (6개월 인턴)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402413",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "블리츠다이나믹스",
+      "title": "AX Problem Solver (사내 AI 에이전트 · 바이브코딩 인프라 개발) (경력 무관)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402430",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "토스커뮤니티",
+      "title": "Server Developer 대규모 채용 (3년 이하)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402986",
+      "deadlineAt": "2026-10-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "산은캐피탈",
+      "title": "2026년 하반기 산은캐피탈 신입직원 채용공고(IT)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402982",
+      "deadlineAt": "2026-10-12T22:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "SK브로드밴드",
+      "title": "2026년 SK브로드밴드 Junior Talent 채용(Infra)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402400",
+      "deadlineAt": "2026-10-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
