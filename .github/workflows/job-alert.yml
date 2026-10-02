@@ -16,7 +16,7 @@ on:
         type: boolean
         default: true
       force:
-        description: '주말·공휴일을 예외로 허용한다. 테스트 승인은 필수다'
+        description: '수동 실행 옵션. 주말·공휴일, 08시 및 승인 조건은 우회하지 않는다'
         type: boolean
         default: false
 

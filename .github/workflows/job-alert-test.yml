@@ -20,7 +20,7 @@ on:
         type: boolean
         default: true
       force:
-        description: '주말·공휴일 테스트를 예외로 허용한다'
+        description: '수동 시간 조건만 완화한다. 주말·공휴일 차단은 유지한다'
         type: boolean
         default: false
       retest:

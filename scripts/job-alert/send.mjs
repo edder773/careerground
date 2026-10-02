@@ -22,12 +22,12 @@ export function sendDecision({ trigger, now, ledger, reviewCount, live, force = 
   if (delivery && (delivery.mode === 'live' || !live)) {
     return { send: false, reason: 'already-sent', today };
   }
+  // Force may relax legacy timing checks, but never the business-day policy.
+  const businessDay = getKoreanDispatchDecision(now);
+  if (!businessDay.shouldSend) {
+    return { send: false, reason: businessDay.reason, today };
+  }
   if (!force) {
-    const businessDay = getKoreanDispatchDecision(now);
-    // A missing holiday table must not silence every weekday alert of a new year.
-    if (!businessDay.shouldSend && businessDay.reason !== 'holiday-calendar-unavailable') {
-      return { send: false, reason: businessDay.reason, today };
-    }
     const minutes = kstMinutes(now);
     if (minutes < REVIEW_SEND_EARLIEST) return { send: false, reason: 'too-early', today };
     if (trigger === 'submission' && minutes >= SUBMISSION_SEND_LATEST) {
