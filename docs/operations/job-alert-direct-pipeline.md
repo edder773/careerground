@@ -10,14 +10,14 @@
 | 평일 22:00        | Codex 예약 확인                     | Actions, 테스트 원장, Slack의 실제 알리미 메시지를 확인. 실패 원인 수정 후 개선본 재테스트. 정상 결과만 release 승인 |
 | 다음 영업일 08:00 | GitHub Actions `job-alert.yml`      | 테스트·확인을 통과한 이전 날짜의 배치와 동일 코드로 운영 채널에 한 번 발송                                           |
 
-첫 적용은 2026-10-02의 18→20→21→22시, 첫 운영 발송은 사용자가 지정한 다음 날 **2026-10-03 08:00**이다. 이 첫 발송만 토요일·공휴일 예외 `force=true`를 사용한다. 이후에는 평일·한국 공휴일 정책을 적용한다. 운영 시작 날짜보다 이른 실행과 08:00 이전 실행은 `force`로도 허용되지 않는다.
+운영 시작 날짜는 저장소 변수 `JOB_ALERT_PRODUCTION_START_DATE=2026-10-02`다. 10월 2일 오전 누락은 운영을 끄고 시작일을 10월 3일로 잘못 지정한 설정 때문에 발생했다. 복구는 10월 1일 배치를 실제 테스트 채널에서 확인·승인한 뒤 운영 Actions로 실행한다. 10월 2일 18→20→21→22시 일정과 다음날 **2026-10-03 08:00** 발송·확인은 유지한다. 이 10월 3일 발송만 토요일·공휴일 예외 `force=true`를 사용한다. 이후에는 평일·한국 공휴일 정책을 적용한다. 운영 시작 날짜보다 이른 실행과 08:00 이전 실행은 `force`로도 허용되지 않는다.
 
 ## 발송 경로와 기록
 
 - 운영: `SLACK_WEBHOOK_URL`, `job-alert-data/ledger.json`.
 - 테스트: **별도 채널에 연결한** `SLACK_TEST_WEBHOOK_URL`, `job-alert-test-data/ledger.json` 및 `results/<배치날짜>.json`. 운영 Webhook으로 대체하지 않는다.
 - 수집/검증 Issue는 자기 제출 파일을 저장한 뒤 오늘의 pending만 갱신한다. Issue 도착 또는 `[send]` Issue로는 Slack을 보내지 않는다.
-- 테스트는 운영의 기발송 공고 기준선을 읽어 별도 임시 디렉터리에서 실행한다. 운영 원장과 운영 pending 파일을 수정하지 않는다.
+- 테스트는 운영의 기발송 공고 기준선을 읽어 별도 임시 디렉터리에서 실행한다. 운영 원장과 운영 pending 파일을 수정하지 않는다. 테스트 중복 방지는 수집 배치별 `results/<배치날짜>.json`으로 판단하므로 오전 복구 테스트가 같은 날 저녁의 다른 배치 테스트를 막지 않는다.
 - 정상 테스트는 `SENT`, 검증 3개, 검증 대기 0건, 수집 배치 fingerprint, 코드 SHA, Actions run ID를 남긴다. 모의 전송과 미리보기는 운영 승인 근거가 될 수 없다.
 - 22시 실제 Slack 수신 확인 후 `mode=release` 실행이 `releases/<배치날짜>.json`에 `READY`를 기록한다. 배치 내용이나 코드가 바뀌면 재테스트와 재승인이 필요하다. 이미 보낸 테스트가 단순 재실행으로 새 코드의 성공 기록으로 바뀌지 않는다.
 - 운영은 `JOB_ALERT_LIVE=true`, 운영 시작 날짜, 08:00 이후, 이전 날짜 배치, 수집 5개·검증 3개, 일치하는 release를 모두 요구한다. 운영 원장에 이미 발송 또는 수신 불확실 기록이 있는 배치는 다시 사용하지 않는다.
@@ -62,7 +62,7 @@ job-alert-test-data/
 
 ## 예약 지연 보조 장치
 
-GitHub cron과 함께 Mac의 `scripts/operations/mac-job-alert-dispatch.py`가 실행 요청을 보낸다. 20:50에 테스트 Actions를 미리 시작해 내부에서 21:00까지 기다리고, 07:50에 운영 Actions를 미리 시작해 08:00까지 기다린다. 첫 적용일은 운영 실행 요청을 보내지 않고 첫 운영일은 토요일 예외를 명시한다. 최대 3회, 4분 간격으로 실행 요청을 보완하되 `SENT`/`UNCERTAIN`이면 멈춘다. 실제 Slack 전송과 중복 방지는 Actions가 담당한다.
+GitHub cron과 함께 Mac의 `scripts/operations/mac-job-alert-dispatch.py`가 실행 요청을 보낸다. 20:50에 테스트 Actions를 미리 시작해 내부에서 21:00까지 기다리고, 07:50에 운영 Actions를 미리 시작해 08:00까지 기다린다. 10월 2일부터 평일 오전 운영 요청을 허용하며 10월 3일은 위 토요일 예외를 명시한다. 최대 3회, 4분 간격으로 실행 요청을 보완하되 `SENT`/`UNCERTAIN`이면 멈춘다. 실제 Slack 전송과 중복 방지는 Actions가 담당한다.
 
 Mac 보조 장치와 Codex 22시 확인은 컴퓨터가 켜져 있고 네트워크와 앱이 동작해야 한다. GitHub 실행 대기 때문에 실제 수신 시각은 늦어질 수 있다. prewarm은 그 지연을 줄이며 정확한 초 단위 도착을 보장하지 않는다.
 
@@ -80,6 +80,8 @@ gh workflow run job-alert-test.yml -R edder773/careerground --ref main \
 # Slack에서 실제 알리미 수신과 본문을 확인한 뒤 승인한다.
 gh workflow run job-alert-test.yml -R edder773/careerground --ref main \
   -f mode=release -f batch_date=2026-10-02
+
+gh variable set JOB_ALERT_PRODUCTION_START_DATE --body 2026-10-02 -R edder773/careerground
 
 gh variable set JOB_ALERT_LIVE --body true -R edder773/careerground
 

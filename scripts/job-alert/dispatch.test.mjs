@@ -105,6 +105,48 @@ describe('staged job alert', () => {
     expect(posts).toHaveLength(0);
     expect((await test()).status).toBe('sent');
   });
+  it('keeps recovery and evening tests independent while blocking retries of each batch', async () => {
+    const previous = '2026-10-01';
+    seed(previous);
+    const before = readFileSync(join(source, 'ledger.json'), 'utf8');
+    expect((await test({ JOB_ALERT_BATCH_DATE: previous })).status).toBe('sent');
+    expect((await test()).status).toBe('sent');
+    expect((await test({ JOB_ALERT_BATCH_DATE: previous })).reason).toBe('already-sent');
+    expect((await test()).reason).toBe('already-sent');
+    expect(posts).toHaveLength(2);
+    for (const date of [previous, BATCH]) {
+      expect(readJson(join(testDir, 'results', `${date}.json`))).toMatchObject({
+        batchDate: date,
+        status: 'SENT',
+        codeSha: 'code-v1',
+      });
+    }
+    expect(readFileSync(join(source, 'ledger.json'), 'utf8')).toBe(before);
+  });
+  it('allows October 2 recovery only after a real approved test and 08:00', async () => {
+    const batch = '2026-10-01';
+    seed(batch);
+    const overrides = {
+      JOB_ALERT_BATCH_DATE: batch,
+      JOB_ALERT_PRODUCTION_START_DATE: '2026-10-02',
+      JOB_ALERT_FORCE: 'false',
+    };
+    const now = new Date('2026-10-02T00:10:00Z');
+    await expect(prod(overrides, now)).rejects.toThrow('승인 기록');
+    await test(overrides);
+    approveTest({ env: { ...env, ...overrides }, now: TEST_NOW });
+    expect((await prod(overrides, new Date('2026-10-01T22:59:59Z'))).reason).toBe('before-08:00');
+    expect((await prod(overrides, now)).status).toBe('sent');
+    expect((await prod(overrides, now)).reason).toBe('already-sent');
+  });
+  it('requires a valid configured production start date', async () => {
+    for (const value of ['', '2026-02-31']) {
+      await expect(prod({ JOB_ALERT_PRODUCTION_START_DATE: value })).rejects.toThrow(
+        '운영 시작 날짜',
+      );
+    }
+    expect(posts).toHaveLength(0);
+  });
   it('does not relabel an old success as a newly tested code version', async () => {
     await test();
     expect((await test({ GITHUB_SHA: 'code-v2', GITHUB_RUN_ID: 'run-2' })).reason).toBe(
