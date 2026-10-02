@@ -97,7 +97,7 @@ jobs:
           retention-days: 30
       - name: Wake the idempotent Slack digest after a production publish
         if: steps.handoff.outputs.status == 'READY'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             await github.rest.repos.createDispatchEvent({
@@ -117,7 +117,7 @@ jobs:
           --report work/jobs-v5/handoff/handoff-report.json
       - name: Open or update the handoff failure incident
         if: failure()
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           INCIDENT_TITLE: '[운영 경보] CareerGround v5 handoff 실패'
         with:

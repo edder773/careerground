@@ -46,7 +46,7 @@ jobs:
 
       - name: Open or update the production incident
         if: steps.slo.outcome == 'failure'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           INCIDENT_TITLE: '[운영 경보] Production SLO smoke 실패'
           REPORT_PATH: work/operations/production-slo.json
@@ -97,7 +97,7 @@ jobs:
 
       - name: Close the incident after recovery
         if: steps.slo.outcome == 'success'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           INCIDENT_TITLE: '[운영 경보] Production SLO smoke 실패'
         with:
