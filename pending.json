@@ -3,12 +3,12 @@
   "batches": [
     "2026-10-02"
   ],
-  "generatedAt": "2026-10-02T13:25:07.220Z",
-  "collectorCount": 4,
+  "generatedAt": "2026-10-02T13:25:33.243Z",
+  "collectorCount": 5,
   "skipped": {
-    "notAlertable": 15,
+    "notAlertable": 17,
     "restricted": 0,
-    "alreadySent": 12,
+    "alreadySent": 13,
     "duplicate": 0
   },
   "jobs": [
@@ -59,10 +59,28 @@
       "itRole": "정보통신/IT (일근), 정보통신/IT (교대), SW 개발 (일근)"
     },
     {
+      "companyName": "산은캐피탈",
+      "title": "2026년 하반기 산은캐피탈 신입직원 채용공고(IT)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402982",
+      "deadlineAt": "2026-10-12T22:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
       "companyName": "에스케이브로드밴드(주)",
       "title": "2026년 하반기 SK브로드밴드 Junior Talent 채용(AT/DT)",
       "sourceName": "Saramin",
       "sourceUrl": "https://www.saramin.co.kr/zf_user/jobs/relay/view?rec_idx=55158820&view_type=public-recruit",
+      "deadlineAt": "2026-10-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "SK브로드밴드",
+      "title": "2026년 SK브로드밴드 Junior Talent 채용(Infra)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402400",
       "deadlineAt": "2026-10-13T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
@@ -86,6 +104,15 @@
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE",
       "itRole": "행정직(나)_전산관리"
+    },
+    {
+      "companyName": "토스커뮤니티",
+      "title": "Server Developer 대규모 채용 (3년 이하)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402986",
+      "deadlineAt": "2026-10-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
       "companyName": "국립중앙의료원",
