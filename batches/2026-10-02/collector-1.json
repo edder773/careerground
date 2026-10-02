@@ -1,0 +1,82 @@
+{
+  "kind": "collector",
+  "slot": 1,
+  "date": "2026-10-02",
+  "receivedAt": "2026-10-02T13:17:26.225Z",
+  "jobs": [
+    {
+      "companyName": "한솔피엔에스",
+      "title": "[IT부문] 2026년 하반기 신입사원 공개채용(SAP SD)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50033069",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "한솔피엔에스",
+      "title": "[IT부문] 2026년 하반기 신입사원 공개채용(풀스택 개발자)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50033057",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "한솔피엔에스",
+      "title": "[IT부문] 2026년 하반기 신입사원 공개채용(웹개발자 - AI 응용)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50033016",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "한솔피엔에스",
+      "title": "[IT부문] 2026년 하반기 신입사원 공개채용(웹개발자 - AI 서비스)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50033000",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "한솔제지(주)",
+      "title": "2026년 하반기 신입사원 공개채용 - IT기획",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50040321",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)성우하이텍",
+      "title": "2026년 하반기 신입 공개 채용 - IT개발",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50080883",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "슈어소프트테크(주)",
+      "title": "2027 슈어소프트테크 신입사원 공개채용 - 연구소 SW개발",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50065015",
+      "deadlineAt": "2026-10-20T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "코리안리재보험",
+      "title": "2026 신입채용 #공채",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/573356",
+      "deadlineAt": "2026-10-12T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI, 전산"
+    }
+  ],
+  "rejected": []
+}
