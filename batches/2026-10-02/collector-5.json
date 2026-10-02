@@ -1,0 +1,138 @@
+{
+  "kind": "collector",
+  "slot": 5,
+  "date": "2026-10-02",
+  "receivedAt": "2026-10-02T13:24:39.441Z",
+  "jobs": [
+    {
+      "companyName": "현대오토에버",
+      "title": "2026 4분기 신입사원 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106477",
+      "deadlineAt": "2026-10-12T04:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "Embedded SW Process Engineer, Frontend Developer, Backend Developer, Platform De"
+    },
+    {
+      "companyName": "원익그룹",
+      "title": "2026 신입공채 (학석사)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106388",
+      "deadlineAt": "2026-10-12T14:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "[원익아이피에스] SW개발(AI), [원익아이피에스] SW개발"
+    },
+    {
+      "companyName": "인천공항시설관리",
+      "title": "2026년 제3차 정기채용 신입/경력",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://secure.jasoseol.com/recruit/106537",
+      "deadlineAt": "2026-10-12T01:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "정보통신/IT (일근), 정보통신/IT (교대), SW 개발 (일근)"
+    },
+    {
+      "companyName": "한솔그룹",
+      "title": "2026 신입사원 공개채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106344",
+      "deadlineAt": "2026-10-11T14:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "[한솔제지] IT기획, [한솔테크닉스] S/W개발, [한솔PNS IT] 웹개발자(AI 서비스), [한솔PNS IT] 웹개발자(AI 응용), [한"
+    },
+    {
+      "companyName": "우성그룹",
+      "title": "2026 신입 / 경력 모집",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106343",
+      "deadlineAt": "2026-10-11T14:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "[우성] IT/AX"
+    },
+    {
+      "companyName": "코리안리재보험",
+      "title": "2026 신입채용",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/353698",
+      "deadlineAt": "2026-10-12T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI, 전산"
+    },
+    {
+      "companyName": "한화비전",
+      "title": "2026 테크&라이프 부문 신입사원 채용",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/352123",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "Edge Device SW Engineer, 영상 관제 솔루션 SW 개발"
+    },
+    {
+      "companyName": "삼일피더블유씨엑셀러레이션센터",
+      "title": "웹서비스 개발자 신입 채용",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/353378",
+      "deadlineAt": "2026-10-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "국립중앙의료원",
+      "title": "기술직 6급 전산행정(정보운영팀) 채용 공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305641",
+      "deadlineAt": "2026-10-16T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "기술직 6급 전산행정(정보운영팀)"
+    },
+    {
+      "companyName": "농림식품기술기획평가원",
+      "title": "2026년도 2차 정규직 채용 공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305522",
+      "deadlineAt": "2026-10-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "정규직 연구직(정보운영)"
+    },
+    {
+      "companyName": "한국농수산식품유통공사",
+      "title": "2026년 신입직원 채용공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305395",
+      "deadlineAt": "2026-10-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "신입(5급)-AI·전산"
+    },
+    {
+      "companyName": "동북아역사재단",
+      "title": "직원(행정직(일반,전산) 등) 공개채용 공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305584",
+      "deadlineAt": "2026-10-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "행정직(나)_전산관리"
+    },
+    {
+      "companyName": "한국농어촌공사",
+      "title": "2026년도 직무중심 신입사원(5급, 6급) 채용 공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305542",
+      "deadlineAt": "2026-10-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "5급(전산)"
+    }
+  ],
+  "rejected": []
+}
