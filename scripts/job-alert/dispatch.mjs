@@ -60,8 +60,9 @@ export async function dispatchAlert({
   const live = !enabled(env.JOB_ALERT_DRY_RUN);
   if (destination === 'production') {
     if (!enabled(env.JOB_ALERT_LIVE)) return skip('production-disabled');
-    if (env.JOB_ALERT_PRODUCTION_START_DATE && today < env.JOB_ALERT_PRODUCTION_START_DATE)
-      return skip('before-production-start');
+    if (!dateKey(env.JOB_ALERT_PRODUCTION_START_DATE))
+      throw new Error('유효한 운영 시작 날짜를 설정해야 합니다.');
+    if (today < env.JOB_ALERT_PRODUCTION_START_DATE) return skip('before-production-start');
     if (kstMinutes(now) < 8 * 60) return skip('before-08:00');
   }
   const sourceDir = env.JOB_ALERT_DATA_DIR;
@@ -116,6 +117,9 @@ export async function dispatchAlert({
   if (!testDir || resolve(testDir) === resolve(sourceDir))
     throw new Error('테스트 원장을 운영 원장과 분리해야 합니다.');
   const testLedger = readJson(join(testDir, 'ledger.json'), { deliveries: {} });
+  const previous =
+    readJson(join(testDir, 'results', `${batchDate}.json`)) ||
+    (testLedger.deliveries[today]?.batchDate === batchDate ? testLedger.deliveries[today] : null);
   const isolated = mkdtempSync(join(tmpdir(), 'job-alert-test-'));
   try {
     cpSync(join(sourceDir, 'batches', batchDate), join(isolated, 'batches', batchDate), {
@@ -123,7 +127,8 @@ export async function dispatchAlert({
     });
     const ledger = {
       sentJobs: globalThis.structuredClone(sourceLedger.sentJobs),
-      deliveries: globalThis.structuredClone(testLedger.deliveries),
+      // Each batch has its own receipt; a morning recovery must not block tonight's test.
+      deliveries: previous ? { [today]: globalThis.structuredClone(previous) } : {},
     };
     if (enabled(env.JOB_ALERT_RETEST)) {
       if (ledger.deliveries[today]?.status === 'UNCERTAIN')

@@ -151,7 +151,7 @@ jobs:
         env:
           JOB_ALERT_DESTINATION: production
           JOB_ALERT_LIVE: ${{ vars.JOB_ALERT_LIVE }}
-          JOB_ALERT_PRODUCTION_START_DATE: '2026-10-03'
+          JOB_ALERT_PRODUCTION_START_DATE: ${{ vars.JOB_ALERT_PRODUCTION_START_DATE }}
           JOB_ALERT_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
           JOB_ALERT_FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force }}
           JOB_ALERT_BATCH_DATE: ${{ inputs.batch_date }}

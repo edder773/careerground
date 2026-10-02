@@ -25,7 +25,7 @@ def stage_at(now):
         return {'day': day, 'destination': 'production', 'batch': '2026-10-02', 'force': True}
     if now.weekday() >= 5:
         return None
-    if day >= '2026-10-03' and 470 <= minutes < 500:
+    if day >= '2026-10-02' and 470 <= minutes < 500:
         return {'day': day, 'destination': 'production', 'batch': '', 'force': False}
     if 1250 <= minutes < 1280:
         return {'day': day, 'destination': 'test', 'batch': day, 'force': False}
@@ -82,13 +82,16 @@ def preflight(stage):
 
 
 def delivery(stage):
-    branch = 'job-alert-test-data' if stage['destination'] == 'test' else 'job-alert-data'
+    test = stage['destination'] == 'test'
+    branch = 'job-alert-test-data' if test else 'job-alert-data'
     try:
-        record = remote_json(branch, 'ledger.json').get('deliveries', {}).get(stage['day'], {})
+        record = remote_json(branch, 'results/' + stage['batch'] + '.json') if test else remote_json(branch, 'ledger.json').get('deliveries', {}).get(stage['day'], {})
     except FileNotFoundError:
         if stage['destination'] == 'test':
             return None
         raise
+    if test and record.get('batchDate') != stage['batch']:
+        return None
     return record.get('status') if record.get('mode') == 'live' else None
 
 
@@ -142,7 +145,7 @@ def main():
                  'batch': '2026-10-02', 'force': args.preflight == 'production'}
         log('PREFLIGHT', **stage, **preflight(stage))
         return
-    log('ARMED', testAt='20:50 dispatch → 21:00 KST', productionAt='07:50 dispatch → 08:00 KST', firstProduction='2026-10-03')
+    log('ARMED', testAt='20:50 dispatch → 21:00 KST', productionAt='07:50 dispatch → 08:00 KST', firstProduction='2026-10-02')
     awake_until = dt.datetime(2026, 10, 3, 8, 30, tzinfo=KST)
     seconds = int((awake_until - dt.datetime.now(KST)).total_seconds())
     if seconds > 0:

@@ -15,8 +15,8 @@ class ScheduleTests(unittest.TestCase):
     def stage(self, value):
         return scheduler.stage_at(dt.datetime.fromisoformat(value).replace(tzinfo=scheduler.KST))
 
-    def test_oct2_only_test_and_no_early_production(self):
-        self.assertIsNone(self.stage('2026-10-02T07:50:00'))
+    def test_oct2_morning_production_and_evening_test(self):
+        self.assertEqual(self.stage('2026-10-02T07:50:00')['destination'], 'production')
         self.assertIsNone(self.stage('2026-10-02T20:49:59'))
         self.assertEqual(self.stage('2026-10-02T20:50:00')['destination'], 'test')
         self.assertIsNone(self.stage('2026-10-02T21:20:00'))
@@ -51,6 +51,17 @@ class ScheduleTests(unittest.TestCase):
             self.assertIsNone(scheduler.delivery(self.stage('2026-10-02T20:50:00')))
             with self.assertRaises(FileNotFoundError):
                 scheduler.delivery(self.stage('2026-10-03T07:50:00'))
+
+    def test_test_delivery_reads_the_requested_batch(self):
+        stage = self.stage('2026-10-02T20:50:00')
+        def remote(branch, path):
+            self.assertEqual(branch, 'job-alert-test-data')
+            self.assertEqual(path, 'results/2026-10-02.json')
+            return {'batchDate': '2026-10-02', 'mode': 'live', 'status': 'SENT'}
+        with patch.object(scheduler, 'remote_json', side_effect=remote):
+            self.assertEqual(scheduler.delivery(stage), 'SENT')
+        with patch.object(scheduler, 'remote_json', return_value={'batchDate': '2026-10-01', 'mode': 'live', 'status': 'SENT'}):
+            self.assertIsNone(scheduler.delivery(stage))
 
     def test_three_attempt_limit_survives_restart(self):
         with tempfile.TemporaryDirectory() as directory:
