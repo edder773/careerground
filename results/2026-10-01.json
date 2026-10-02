@@ -1,17 +1,17 @@
 {
-  "mode": "dry-run",
+  "mode": "live",
   "trigger": "manual",
-  "at": "2026-10-01T15:58:22.978Z",
+  "at": "2026-10-02T00:13:11.777Z",
   "jobCount": 6,
   "heldCount": 0,
   "reviewCount": 3,
   "batches": [
     "2026-10-01"
   ],
-  "status": "PREVIEW",
+  "status": "SENT",
   "destination": "test",
   "batchDate": "2026-10-01",
   "fingerprint": "d4f93703656dea249d0891dc888b3af2f4d42d9ce9444e9185bfb90af786c71f",
-  "codeSha": "08a08dc883415649cf88401a525bdd3787f4ee57",
-  "runId": "36888392055"
+  "codeSha": "86374dd718dd6bcd94f17fc9fbbc1e33f792dc1b",
+  "runId": "36944854888"
 }
