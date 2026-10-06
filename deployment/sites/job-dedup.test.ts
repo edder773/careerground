@@ -11,6 +11,7 @@ describe('job campaign and role identity', () => {
     ['KT', '㈜케이티', 'kt'],
     ['IBK기업은행', '중소기업은행(IBK기업은행)', 'ibk-bank'],
     ['KB국민은행', '(주)국민은행', 'kb-kookmin-bank'],
+    ['NH농협은행', '농협은행(주)', 'nh-bank'],
   ])('canonicalizes company aliases: %s / %s', (left, right, expected) => {
     expect(jobCompanyKey(left)).toBe(expected);
     expect(jobCompanyKey(right)).toBe(expected);

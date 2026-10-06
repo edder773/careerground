@@ -84,6 +84,8 @@ const canonicalCompanyAliases = new Map<string, string>([
   ['miraeassetglobalinvestments', 'mirae-asset-global-investments'],
   ['우리은행', 'woori-bank'],
   ['wooribank', 'woori-bank'],
+  ['농협은행', 'nh-bank'],
+  ['nh농협은행', 'nh-bank'],
   ['국민은행', 'kb-kookmin-bank'],
   ['kb국민은행', 'kb-kookmin-bank'],
   ['kbkookminbank', 'kb-kookmin-bank'],
