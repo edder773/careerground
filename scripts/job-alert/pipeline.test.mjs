@@ -77,6 +77,39 @@ describe('job alert pending list', () => {
     expect(skipped.duplicate).toBe(1);
   });
 
+  it('deduplicates NH bank aliases within a batch and against sent postings', () => {
+    const original = job(1, {
+      companyName: 'NH농협은행',
+      title: '2026년 NH농협은행 신규직원 6급 채용(금융, 테크)',
+      itRole: '테크',
+    });
+    const mirror = job(2, {
+      companyName: '농협은행(주)',
+      title: '2026년 NH농협은행 신규직원 6급(금융, 테크) 채용',
+      itRole: '테크',
+    });
+    const separateEmployer = job(3, {
+      companyName: '농협중앙회',
+      title: original.title,
+    });
+    const current = buildPending({
+      collectors: [{ jobs: [original] }, { jobs: [mirror, separateEmployer] }],
+      sentJobs: [],
+      now,
+    });
+    expect(current.jobs).toHaveLength(2);
+    expect(current.jobs).toEqual(expect.arrayContaining([original, separateEmployer]));
+    expect(current.skipped.duplicate).toBe(1);
+
+    const subsequent = buildPending({
+      collectors: [{ jobs: [mirror, separateEmployer] }],
+      sentJobs: [original],
+      now,
+    });
+    expect(subsequent.jobs).toEqual([separateEmployer]);
+    expect(subsequent.skipped.alreadySent).toBe(1);
+  });
+
   it('orders the list by deadline', () => {
     const late = job(1, { deadlineAt: '2026-10-30T23:59:00+09:00' });
     const early = job(2, { deadlineAt: '2026-10-05T23:59:00+09:00' });
