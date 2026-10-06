@@ -1262,7 +1262,8 @@
       "sourceUrl": "https://linkareer.com/activity/353708",
       "deadlineAt": "2026-10-05T23:59:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-01"
+      "sentOn": "2026-10-01",
+      "itRole": "IT/개발"
     },
     {
       "companyName": "삼일회계법인",
@@ -1286,7 +1287,8 @@
       "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305321",
       "deadlineAt": "2026-10-07T23:59:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-01"
+      "sentOn": "2026-10-01",
+      "itRole": "정보통신"
     },
     {
       "companyName": "신협중앙회",
@@ -1294,7 +1296,8 @@
       "sourceUrl": "https://linkareer.com/activity/352149",
       "deadlineAt": "2026-10-07T23:59:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-01"
+      "sentOn": "2026-10-01",
+      "itRole": "IT직군"
     },
     {
       "companyName": "한솔그룹",
@@ -1302,7 +1305,8 @@
       "sourceUrl": "https://jasoseol.com/recruit/106344",
       "deadlineAt": "2026-10-11T14:59:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-01"
+      "sentOn": "2026-10-01",
+      "itRole": "[한솔제지] IT기획, [한솔테크닉스] S/W개발, [한솔PNS IT] 웹개발자(AI 서비스)"
     },
     {
       "companyName": "HS효성그룹",
@@ -1310,7 +1314,8 @@
       "sourceUrl": "https://jasoseol.com/recruit/106418",
       "deadlineAt": "2026-10-11T14:59:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-01"
+      "sentOn": "2026-10-01",
+      "itRole": "[HS효성] IT기획"
     },
     {
       "companyName": "다날",
@@ -1326,7 +1331,8 @@
       "sourceUrl": "https://linkareer.com/activity/352123",
       "deadlineAt": "2026-10-11T23:59:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-01"
+      "sentOn": "2026-10-01",
+      "itRole": "IT/개발"
     },
     {
       "companyName": "현대오토에버",
@@ -1342,7 +1348,8 @@
       "sourceUrl": "https://jasoseol.com/recruit/106388",
       "deadlineAt": "2026-10-12T14:59:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-01"
+      "sentOn": "2026-10-01",
+      "itRole": "[원익아이피에스] SW개발(AI), SW개발"
     },
     {
       "companyName": "코리안리재보험",
@@ -1366,7 +1373,8 @@
       "sourceUrl": "https://linkareer.com/activity/351755",
       "deadlineAt": "2026-10-12T18:00:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-01"
+      "sentOn": "2026-10-01",
+      "itRole": "IT/개발"
     },
     {
       "companyName": "(주)더존비즈온",
@@ -1382,7 +1390,8 @@
       "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305395",
       "deadlineAt": "2026-10-13T23:59:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-01"
+      "sentOn": "2026-10-01",
+      "itRole": "전산직"
     },
     {
       "companyName": "서울주택도시공사",
@@ -1390,7 +1399,8 @@
       "sourceUrl": "https://linkareer.com/activity/353370",
       "deadlineAt": "2026-10-19T23:59:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-01"
+      "sentOn": "2026-10-01",
+      "itRole": "IT/개발"
     },
     {
       "companyName": "(주)지에프씨코리아",
@@ -1438,7 +1448,8 @@
       "sourceUrl": "https://jasoseol.com/recruit/106343",
       "deadlineAt": "2026-10-11T23:59:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-02"
+      "sentOn": "2026-10-02",
+      "itRole": "[우성] IT/AX"
     },
     {
       "companyName": "한솔테크닉스",
@@ -1454,7 +1465,8 @@
       "sourceUrl": "https://jasoseol.com/recruit/106404",
       "deadlineAt": "2026-10-12T23:59:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-02"
+      "sentOn": "2026-10-02",
+      "itRole": "전산"
     },
     {
       "companyName": "이카운트",
@@ -1470,7 +1482,8 @@
       "sourceUrl": "https://jasoseol.com/recruit/106464",
       "deadlineAt": "2026-10-19T23:59:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-02"
+      "sentOn": "2026-10-02",
+      "itRole": "전산"
     },
     {
       "companyName": "(주)에이블짐정보",
@@ -1518,7 +1531,8 @@
       "sourceUrl": "https://secure.jasoseol.com/recruit/106537",
       "deadlineAt": "2026-10-12T01:00:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-06"
+      "sentOn": "2026-10-06",
+      "itRole": "정보통신/IT (일근), 정보통신/IT (교대), SW 개발 (일근)"
     },
     {
       "companyName": "산은캐피탈",
@@ -1550,7 +1564,8 @@
       "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305522",
       "deadlineAt": "2026-10-15T23:59:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-06"
+      "sentOn": "2026-10-06",
+      "itRole": "정규직 연구직(정보운영)"
     },
     {
       "companyName": "동북아역사재단",
@@ -1558,7 +1573,8 @@
       "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305584",
       "deadlineAt": "2026-10-15T23:59:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-06"
+      "sentOn": "2026-10-06",
+      "itRole": "행정직(나)_전산관리"
     },
     {
       "companyName": "국립중앙의료원",
@@ -1566,7 +1582,8 @@
       "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305641",
       "deadlineAt": "2026-10-16T23:59:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-06"
+      "sentOn": "2026-10-06",
+      "itRole": "기술직 6급 전산행정(정보운영팀)"
     },
     {
       "companyName": "한국농어촌공사",
@@ -1574,7 +1591,8 @@
       "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305542",
       "deadlineAt": "2026-10-19T23:59:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "2026-10-06"
+      "sentOn": "2026-10-06",
+      "itRole": "5급(전산)"
     },
     {
       "companyName": "슈어소프트테크(주)",
@@ -1583,6 +1601,164 @@
       "deadlineAt": "2026-10-20T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-06"
+    },
+    {
+      "companyName": "호반그룹",
+      "title": "2027 신입사원 채용",
+      "sourceUrl": "https://jasoseol.com/recruit/106405",
+      "deadlineAt": "2026-10-11T14:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07",
+      "itRole": "[그룹인재] 경영_IT"
+    },
+    {
+      "companyName": "SK주식회사(AX)",
+      "title": "2026년 하반기 SKALA 신입사원 채용",
+      "sourceUrl": "https://inthiswork.com/archives/403883",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07",
+      "itRole": "DT"
+    },
+    {
+      "companyName": "NH농협은행",
+      "title": "2026년 NH농협은행 신규직원 6급 채용(금융, 테크)",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2609180000941",
+      "deadlineAt": "2026-10-12T17:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07",
+      "itRole": "테크"
+    },
+    {
+      "companyName": "한화솔루션/케미칼",
+      "title": "2026년 하반기 부문 신입사원 채용 (엔지니어/R&D)",
+      "sourceUrl": "https://jasoseol.com/recruit/106408",
+      "deadlineAt": "2026-10-14T06:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07",
+      "itRole": "AI기반 신소재연구 (R&D)"
+    },
+    {
+      "companyName": "NAVER Cloud",
+      "title": "AI Model 및 Agent Systems 연구 (체험형 인턴)",
+      "sourceUrl": "https://inthiswork.com/archives/403898",
+      "deadlineAt": "2026-10-14T18:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07"
+    },
+    {
+      "companyName": "NAVER Cloud",
+      "title": "월드 모델 및 이미지 생성 모델 연구 (체험형 인턴)",
+      "sourceUrl": "https://inthiswork.com/archives/403845",
+      "deadlineAt": "2026-10-14T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07"
+    },
+    {
+      "companyName": "NAVER Cloud",
+      "title": "클라우드 IaaS 운영 기획 (체험형 인턴)",
+      "sourceUrl": "https://inthiswork.com/archives/403852",
+      "deadlineAt": "2026-10-14T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07"
+    },
+    {
+      "companyName": "람다256",
+      "title": "[신입 크루 집중 모집] Blockchain Node Operations Specialist",
+      "sourceUrl": "https://inthiswork.com/archives/403976",
+      "deadlineAt": "2026-10-18T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07"
+    },
+    {
+      "companyName": "한국언론진흥재단",
+      "title": "한국언론진흥재단 2026년 2차 정규직 신입사원 채용 공고",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305752",
+      "deadlineAt": "2026-10-20T18:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "건설공제조합",
+      "title": "2026년 하반기 신입직원 채용",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2610060000152",
+      "deadlineAt": "2026-10-26T16:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07",
+      "itRole": "데이터분석, IT"
+    },
+    {
+      "companyName": "(주)데일리페이",
+      "title": "[데일리페이] Front-End 개발자를 모십니다.",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50064583",
+      "deadlineAt": "2026-10-28T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07"
+    },
+    {
+      "companyName": "카이트로닉스",
+      "title": "소프트웨어 신입 개발자 모집",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50067762",
+      "deadlineAt": "2026-10-29T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07"
+    },
+    {
+      "companyName": "(주)세나테크놀로지",
+      "title": "임베디드 Linux 서버 개발자 채용",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50088318",
+      "deadlineAt": "2026-10-31T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07"
+    },
+    {
+      "companyName": "트랜드리서치(주)",
+      "title": "트랜드리서치 IT 시스템 개발 담당자 채용 (신입)",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50086953",
+      "deadlineAt": "2026-10-31T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07"
+    },
+    {
+      "companyName": "(주)에이블짐정보",
+      "title": "(신입/경력) 프론트엔드개발자 채용(정규직/프리랜서)",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50103009",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07"
+    },
+    {
+      "companyName": "코드비전(주)",
+      "title": "AI 서비스 풀스택 개발자",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50102795",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07"
+    },
+    {
+      "companyName": "포스타입",
+      "title": "[신입/경력] 프롬프트 엔지니어",
+      "sourceUrl": "https://inthiswork.com/archives/403805",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07"
+    },
+    {
+      "companyName": "(주)휴리오",
+      "title": "(주)휴리오 S/W 개발자 신입 채용 공고",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50098961",
+      "deadlineAt": "2026-12-01T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07"
+    },
+    {
+      "companyName": "한국신체정보(주)",
+      "title": "Unity 클라이언트 개발자 채용",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50099586",
+      "deadlineAt": "2026-12-01T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-07"
     }
   ],
   "deliveries": {
@@ -1629,6 +1805,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-10-02"
+      ],
+      "status": "SENT"
+    },
+    "2026-10-07": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-10-06T23:00:02.162Z",
+      "jobCount": 19,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-10-06"
       ],
       "status": "SENT"
     }
