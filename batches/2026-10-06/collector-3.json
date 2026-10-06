@@ -1,0 +1,100 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-10-06",
+  "receivedAt": "2026-10-06T13:29:41.588Z",
+  "jobs": [
+    {
+      "companyName": "NAVER Cloud",
+      "title": "AI Model 및 Agent Systems 연구 (체험형 인턴)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/403898",
+      "deadlineAt": "2026-10-14T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "NAVER Cloud",
+      "title": "월드 모델 및 이미지 생성 모델 연구 (체험형 인턴)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/403845",
+      "deadlineAt": "2026-10-14T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "NAVER Cloud",
+      "title": "월드 모델 및 이미지 생성 모델 ML 엔지니어 (체험형 인턴)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/403902",
+      "deadlineAt": "2026-10-14T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "NAVER Cloud",
+      "title": "클라우드 IaaS 운영 기획 (체험형 인턴)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/403852",
+      "deadlineAt": "2026-10-14T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "SK주식회사(AX)",
+      "title": "2026년 하반기 SKALA 신입사원 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/403883",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "DT"
+    },
+    {
+      "companyName": "람다256",
+      "title": "[신입 크루 집중 모집] Blockchain Node Operations Specialist",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/403976",
+      "deadlineAt": "2026-10-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "포스타입",
+      "title": "[신입/경력] 프롬프트 엔지니어",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/403805",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "토스뱅크",
+      "title": "Server Developer (Product)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/403741",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "인터엑스",
+      "title": "AX 인턴 (AX Coordinator)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/401636",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Moloco",
+      "title": "Software Engineer Intern (3 months)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402675",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
