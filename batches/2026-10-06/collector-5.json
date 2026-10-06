@@ -1,0 +1,139 @@
+{
+  "kind": "collector",
+  "slot": 5,
+  "date": "2026-10-06",
+  "receivedAt": "2026-10-06T13:32:34.973Z",
+  "jobs": [
+    {
+      "companyName": "현대오토에버",
+      "title": "2026 4분기 신입사원 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106477",
+      "deadlineAt": "2026-10-12T13:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "(코딩)[전장]Embedded SW Process Engineer_임베디드 SW 설계/개발/검증, (코딩)[모빌리티]Frontend Develo"
+    },
+    {
+      "companyName": "코리안리재보험",
+      "title": "2026년 신입채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106417",
+      "deadlineAt": "2026-10-12T08:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI, 전산"
+    },
+    {
+      "companyName": "코오롱베니트",
+      "title": "2026 하반기 채용연계형 인턴 모집",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106432",
+      "deadlineAt": "2026-10-07T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "시스템 개발(금융), 시스템 개발(SAP), 데이터플랫폼 엔지니어, 시스템 엔지니어(SAP BC, EAI), 인프라 엔지니어(온프레미스), 인프"
+    },
+    {
+      "companyName": "한화솔루션/케미칼",
+      "title": "2026년 하반기 부문 신입사원 채용 (엔지니어/R&D)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106408",
+      "deadlineAt": "2026-10-14T06:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI기반 신소재연구 (R&D)"
+    },
+    {
+      "companyName": "HS효성그룹",
+      "title": "2026년 하반기 신입공채",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106418",
+      "deadlineAt": "2026-10-11T14:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "[HS효성] IT기획, [HS효성첨단소재] AI 개발, [HS효성인포메이션시스템] 고객사 IT인프라/솔루션 기술지원_대구, [HS효성인포메이션시"
+    },
+    {
+      "companyName": "동서식품",
+      "title": "2026년 대졸 신입/경력사원 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106404",
+      "deadlineAt": "2026-10-12T09:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산"
+    },
+    {
+      "companyName": "호반그룹",
+      "title": "2027 신입사원 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106405",
+      "deadlineAt": "2026-10-11T14:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "[그룹인재] 경영_IT"
+    },
+    {
+      "companyName": "신협중앙회",
+      "title": "2027년 신입직원(일반직군 및 IT직군) 채용",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/352149",
+      "deadlineAt": "2026-10-07T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT직군"
+    },
+    {
+      "companyName": "서울주택도시공사",
+      "title": "2026년 하반기 사무·기술직 신입사원 직무중심 채용",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/353370",
+      "deadlineAt": "2026-10-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산"
+    },
+    {
+      "companyName": "농협은행(주)",
+      "title": "2026년 NH농협은행 신규직원 6급(금융, 테크) 채용",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/353658",
+      "deadlineAt": "2026-10-12T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "테크"
+    },
+    {
+      "companyName": "한국언론진흥재단",
+      "title": "한국언론진흥재단 2026년 2차 정규직 신입사원 채용 공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305752",
+      "deadlineAt": "2026-10-20T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "한국농수산식품유통공사",
+      "title": "2026년 신입직원 채용공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305395",
+      "deadlineAt": "2026-10-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI·전산"
+    },
+    {
+      "companyName": "국가철도공단",
+      "title": "2026년도 제2차 국가철도공단 신입직원 및 체험형 청년인턴 채용공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305321",
+      "deadlineAt": "2026-10-07T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "통신"
+    }
+  ],
+  "rejected": []
+}
