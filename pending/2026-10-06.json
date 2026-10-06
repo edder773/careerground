@@ -3,15 +3,25 @@
   "batches": [
     "2026-10-06"
   ],
-  "generatedAt": "2026-10-06T13:32:36.121Z",
-  "collectorCount": 3,
+  "generatedAt": "2026-10-06T13:32:55.541Z",
+  "collectorCount": 4,
   "skipped": {
     "notAlertable": 4,
     "restricted": 0,
-    "alreadySent": 13,
+    "alreadySent": 22,
     "duplicate": 1
   },
   "jobs": [
+    {
+      "companyName": "호반그룹",
+      "title": "2027 신입사원 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106405",
+      "deadlineAt": "2026-10-11T14:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "[그룹인재] 경영_IT"
+    },
     {
       "companyName": "SK주식회사(AX)",
       "title": "2026년 하반기 SKALA 신입사원 채용",
@@ -21,6 +31,26 @@
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY",
       "itRole": "DT"
+    },
+    {
+      "companyName": "농협은행(주)",
+      "title": "2026년 NH농협은행 신규직원 6급(금융, 테크) 채용",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/353658",
+      "deadlineAt": "2026-10-12T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "테크"
+    },
+    {
+      "companyName": "한화솔루션/케미칼",
+      "title": "2026년 하반기 부문 신입사원 채용 (엔지니어/R&D)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106408",
+      "deadlineAt": "2026-10-14T06:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI기반 신소재연구 (R&D)"
     },
     {
       "companyName": "NAVER Cloud",
@@ -57,6 +87,16 @@
       "deadlineAt": "2026-10-18T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "한국언론진흥재단",
+      "title": "한국언론진흥재단 2026년 2차 정규직 신입사원 채용 공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305752",
+      "deadlineAt": "2026-10-20T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
     },
     {
       "companyName": "(주)데일리페이",
