@@ -20,8 +20,8 @@
     "2026-10-06": {
       "mode": "live",
       "trigger": "manual",
-      "at": "2026-10-06T13:47:26.463Z",
-      "jobCount": 20,
+      "at": "2026-10-06T13:57:42.860Z",
+      "jobCount": 19,
       "heldCount": 0,
       "reviewCount": 3,
       "batches": [
@@ -31,8 +31,8 @@
       "destination": "test",
       "batchDate": "2026-10-06",
       "fingerprint": "8946202386d6e0ca0b1c49d85a18f828b470b73c602c0dfe39b5ffff2e27ad80",
-      "codeSha": "f89ac69fae538a097a9487ea030cd1d293077122",
-      "runId": "37473564825"
+      "codeSha": "773ecd2045271eab91722010bec4b3a3d5cd0369",
+      "runId": "37474944666"
     }
   }
 }
