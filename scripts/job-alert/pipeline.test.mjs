@@ -110,6 +110,84 @@ describe('job alert pending list', () => {
     expect(subsequent.skipped.alreadySent).toBe(1);
   });
 
+  it('blocks a renamed employer and generic subsidiary umbrella against earlier deliveries', () => {
+    const sh = job(1, {
+      companyName: '서울주택도시공사',
+      title: '2026년 하반기 사무·기술직 신입사원 직무중심 채용',
+    });
+    const renamedSh = job(2, { companyName: '서울주택도시개발공사', title: sh.title });
+    const umbrella = job(3, {
+      companyName: '한솔피엔에스',
+      title: '[한솔PNS IT] 한솔그룹 2026년 하반기 신입사원 공개채용',
+    });
+    const fullStack = job(4, {
+      companyName: '한솔피엔에스',
+      title: '[IT부문] 2026년 하반기 신입사원 공개채용(풀스택 개발자)',
+    });
+    const sap = job(5, {
+      companyName: '한솔피엔에스',
+      title: '[IT부문] 2026년 하반기 신입사원 공개채용(SAP SD)',
+    });
+    const nextCampaign = job(6, {
+      companyName: '한솔PNS IT',
+      title: '2027년 상반기 신입사원 공개채용(SAP SD)',
+    });
+    const result = buildPending({
+      collectors: [{ jobs: [renamedSh, fullStack, sap, nextCampaign] }],
+      sentJobs: [sh, umbrella],
+      now,
+    });
+    expect(result.jobs).toEqual([nextCampaign]);
+    expect(result.skipped.alreadySent).toBe(3);
+    const withinBatch = buildPending({
+      collectors: [{ jobs: [umbrella, fullStack, sap] }],
+      sentJobs: [],
+      now,
+    });
+    expect(withinBatch.jobs).toEqual([umbrella]);
+    expect(withinBatch.skipped.duplicate).toBe(2);
+  });
+
+  it('remembers explicitly covered subsidiaries in a group-wide delivery', () => {
+    const umbrella = job(1, {
+      companyName: '예시그룹',
+      title: '2026년 하반기 신입사원 공개채용',
+      itRole: '[예시제지] IT기획, [예시PNS] 웹개발자',
+    });
+    const member = job(2, {
+      companyName: '예시제지',
+      title: '2026년 하반기 신입사원 공개채용 - IT기획',
+    });
+    const unrelated = job(3, { companyName: '예시화학', title: member.title });
+    const nextYear = job(4, {
+      companyName: '예시제지',
+      title: '2027년 상반기 신입사원 공개채용 - IT기획',
+    });
+    const result = buildPending({
+      collectors: [{ jobs: [member, unrelated, nextYear] }],
+      sentJobs: [umbrella],
+      now,
+    });
+    expect(result.jobs).toEqual(expect.arrayContaining([unrelated, nextYear]));
+    expect(result.jobs).toHaveLength(2);
+    expect(result.skipped.alreadySent).toBe(1);
+    const withinBatch = buildPending({
+      collectors: [{ jobs: [umbrella, member, unrelated] }],
+      sentJobs: [],
+      now,
+    });
+    expect(withinBatch.jobs).toEqual(expect.arrayContaining([umbrella, unrelated]));
+    expect(withinBatch.jobs).toHaveLength(2);
+  });
+
+  it('does not re-alert a generic developer campaign under its department heading', () => {
+    const previous = job(1, { companyName: '예시ERP', title: '2026년 예시ERP 신입 개발자 채용' });
+    const current = job(2, { companyName: '예시ERP', title: '개발본부 신입 채용' });
+    expect(
+      buildPending({ collectors: [{ jobs: [current] }], sentJobs: [previous], now }).jobs,
+    ).toEqual([]);
+  });
+
   it('orders the list by deadline', () => {
     const late = job(1, { deadlineAt: '2026-10-30T23:59:00+09:00' });
     const early = job(2, { deadlineAt: '2026-10-05T23:59:00+09:00' });

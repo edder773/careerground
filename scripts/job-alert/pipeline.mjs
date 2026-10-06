@@ -1,4 +1,8 @@
-import { duplicateJobReason, jobCompanyKey } from '../../deployment/sites/job-dedup.ts';
+import {
+  duplicateJobReason,
+  jobCompanyKey,
+  jobComparisonCompanyKeys,
+} from '../../deployment/sites/job-dedup.ts';
 import { jobKey } from './job-list.mjs';
 
 // Reviewers ask the same question, so two agreeing reviewers are enough.
@@ -56,8 +60,9 @@ class JobIndex {
   add(job) {
     this.#keys.add(jobKey(job));
     this.#all.push(job);
-    const company = jobCompanyKey(job.companyName);
-    this.#byCompany.set(company, [...(this.#byCompany.get(company) ?? []), job]);
+    for (const company of jobComparisonCompanyKeys(job)) {
+      this.#byCompany.set(company, [...(this.#byCompany.get(company) ?? []), job]);
+    }
   }
 
   has(job) {

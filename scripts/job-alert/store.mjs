@@ -23,7 +23,51 @@ export const writeJson = (path, value) => {
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
 };
 
-export const loadLedger = (dir) => readJson(join(dir, 'ledger.json'));
+export function loadLedger(dir) {
+  const ledger = readJson(join(dir, 'ledger.json'));
+  if (!ledger) return ledger;
+  const missing = new Map(
+    ledger.sentJobs.filter((job) => job.itRole === undefined).map((job) => [jobKey(job), job]),
+  );
+  const batchesDir = join(dir, 'batches');
+  if (!missing.size || !existsSync(batchesDir)) return ledger;
+  for (const date of readdirSync(batchesDir)
+    .filter((day) => /^\d{4}-\d{2}-\d{2}$/u.test(day))
+    .sort()) {
+    for (const submission of loadSubmissions(dir, date, 'collector')) {
+      if (
+        submission.kind !== 'collector' ||
+        submission.date !== date ||
+        !Array.isArray(submission.jobs)
+      )
+        continue;
+      for (const job of submission.jobs) {
+        const previous = missing.get(jobKey(job));
+        if (
+          !previous ||
+          !job.itRole ||
+          !ledger.deliveries[previous.sentOn]?.batches?.includes(date)
+        )
+          continue;
+        // Legacy records dropped itRole. Recover only the field from the exact
+        // delivered posting and batch; keep deadline timestamp corrections and
+        // delivery history unchanged.
+        if (
+          ['companyName', 'title'].every((field) => previous[field] === job[field]) &&
+          previous.deadlineAt &&
+          job.deadlineAt &&
+          Number.isFinite(Date.parse(previous.deadlineAt)) &&
+          Number.isFinite(Date.parse(job.deadlineAt)) &&
+          kstDateKey(new Date(previous.deadlineAt)) === kstDateKey(new Date(job.deadlineAt))
+        ) {
+          previous.itRole = job.itRole;
+          missing.delete(jobKey(job));
+        }
+      }
+    }
+  }
+  return ledger;
+}
 
 export function saveLedger(dir, ledger, now) {
   // An expired posting can never be alerted again, and neither can its mirrors.
@@ -46,6 +90,7 @@ export const ledgerEntry = (job, sentOn) => ({
   deadlineAt: job.deadlineAt ?? null,
   applicationStartAt: job.applicationStartAt ?? null,
   sentOn,
+  ...(job.itRole ? { itRole: job.itRole } : {}),
 });
 
 // While the old CareerGround digest is still live, its catalog is the record of

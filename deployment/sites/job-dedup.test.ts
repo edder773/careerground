@@ -12,6 +12,9 @@ describe('job campaign and role identity', () => {
     ['IBK기업은행', '중소기업은행(IBK기업은행)', 'ibk-bank'],
     ['KB국민은행', '(주)국민은행', 'kb-kookmin-bank'],
     ['NH농협은행', '농협은행(주)', 'nh-bank'],
+    ['서울주택도시공사', '서울주택도시개발공사', 'sh-seoul-housing'],
+    ['한솔피엔에스', '한솔PNS IT', 'hansol-pns'],
+    ['SK브로드밴드', '에스케이브로드밴드(주)', 'sk-broadband'],
   ])('canonicalizes company aliases: %s / %s', (left, right, expected) => {
     expect(jobCompanyKey(left)).toBe(expected);
     expect(jobCompanyKey(right)).toBe(expected);
@@ -107,6 +110,104 @@ describe('job campaign and role identity', () => {
     expect(duplicateJobReason({ ...right, ...window }, { ...left, ...window })).toBe(
       expectedReason,
     );
+  });
+
+  it('recognizes a generic developer recruitment advertised under its department name', () => {
+    const previous = {
+      companyName: '예시ERP',
+      title: '2026년 예시ERP 신입 개발자 채용',
+      ...window,
+    };
+    const current = { companyName: '예시ERP', title: '개발본부 신입 채용', ...window };
+    expect(duplicateJobReason(current, previous)).toBe('equivalent-title');
+    expect(duplicateJobReason({ ...current, title: '영업본부 신입 채용' }, previous)).toBeNull();
+  });
+
+  it('recognizes the renamed SH employer as one posting across job boards', () => {
+    const previous = {
+      companyName: '서울주택도시공사',
+      title: '2026년 하반기 사무·기술직 신입사원 직무중심 채용',
+      sourceUrl: 'https://first.example.test/sh',
+      ...window,
+    };
+    const current = {
+      ...previous,
+      companyName: '서울주택도시개발공사',
+      sourceUrl: 'https://second.example.test/sh',
+    };
+    expect(duplicateJobReason(current, previous)).toBe('equivalent-title');
+  });
+
+  it.each(['풀스택 개발자', 'SAP SD'])(
+    'recognizes a company-labelled group recruitment umbrella covering %s',
+    (role) => {
+      const previous = {
+        companyName: '한솔피엔에스',
+        title: '[한솔PNS IT] 한솔그룹 2026년 하반기 신입사원 공개채용',
+        sourceUrl: 'https://first.example.test/pns',
+        ...window,
+      };
+      const current = {
+        companyName: '한솔피엔에스',
+        title: `[IT부문] 2026년 하반기 신입사원 공개채용(${role})`,
+        sourceUrl: `https://second.example.test/pns/${role}`,
+        ...window,
+      };
+      expect(jobDigestIdentity(previous).umbrella).toBe(true);
+      expect(duplicateJobReason(current, previous)).toBe('umbrella-campaign');
+    },
+  );
+
+  it('uses explicitly named group members without merging every subsidiary', () => {
+    const umbrella = {
+      companyName: '예시그룹',
+      title: '2026년 하반기 신입사원 공개채용',
+      itRole: '[예시제지] IT기획, [예시PNS] 웹개발자',
+      ...window,
+    };
+    const member = {
+      companyName: '예시제지',
+      title: '2026년 하반기 신입사원 공개채용 - IT기획',
+      ...window,
+    };
+    expect(duplicateJobReason(member, umbrella)).toBe('umbrella-campaign');
+    expect(duplicateJobReason({ ...member, companyName: '예시화학' }, umbrella)).toBeNull();
+    expect(
+      duplicateJobReason(
+        { ...member, title: '2027년 상반기 신입사원 공개채용 - IT기획' },
+        umbrella,
+      ),
+    ).toBeNull();
+    // One previously delivered subsidiary does not cover an entire group announcement.
+    expect(duplicateJobReason(umbrella, member)).toBeNull();
+  });
+
+  it('keeps specialist PNS roles visible when neither posting is an umbrella', () => {
+    const fullStack = {
+      companyName: '한솔PNS IT',
+      title: '[IT부문] 2026년 하반기 신입사원 공개채용(풀스택 개발자)',
+      ...window,
+    };
+    const sap = {
+      ...fullStack,
+      companyName: '한솔피엔에스',
+      title: '[IT부문] 2026년 하반기 신입사원 공개채용(SAP SD)',
+    };
+    expect(duplicateJobReason(sap, fullStack)).toBeNull();
+  });
+
+  it('keeps AT/DT and Infra roles separate across Korean/English company aliases', () => {
+    const atDt = {
+      companyName: '에스케이브로드밴드(주)',
+      title: '2026년 하반기 SK브로드밴드 Junior Talent 채용(AT/DT)',
+      ...window,
+    };
+    const infra = {
+      ...atDt,
+      companyName: 'SK브로드밴드',
+      title: '2026년 SK브로드밴드 Junior Talent 채용(Infra)',
+    };
+    expect(duplicateJobReason(infra, atDt)).toBeNull();
   });
 
   it('blocks a 국민은행 cross-source repeat with a one-day start-date discrepancy', () => {
