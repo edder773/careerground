@@ -3,10 +3,10 @@
   "batches": [
     "2026-10-06"
   ],
-  "generatedAt": "2026-10-06T13:32:55.541Z",
-  "collectorCount": 4,
+  "generatedAt": "2026-10-06T13:40:48.566Z",
+  "collectorCount": 5,
   "skipped": {
-    "notAlertable": 4,
+    "notAlertable": 8,
     "restricted": 0,
     "alreadySent": 22,
     "duplicate": 1
@@ -37,6 +37,16 @@
       "title": "2026년 NH농협은행 신규직원 6급(금융, 테크) 채용",
       "sourceName": "Linkareer",
       "sourceUrl": "https://linkareer.com/activity/353658",
+      "deadlineAt": "2026-10-12T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "테크"
+    },
+    {
+      "companyName": "NH농협은행",
+      "title": "2026년 NH농협은행 신규직원 6급 채용(금융, 테크)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2609180000941",
       "deadlineAt": "2026-10-12T17:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY",
@@ -97,6 +107,16 @@
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY",
       "itRole": "IT"
+    },
+    {
+      "companyName": "건설공제조합",
+      "title": "2026년 하반기 신입직원 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2610060000152",
+      "deadlineAt": "2026-10-26T16:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "데이터분석, IT"
     },
     {
       "companyName": "(주)데일리페이",
