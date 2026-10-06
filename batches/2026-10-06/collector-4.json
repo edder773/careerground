@@ -1,0 +1,65 @@
+{
+  "kind": "collector",
+  "slot": 4,
+  "date": "2026-10-06",
+  "receivedAt": "2026-10-06T13:40:31.116Z",
+  "jobs": [
+    {
+      "companyName": "NH농협은행",
+      "title": "2026년 NH농협은행 신규직원 6급 채용(금융, 테크)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2609180000941",
+      "deadlineAt": "2026-10-12T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "테크"
+    },
+    {
+      "companyName": "건설공제조합",
+      "title": "2026년 하반기 신입직원 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2610060000152",
+      "deadlineAt": "2026-10-26T16:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "데이터분석, IT"
+    },
+    {
+      "companyName": "Bear Robotics",
+      "title": "Firmware Engineering Intern",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/firmware-engineering-intern-at-bear-robotics-4470692526",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Qualcomm",
+      "title": "Intern: On-device AgenticAI",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/intern-on-device-agenticai-at-qualcomm-4442070764",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "다쏘시스템",
+      "title": "Software Engineer (12-month Internship)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/software-engineer-12-month-internship-at-dassault-syst%C3%A8mes-4473746922",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Moloco",
+      "title": "Software Engineer Intern (3 months)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/software-engineer-intern-3-months-at-moloco-4473091269",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
