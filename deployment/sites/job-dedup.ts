@@ -4,6 +4,7 @@ export type ComparableJob = {
   applicationStartAt?: string | null;
   deadlineAt?: string | null;
   sourceUrl?: string | null;
+  itRole?: string | null;
 };
 
 export type JobDuplicateReason =
@@ -86,6 +87,13 @@ const canonicalCompanyAliases = new Map<string, string>([
   ['wooribank', 'woori-bank'],
   ['농협은행', 'nh-bank'],
   ['nh농협은행', 'nh-bank'],
+  ['서울주택도시공사', 'sh-seoul-housing'],
+  ['서울주택도시개발공사', 'sh-seoul-housing'],
+  ['한솔피엔에스', 'hansol-pns'],
+  ['한솔pns', 'hansol-pns'],
+  ['한솔pnsit', 'hansol-pns'],
+  ['sk브로드밴드', 'sk-broadband'],
+  ['에스케이브로드밴드', 'sk-broadband'],
   ['국민은행', 'kb-kookmin-bank'],
   ['kb국민은행', 'kb-kookmin-bank'],
   ['kbkookminbank', 'kb-kookmin-bank'],
@@ -115,6 +123,7 @@ const normalizedTitle = (value: string) =>
     .toLowerCase()
     .replace(/\boms\b/gu, ' 주문관리시스템 ')
     .replace(/주문\s*관리\s*시스템/gu, '주문관리시스템')
+    .replace(/(^|\s)개발본부(?=\s|$)/gu, '$1개발자')
     .replace(/it\s*개발/gu, 'it 개발')
     .replace(/([a-z0-9+#])부문/giu, '$1 부문')
     .replace(/s\s*\/\s*w/gu, 'sw');
@@ -163,11 +172,17 @@ const companyTokens = (job: ComparableJob) => {
 
 const meaningfulTitleTokens = (job: ComparableJob) => {
   const excludedCompanyTokens = companyTokens(job);
-  return rawTitleTokens(job.title).filter((token) => {
+  // A company label and its parent-group label are not specialist role names.
+  const title = job.title.replace(/\[([^\]]+)\]/gu, (label, company: string) =>
+    jobCompanyKey(company) === jobCompanyKey(job.companyName) ? ' ' : label,
+  );
+  return rawTitleTokens(title).filter((token) => {
     const normalized = compact(token);
     return (
       normalized &&
       !excludedCompanyTokens.has(normalized) &&
+      jobCompanyKey(token) !== jobCompanyKey(job.companyName) &&
+      !/그룹$/u.test(token) &&
       !titleStopWords.has(token) &&
       !/^20\d{2}년?$/u.test(token)
     );
@@ -268,6 +283,24 @@ export function jobDigestIdentity(job: ComparableJob): JobDigestIdentity {
   };
 }
 
+// Group coverage is taken only from companies explicitly named in the original
+// public IT field. A member's posting never covers the entire group in reverse.
+const groupMemberKeys = (job: ComparableJob) =>
+  /그룹$/u.test(compact(job.companyName)) && jobDigestIdentity(job).umbrella
+    ? [
+        ...new Set(
+          [...String(job.itRole || '').matchAll(/\[([^\]]+)\]/gu)]
+            .map((match) => jobCompanyKey(match[1]!))
+            .filter(Boolean),
+        ),
+      ]
+    : [];
+
+export const jobComparisonCompanyKeys = (job: ComparableJob) => [
+  jobCompanyKey(job.companyName),
+  ...groupMemberKeys(job),
+];
+
 const sameRecruitmentWindow = (left: ComparableJob, right: ComparableJob) => {
   if (hasConflictingCampaignEdition(left, right)) return false;
   const leftDeadline = dateKey(left.deadlineAt);
@@ -325,7 +358,13 @@ export function duplicateJobReason(
   existing: ComparableJob,
 ): JobDuplicateReason | null {
   const candidateCompany = jobCompanyKey(candidate.companyName);
-  if (!candidateCompany || candidateCompany !== jobCompanyKey(existing.companyName)) return null;
+  if (!candidateCompany) return null;
+  if (candidateCompany !== jobCompanyKey(existing.companyName)) {
+    return groupMemberKeys(existing).includes(candidateCompany) &&
+      sameRecruitmentWindow(candidate, existing)
+      ? 'umbrella-campaign'
+      : null;
+  }
   const candidateUrl = normalizedSourceUrl(candidate.sourceUrl);
   const existingUrl = normalizedSourceUrl(existing.sourceUrl);
   if (candidateUrl && candidateUrl === existingUrl) return 'same-source';
