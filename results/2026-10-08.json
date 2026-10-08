@@ -1,0 +1,17 @@
+{
+  "mode": "live",
+  "trigger": "manual",
+  "at": "2026-10-08T13:41:07.537Z",
+  "jobCount": 13,
+  "heldCount": 0,
+  "reviewCount": 3,
+  "batches": [
+    "2026-10-08"
+  ],
+  "status": "SENT",
+  "destination": "test",
+  "batchDate": "2026-10-08",
+  "fingerprint": "9b3f89711b5f7ef5b56e33e629e2519b5ce37f42b1411fd5d813db84c247a1a5",
+  "codeSha": "e12813fe4f8fa2deb7a6093fdef4170293ec3231",
+  "runId": "37786275022"
+}
