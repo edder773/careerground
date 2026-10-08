@@ -1,0 +1,55 @@
+{
+  "kind": "collector",
+  "slot": 2,
+  "date": "2026-10-07",
+  "receivedAt": "2026-10-08T00:02:51.369Z",
+  "jobs": [
+    {
+      "companyName": "(주)이카운트",
+      "title": "2026년 이카운트 신입 개발자 채용",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=CSI&infoTypeGroup=tb_workinfogubun&wantedAuthNo=55130970",
+      "deadlineAt": "2026-10-14T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "굿파트너스(주)",
+      "title": "웹 프로그램 개발자 모집(신입)",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=CSI&infoTypeGroup=tb_workinfogubun&wantedAuthNo=55189953",
+      "deadlineAt": "2026-10-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "에스케이브로드밴드(주)",
+      "title": "2026년 하반기 SK브로드밴드 Junior Talent 채용(AT/DT)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55158820",
+      "deadlineAt": "2026-10-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)모나미",
+      "title": "IT운영팀, TQM팀(QA파트/설계 파트), 디자인팀 경력•신입 채용",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55189769",
+      "deadlineAt": "2026-10-12T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "IT운영팀"
+    },
+    {
+      "companyName": "(주)윈스테크넷",
+      "title": "2026년 10월 월간채용(신입/경력) - 개발",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55193065",
+      "deadlineAt": "2026-10-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
