@@ -3,8 +3,14 @@
   "batches": [
     "2026-10-07"
   ],
-  "generatedAt": "2026-10-08T01:00:40.280Z",
+  "generatedAt": "2026-10-08T01:21:29.006Z",
   "collectorCount": 5,
+  "skipped": {
+    "notAlertable": 13,
+    "restricted": 1,
+    "alreadySent": 30,
+    "duplicate": 0
+  },
   "jobs": [
     {
       "companyName": "(주)모나미",
@@ -137,11 +143,5 @@
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     }
-  ],
-  "skipped": {
-    "notAlertable": 13,
-    "restricted": 1,
-    "alreadySent": 30,
-    "duplicate": 0
-  }
+  ]
 }
