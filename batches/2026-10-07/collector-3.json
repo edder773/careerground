@@ -1,0 +1,117 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-10-07",
+  "receivedAt": "2026-10-08T00:51:46.220Z",
+  "jobs": [
+    {
+      "companyName": "NAVER Cloud",
+      "title": "AI Model 및 Agent Systems 연구 (체험형 인턴)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/403898",
+      "deadlineAt": "2026-10-14T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "NAVER Cloud",
+      "title": "월드 모델 및 이미지 생성 모델 연구 (체험형 인턴)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/403845",
+      "deadlineAt": "2026-10-14T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "NAVER Cloud",
+      "title": "월드 모델 및 이미지 생성 모델 ML 엔지니어 (체험형 인턴)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/403902",
+      "deadlineAt": "2026-10-14T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "NAVER Cloud",
+      "title": "클라우드 IaaS 운영 기획 (체험형 인턴)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/403852",
+      "deadlineAt": "2026-10-14T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "람다256",
+      "title": "[신입 크루 집중 모집] Blockchain Node Operations Specialist",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/403976",
+      "deadlineAt": "2026-10-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "포스타입",
+      "title": "[신입/경력] 프롬프트 엔지니어",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/403805",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "인터엑스",
+      "title": "AX 인턴 (AX Coordinator)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/401636",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Moloco",
+      "title": "Software Engineer Intern (3 months)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402675",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "페이타랩",
+      "title": "Windows Developer (C#, WPF, React Native) (경력 무관)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/404173",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "페이타랩",
+      "title": "Web Frontend Developer(JavaScript, React) (경력 무관)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/404177",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "페이타랩",
+      "title": "Backend Developer(Kotlin, Spring, MSA) (경력 무관)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/404169",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "동광제약",
+      "title": "2026년 4분기 IT팀 신입/경력 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/404251",
+      "deadlineAt": "2026-10-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
