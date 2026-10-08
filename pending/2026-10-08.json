@@ -3,15 +3,24 @@
   "batches": [
     "2026-10-08"
   ],
-  "generatedAt": "2026-10-08T13:09:13.239Z",
-  "collectorCount": 4,
+  "generatedAt": "2026-10-08T13:30:14.166Z",
+  "collectorCount": 5,
   "skipped": {
-    "notAlertable": 5,
+    "notAlertable": 6,
     "restricted": 0,
-    "alreadySent": 10,
+    "alreadySent": 15,
     "duplicate": 0
   },
   "jobs": [
+    {
+      "companyName": "엑심베이(Eximbay)",
+      "title": "PG플랫폼SQ IT 개발",
+      "sourceName": "Superookie",
+      "sourceUrl": "https://www.superookie.com/jobs/68d9de2f0ee608273b7244fa",
+      "deadlineAt": "2026-10-10T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
     {
       "companyName": "인천공항시설관리",
       "title": "2026년 제3차 정기채용 - 정보통신/IT (일근)",
@@ -91,6 +100,24 @@
       "itRole": "IT"
     },
     {
+      "companyName": "슈어소프트테크",
+      "title": "[2027 신입 공채] 센터 SW개발",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=OEW&infoTypeGroup=tb_workinfoopen&wantedAuthNo=180644",
+      "deadlineAt": "2026-10-20T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "삼정KPMG",
+      "title": "Lighthouse NLP 데이터 과학",
+      "sourceName": "Superookie",
+      "sourceUrl": "https://www.superookie.com/jobs/5f7291618b129f4014217119",
+      "deadlineAt": "2026-10-29T13:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
       "companyName": "연합인포맥스",
       "title": "IT/AI부문(전문연구요원 포함)신입",
       "sourceName": "Jumpit",
@@ -98,6 +125,33 @@
       "deadlineAt": "2026-10-30T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)플레이웍스",
+      "title": "AI 및 라이브 기반 반려동물 양육 플랫폼 백엔드 개발자 채용",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55174009",
+      "deadlineAt": "2026-10-31T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "제이니아일렉트로닉스",
+      "title": "DX / AX 플랫폼 개발 및 AI(인공지능)엔지니어 (신입/경력) 채용",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55223030",
+      "deadlineAt": "2026-11-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "eMoldino",
+      "title": "AI/ML Data Scientist Intern (Full-Time opportunity available)",
+      "sourceName": "Superookie",
+      "sourceUrl": "https://www.superookie.com/jobs/62b2db818b129f347e7927e7",
+      "deadlineAt": "2026-11-21T09:09:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
     }
   ]
 }
