@@ -1,0 +1,66 @@
+{
+  "kind": "collector",
+  "slot": 4,
+  "date": "2026-10-07",
+  "receivedAt": "2026-10-08T00:59:43.566Z",
+  "jobs": [
+    {
+      "companyName": "건설공제조합",
+      "title": "2026년 하반기 신입직원 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2610060000152",
+      "deadlineAt": "2026-10-26T16:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "관리직7급(신입) - 데이터분석/IT"
+    },
+    {
+      "companyName": "에스케이브로드밴드",
+      "title": "2026년 하반기 SK브로드밴드 Junior Talent 채용(AT/DT)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2609300000059",
+      "deadlineAt": "2026-10-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "AT/DT(AI·데이터 기술)"
+    },
+    {
+      "companyName": "에스케이브로드밴드",
+      "title": "2026년 SK브로드밴드 Junior Talent 채용(Infra)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2609300000062",
+      "deadlineAt": "2026-10-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "Network Infra(유선/IP Infra)"
+    },
+    {
+      "companyName": "FuriosaAI",
+      "title": "Algorithm - AI Research Engineer Intern",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/algorithm-ai-research-engineer-intern-at-furiosaai-4454160615",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "다쏘시스템",
+      "title": "Software Engineer (12-month Internship)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/software-engineer-12-month-internship-at-dassault-syst%C3%A8mes-4473746922",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Qualcomm",
+      "title": "Intern – AI Model Efficiency (Quantization) System/Research Engineer",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/intern-%E2%80%93-ai-model-efficiency-quantization-system-research-engineer-at-qualcomm-4442069839",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
