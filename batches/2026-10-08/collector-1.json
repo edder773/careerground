@@ -1,0 +1,47 @@
+{
+  "kind": "collector",
+  "slot": 1,
+  "date": "2026-10-08",
+  "receivedAt": "2026-10-08T13:08:32.382Z",
+  "jobs": [
+    {
+      "companyName": "현대오토에버",
+      "title": "2026년 4분기 신입사원 채용 #공채",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/573176",
+      "deadlineAt": "2026-10-12T13:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "임베디드 SW 설계/개발/검증, 플레오스 어카운트 서비스 FE개발 및 운영, 모빌리티 플랫폼 개발 및 운영, Private Cloud 개발/운영"
+    },
+    {
+      "companyName": "NH농협은행",
+      "title": "'26년 6급 신규직원 채용 #공채",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/574433",
+      "deadlineAt": "2026-10-12T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "테크"
+    },
+    {
+      "companyName": "(주)제타럭스 시스템",
+      "title": "Java/Spring 백엔드 개발자 채용(신입/경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50114251",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "버터소프트(Buttersoft),(주)",
+      "title": "헬스케어 서비스 백엔드 개발자 [Java / Spring]",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50074949",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
