@@ -1,0 +1,165 @@
+{
+  "kind": "collector",
+  "slot": 5,
+  "date": "2026-10-07",
+  "receivedAt": "2026-10-08T00:50:06.494Z",
+  "jobs": [
+    {
+      "companyName": "현대오토에버",
+      "title": "2026 4분기 신입사원 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106477",
+      "deadlineAt": "2026-10-12T04:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "(코딩)[전장]Embedded SW Process Engineer_임베디드 SW 설계/개발/검증, (코딩)[모빌리티]Frontend Develo"
+    },
+    {
+      "companyName": "코리안리재보험",
+      "title": "2026년 신입채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106417",
+      "deadlineAt": "2026-10-12T08:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI, 전산"
+    },
+    {
+      "companyName": "한화솔루션/케미칼",
+      "title": "2026년 하반기 부문 신입사원 채용 (엔지니어/R&D)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106408",
+      "deadlineAt": "2026-10-14T06:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI기반 신소재연구 (R&D)"
+    },
+    {
+      "companyName": "동서식품",
+      "title": "2026년 대졸 신입/경력사원 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106404",
+      "deadlineAt": "2026-10-12T09:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산"
+    },
+    {
+      "companyName": "신한라이프생명보험",
+      "title": "2026 신입채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106561",
+      "deadlineAt": "2026-10-16T08:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "DX (ICT) - ICT개발, DX (ICT) - ICT운영"
+    },
+    {
+      "companyName": "한국화재보험협회",
+      "title": "2026년 하반기 신입/경력직 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106492",
+      "deadlineAt": "2026-10-18T14:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "AI Engineer, Data Scientist, Data Engineer, Platform Developer"
+    },
+    {
+      "companyName": "인동에프엔",
+      "title": "2026 하반기 신입사원 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106521",
+      "deadlineAt": "2026-10-18T14:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산"
+    },
+    {
+      "companyName": "건설공제조합",
+      "title": "2026년 하반기 신입직원 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106552",
+      "deadlineAt": "2026-10-26T07:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "하이퍼엑셀",
+      "title": "System Software Engineer(신입/경력)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/355188",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "하이퍼엑셀",
+      "title": "Compute Library Engineer(인턴)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/355180",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "하이퍼엑셀",
+      "title": "Simulator Engineer(인턴)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/355182",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "카카오",
+      "title": "LLM Research Engineer (Pre-training) (신입/경력)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/354844",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "충남대학교병원",
+      "title": "[대전] 2026년 하반기 충남대학교병원 정규직(행정직, 보건직, 전산직, 간호조무직, 원무직) 공개채용 공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305813",
+      "deadlineAt": "2026-10-21T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산직(전산기사)"
+    },
+    {
+      "companyName": "한국언론진흥재단",
+      "title": "한국언론진흥재단 2026년 2차 정규직 신입사원 채용 공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305752",
+      "deadlineAt": "2026-10-20T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "공개경쟁채용(IT)"
+    },
+    {
+      "companyName": "한국농수산식품유통공사",
+      "title": "2026년 신입직원 채용공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305395",
+      "deadlineAt": "2026-10-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "신입(5급)-AI·전산"
+    },
+    {
+      "companyName": "동북아역사재단",
+      "title": "동북아역사재단 직원(행정직(일반,전산), 공무직(일반), 기간제, 청년인턴) 공개채용 공고(장애인 구분 모집 포함)",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305584",
+      "deadlineAt": "2026-10-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산관리"
+    }
+  ],
+  "rejected": []
+}
