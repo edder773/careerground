@@ -1,147 +1,103 @@
 {
-  "date": "2026-10-07",
+  "date": "2026-10-08",
   "batches": [
-    "2026-10-07"
+    "2026-10-08"
   ],
-  "generatedAt": "2026-10-08T01:21:29.006Z",
-  "collectorCount": 5,
+  "generatedAt": "2026-10-08T13:08:57.321Z",
+  "collectorCount": 4,
   "skipped": {
-    "notAlertable": 13,
-    "restricted": 1,
-    "alreadySent": 30,
+    "notAlertable": 5,
+    "restricted": 0,
+    "alreadySent": 10,
     "duplicate": 0
   },
   "jobs": [
     {
-      "companyName": "(주)모나미",
-      "title": "IT운영팀, TQM팀(QA파트/설계 파트), 디자인팀 경력•신입 채용",
-      "sourceName": "Saramin",
-      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55189769",
+      "companyName": "인천공항시설관리",
+      "title": "2026년 제3차 정기채용 - 정보통신/IT (일근)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106537",
       "deadlineAt": "2026-10-12T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "IT운영팀"
-    },
-    {
-      "companyName": "신한라이프생명보험",
-      "title": "2026 신입채용",
-      "sourceName": "Jasoseol",
-      "sourceUrl": "https://jasoseol.com/recruit/106561",
-      "deadlineAt": "2026-10-16T08:00:00+09:00",
-      "rolling": false,
       "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "DX (ICT) - ICT개발, DX (ICT) - ICT운영"
+      "itRole": "정보통신/IT (일근)"
     },
     {
-      "companyName": "인동에프엔",
-      "title": "2026 하반기 신입사원 채용",
+      "companyName": "인천공항시설관리",
+      "title": "2026년 제7차 계약직 채용 - 정보통신/IT(1)",
       "sourceName": "Jasoseol",
-      "sourceUrl": "https://jasoseol.com/recruit/106521",
-      "deadlineAt": "2026-10-18T14:59:00+09:00",
+      "sourceUrl": "https://jasoseol.com/recruit/106589",
+      "deadlineAt": "2026-10-13T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "전산"
+      "itRole": "정보통신/IT(1)"
     },
     {
-      "companyName": "한국화재보험협회",
-      "title": "2026년 하반기 신입/경력직 채용",
-      "sourceName": "Jasoseol",
-      "sourceUrl": "https://jasoseol.com/recruit/106492",
-      "deadlineAt": "2026-10-18T14:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "AI Engineer, Data Scientist, Data Engineer, Platform Developer"
-    },
-    {
-      "companyName": "(주)윈스테크넷",
-      "title": "2026년 10월 월간채용(신입/경력) - 개발",
-      "sourceName": "Saramin",
-      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55193065",
-      "deadlineAt": "2026-10-18T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "동광제약",
-      "title": "2026년 4분기 IT팀 신입/경력 채용",
-      "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/404251",
-      "deadlineAt": "2026-10-18T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "충남대학교병원",
-      "title": "[대전] 2026년 하반기 충남대학교병원 정규직(행정직, 보건직, 전산직, 간호조무직, 원무직) 공개채용 공고",
+      "companyName": "국토연구원",
+      "title": "빅데이터 기반 인공지능 활용 도시계획 연구 인력 채용",
       "sourceName": "JOB-ALIO",
-      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305813",
-      "deadlineAt": "2026-10-21T23:59:00+09:00",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305523",
+      "deadlineAt": "2026-10-14T18:00:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "전산직(전산기사)"
+      "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
-      "companyName": "굿파트너스(주)",
-      "title": "웹 프로그램 개발자 모집(신입)",
-      "sourceName": "Work24",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=CSI&infoTypeGroup=tb_workinfogubun&wantedAuthNo=55189953",
+      "companyName": "건강보험심사평가원",
+      "title": "2026년 하반기 체험형 청년인턴 - AI 인재-본원",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305539",
+      "deadlineAt": "2026-10-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI 인재-본원"
+    },
+    {
+      "companyName": "테크윙",
+      "title": "2026년 하반기 신입사원 채용 - SW개발 (아산)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106549",
+      "deadlineAt": "2026-10-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "SW개발 (아산)"
+    },
+    {
+      "companyName": "토스커뮤니티",
+      "title": "Server Developer 대규모 채용 (3년 이하)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402986",
+      "deadlineAt": "2026-10-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "BNK캐피탈",
+      "title": "2026년 신입직원 채용 - IT",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/355621",
+      "deadlineAt": "2026-10-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "한국수출입은행",
+      "title": "한국수출입은행 2026년도 하반기 전문직행원(신입) 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2610020002430",
+      "deadlineAt": "2026-10-19T10:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "연합인포맥스",
+      "title": "IT/AI부문(전문연구요원 포함)신입",
+      "sourceName": "Jumpit",
+      "sourceUrl": "https://jumpit.saramin.co.kr/position/55170840",
       "deadlineAt": "2026-10-30T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "(주)넥스리얼",
-      "title": "영상 AI 관련 소프트웨어 개발자 모집",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50118191",
-      "deadlineAt": "2026-10-31T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "(주)세인티",
-      "title": "[신입/경력] Web 백엔드 개발자 모집(스마트팩토리, AI 솔루션)",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50105800",
-      "deadlineAt": "2026-11-03T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "(주)다원아이텍",
-      "title": "AI 영상분석·IoT 스마트안전 솔루션 개발자 채용",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50117887",
-      "deadlineAt": "2026-11-05T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "(주)테나아이",
-      "title": "AI 서비스 백엔드(Java/Spring) 개발자 모집 (신입)",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50118670",
-      "deadlineAt": "2026-11-05T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "에프원소프트(주)",
-      "title": "[IT기업] AI 소프트웨어 개발자 채용(정규직)",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50117696",
-      "deadlineAt": "2026-11-05T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "(주)씨앤피에스",
-      "title": "2026년 CNPS [C#(WinForm) 개발자] 채용",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50118471",
-      "deadlineAt": "2026-11-06T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
     }
   ]
 }

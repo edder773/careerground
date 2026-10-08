@@ -3,13 +3,101 @@
   "batches": [
     "2026-10-08"
   ],
-  "generatedAt": "2026-10-08T01:04:52.138Z",
-  "collectorCount": 0,
+  "generatedAt": "2026-10-08T13:08:57.321Z",
+  "collectorCount": 4,
   "skipped": {
-    "notAlertable": 0,
+    "notAlertable": 5,
     "restricted": 0,
-    "alreadySent": 0,
+    "alreadySent": 10,
     "duplicate": 0
   },
-  "jobs": []
+  "jobs": [
+    {
+      "companyName": "인천공항시설관리",
+      "title": "2026년 제3차 정기채용 - 정보통신/IT (일근)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106537",
+      "deadlineAt": "2026-10-12T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "정보통신/IT (일근)"
+    },
+    {
+      "companyName": "인천공항시설관리",
+      "title": "2026년 제7차 계약직 채용 - 정보통신/IT(1)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106589",
+      "deadlineAt": "2026-10-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "정보통신/IT(1)"
+    },
+    {
+      "companyName": "국토연구원",
+      "title": "빅데이터 기반 인공지능 활용 도시계획 연구 인력 채용",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305523",
+      "deadlineAt": "2026-10-14T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "건강보험심사평가원",
+      "title": "2026년 하반기 체험형 청년인턴 - AI 인재-본원",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305539",
+      "deadlineAt": "2026-10-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI 인재-본원"
+    },
+    {
+      "companyName": "테크윙",
+      "title": "2026년 하반기 신입사원 채용 - SW개발 (아산)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106549",
+      "deadlineAt": "2026-10-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "SW개발 (아산)"
+    },
+    {
+      "companyName": "토스커뮤니티",
+      "title": "Server Developer 대규모 채용 (3년 이하)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402986",
+      "deadlineAt": "2026-10-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "BNK캐피탈",
+      "title": "2026년 신입직원 채용 - IT",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/355621",
+      "deadlineAt": "2026-10-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "한국수출입은행",
+      "title": "한국수출입은행 2026년도 하반기 전문직행원(신입) 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2610020002430",
+      "deadlineAt": "2026-10-19T10:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "연합인포맥스",
+      "title": "IT/AI부문(전문연구요원 포함)신입",
+      "sourceName": "Jumpit",
+      "sourceUrl": "https://jumpit.saramin.co.kr/position/55170840",
+      "deadlineAt": "2026-10-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    }
+  ]
 }
