@@ -1,0 +1,183 @@
+{
+  "kind": "collector",
+  "slot": 1,
+  "date": "2026-10-07",
+  "receivedAt": "2026-10-08T00:51:35.373Z",
+  "jobs": [
+    {
+      "companyName": "(주)블루어드",
+      "title": "(주)블루어드 [SAP UI5, BTP 개발자 ] 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50096412",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)휴리오",
+      "title": "(주)휴리오 S/W 개발자 신입 채용 공고",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50098961",
+      "deadlineAt": "2026-12-01T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "한국신체정보(주)",
+      "title": "Unity 클라이언트 개발자 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50099586",
+      "deadlineAt": "2026-12-01T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "코드비전(주)",
+      "title": "AI 서비스 풀스택 개발자",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50102795",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)세나테크놀로지",
+      "title": "임베디드 Linux 서버 개발자 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50088318",
+      "deadlineAt": "2026-10-31T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)데일리페이",
+      "title": "[데일리페이] Front-End 개발자를 모십니다.",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50064583",
+      "deadlineAt": "2026-10-28T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)성우하이텍",
+      "title": "2026년 하반기 신입 공개 채용 - IT개발",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50080883",
+      "deadlineAt": "2026-10-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "코리안리재보험",
+      "title": "2026 신입 채용 - AI",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50069990",
+      "deadlineAt": "2026-10-12T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "코리안리재보험",
+      "title": "2026 신입 채용 - 전산",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50070006",
+      "deadlineAt": "2026-10-12T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "에프원소프트(주)",
+      "title": "[IT기업] AI 소프트웨어 개발자 채용(정규직)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50117696",
+      "deadlineAt": "2026-11-05T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)테나아이",
+      "title": "AI 서비스 백엔드(Java/Spring) 개발자 모집 (신입)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50118670",
+      "deadlineAt": "2026-11-05T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)다원아이텍",
+      "title": "AI 영상분석·IoT 스마트안전 솔루션 개발자 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50117887",
+      "deadlineAt": "2026-11-05T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)넥스리얼",
+      "title": "영상 AI 관련 소프트웨어 개발자 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50118191",
+      "deadlineAt": "2026-10-31T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)세인티",
+      "title": "[신입/경력] Web 백엔드 개발자 모집(스마트팩토리, AI 솔루션)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50105800",
+      "deadlineAt": "2026-11-03T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)씨앤피에스",
+      "title": "2026년 CNPS [C#(WinForm) 개발자] 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50118471",
+      "deadlineAt": "2026-11-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "이카운트",
+      "title": "2026년 이카운트 신입 개발자 채용",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/573375",
+      "deadlineAt": "2026-10-14T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "슈어소프트테크",
+      "title": "2027 신입사원 공개채용 #공채",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/574045",
+      "deadlineAt": "2026-10-20T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "소프트웨어 엔지니어, C,C++ 개발자, 시스템엔지니어(SE), 임베디드 개발자, 서버 개발자, AI/AX엔지니어, 웹 개발자, 프론트엔드 개발"
+    },
+    {
+      "companyName": "현대오토에버",
+      "title": "2026년 4분기 신입사원 채용 #공채",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/573176",
+      "deadlineAt": "2026-10-12T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "임베디드 개발자, 소프트웨어 엔지니어, 데이터 엔지니어, 네트워크엔지니어, 머신러닝 엔지니어"
+    },
+    {
+      "companyName": "SK브로드밴드",
+      "title": "2026년 Junior Talent 채용 #공채",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/573843",
+      "deadlineAt": "2026-10-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "Tech R&D - Data Science, Tech R&D - Data 분석/개발, Tech R&D - Backend 개발, Infra - 유"
+    }
+  ],
+  "rejected": []
+}
