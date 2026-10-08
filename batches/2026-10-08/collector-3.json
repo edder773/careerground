@@ -1,0 +1,36 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-10-08",
+  "receivedAt": "2026-10-08T13:08:35.790Z",
+  "jobs": [
+    {
+      "companyName": "연합인포맥스",
+      "title": "IT/AI부문(전문연구요원 포함)신입",
+      "sourceName": "Jumpit",
+      "sourceUrl": "https://jumpit.saramin.co.kr/position/55170840",
+      "deadlineAt": "2026-10-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "Moloco",
+      "title": "Software Engineer Intern (3 months)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402675",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "토스커뮤니티",
+      "title": "Server Developer 대규모 채용 (3년 이하)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/402986",
+      "deadlineAt": "2026-10-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
