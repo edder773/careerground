@@ -113,26 +113,10 @@
       "sentOn": "catalog"
     },
     {
-      "companyName": "금융결제원",
-      "title": "2027년도 상반기 신입직원 채용 공고 - 전산직",
-      "sourceUrl": "https://linkareer.com/activity/351898",
-      "deadlineAt": "2026-10-02T16:00:00+09:00",
-      "applicationStartAt": "2026-09-18",
-      "sentOn": "catalog"
-    },
-    {
       "companyName": "주식회사지니테크",
       "title": "스마트 공장 자동화를 이끌어갈 능력 있는 C++ 개발자를 모집합니다.",
       "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K131132609180019",
       "deadlineAt": "2026-11-01T00:00:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "catalog"
-    },
-    {
-      "companyName": "한국조폐공사",
-      "title": "2027년도 신입직원(채용형인턴) 채용공고 - ICT",
-      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305144",
-      "deadlineAt": "2026-10-02",
       "applicationStartAt": null,
       "sentOn": "catalog"
     },
@@ -182,14 +166,6 @@
       "sourceUrl": "https://inthiswork.com/archives/396932",
       "deadlineAt": null,
       "applicationStartAt": null,
-      "sentOn": "catalog"
-    },
-    {
-      "companyName": "한국중부발전",
-      "title": "2026년도 제3차 4직급 신입직원 채용 (전산)",
-      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=304972",
-      "deadlineAt": "2026-10-02",
-      "applicationStartAt": "2026-09-17",
       "sentOn": "catalog"
     },
     {
@@ -369,27 +345,11 @@
       "sentOn": "catalog"
     },
     {
-      "companyName": "DB손해보험",
-      "title": "2026년 하반기 신입사원 채용",
-      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/568549",
-      "deadlineAt": "2026-10-02T17:00:00+09:00",
-      "applicationStartAt": "2026-09-01",
-      "sentOn": "catalog"
-    },
-    {
       "companyName": "주식회사에스아이씨",
       "title": "반도체 / 2차전지 설비 운용 SW 신입 개발자 모집",
       "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K180412609090032",
       "deadlineAt": "2026-11-01T00:00:00+09:00",
       "applicationStartAt": null,
-      "sentOn": "catalog"
-    },
-    {
-      "companyName": "DB Inc.",
-      "title": "2026년 하반기 신입사원 채용",
-      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/568919",
-      "deadlineAt": "2026-10-02T17:00:00+09:00",
-      "applicationStartAt": "2026-09-02",
       "sentOn": "catalog"
     },
     {
@@ -430,14 +390,6 @@
       "sourceUrl": "https://linkareer.com/activity/346184",
       "deadlineAt": null,
       "applicationStartAt": "2026-08-26",
-      "sentOn": "catalog"
-    },
-    {
-      "companyName": "뉴클(주)",
-      "title": "AI기반 풀스택 서비스 크리에이터-기획에서 개발 배포운영까지",
-      "sourceUrl": "https://www.saramin.co.kr/job-search/view?rec_idx=54922911",
-      "deadlineAt": "2026-10-02T23:59:00+09:00",
-      "applicationStartAt": "2026-09-02T15:00:00+09:00",
       "sentOn": "catalog"
     },
     {
@@ -1089,14 +1041,6 @@
       "sentOn": "catalog"
     },
     {
-      "companyName": "(주)아이엠에스나노텍",
-      "title": "딥러닝, 모션제어, 영상처리, MFC, Embedded, C, C++ 개발자 모집",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50029992",
-      "deadlineAt": "2026-10-03T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-01"
-    },
-    {
       "companyName": "일화",
       "title": "2026년 신입 및 경력 채용",
       "sourceUrl": "https://linkareer.com/activity/353708",
@@ -1716,6 +1660,116 @@
       "deadlineAt": "2026-11-06T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-08"
+    },
+    {
+      "companyName": "인천공항시설관리",
+      "title": "2026년 제3차 정기채용 - 정보통신/IT (일근)",
+      "sourceUrl": "https://jasoseol.com/recruit/106537",
+      "deadlineAt": "2026-10-12T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-12",
+      "itRole": "정보통신/IT (일근)"
+    },
+    {
+      "companyName": "인천공항시설관리",
+      "title": "2026년 제7차 계약직 채용 - 정보통신/IT(1)",
+      "sourceUrl": "https://jasoseol.com/recruit/106589",
+      "deadlineAt": "2026-10-13T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-12",
+      "itRole": "정보통신/IT(1)"
+    },
+    {
+      "companyName": "국토연구원",
+      "title": "빅데이터 기반 인공지능 활용 도시계획 연구 인력 채용",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305523",
+      "deadlineAt": "2026-10-14T18:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-12"
+    },
+    {
+      "companyName": "건강보험심사평가원",
+      "title": "2026년 하반기 체험형 청년인턴 - AI 인재-본원",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305539",
+      "deadlineAt": "2026-10-15T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-12",
+      "itRole": "AI 인재-본원"
+    },
+    {
+      "companyName": "테크윙",
+      "title": "2026년 하반기 신입사원 채용 - SW개발 (아산)",
+      "sourceUrl": "https://jasoseol.com/recruit/106549",
+      "deadlineAt": "2026-10-15T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-12",
+      "itRole": "SW개발 (아산)"
+    },
+    {
+      "companyName": "BNK캐피탈",
+      "title": "2026년 신입직원 채용 - IT",
+      "sourceUrl": "https://linkareer.com/activity/355621",
+      "deadlineAt": "2026-10-18T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-12",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "한국수출입은행",
+      "title": "한국수출입은행 2026년도 하반기 전문직행원(신입) 채용",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2610020002430",
+      "deadlineAt": "2026-10-19T10:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-12",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "슈어소프트테크",
+      "title": "[2027 신입 공채] 센터 SW개발",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=OEW&infoTypeGroup=tb_workinfoopen&wantedAuthNo=180644",
+      "deadlineAt": "2026-10-20T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-12"
+    },
+    {
+      "companyName": "삼정KPMG",
+      "title": "Lighthouse NLP 데이터 과학",
+      "sourceUrl": "https://www.superookie.com/jobs/5f7291618b129f4014217119",
+      "deadlineAt": "2026-10-29T13:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-12"
+    },
+    {
+      "companyName": "연합인포맥스",
+      "title": "IT/AI부문(전문연구요원 포함)신입",
+      "sourceUrl": "https://jumpit.saramin.co.kr/position/55170840",
+      "deadlineAt": "2026-10-30T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-12"
+    },
+    {
+      "companyName": "(주)플레이웍스",
+      "title": "AI 및 라이브 기반 반려동물 양육 플랫폼 백엔드 개발자 채용",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55174009",
+      "deadlineAt": "2026-10-31T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-12"
+    },
+    {
+      "companyName": "제이니아일렉트로닉스",
+      "title": "DX / AX 플랫폼 개발 및 AI(인공지능)엔지니어 (신입/경력) 채용",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55223030",
+      "deadlineAt": "2026-11-06T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-12"
+    },
+    {
+      "companyName": "eMoldino",
+      "title": "AI/ML Data Scientist Intern (Full-Time opportunity available)",
+      "sourceUrl": "https://www.superookie.com/jobs/62b2db818b129f347e7927e7",
+      "deadlineAt": "2026-11-21T09:09:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-12"
     }
   ],
   "deliveries": {
@@ -1786,6 +1840,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-10-07"
+      ],
+      "status": "SENT"
+    },
+    "2026-10-12": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-10-11T23:00:02.099Z",
+      "jobCount": 13,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-10-08"
       ],
       "status": "SENT"
     }

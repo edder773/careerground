@@ -3,24 +3,15 @@
   "batches": [
     "2026-10-08"
   ],
-  "generatedAt": "2026-10-09T02:36:39.436Z",
+  "generatedAt": "2026-10-11T23:00:02.099Z",
   "collectorCount": 5,
   "skipped": {
-    "notAlertable": 6,
+    "notAlertable": 7,
     "restricted": 0,
     "alreadySent": 15,
     "duplicate": 0
   },
   "jobs": [
-    {
-      "companyName": "엑심베이(Eximbay)",
-      "title": "PG플랫폼SQ IT 개발",
-      "sourceName": "Superookie",
-      "sourceUrl": "https://www.superookie.com/jobs/68d9de2f0ee608273b7244fa",
-      "deadlineAt": "2026-10-10T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
     {
       "companyName": "인천공항시설관리",
       "title": "2026년 제3차 정기채용 - 정보통신/IT (일근)",
