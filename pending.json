@@ -3,15 +3,33 @@
   "batches": [
     "2026-10-13"
   ],
-  "generatedAt": "2026-10-12T15:45:23.089Z",
-  "collectorCount": 2,
+  "generatedAt": "2026-10-12T15:48:44.123Z",
+  "collectorCount": 3,
   "skipped": {
-    "notAlertable": 0,
+    "notAlertable": 1,
     "restricted": 0,
-    "alreadySent": 2,
+    "alreadySent": 4,
     "duplicate": 1
   },
   "jobs": [
+    {
+      "companyName": "현대모비스",
+      "title": "[신입-연구직] 바디통합제어기 SW 개발",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/%EC%8B%A0%EC%9E%85-%EC%97%B0%EA%B5%AC%EC%A7%81-%EB%B0%94%EB%94%94%ED%86%B5%ED%95%A9%EC%A0%9C%EC%96%B4%EA%B8%B0-sw-%EA%B0%9C%EB%B0%9C-at-hyundai-mobis-4473116699",
+      "deadlineAt": "2026-10-13T11:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "현대모비스",
+      "title": "[신입-연구직] 폰커넥티비티 SW 개발",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/%EC%8B%A0%EC%9E%85-%EC%97%B0%EA%B5%AC%EC%A7%81-%ED%8F%B0%EC%BB%A4%EB%84%A5%ED%8B%B0%EB%B9%84%ED%8B%B0-sw-%EA%B0%9C%EB%B0%9C-at-hyundai-mobis-4473132146",
+      "deadlineAt": "2026-10-13T11:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
     {
       "companyName": "테크윙",
       "title": "테크윙 2026년 10월 각 부문 채용",
