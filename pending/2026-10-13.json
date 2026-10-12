@@ -3,20 +3,30 @@
   "batches": [
     "2026-10-13"
   ],
-  "generatedAt": "2026-10-12T15:36:59.348Z",
-  "collectorCount": 1,
+  "generatedAt": "2026-10-12T15:45:23.089Z",
+  "collectorCount": 2,
   "skipped": {
     "notAlertable": 0,
     "restricted": 0,
     "alreadySent": 2,
-    "duplicate": 0
+    "duplicate": 1
   },
   "jobs": [
     {
+      "companyName": "테크윙",
+      "title": "테크윙 2026년 10월 각 부문 채용",
+      "sourceName": "Superookie",
+      "sourceUrl": "https://www.superookie.com/jobs/6abef4707d414830c95671b2",
+      "deadlineAt": "2026-10-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "SW개발 (아산), SW개발 (동탄), Vision SW, AI"
+    },
+    {
       "companyName": "푸른저축은행",
-      "title": "2026년 신입직원 공개채용 (IT전산)",
-      "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/406488",
+      "title": "푸른저축은행 2026년 신입직원 공개채용 (금융일반 / IT전산)",
+      "sourceName": "Superookie",
+      "sourceUrl": "https://www.superookie.com/jobs/6acc5d4c83b0342ab73922b4",
       "deadlineAt": "2026-10-23T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY",
@@ -41,6 +51,33 @@
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY",
       "itRole": "IT 서비스 시스템 운영 및 개발 업무"
+    },
+    {
+      "companyName": "주식회사 몽키소프트",
+      "title": "AI Agent 개발자 채용",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K120612610080023",
+      "deadlineAt": "2026-10-31T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)링캠",
+      "title": "IT지원 - 시스템 및 RFID 엔지니어 신입/경력직 채용 공고",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://www.saramin.co.kr/zf_user/jobs/view?rec_idx=55205800",
+      "deadlineAt": "2026-11-05T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)에코누리시스템",
+      "title": "[대전] 공공기관 웹개발자 모집(신입, 경력)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://www.saramin.co.kr/zf_user/jobs/view?rec_idx=55242046",
+      "deadlineAt": "2026-12-07T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
     }
   ]
 }
