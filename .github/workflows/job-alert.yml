@@ -160,7 +160,10 @@ jobs:
           CAREERGROUND_DIGEST_TOKEN: ${{ secrets.CAREERGROUND_DIGEST_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           BAEUMZIP_URL: https://modumunje.com/
-        run: node scripts/job-alert/dispatch.mjs
+          JOB_ALERT_EXCEPTION_APPROVAL: Sentinel_211400bd80f081918607f3c28f663c0a
+        run: |
+          git fetch --quiet --depth=1 origin e12813fe4f8fa2deb7a6093fdef4170293ec3231
+          node scripts/operations/job-alert-exception-20261013.mjs
       - name: Save alert data even after an uncertain delivery
         if: always()
         run: bash scripts/job-alert/data-branch.sh save "production ${GITHUB_RUN_ID}"
