@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-13",
+  "batches": [
+    "2026-10-13"
+  ],
+  "generatedAt": "2026-10-12T15:36:59.348Z",
+  "collectorCount": 1,
+  "skipped": {
+    "notAlertable": 0,
+    "restricted": 0,
+    "alreadySent": 2,
+    "duplicate": 0
+  },
+  "jobs": [
+    {
+      "companyName": "푸른저축은행",
+      "title": "2026년 신입직원 공개채용 (IT전산)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/406488",
+      "deadlineAt": "2026-10-23T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT전산"
+    },
+    {
+      "companyName": "파수에이아이",
+      "title": "2026년 3차 신입 공개 채용 (SW개발)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/404721",
+      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "SW개발"
+    },
+    {
+      "companyName": "AK아이에스",
+      "title": "2027년 신입사원 공개 채용 (IT 서비스 시스템 운영 및 개발)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/406496",
+      "deadlineAt": "2026-10-28T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT 서비스 시스템 운영 및 개발 업무"
+    }
+  ]
+}
