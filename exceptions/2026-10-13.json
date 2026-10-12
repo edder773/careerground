@@ -1,0 +1,22 @@
+{
+  "schema": "careerground-one-time-production-exception/v1",
+  "exceptionDateKst": "2026-10-13",
+  "batchDate": "2026-10-13",
+  "expiresAt": "2026-10-13T23:59:59+09:00",
+  "exception": "same-day-batch-only",
+  "approvedUserMessageId": "Sentinel_211400bd80f081918607f3c28f663c0a",
+  "productionChannelId": "C0BR9TNS4BD",
+  "coreCodeSha": "e12813fe4f8fa2deb7a6093fdef4170293ec3231",
+  "workflowCodeSha": "a2433fcc2ada4b0f1d4bf32759c9afc306c9344b",
+  "runId": "38322340690",
+  "testRunId": "38274617623",
+  "fingerprint": "96917d6c51728e2b0a810d2864ba5500e960af569ff1dc960ed2b97ca2377424",
+  "releaseApprovedAt": "2026-10-12T23:25:40.437Z",
+  "force": false,
+  "defaultNextDayPolicyChanged": false,
+  "status": "SENT",
+  "deliveryAt": "2026-10-12T23:29:08.499Z",
+  "jobCount": 21,
+  "reviewCount": 3,
+  "heldCount": 0
+}
