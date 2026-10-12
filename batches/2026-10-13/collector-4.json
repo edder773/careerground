@@ -1,0 +1,56 @@
+{
+  "kind": "collector",
+  "slot": 4,
+  "date": "2026-10-13",
+  "receivedAt": "2026-10-12T15:48:21.292Z",
+  "jobs": [
+    {
+      "companyName": "주식회사 쇼퍼블씬",
+      "title": "웹 풀스택 개발자",
+      "sourceName": "RocketPunch",
+      "sourceUrl": "https://www.rocketpunch.com/jobs/159427",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "SK브로드밴드",
+      "title": "2026년 하반기 SK브로드밴드 Junior Talent 채용(AT/DT)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2609300000059",
+      "deadlineAt": "2026-10-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "Tech R&D - Data Science, Tech R&D - Data 분석/개발, Tech R&D - Backend 개발"
+    },
+    {
+      "companyName": "SK브로드밴드",
+      "title": "2026년 SK브로드밴드 Junior Talent 채용(Infra)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2609300000062",
+      "deadlineAt": "2026-10-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "Infra - 유선/IP Infra, Infra - Infra 운용/관리/최적화, Infra - Infra 전략기획"
+    },
+    {
+      "companyName": "현대모비스",
+      "title": "[신입-연구직] 폰커넥티비티 SW 개발",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/%EC%8B%A0%EC%9E%85-%EC%97%B0%EA%B5%AC%EC%A7%81-%ED%8F%B0%EC%BB%A4%EB%84%A5%ED%8B%B0%EB%B9%84%ED%8B%B0-sw-%EA%B0%9C%EB%B0%9C-at-hyundai-mobis-4473132146",
+      "deadlineAt": "2026-10-13T11:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "현대모비스",
+      "title": "[신입-연구직] 바디통합제어기 SW 개발",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/%EC%8B%A0%EC%9E%85-%EC%97%B0%EA%B5%AC%EC%A7%81-%EB%B0%94%EB%94%94%ED%86%B5%ED%95%A9%EC%A0%9C%EC%96%B4%EA%B8%B0-sw-%EA%B0%9C%EB%B0%9C-at-hyundai-mobis-4473116699",
+      "deadlineAt": "2026-10-13T11:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    }
+  ],
+  "rejected": []
+}
