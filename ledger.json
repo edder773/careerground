@@ -67,6 +67,23 @@
       "fingerprint": "9b3f89711b5f7ef5b56e33e629e2519b5ce37f42b1411fd5d813db84c247a1a5",
       "codeSha": "e12813fe4f8fa2deb7a6093fdef4170293ec3231",
       "runId": "37786275022"
+    },
+    "2026-10-13": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-10-12T16:02:51.691Z",
+      "jobCount": 21,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-10-13"
+      ],
+      "status": "SENT",
+      "destination": "test",
+      "batchDate": "2026-10-13",
+      "fingerprint": "96917d6c51728e2b0a810d2864ba5500e960af569ff1dc960ed2b97ca2377424",
+      "codeSha": "e12813fe4f8fa2deb7a6093fdef4170293ec3231",
+      "runId": "38274617623"
     }
   }
 }
