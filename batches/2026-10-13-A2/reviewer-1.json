@@ -1,0 +1,204 @@
+{
+  "kind": "reviewer",
+  "slot": 1,
+  "date": "2026-10-13-A2",
+  "receivedAt": "2026-10-13T15:19:31.898Z",
+  "jobs": [
+    {
+      "companyName": "(주)앰진",
+      "title": "(주)앰진 개발자 신입·경력 채용공고",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50143300",
+      "deadlineAt": "2026-10-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)재능이아카데미",
+      "title": "시스템엔지니어 신입/경력 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50146608",
+      "deadlineAt": "2026-10-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "울산대학교",
+      "title": "정규직원 채용공고",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106676",
+      "deadlineAt": "2026-10-20T05:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "일반행정(전산)"
+    },
+    {
+      "companyName": "한진",
+      "title": "2027 신입사원 채용",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/572983",
+      "deadlineAt": "2026-10-21T14:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "웹서비스기획, 소프트웨어 엔지니어, 시스템엔지니어(SE)"
+    },
+    {
+      "companyName": "(주)한네트",
+      "title": "서버(Linux)C/C++, GoLang 및 웹어플리케이션 (JSP,JS) 개발자 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50143755",
+      "deadlineAt": "2026-10-23T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "한국보훈복지의료공단",
+      "title": "[부산보훈병원] 정규직(방사선사, 전산, 간호조무사) 긴급채용공고",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305920",
+      "deadlineAt": "2026-10-23T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산"
+    },
+    {
+      "companyName": "한국지역정보개발원",
+      "title": "2026년 하반기 정규직 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106675",
+      "deadlineAt": "2026-10-27T14:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "정보시스템"
+    },
+    {
+      "companyName": "주식회사 인시스(INSYS)",
+      "title": "[신입/경력] AI 응용 S/W 연구 개발자 채용 공고",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K131132610130030",
+      "deadlineAt": "2026-10-27T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "포항공과대학교",
+      "title": "2026년 하반기 직원 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106687",
+      "deadlineAt": "2026-10-30T14:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "서버 인프라, 네트워크/통신"
+    },
+    {
+      "companyName": "(주)브이씨",
+      "title": "Front-End 개발자 신입 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50135899",
+      "deadlineAt": "2026-10-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "프시타",
+      "title": "프시타 농장 기반 AX 프로그램 개발 연구·R&D 채용 공고",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://www.saramin.co.kr/zf_user/jobs/view?rec_idx=55247548",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "아이센스",
+      "title": "2026 하반기 신입/경력 대규모 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106633",
+      "deadlineAt": "2026-11-11T14:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "CGMS 알고리즘 개발 - 신입"
+    },
+    {
+      "companyName": "(주)네오클로바",
+      "title": "오픈소스 미들웨어(WEB/WAS) 엔지니어 신입/경력 채용 공고",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50148866",
+      "deadlineAt": "2026-11-11T23:50:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)락플레이스",
+      "title": "시스템 엔지니어 신입 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50149796",
+      "deadlineAt": "2026-11-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)심소프트",
+      "title": "심소프트 개발자 인재 채용 공고",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50148521",
+      "deadlineAt": "2026-11-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)클라우드에어",
+      "title": "클라우드 기반 풀스택 개발자",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50150407",
+      "deadlineAt": "2026-11-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)텔로스",
+      "title": "DX개발팀 유니티 개발자 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50147351",
+      "deadlineAt": "2026-11-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "한국유투더블유(주)",
+      "title": "JAVA 개발, 화면전환개발 신입 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50148205",
+      "deadlineAt": "2026-11-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)인컴즈",
+      "title": "IT 솔루션 엔지니어 신입 채용합니다.",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50155106",
+      "deadlineAt": "2026-11-12T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)신우이엔지",
+      "title": "SW 엔지니어 현장 대응 및 시스템 개발",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50150560",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)이투어리즘",
+      "title": "AI 여행 관리 시스템 개발자",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50143676",
+      "deadlineAt": "2026-12-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
