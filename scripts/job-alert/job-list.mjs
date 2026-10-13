@@ -1,4 +1,5 @@
 import { URL } from 'node:url';
+import { parseBatchId } from './batch-id.mjs';
 import { canonicalizeHttpUrl } from '../jobs-v5/canonical-json.mjs';
 import { inspectDiscoveryEnums } from '../jobs-v5/canonical-policy.mjs';
 
@@ -9,8 +10,8 @@ export const CAREER_SCOPES = Object.freeze(['NEW_GRAD_ONLY', 'NEW_GRAD_ELIGIBLE'
 
 const IT_ROLE_MAX_LENGTH = 80;
 const TITLE_PATTERN =
-  /^\s*\[JOB-ALERT\]\s*\[(\d{4}-\d{2}-\d{2})\]\s*\[(collector|reviewer)-(\d+)\]\s*$/iu;
-const SEND_TITLE_PATTERN = /^\s*\[JOB-ALERT\]\s*\[(\d{4}-\d{2}-\d{2})\]\s*\[send\]\s*$/iu;
+  /^\s*\[JOB-ALERT\]\s*\[(\d{4}-\d{2}-\d{2}(?:-A\d+)?)\]\s*\[(collector|reviewer)-(\d+)\]\s*$/iu;
+const SEND_TITLE_PATTERN = /^\s*\[JOB-ALERT\]\s*\[(\d{4}-\d{2}-\d{2}(?:-A\d+)?)\]\s*\[send\]\s*$/iu;
 const ROLLING_TEXT = /^(?:상시|수시|채용\s*시|충원\s*시|모집\s*완료\s*시|rolling|until filled)/iu;
 const DATE_TEXT =
   /^(\d{4})[-./](\d{1,2})[-./](\d{1,2})(?:[T\s]+(\d{1,2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?)?\s*(Z|[+-]\d{2}:?\d{2})?$/iu;
@@ -149,9 +150,9 @@ export function extractJson(body) {
 
 export function parseSubmissionTitle(title) {
   const send = SEND_TITLE_PATTERN.exec(String(title ?? ''));
-  if (send) return { kind: 'send', date: send[1] };
+  if (send) return parseBatchId(send[1]) ? { kind: 'send', date: send[1] } : null;
   const match = TITLE_PATTERN.exec(String(title ?? ''));
-  if (!match) return null;
+  if (!match || !parseBatchId(match[1])) return null;
   const kind = match[2].toLowerCase();
   const slot = Number(match[3]);
   if (slot < 1 || slot > SUBMISSION_SLOTS[kind]) return null;

@@ -1,4 +1,5 @@
 import process from 'node:process';
+import { parseBatchId } from './batch-id.mjs';
 import { createHash } from 'node:crypto';
 import { cpSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -14,7 +15,7 @@ const dateKey = (value) =>
   !Number.isNaN(Date.parse(`${value}T00:00:00Z`)) &&
   new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value;
 export function batchReadiness(dataDir, date) {
-  if (!dateKey(date)) throw new Error('유효한 배치 날짜가 필요합니다.');
+  if (!parseBatchId(date)) throw new Error('유효한 배치 식별자가 필요합니다.');
   const collectors = loadSubmissions(dataDir, date, 'collector');
   const reviewers = loadSubmissions(dataDir, date, 'reviewer');
   const complete = (items, kind, count) =>
@@ -73,12 +74,17 @@ export async function dispatchAlert({
     env.JOB_ALERT_BATCH_DATE ||
     (destination === 'test'
       ? today
-      : dates.filter((date) => date < today && batchReadiness(sourceDir, date).ready).at(-1));
+      : dates
+          .filter(
+            (batch) => parseBatchId(batch).date < today && batchReadiness(sourceDir, batch).ready,
+          )
+          .at(-1));
   if (!batchDate) return skip('no-reviewed-prior-batch');
+  const identity = parseBatchId(batchDate);
   if (
-    !dateKey(batchDate) ||
-    batchDate > today ||
-    (destination === 'production' && batchDate >= today)
+    !identity ||
+    identity.date > today ||
+    (destination === 'production' && identity.date >= today)
   )
     throw new Error('운영 발송은 이전 날짜에 수집·검증한 배치만 사용합니다.');
   const readiness = batchReadiness(sourceDir, batchDate);
@@ -192,7 +198,7 @@ export async function dispatchAlert({
 }
 export function approveTest({ env = process.env, now = new Date() } = {}) {
   const batchDate = env.JOB_ALERT_BATCH_DATE || kstDateKey(now);
-  if (!dateKey(batchDate)) throw new Error('승인할 배치 날짜가 필요합니다.');
+  if (!parseBatchId(batchDate)) throw new Error('승인할 배치 식별자가 필요합니다.');
   const readiness = batchReadiness(env.JOB_ALERT_DATA_DIR, batchDate);
   const result = readJson(join(env.JOB_ALERT_TEST_DATA_DIR, 'results', `${batchDate}.json`));
   if (

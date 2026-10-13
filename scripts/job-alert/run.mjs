@@ -5,6 +5,7 @@ import { parseJobList, parseSubmissionTitle, kstDateKey } from './job-list.mjs';
 import { sendJobAlert } from './send.mjs';
 import {
   loadLedger,
+  isBatchClosed,
   mergeCatalogBaseline,
   openBatchDates,
   saveLedger,
@@ -44,9 +45,13 @@ export function receive({ env = process.env, now = new Date() } = {}) {
   // compatibility path can still map a morning review to its open batch.
   const ledger = loadLedger(dataDir) ?? EMPTY_LEDGER();
   const date =
-    parsed.kind === 'reviewer' && !enabled(env.JOB_ALERT_STRICT_BATCH)
+    parsed.kind === 'reviewer' &&
+    !parsed.date.includes('-A') &&
+    !enabled(env.JOB_ALERT_STRICT_BATCH)
       ? (openBatchDates(dataDir, ledger, now).at(-1) ?? parsed.date)
       : parsed.date;
+  if (isBatchClosed(ledger, date))
+    return { report: [`무시: 종료된 배치 ${date}는 수정하지 않습니다.`] };
   saveSubmission(dataDir, date, {
     kind: parsed.kind,
     slot: parsed.slot,
@@ -103,18 +108,34 @@ export async function processAlert({
   const event = readEvent(env);
   const eventName = env.GITHUB_EVENT_NAME;
   let trigger = eventName === 'schedule' ? 'schedule' : 'manual';
+  let submittedBatch;
   if (eventName === 'issues') {
     const parsed = trustedSubmission(event);
     if (!parsed) return IGNORED;
-    if (parsed.kind !== 'send') trigger = 'submission';
+    if (parsed.kind !== 'send') {
+      trigger = 'submission';
+      submittedBatch = parsed.date;
+    }
   }
   const dryRunInput = eventName === 'workflow_dispatch' && enabled(event.inputs?.dry_run);
   const live = enabled(env.JOB_ALERT_LIVE) && !dryRunInput;
   const force = eventName === 'workflow_dispatch' && enabled(event.inputs?.force);
 
+  if (
+    enabled(env.JOB_ALERT_DEFER_SEND) &&
+    submittedBatch &&
+    isBatchClosed(loadLedger(dataDir) ?? EMPTY_LEDGER(), submittedBatch)
+  ) {
+    return {
+      report: ['발송 안 함: 종료된 배치의 제출은 변경하지 않습니다.'],
+      result: { status: 'skipped', reason: 'batch-closed' },
+    };
+  }
   const ledger = await prepareLedger({ dataDir, env, live, fetchImpl, now });
   if (enabled(env.JOB_ALERT_DEFER_SEND)) {
-    const pending = rebuildPending(dataDir, ledger, now, kstDateKey(now));
+    // Recovery is pinned to its declared attempt even if processing crosses midnight.
+    const batch = submittedBatch?.includes('-A') ? submittedBatch : kstDateKey(now);
+    const pending = rebuildPending(dataDir, ledger, now, batch);
     return {
       report: ['발송 안 함: 제출 저장만 수행'],
       result: { status: 'skipped', reason: 'submission-only', pending },
