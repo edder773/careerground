@@ -21,7 +21,7 @@ on:
         default: false
 
       batch_date:
-        description: '승인된 수집 배치 날짜 YYYY-MM-DD (빈 값은 최신 배치)'
+        description: '승인된 수집 배치 YYYY-MM-DD 또는 YYYY-MM-DD-A2 (빈 값은 최신 배치)'
         type: string
         default: ''
       hold_until_08:

@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path';
 import { canonicalizeHttpUrl } from '../jobs-v5/canonical-json.mjs';
 import { jobKey, kstDateKey } from './job-list.mjs';
 import { buildPending } from './pipeline.mjs';
+import { compareBatchIds, parseBatchId } from './batch-id.mjs';
 
 // Layout of the job-alert-data branch:
 //   ledger.json                         sent jobs and one delivery per day
@@ -32,8 +33,8 @@ export function loadLedger(dir) {
   const batchesDir = join(dir, 'batches');
   if (!missing.size || !existsSync(batchesDir)) return ledger;
   for (const date of readdirSync(batchesDir)
-    .filter((day) => /^\d{4}-\d{2}-\d{2}$/u.test(day))
-    .sort()) {
+    .filter((day) => parseBatchId(day))
+    .sort(compareBatchIds)) {
     for (const submission of loadSubmissions(dir, date, 'collector')) {
       if (
         submission.kind !== 'collector' ||
@@ -121,6 +122,8 @@ const deliveredBatches = (ledger) =>
       .flatMap((delivery) => delivery.batches ?? []),
   );
 
+export const isBatchClosed = (ledger, batch) => deliveredBatches(ledger).has(batch);
+
 export function openBatchDates(dir, ledger, now) {
   const batchesDir = join(dir, 'batches');
   if (!existsSync(batchesDir)) return [];
@@ -128,9 +131,12 @@ export function openBatchDates(dir, ledger, now) {
   const oldest = kstDateKey(new Date(now.getTime() - OPEN_BATCH_DAYS * DAY_MS));
   const delivered = deliveredBatches(ledger);
   return readdirSync(batchesDir)
-    .filter((date) => /^\d{4}-\d{2}-\d{2}$/u.test(date))
-    .filter((date) => date >= oldest && date <= today && !delivered.has(date))
-    .sort();
+    .filter((batch) => parseBatchId(batch))
+    .filter((batch) => {
+      const { date } = parseBatchId(batch);
+      return date >= oldest && date <= today && !delivered.has(batch);
+    })
+    .sort(compareBatchIds);
 }
 
 export function loadSubmissions(dir, date, kind) {

@@ -12,7 +12,7 @@ on:
         options: [test, release]
         default: test
       batch_date:
-        description: '수집 배치 YYYY-MM-DD (빈 값은 오늘)'
+        description: '수집 배치 YYYY-MM-DD 또는 YYYY-MM-DD-A2 (빈 값은 오늘)'
         type: string
         default: ''
       dry_run:
