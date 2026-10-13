@@ -74,6 +74,10 @@ const compact = (value: string) =>
     .replace(/[^0-9a-z가-힣]/g, '');
 
 const canonicalCompanyAliases = new Map<string, string>([
+  // Korean legal name and English brand: https://www.fasoo.ai/about-us
+  ['파수에이아이', 'fasoo-ai'],
+  ['파수ai', 'fasoo-ai'],
+  ['fasooai', 'fasoo-ai'],
   ['넥슨', 'nexon'],
   ['넥슨코리아', 'nexon'],
   ['nexon', 'nexon'],

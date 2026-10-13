@@ -21,7 +21,12 @@ const byDeadline = (left, right) =>
 // Postings open only to a protected group (보훈, 장애인 전형) are not open to
 // the new graduates this alert is for.
 const RESTRICTED_ELIGIBILITY = /보훈|장애인|북한이탈|취업지원\s*대상자/u;
-export const isRestricted = (job) => RESTRICTED_ELIGIBILITY.test(job.title);
+// A bracketed hospital employer name does not restrict who may apply.
+// Keep any actual 보훈/장애인 eligibility wording outside that label.
+const VETERANS_HOSPITAL_LABEL =
+  /\[(?:한국보훈복지의료공단|(?:중앙|부산|광주|대구|대전|인천)보훈병원)\]/gu;
+export const isRestricted = (job) =>
+  RESTRICTED_ELIGIBILITY.test(job.title.replace(VETERANS_HOSPITAL_LABEL, ''));
 
 // Same URL, or the same posting mirrored on another job board.
 const samePosting = (left, right) =>
