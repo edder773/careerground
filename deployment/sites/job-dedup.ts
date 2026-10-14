@@ -26,6 +26,8 @@ const titleStopWords = new Set([
   '신입',
   '신입채용',
   '신입사원',
+  '경력',
+  '경력사원',
   '신입행원',
   '대졸신입',
   '대졸신입사원',
@@ -188,7 +190,8 @@ const meaningfulTitleTokens = (job: ComparableJob) => {
       jobCompanyKey(token) !== jobCompanyKey(job.companyName) &&
       !/그룹$/u.test(token) &&
       !titleStopWords.has(token) &&
-      !/^20\d{2}년?$/u.test(token)
+      !/^20\d{2}년?$/u.test(token) &&
+      !/^[1-4]분기$/u.test(token)
     );
   });
 };
@@ -244,8 +247,9 @@ const titleLooksUmbrella = (job: ComparableJob, roles: string[]) => {
   if (/전\s*(부문|직군)|부문별|관련\s*직무|직군\s*포함/gu.test(title)) return true;
   if (/(?:신입|신규)?직원[^\n]{0,24}채용/u.test(title)) return true;
   if (/(신입(?:사원|행원)?\s*채용|공채|공개채용|수시채용)/u.test(title)) {
+    // Development is an activity within one role, not an additional domain.
     const broadDomains = new Set(
-      roles.filter((token) => ['it', 'sw', 'ai', 'tech', '개발', '데이터'].includes(token)),
+      roles.filter((token) => ['it', 'sw', 'ai', 'tech', '데이터'].includes(token)),
     );
     if (broadDomains.size >= 2) return true;
   }
