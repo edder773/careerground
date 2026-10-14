@@ -1,0 +1,54 @@
+{
+  "kind": "collector",
+  "slot": 2,
+  "date": "2026-10-14",
+  "receivedAt": "2026-10-14T13:42:52.434Z",
+  "jobs": [
+    {
+      "companyName": "푸른저축은행",
+      "title": "푸른저축은행 2026년 신입직원 공개채용 (금융일반 / IT전산)",
+      "sourceName": "Superookie",
+      "sourceUrl": "https://www.superookie.com/jobs/6acc5d4c83b0342ab73922b4",
+      "deadlineAt": "2026-10-23T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "주식회사 몽키소프트",
+      "title": "AI Agent 개발자 채용",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K120612610080023",
+      "deadlineAt": "2026-10-31T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "주식회사 인시스(INSYS)",
+      "title": "[신입/경력] AI 응용 S/W 연구 개발자 채용 공고",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K131132610130030",
+      "deadlineAt": "2026-10-27T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)에코누리시스템",
+      "title": "[대전] 공공기관 웹개발자 모집(신입, 경력)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://www.saramin.co.kr/zf_user/jobs/view?rec_idx=55242046",
+      "deadlineAt": "2026-12-07T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "프시타",
+      "title": "프시타 농장 기반 AX 프로그램 개발 연구·R&D 채용 공고",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://www.saramin.co.kr/zf_user/jobs/view?rec_idx=55247548",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
