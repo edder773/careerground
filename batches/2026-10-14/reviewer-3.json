@@ -1,0 +1,65 @@
+{
+  "kind": "reviewer",
+  "slot": 3,
+  "date": "2026-10-14",
+  "receivedAt": "2026-10-14T13:51:39.961Z",
+  "jobs": [
+    {
+      "companyName": "한국농어촌공사",
+      "title": "2026년도 직무중심 신입사원(5급) - 전산 일반전형",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/353985",
+      "deadlineAt": "2026-10-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산"
+    },
+    {
+      "companyName": "LT메탈",
+      "title": "2026년 4분기 수시채용 - 전산시스템 개발/운영 신입/경력사원 모집",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/404099",
+      "deadlineAt": "2026-10-20T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "LT메탈",
+      "title": "2026년 4분기 수시채용 - AI 솔루션 개발/운영 신입/경력사원 모집",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/404094",
+      "deadlineAt": "2026-10-20T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "EY한영",
+      "title": "감사부문 Data Analytics – IT Specialist 인턴",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/407318",
+      "deadlineAt": "2026-10-22T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "한국의약품안전관리원",
+      "title": "2026년 3차 직원 채용 - 정규직 일반직(5급) 전산",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305962",
+      "deadlineAt": "2026-10-27T15:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산"
+    },
+    {
+      "companyName": "딜로이트 안진회계법인",
+      "title": "회계감사부문 AI Asset & Analytics그룹 인턴 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/406604",
+      "deadlineAt": "2026-11-02T16:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
