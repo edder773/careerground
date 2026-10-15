@@ -3,7 +3,7 @@
   "batches": [
     "2026-10-15"
   ],
-  "generatedAt": "2026-10-15T13:07:15.912Z",
+  "generatedAt": "2026-10-15T13:10:49.581Z",
   "collectorCount": 5,
   "skipped": {
     "notAlertable": 2,
@@ -19,7 +19,8 @@
       "sourceUrl": "https://linkareer.com/activity/356625",
       "deadlineAt": "2026-10-23T11:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI Research"
     },
     {
       "companyName": "한국전력공사(전력연구원)",
@@ -28,7 +29,8 @@
       "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305874",
       "deadlineAt": "2026-10-27T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "컴퓨터/전산(석사급)"
     }
   ]
 }
