@@ -265,14 +265,6 @@
       "sentOn": "catalog"
     },
     {
-      "companyName": "주식회사 지오멕스소프트",
-      "title": "연구개발 부문 모집 - 생성형 AI·멀티모달 AI 연구개발자",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=KJ21152609090001",
-      "deadlineAt": "2026-10-08T24:00:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "catalog"
-    },
-    {
       "companyName": "네패스",
       "title": "AI정보화파트 신입 채용",
       "sourceUrl": "https://inthiswork.com/archives/393897",
@@ -2073,6 +2065,24 @@
       "deadlineAt": "2026-11-02T16:00:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-15"
+    },
+    {
+      "companyName": "크래프톤",
+      "title": "2027 채용연계형 인턴십 - AI Research",
+      "sourceUrl": "https://linkareer.com/activity/356625",
+      "deadlineAt": "2026-10-23T11:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-16",
+      "itRole": "AI Research"
+    },
+    {
+      "companyName": "한국전력공사(전력연구원)",
+      "title": "2026년 하반기 위촉연구원 채용 - 컴퓨터/전산(석사급)",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305874",
+      "deadlineAt": "2026-10-27T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-16",
+      "itRole": "컴퓨터/전산(석사급)"
     }
   ],
   "deliveries": {
@@ -2191,6 +2201,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-10-14"
+      ],
+      "status": "SENT"
+    },
+    "2026-10-16": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-10-15T23:00:01.299Z",
+      "jobCount": 2,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-10-15"
       ],
       "status": "SENT"
     }
