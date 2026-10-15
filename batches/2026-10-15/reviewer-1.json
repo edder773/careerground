@@ -1,0 +1,29 @@
+{
+  "kind": "reviewer",
+  "slot": 1,
+  "date": "2026-10-15",
+  "receivedAt": "2026-10-15T13:14:36.208Z",
+  "jobs": [
+    {
+      "companyName": "크래프톤",
+      "title": "2027 채용연계형 인턴십 - AI Research",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/356625",
+      "deadlineAt": "2026-10-23T11:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI Research"
+    },
+    {
+      "companyName": "한국전력공사(전력연구원)",
+      "title": "2026년 하반기 위촉연구원 채용 - 컴퓨터/전산(석사급)",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305874",
+      "deadlineAt": "2026-10-27T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "컴퓨터/전산(석사급)"
+    }
+  ],
+  "rejected": []
+}
