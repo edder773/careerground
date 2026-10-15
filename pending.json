@@ -1,70 +1,32 @@
 {
-  "date": "2026-10-14",
+  "date": "2026-10-15",
   "batches": [
-    "2026-10-14"
+    "2026-10-15"
   ],
-  "generatedAt": "2026-10-14T23:00:01.894Z",
+  "generatedAt": "2026-10-15T13:07:01.419Z",
   "collectorCount": 5,
   "skipped": {
-    "notAlertable": 1,
+    "notAlertable": 2,
     "restricted": 0,
-    "alreadySent": 24,
+    "alreadySent": 37,
     "duplicate": 0
   },
   "jobs": [
     {
-      "companyName": "한국농어촌공사",
-      "title": "2026년도 직무중심 신입사원(5급) - 전산 일반전형",
+      "companyName": "크래프톤",
+      "title": "2027 채용연계형 인턴십 - AI Research",
       "sourceName": "Linkareer",
-      "sourceUrl": "https://linkareer.com/activity/353985",
-      "deadlineAt": "2026-10-19T23:59:00+09:00",
+      "sourceUrl": "https://linkareer.com/activity/356625",
+      "deadlineAt": "2026-10-23T11:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "전산"
+      "careerScope": "NEW_GRAD_ONLY"
     },
     {
-      "companyName": "LT메탈",
-      "title": "2026년 4분기 수시채용 - 전산시스템 개발/운영 신입/경력사원 모집",
-      "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/404099",
-      "deadlineAt": "2026-10-20T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "LT메탈",
-      "title": "2026년 4분기 수시채용 - AI 솔루션 개발/운영 신입/경력사원 모집",
-      "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/404094",
-      "deadlineAt": "2026-10-20T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "EY한영",
-      "title": "감사부문 Data Analytics – IT Specialist 인턴",
-      "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/407318",
-      "deadlineAt": "2026-10-22T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "한국의약품안전관리원",
-      "title": "2026년 3차 직원 채용 - 정규직 일반직(5급) 전산",
+      "companyName": "한국전력공사(전력연구원)",
+      "title": "2026년 하반기 위촉연구원 채용 - 컴퓨터/전산(석사급)",
       "sourceName": "JOB-ALIO",
-      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305962",
-      "deadlineAt": "2026-10-27T15:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "전산"
-    },
-    {
-      "companyName": "딜로이트 안진회계법인",
-      "title": "회계감사부문 AI Asset & Analytics그룹 인턴 채용",
-      "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/406604",
-      "deadlineAt": "2026-11-02T16:00:00+09:00",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305874",
+      "deadlineAt": "2026-10-27T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     }
