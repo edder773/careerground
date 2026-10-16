@@ -1,0 +1,107 @@
+{
+  "kind": "collector",
+  "slot": 5,
+  "date": "2026-10-16",
+  "receivedAt": "2026-10-16T13:07:49.241Z",
+  "jobs": [
+    {
+      "companyName": "건설공제조합",
+      "title": "2026년 하반기 신입직원 채용 - IT",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106552",
+      "deadlineAt": "2026-10-26T16:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "kt ds",
+      "title": "2026년 신입사원 공개채용 - Cloud/Infra Engineering",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106638",
+      "deadlineAt": "2026-10-22T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "한국지역정보개발원",
+      "title": "2026년 하반기 정규직 채용 - 정보시스템",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/career/106675",
+      "deadlineAt": "2026-10-27T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "정보시스템"
+    },
+    {
+      "companyName": "한국농어촌공사",
+      "title": "2026년도 직무중심 신입사원 5급 - 전산 일반전형",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/353985",
+      "deadlineAt": "2026-10-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산"
+    },
+    {
+      "companyName": "이지케어텍",
+      "title": "2026년 하반기 대졸 신입 개발자 채용 - SW개발 (소프트웨어 엔지니어)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/356156",
+      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "크래프톤",
+      "title": "2027 채용연계형 인턴십 - AI Research",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/356625",
+      "deadlineAt": "2026-10-23T11:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI Research"
+    },
+    {
+      "companyName": "한국전력공사(전력연구원)",
+      "title": "2026년 하반기 위촉연구원 채용 - 컴퓨터/전산(석사급)",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305874",
+      "deadlineAt": "2026-10-27T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "컴퓨터/전산(석사급)"
+    },
+    {
+      "companyName": "한국보훈복지의료공단(부산보훈병원)",
+      "title": "정규직 긴급채용 - 전산",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305920",
+      "deadlineAt": "2026-10-23T10:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산"
+    },
+    {
+      "companyName": "한국의약품안전관리원",
+      "title": "2026년 3차 직원 채용 - 정규직 일반직(5급) 전산",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305962",
+      "deadlineAt": "2026-10-27T15:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산"
+    },
+    {
+      "companyName": "한국재정정보원",
+      "title": "2026년도 제5차 채용 - 일반직 5급(전산)",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=306106",
+      "deadlineAt": "2026-11-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산"
+    }
+  ],
+  "rejected": []
+}
