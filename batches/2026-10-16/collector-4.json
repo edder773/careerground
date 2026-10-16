@@ -1,0 +1,67 @@
+{
+  "kind": "collector",
+  "slot": 4,
+  "date": "2026-10-16",
+  "receivedAt": "2026-10-16T13:07:51.553Z",
+  "jobs": [
+    {
+      "companyName": "건설공제조합",
+      "title": "2026년 하반기 신입직원 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://lab.incruit.com/jobs/2610060000152",
+      "deadlineAt": "2026-10-26T16:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT, 데이터분석"
+    },
+    {
+      "companyName": "한국항공대학교",
+      "title": "(전산정보) 2027년 한국항공대학교 정규직 전환형 신규직원 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://lab.incruit.com/jobs/2610070002301",
+      "deadlineAt": "2026-10-21T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "AK아이에스",
+      "title": "[애경그룹] AK아이에스 2027년 신입사원 공개 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://lab.incruit.com/jobs/2610120000378",
+      "deadlineAt": "2026-10-28T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT 서비스 시스템 운영 및 개발"
+    },
+    {
+      "companyName": "kt ds",
+      "title": "[kt ds] 2026년 신입사원 공개채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://lab.incruit.com/jobs/2610120001096",
+      "deadlineAt": "2026-10-22T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "SW Engineering, Cloud/Infra Engineering"
+    },
+    {
+      "companyName": "Fasoo AI",
+      "title": "2026년 3차 신입 공개 채용",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/2026%EB%85%84-3%EC%B0%A8-%EC%8B%A0%EC%9E%85-%EA%B3%B5%EA%B0%9C-%EC%B1%84%EC%9A%A9-at-fasoo-ai-4477290013",
+      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "SW개발(AI, 보안)"
+    },
+    {
+      "companyName": "FuriosaAI",
+      "title": "Algorithm - AI Research Engineer Intern",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/algorithm-ai-research-engineer-intern-at-furiosaai-4454160615",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
