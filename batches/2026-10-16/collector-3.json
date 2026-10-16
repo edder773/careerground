@@ -1,0 +1,56 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-10-16",
+  "receivedAt": "2026-10-16T13:07:43.549Z",
+  "jobs": [
+    {
+      "companyName": "교원그룹",
+      "title": "[IT지원실] AI 플랫폼 개발 담당자 모집 (신입)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/407988",
+      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "SK인텔릭스",
+      "title": "[SK인텔릭스] 2D/3D 장면 재구성 엔지니어 신입 인재 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/407616",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "AK아이에스",
+      "title": "[애경그룹] AK아이에스 2027년 신입사원 공개 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/406496",
+      "deadlineAt": "2026-10-28T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT 서비스 시스템 운영 및 개발"
+    },
+    {
+      "companyName": "포스타입",
+      "title": "[신입/경력] 백엔드 엔지니어",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/406554",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "kt ds",
+      "title": "[kt ds] 2026년 신입사원 공개채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/404773",
+      "deadlineAt": "2026-10-22T16:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "SW Engineering, Cloud/Infra Engineering"
+    }
+  ],
+  "rejected": []
+}
