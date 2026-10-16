@@ -1,0 +1,36 @@
+{
+  "kind": "reviewer",
+  "slot": 2,
+  "date": "2026-10-16",
+  "receivedAt": "2026-10-16T13:11:51.715Z",
+  "jobs": [
+    {
+      "companyName": "주식회사 신성테크",
+      "title": "소프트웨어 개발자 채용",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K160042610130030",
+      "deadlineAt": "2026-10-23T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "교원그룹",
+      "title": "[IT지원실] AI 플랫폼 개발 담당자 모집 (신입)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/407988",
+      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "SK인텔릭스",
+      "title": "[SK인텔릭스] 2D/3D 장면 재구성 엔지니어 신입 인재 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/407616",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    }
+  ],
+  "rejected": []
+}
