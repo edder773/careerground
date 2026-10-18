@@ -25,14 +25,6 @@
       "sentOn": "catalog"
     },
     {
-      "companyName": "한솔피엔에스",
-      "title": "[한솔PNS IT] 한솔그룹 2026년 하반기 신입사원 공개채용",
-      "sourceUrl": "https://jlab.incruit.com/jobs/2609210001080",
-      "deadlineAt": "2026-10-11T23:59:00+09:00",
-      "applicationStartAt": "2026-09-21T00:00:00+09:00",
-      "sentOn": "catalog"
-    },
-    {
       "companyName": "㈜이테크시스템",
       "title": "[에티버스이피에이] AI 데이터 엔지니어 (신입/경력)",
       "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/50040905",
@@ -46,14 +38,6 @@
       "sourceUrl": "https://www.saramin.co.kr/job-search/view?rec_idx=55088303",
       "deadlineAt": "2026-10-21T23:59:00+09:00",
       "applicationStartAt": "2026-09-21T10:00:00+09:00",
-      "sentOn": "catalog"
-    },
-    {
-      "companyName": "(주)케이디티콘트롤",
-      "title": "-KDT콘트롤- 스마트빌딩 인증 시스템 개발 초급 C# / 웹 개발자",
-      "sourceUrl": "https://www.saramin.co.kr/job-search/view?rec_idx=55000854",
-      "deadlineAt": "2026-10-10T23:59:00+09:00",
-      "applicationStartAt": "2026-09-10T14:00:00+09:00",
       "sentOn": "catalog"
     },
     {
@@ -174,14 +158,6 @@
       "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K180022609150035",
       "deadlineAt": null,
       "applicationStartAt": null,
-      "sentOn": "catalog"
-    },
-    {
-      "companyName": "한진정보통신",
-      "title": "[DBA] 데이터베이스 엔지니어 담당자 모집",
-      "sourceUrl": "https://inthiswork.com/archives/397629",
-      "deadlineAt": "2026-10-11T23:00:00+09:00",
-      "applicationStartAt": "2026-09-14T12:00:00+09:00",
       "sentOn": "catalog"
     },
     {
@@ -657,14 +633,6 @@
       "sentOn": "catalog"
     },
     {
-      "companyName": "수퍼빈",
-      "title": "[수퍼빈] 개발 엔지니어 채용 (AI, 로봇 SW)",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/49768006",
-      "deadlineAt": "2026-10-11T14:59:59.000Z",
-      "applicationStartAt": "2026-08-13T00:00:00.000Z",
-      "sentOn": "catalog"
-    },
-    {
       "companyName": "인터오리진아이엔씨",
       "title": "[신입 및 경력] AI 개발 담당자 채용",
       "sourceUrl": "https://inthiswork.com/archives/390419",
@@ -977,49 +945,6 @@
       "sentOn": "catalog"
     },
     {
-      "companyName": "한솔그룹",
-      "title": "2026 신입사원 공개채용",
-      "sourceUrl": "https://jasoseol.com/recruit/106344",
-      "deadlineAt": "2026-10-11T14:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-01",
-      "itRole": "[한솔제지] IT기획, [한솔테크닉스] S/W개발, [한솔PNS IT] 웹개발자(AI 서비스)"
-    },
-    {
-      "companyName": "HS효성그룹",
-      "title": "2026년 하반기 신입공채",
-      "sourceUrl": "https://jasoseol.com/recruit/106418",
-      "deadlineAt": "2026-10-11T14:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-01",
-      "itRole": "[HS효성] IT기획"
-    },
-    {
-      "companyName": "다날",
-      "title": "AI 개발자 (경력 무관)",
-      "sourceUrl": "https://inthiswork.com/archives/399647",
-      "deadlineAt": "2026-10-11T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-01"
-    },
-    {
-      "companyName": "한화비전",
-      "title": "2026 테크&라이프 부문 신입사원 채용",
-      "sourceUrl": "https://linkareer.com/activity/352123",
-      "deadlineAt": "2026-10-11T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-01",
-      "itRole": "IT/개발"
-    },
-    {
-      "companyName": "현대오토에버",
-      "title": "2026 4분기 신입사원 채용",
-      "sourceUrl": "https://jasoseol.com/recruit/106477",
-      "deadlineAt": "2026-10-12T04:00:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-01"
-    },
-    {
       "companyName": "원익그룹",
       "title": "2026 신입공채 (학석사)",
       "sourceUrl": "https://jasoseol.com/recruit/106388",
@@ -1120,23 +1045,6 @@
       "sentOn": "2026-10-01"
     },
     {
-      "companyName": "우성그룹",
-      "title": "2026 신입 / 경력 모집",
-      "sourceUrl": "https://jasoseol.com/recruit/106343",
-      "deadlineAt": "2026-10-11T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-02",
-      "itRole": "[우성] IT/AX"
-    },
-    {
-      "companyName": "한솔테크닉스",
-      "title": "2026년 하반기 신입사원 공개채용 - S/W개발",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50036705?Oem_Code=C1",
-      "deadlineAt": "2026-10-11T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-02"
-    },
-    {
       "companyName": "동서식품",
       "title": "2026년 대졸 신입/경력사원 채용",
       "sourceUrl": "https://jasoseol.com/recruit/106404",
@@ -1169,47 +1077,6 @@
       "deadlineAt": "2026-10-28T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-02"
-    },
-    {
-      "companyName": "(주)성우하이텍",
-      "title": "2026년 하반기 신입 공개 채용 - IT개발",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50080883",
-      "deadlineAt": "2026-10-11T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-06"
-    },
-    {
-      "companyName": "한솔제지(주)",
-      "title": "2026년 하반기 신입사원 공개채용 - IT기획",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50040321",
-      "deadlineAt": "2026-10-11T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-06"
-    },
-    {
-      "companyName": "한솔피엔에스",
-      "title": "[IT부문] 2026년 하반기 신입사원 공개채용(풀스택 개발자)",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50033057",
-      "deadlineAt": "2026-10-11T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-06"
-    },
-    {
-      "companyName": "한솔피엔에스",
-      "title": "[IT부문] 2026년 하반기 신입사원 공개채용(SAP SD)",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50033069",
-      "deadlineAt": "2026-10-11T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-06"
-    },
-    {
-      "companyName": "인천공항시설관리",
-      "title": "2026년 제3차 정기채용 신입/경력",
-      "sourceUrl": "https://secure.jasoseol.com/recruit/106537",
-      "deadlineAt": "2026-10-12T01:00:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-06",
-      "itRole": "정보통신/IT (일근), 정보통신/IT (교대), SW 개발 (일근)"
     },
     {
       "companyName": "산은캐피탈",
@@ -1278,24 +1145,6 @@
       "deadlineAt": "2026-10-20T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-06"
-    },
-    {
-      "companyName": "호반그룹",
-      "title": "2027 신입사원 채용",
-      "sourceUrl": "https://jasoseol.com/recruit/106405",
-      "deadlineAt": "2026-10-11T14:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-07",
-      "itRole": "[그룹인재] 경영_IT"
-    },
-    {
-      "companyName": "SK주식회사(AX)",
-      "title": "2026년 하반기 SKALA 신입사원 채용",
-      "sourceUrl": "https://inthiswork.com/archives/403883",
-      "deadlineAt": "2026-10-11T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-07",
-      "itRole": "DT"
     },
     {
       "companyName": "NH농협은행",
@@ -2083,6 +1932,30 @@
       "applicationStartAt": null,
       "sentOn": "2026-10-16",
       "itRole": "컴퓨터/전산(석사급)"
+    },
+    {
+      "companyName": "주식회사 신성테크",
+      "title": "소프트웨어 개발자 채용",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K160042610130030",
+      "deadlineAt": "2026-10-23T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-19"
+    },
+    {
+      "companyName": "교원그룹",
+      "title": "[IT지원실] AI 플랫폼 개발 담당자 모집 (신입)",
+      "sourceUrl": "https://inthiswork.com/archives/407988",
+      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-19"
+    },
+    {
+      "companyName": "SK인텔릭스",
+      "title": "[SK인텔릭스] 2D/3D 장면 재구성 엔지니어 신입 인재 채용",
+      "sourceUrl": "https://inthiswork.com/archives/407616",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-19"
     }
   ],
   "deliveries": {
@@ -2213,6 +2086,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-10-15"
+      ],
+      "status": "SENT"
+    },
+    "2026-10-19": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-10-18T23:00:01.788Z",
+      "jobCount": 3,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-10-16"
       ],
       "status": "SENT"
     }
