@@ -3,25 +3,15 @@
   "batches": [
     "2026-10-19"
   ],
-  "generatedAt": "2026-10-19T14:19:02.665Z",
+  "generatedAt": "2026-10-19T23:00:01.947Z",
   "collectorCount": 5,
   "skipped": {
     "notAlertable": 3,
     "restricted": 0,
-    "alreadySent": 34,
+    "alreadySent": 36,
     "duplicate": 1
   },
   "jobs": [
-    {
-      "companyName": "교원그룹",
-      "title": "10월 수시채용 - AI 플랫폼 개발 (신입)",
-      "sourceName": "Jasoseol",
-      "sourceUrl": "https://jasoseol.com/recruit/106765",
-      "deadlineAt": "2026-10-25T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "AI 플랫폼 개발 (신입)"
-    },
     {
       "companyName": "KT is",
       "title": "2026년 신입사원 공개채용 - IT기획",
@@ -50,16 +40,6 @@
       "deadlineAt": "2026-10-27T18:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "AK아이에스",
-      "title": "[애경그룹] 2027년 신입사원 공개 채용 - IT 담당",
-      "sourceName": "Jasoseol",
-      "sourceUrl": "https://jasoseol.com/recruit/106607",
-      "deadlineAt": "2026-10-28T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "IT 담당"
     },
     {
       "companyName": "유안타증권",

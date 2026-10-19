@@ -995,15 +995,6 @@
       "sentOn": "2026-10-01"
     },
     {
-      "companyName": "동서식품",
-      "title": "2026년 대졸 신입/경력사원 채용",
-      "sourceUrl": "https://jasoseol.com/recruit/106404",
-      "deadlineAt": "2026-10-12T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-02",
-      "itRole": "전산"
-    },
-    {
       "companyName": "이카운트",
       "title": "개발본부 신입 채용",
       "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=OEW&infoTypeGroup=tb_workinfoopen&wantedAuthNo=179802",
@@ -1220,15 +1211,6 @@
       "sentOn": "2026-10-07"
     },
     {
-      "companyName": "(주)모나미",
-      "title": "IT운영팀, TQM팀(QA파트/설계 파트), 디자인팀 경력•신입 채용",
-      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55189769",
-      "deadlineAt": "2026-10-12T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-08",
-      "itRole": "IT운영팀"
-    },
-    {
       "companyName": "신한라이프생명보험",
       "title": "2026 신입채용",
       "sourceUrl": "https://jasoseol.com/recruit/106561",
@@ -1335,15 +1317,6 @@
       "deadlineAt": "2026-11-06T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-08"
-    },
-    {
-      "companyName": "인천공항시설관리",
-      "title": "2026년 제3차 정기채용 - 정보통신/IT (일근)",
-      "sourceUrl": "https://jasoseol.com/recruit/106537",
-      "deadlineAt": "2026-10-12T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-12",
-      "itRole": "정보통신/IT (일근)"
     },
     {
       "companyName": "인천공항시설관리",
@@ -1889,6 +1862,66 @@
       "deadlineAt": "2026-11-01T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-19"
+    },
+    {
+      "companyName": "KT is",
+      "title": "2026년 신입사원 공개채용 - IT기획",
+      "sourceUrl": "https://jasoseol.com/recruit/106750",
+      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-20",
+      "itRole": "IT기획"
+    },
+    {
+      "companyName": "케이뱅크",
+      "title": "2026년 채용연계형 인턴십 - Tech",
+      "sourceUrl": "https://linkareer.com/activity/356637",
+      "deadlineAt": "2026-10-26T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-20",
+      "itRole": "Tech"
+    },
+    {
+      "companyName": "NAVER",
+      "title": "[NAVER] World Models for Physical AI Research (체험형 인턴)",
+      "sourceUrl": "https://inthiswork.com/archives/409075",
+      "deadlineAt": "2026-10-27T18:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-20"
+    },
+    {
+      "companyName": "유안타증권",
+      "title": "IT인프라운영팀 신입/경력직원 채용",
+      "sourceUrl": "https://linkareer.com/activity/357744",
+      "deadlineAt": "2026-10-29T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-20"
+    },
+    {
+      "companyName": "메리츠증권",
+      "title": "2026년 대졸 신입사원 공개채용 - IT",
+      "sourceUrl": "https://linkareer.com/activity/357802",
+      "deadlineAt": "2026-10-30T17:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-20",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "퍼포먼스바이티비더블유에이",
+      "title": "[퍼포먼스바이TBWA] IT 인프라 운영 담당(신입·경력)",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50185442",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-20"
+    },
+    {
+      "companyName": "롯데e커머스",
+      "title": "2026년 10월 롯데e커머스 신입사원 채용 (채용연계형 인턴십)",
+      "sourceUrl": "https://inthiswork.com/archives/409155",
+      "deadlineAt": "2026-11-02T18:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-20",
+      "itRole": "IT"
     }
   ],
   "deliveries": {
@@ -2031,6 +2064,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-10-16"
+      ],
+      "status": "SENT"
+    },
+    "2026-10-20": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-10-19T23:00:01.947Z",
+      "jobCount": 7,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-10-19"
       ],
       "status": "SENT"
     }
