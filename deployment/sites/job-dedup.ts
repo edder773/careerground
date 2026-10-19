@@ -54,6 +54,7 @@ const titleStopWords = new Set([
 const roleNoiseWords = new Set([
   ...titleStopWords,
   '담당자',
+  '담당',
   '경력무관',
   '대졸',
   '연구원',
@@ -130,6 +131,7 @@ const normalizedTitle = (value: string) =>
     .replace(/\boms\b/gu, ' 주문관리시스템 ')
     .replace(/주문\s*관리\s*시스템/gu, '주문관리시스템')
     .replace(/(^|\s)개발본부(?=\s|$)/gu, '$1개발자')
+    .replace(/공개\s+채용/gu, '공개채용')
     .replace(/it\s*개발/gu, 'it 개발')
     .replace(/([a-z0-9+#])부문/giu, '$1 부문')
     .replace(/s\s*\/\s*w/gu, 'sw');
@@ -191,6 +193,7 @@ const meaningfulTitleTokens = (job: ComparableJob) => {
       !/그룹$/u.test(token) &&
       !titleStopWords.has(token) &&
       !/^20\d{2}년?$/u.test(token) &&
+      !/^(?:0?[1-9]|1[0-2])월$/u.test(token) &&
       !/^[1-4]분기$/u.test(token)
     );
   });
@@ -252,6 +255,8 @@ const titleLooksUmbrella = (job: ComparableJob, roles: string[]) => {
       roles.filter((token) => ['it', 'sw', 'ai', 'tech', '데이터'].includes(token)),
     );
     if (broadDomains.size >= 2) return true;
+    // A campaign naming only general IT work also covers its detailed IT mirror.
+    if (roles.length === 1 && roles[0] === 'it') return true;
   }
   return roles.length === 0;
 };
