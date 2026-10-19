@@ -1,0 +1,195 @@
+{
+  "kind": "collector",
+  "slot": 5,
+  "date": "2026-10-19",
+  "receivedAt": "2026-10-19T14:12:11.857Z",
+  "jobs": [
+    {
+      "companyName": "건설공제조합",
+      "title": "2026년 하반기 신입직원 채용 - IT",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106552",
+      "deadlineAt": "2026-10-26T16:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "kt ds",
+      "title": "2026년 신입사원 공개채용 - SW Engineering",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106638",
+      "deadlineAt": "2026-10-22T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "KT is",
+      "title": "2026년 신입사원 공개채용 - IT기획",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106750",
+      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT기획"
+    },
+    {
+      "companyName": "AK아이에스",
+      "title": "[애경그룹] 2027년 신입사원 공개 채용 - IT 담당",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106607",
+      "deadlineAt": "2026-10-28T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT 담당"
+    },
+    {
+      "companyName": "푸른저축은행",
+      "title": "2026년 신입직원 공개채용 (금융일반 / IT전산) - IT전산",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106616",
+      "deadlineAt": "2026-10-23T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT전산"
+    },
+    {
+      "companyName": "교원그룹",
+      "title": "10월 수시채용 - AI 플랫폼 개발 (신입)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106765",
+      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI 플랫폼 개발 (신입)"
+    },
+    {
+      "companyName": "아이센스",
+      "title": "2026 하반기 신입/경력 대규모 채용 - CGMS 알고리즘 개발 - 신입",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106633",
+      "deadlineAt": "2026-11-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "CGMS 알고리즘 개발 - 신입"
+    },
+    {
+      "companyName": "포항공과대학교",
+      "title": "2026년 하반기 직원 채용 - 서버 인프라",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106687",
+      "deadlineAt": "2026-10-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "서버 인프라"
+    },
+    {
+      "companyName": "울산대학교",
+      "title": "2026년 정규직원 채용공고 - 일반행정(전산)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106676",
+      "deadlineAt": "2026-10-20T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "일반행정(전산)"
+    },
+    {
+      "companyName": "이지케어텍",
+      "title": "2026년 하반기 대졸 신입 개발자 채용 - SW개발 (소프트웨어 엔지니어)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/356156",
+      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "크래프톤",
+      "title": "2027 채용연계형 인턴십 - AI Research",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/356625",
+      "deadlineAt": "2026-10-23T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI Research"
+    },
+    {
+      "companyName": "유안타증권",
+      "title": "IT인프라운영팀 신입/경력직원 채용",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/357744",
+      "deadlineAt": "2026-10-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "유안타증권",
+      "title": "온라인시스템팀 신입직원 채용",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/357746",
+      "deadlineAt": "2026-10-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "메리츠증권",
+      "title": "2026년 대졸 신입사원 공개채용 - IT",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/357802",
+      "deadlineAt": "2026-10-30T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "케이뱅크",
+      "title": "2026년 채용연계형 인턴십 - Tech",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/356637",
+      "deadlineAt": "2026-10-26T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "Tech"
+    },
+    {
+      "companyName": "한국보훈복지의료공단(부산보훈병원)",
+      "title": "[부산보훈병원] 정규직(방사선사, 전산, 간호조무사) 긴급채용 - 전산",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305920",
+      "deadlineAt": "2026-10-23T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산"
+    },
+    {
+      "companyName": "한국의약품안전관리원",
+      "title": "2026년 3차 채용 - 정규직 일반직(5급) 전산",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305962",
+      "deadlineAt": "2026-10-27T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산"
+    },
+    {
+      "companyName": "한국전력공사(전력연구원)",
+      "title": "2026년 하반기 위촉연구원 채용 - 컴퓨터/전산(석사급)",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305874",
+      "deadlineAt": "2026-10-27T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "컴퓨터/전산(석사급)"
+    },
+    {
+      "companyName": "한국재정정보원",
+      "title": "2026년도 제5차 채용 - 일반직 5급(전산)",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=306106",
+      "deadlineAt": "2026-11-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산"
+    }
+  ],
+  "rejected": []
+}
