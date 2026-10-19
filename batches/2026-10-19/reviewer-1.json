@@ -1,0 +1,96 @@
+{
+  "kind": "reviewer",
+  "slot": 1,
+  "date": "2026-10-19",
+  "receivedAt": "2026-10-19T14:18:36.820Z",
+  "jobs": [
+    {
+      "companyName": "교원그룹",
+      "title": "10월 수시채용 - AI 플랫폼 개발 (신입)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106765",
+      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI 플랫폼 개발 (신입)"
+    },
+    {
+      "companyName": "KT is",
+      "title": "2026년 신입사원 공개채용 - IT기획",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106750",
+      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT기획"
+    },
+    {
+      "companyName": "케이뱅크",
+      "title": "2026년 채용연계형 인턴십 - Tech",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/356637",
+      "deadlineAt": "2026-10-26T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "Tech"
+    },
+    {
+      "companyName": "NAVER",
+      "title": "[NAVER] World Models for Physical AI Research (체험형 인턴)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/409075",
+      "deadlineAt": "2026-10-27T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "AK아이에스",
+      "title": "[애경그룹] 2027년 신입사원 공개 채용 - IT 담당",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106607",
+      "deadlineAt": "2026-10-28T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT 담당"
+    },
+    {
+      "companyName": "유안타증권",
+      "title": "IT인프라운영팀 신입/경력직원 채용",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/357744",
+      "deadlineAt": "2026-10-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "메리츠증권",
+      "title": "2026년 대졸 신입사원 공개채용 - IT",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/357802",
+      "deadlineAt": "2026-10-30T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "퍼포먼스바이티비더블유에이",
+      "title": "[퍼포먼스바이TBWA] IT 인프라 운영 담당(신입·경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50185442",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "롯데e커머스",
+      "title": "2026년 10월 롯데e커머스 신입사원 채용 (채용연계형 인턴십)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/409155",
+      "deadlineAt": "2026-11-02T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    }
+  ],
+  "rejected": []
+}
