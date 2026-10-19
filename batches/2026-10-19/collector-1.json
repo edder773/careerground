@@ -1,0 +1,128 @@
+{
+  "kind": "collector",
+  "slot": 1,
+  "date": "2026-10-19",
+  "receivedAt": "2026-10-19T13:15:25.009Z",
+  "jobs": [
+    {
+      "companyName": "(주)네오클로바",
+      "title": "오픈소스 미들웨어(WEB/WAS) 엔지니어 신입/경력 채용 공고",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50148866",
+      "deadlineAt": "2026-11-11T23:50:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)락플레이스",
+      "title": "[락플레이스] 시스템 엔지니어 신입 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50149796",
+      "deadlineAt": "2026-11-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)테나아이",
+      "title": "AI 서비스 백엔드(Java/Spring) 개발자 모집 (신입)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50118670",
+      "deadlineAt": "2026-11-05T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)이투어리즘",
+      "title": "AI 여행 관리 시스템 개발자",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50143676",
+      "deadlineAt": "2026-12-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)텔로스",
+      "title": "[텔로스] DX개발팀 - 유니티 개발자 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50147351",
+      "deadlineAt": "2026-11-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)브이씨 (보이스캐디)",
+      "title": "[코스닥상장사] (주)브이씨 Front-End 개발자 채용(신입)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50135899",
+      "deadlineAt": "2026-10-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "신우이엔지(주)",
+      "title": "SW 엔지니어(현장 대응 및 시스템 개발)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50150560",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "클라우드에어",
+      "title": "클라우드 기반 풀스택 개발자 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50150407",
+      "deadlineAt": "2026-11-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(유)시원",
+      "title": "2026년 하반기 신입 IT서비스 엔지니어 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50129798",
+      "deadlineAt": "2026-11-07T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "이지케어텍(주)",
+      "title": "2026년 하반기 이지케어텍 대졸 신입 개발자 채용 (채용연계형 인턴십)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/49984909",
+      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "퍼포먼스바이티비더블유에이",
+      "title": "[퍼포먼스바이TBWA] IT 인프라 운영 담당(신입·경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50185442",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "푸른저축은행",
+      "title": "2026년 신입직원 공개채용 (금융일반,IT전산)",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/575343",
+      "deadlineAt": "2026-10-23T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT전산"
+    },
+    {
+      "companyName": "파수에이아이",
+      "title": "2026년 3차 신입 공개채용",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/575185",
+      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "인공지능 딥러닝, 빅데이터 처리 시스템(백엔드), 데이터 관리 및 협업솔루션(백엔드, 프론트엔드), IT 인프라 엔지니어"
+    }
+  ],
+  "rejected": []
+}
