@@ -81,27 +81,11 @@
       "sentOn": "catalog"
     },
     {
-      "companyName": "이마트",
-      "title": "27년 신입사원 채용 #공채",
-      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/572290",
-      "deadlineAt": "2026-10-12T18:00:00+09:00",
-      "applicationStartAt": "2026-09-18",
-      "sentOn": "catalog"
-    },
-    {
       "companyName": "(주)팀로보틱스",
       "title": "착용로봇 AI 분야 연구원 채용 (신입/경력)",
       "sourceUrl": "https://www.saramin.co.kr/job-search/view?cn=job-industry&cns=recently-list&rec_idx=55077845&referNonce=&t_category=job_recruit&t_content=generic",
       "deadlineAt": null,
       "applicationStartAt": null,
-      "sentOn": "catalog"
-    },
-    {
-      "companyName": "신세계아이앤씨",
-      "title": "2027 신입사원 채용 - 프로그래머",
-      "sourceUrl": "https://linkareer.com/activity/351725",
-      "deadlineAt": "2026-10-12T18:00:00+09:00",
-      "applicationStartAt": "2026-09-18",
       "sentOn": "catalog"
     },
     {
@@ -945,40 +929,6 @@
       "sentOn": "catalog"
     },
     {
-      "companyName": "원익그룹",
-      "title": "2026 신입공채 (학석사)",
-      "sourceUrl": "https://jasoseol.com/recruit/106388",
-      "deadlineAt": "2026-10-12T14:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-01",
-      "itRole": "[원익아이피에스] SW개발(AI), SW개발"
-    },
-    {
-      "companyName": "코리안리재보험",
-      "title": "2026 신입 채용 - 전산",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50070006",
-      "deadlineAt": "2026-10-12T17:00:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-01"
-    },
-    {
-      "companyName": "코리안리재보험",
-      "title": "2026 신입 채용 - AI",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50069990",
-      "deadlineAt": "2026-10-12T17:00:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-01"
-    },
-    {
-      "companyName": "신세계디에프",
-      "title": "2027 신세계디에프(면세점) 신입사원 모집",
-      "sourceUrl": "https://linkareer.com/activity/351755",
-      "deadlineAt": "2026-10-12T18:00:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-01",
-      "itRole": "IT/개발"
-    },
-    {
       "companyName": "(주)더존비즈온",
       "title": "[IT인프라]더존비즈온 솔루션 인프라 및 서비스 운영 인재 채용(신입/경력)",
       "sourceUrl": "https://jlab.incruit.com/jobs/2609280000917",
@@ -1079,14 +1029,6 @@
       "sentOn": "2026-10-02"
     },
     {
-      "companyName": "산은캐피탈",
-      "title": "2026년 하반기 산은캐피탈 신입직원 채용공고(IT)",
-      "sourceUrl": "https://inthiswork.com/archives/402982",
-      "deadlineAt": "2026-10-12T22:00:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-06"
-    },
-    {
       "companyName": "에스케이브로드밴드(주)",
       "title": "2026년 하반기 SK브로드밴드 Junior Talent 채용(AT/DT)",
       "sourceUrl": "https://www.saramin.co.kr/zf_user/jobs/relay/view?rec_idx=55158820&view_type=public-recruit",
@@ -1145,15 +1087,6 @@
       "deadlineAt": "2026-10-20T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-06"
-    },
-    {
-      "companyName": "NH농협은행",
-      "title": "2026년 NH농협은행 신규직원 6급 채용(금융, 테크)",
-      "sourceUrl": "https://jlab.incruit.com/jobs/2609180000941",
-      "deadlineAt": "2026-10-12T17:00:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-07",
-      "itRole": "테크"
     },
     {
       "companyName": "한화솔루션/케미칼",

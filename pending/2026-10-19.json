@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-19",
+  "batches": [
+    "2026-10-19"
+  ],
+  "generatedAt": "2026-10-19T13:15:43.704Z",
+  "collectorCount": 4,
+  "skipped": {
+    "notAlertable": 3,
+    "restricted": 0,
+    "alreadySent": 23,
+    "duplicate": 0
+  },
+  "jobs": [
+    {
+      "companyName": "NAVER",
+      "title": "[NAVER] World Models for Physical AI Research (체험형 인턴)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/409075",
+      "deadlineAt": "2026-10-27T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "퍼포먼스바이티비더블유에이",
+      "title": "[퍼포먼스바이TBWA] IT 인프라 운영 담당(신입·경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50185442",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "롯데e커머스",
+      "title": "2026년 10월 롯데e커머스 신입사원 채용 (채용연계형 인턴십)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/409155",
+      "deadlineAt": "2026-11-02T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    }
+  ]
+}

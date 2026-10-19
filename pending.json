@@ -1,53 +1,44 @@
 {
-  "date": "2026-10-16",
+  "date": "2026-10-19",
   "batches": [
-    "2026-10-16"
+    "2026-10-19"
   ],
-  "generatedAt": "2026-10-18T23:00:01.788Z",
-  "collectorCount": 5,
+  "generatedAt": "2026-10-19T13:15:43.704Z",
+  "collectorCount": 4,
   "skipped": {
-    "notAlertable": 4,
+    "notAlertable": 3,
     "restricted": 0,
-    "alreadySent": 35,
+    "alreadySent": 23,
     "duplicate": 0
   },
   "jobs": [
     {
-      "companyName": "주식회사 신성테크",
-      "title": "소프트웨어 개발자 채용",
-      "sourceName": "Work24",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K160042610130030",
-      "deadlineAt": "2026-10-23T23:59:00+09:00",
+      "companyName": "NAVER",
+      "title": "[NAVER] World Models for Physical AI Research (체험형 인턴)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/409075",
+      "deadlineAt": "2026-10-27T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "퍼포먼스바이티비더블유에이",
+      "title": "[퍼포먼스바이TBWA] IT 인프라 운영 담당(신입·경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50185442",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
-      "companyName": "교원그룹",
-      "title": "[IT지원실] AI 플랫폼 개발 담당자 모집 (신입)",
+      "companyName": "롯데e커머스",
+      "title": "2026년 10월 롯데e커머스 신입사원 채용 (채용연계형 인턴십)",
       "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/407988",
-      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "sourceUrl": "https://inthiswork.com/archives/409155",
+      "deadlineAt": "2026-11-02T18:00:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "SK인텔릭스",
-      "title": "[SK인텔릭스] 2D/3D 장면 재구성 엔지니어 신입 인재 채용",
-      "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/407616",
-      "deadlineAt": "2026-11-01T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "한국재정정보원",
-      "title": "2026년도 제5차 채용 - 일반직 5급(전산)",
-      "sourceName": "JOB-ALIO",
-      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=306106",
-      "deadlineAt": "2026-11-02T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "전산"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
     }
   ]
 }
