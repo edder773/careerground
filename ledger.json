@@ -929,23 +929,6 @@
       "sentOn": "catalog"
     },
     {
-      "companyName": "(주)더존비즈온",
-      "title": "[IT인프라]더존비즈온 솔루션 인프라 및 서비스 운영 인재 채용(신입/경력)",
-      "sourceUrl": "https://jlab.incruit.com/jobs/2609280000917",
-      "deadlineAt": "2026-10-13T23:00:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-01"
-    },
-    {
-      "companyName": "한국농수산식품유통공사",
-      "title": "2026년 신입직원 채용공고",
-      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305395",
-      "deadlineAt": "2026-10-13T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-01",
-      "itRole": "전산직"
-    },
-    {
       "companyName": "서울주택도시공사",
       "title": "2026년 하반기 사무·기술직 신입사원 직무중심 채용",
       "sourceUrl": "https://linkareer.com/activity/353370",
@@ -1020,22 +1003,6 @@
       "sentOn": "2026-10-02"
     },
     {
-      "companyName": "에스케이브로드밴드(주)",
-      "title": "2026년 하반기 SK브로드밴드 Junior Talent 채용(AT/DT)",
-      "sourceUrl": "https://www.saramin.co.kr/zf_user/jobs/relay/view?rec_idx=55158820&view_type=public-recruit",
-      "deadlineAt": "2026-10-13T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-06"
-    },
-    {
-      "companyName": "SK브로드밴드",
-      "title": "2026년 SK브로드밴드 Junior Talent 채용(Infra)",
-      "sourceUrl": "https://inthiswork.com/archives/402400",
-      "deadlineAt": "2026-10-13T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-06"
-    },
-    {
       "companyName": "농림식품기술기획평가원",
       "title": "2026년도 2차 정규직 채용 공고",
       "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305522",
@@ -1078,15 +1045,6 @@
       "deadlineAt": "2026-10-20T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-06"
-    },
-    {
-      "companyName": "한화솔루션/케미칼",
-      "title": "2026년 하반기 부문 신입사원 채용 (엔지니어/R&D)",
-      "sourceUrl": "https://jasoseol.com/recruit/106408",
-      "deadlineAt": "2026-10-14T06:00:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-07",
-      "itRole": "AI기반 신소재연구 (R&D)"
     },
     {
       "companyName": "NAVER Cloud",
@@ -1317,15 +1275,6 @@
       "deadlineAt": "2026-11-06T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-08"
-    },
-    {
-      "companyName": "인천공항시설관리",
-      "title": "2026년 제7차 계약직 채용 - 정보통신/IT(1)",
-      "sourceUrl": "https://jasoseol.com/recruit/106589",
-      "deadlineAt": "2026-10-13T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-12",
-      "itRole": "정보통신/IT(1)"
     },
     {
       "companyName": "국토연구원",
@@ -1906,6 +1855,49 @@
       "applicationStartAt": null,
       "sentOn": "2026-10-20",
       "itRole": "IT"
+    },
+    {
+      "companyName": "KB캐피탈",
+      "title": "2027년 KB캐피탈 신입사원 공개채용",
+      "sourceUrl": "https://inthiswork.com/archives/409414",
+      "deadlineAt": "2026-10-30T18:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-21",
+      "itRole": "AI 사업, IT플랫폼기획"
+    },
+    {
+      "companyName": "에스엘",
+      "title": "2026 하반기 신입사원 공개채용 - IT 시스템개발",
+      "sourceUrl": "https://jasoseol.com/career/106764",
+      "deadlineAt": "2026-11-02T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-21",
+      "itRole": "IT 시스템개발"
+    },
+    {
+      "companyName": "카카오뱅크",
+      "title": "인증 플랫폼 기획 담당자 (채용연계형 인턴) 채용",
+      "sourceUrl": "https://jasoseol.com/recruit/106804",
+      "deadlineAt": "2026-11-02T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-21"
+    },
+    {
+      "companyName": "하나금융티아이",
+      "title": "2027년 상반기 하나금융융합기술원 AI 박사 신입 연구원 모집 - AI Quant",
+      "sourceUrl": "https://jasoseol.com/recruit/106790",
+      "deadlineAt": "2026-11-09T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-21",
+      "itRole": "AI Quant"
+    },
+    {
+      "companyName": "딜로이트 안진회계법인",
+      "title": "경영지원부문 IT AI 엔지니어 채용",
+      "sourceUrl": "https://linkareer.com/activity/358210",
+      "deadlineAt": "2026-11-19T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-21"
     }
   ],
   "deliveries": {
@@ -2060,6 +2052,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-10-19"
+      ],
+      "status": "SENT"
+    },
+    "2026-10-21": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-10-20T23:00:01.472Z",
+      "jobCount": 5,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-10-20"
       ],
       "status": "SENT"
     }

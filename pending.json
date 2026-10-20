@@ -3,25 +3,15 @@
   "batches": [
     "2026-10-20"
   ],
-  "generatedAt": "2026-10-20T13:16:26.035Z",
+  "generatedAt": "2026-10-20T23:00:01.472Z",
   "collectorCount": 5,
   "skipped": {
     "notAlertable": 3,
     "restricted": 0,
-    "alreadySent": 19,
+    "alreadySent": 20,
     "duplicate": 0
   },
   "jobs": [
-    {
-      "companyName": "케이뱅크",
-      "title": "2027 채용연계형 인턴십 (Biz · Marketing분야, Tech분야)",
-      "sourceName": "Catch",
-      "sourceUrl": "https://m.catch.co.kr/NCS/RecruitInfoDetails/575763",
-      "deadlineAt": "2026-10-26T17:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "Tech"
-    },
     {
       "companyName": "KB캐피탈",
       "title": "2027년 KB캐피탈 신입사원 공개채용",
