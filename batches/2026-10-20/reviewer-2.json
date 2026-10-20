@@ -1,0 +1,67 @@
+{
+  "kind": "reviewer",
+  "slot": 2,
+  "date": "2026-10-20",
+  "receivedAt": "2026-10-20T13:15:46.155Z",
+  "jobs": [
+    {
+      "companyName": "케이뱅크",
+      "title": "2027 채용연계형 인턴십 (Biz · Marketing분야, Tech분야)",
+      "sourceName": "Catch",
+      "sourceUrl": "https://m.catch.co.kr/NCS/RecruitInfoDetails/575763",
+      "deadlineAt": "2026-10-26T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "Tech"
+    },
+    {
+      "companyName": "KB캐피탈",
+      "title": "2027년 KB캐피탈 신입사원 공개채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/409414",
+      "deadlineAt": "2026-10-30T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI 사업, IT플랫폼기획"
+    },
+    {
+      "companyName": "에스엘",
+      "title": "2026 하반기 신입사원 공개채용 - IT 시스템개발",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/career/106764",
+      "deadlineAt": "2026-11-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT 시스템개발"
+    },
+    {
+      "companyName": "카카오뱅크",
+      "title": "인증 플랫폼 기획 담당자 (채용연계형 인턴) 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106804",
+      "deadlineAt": "2026-11-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "하나금융티아이",
+      "title": "2027년 상반기 하나금융융합기술원 AI 박사 신입 연구원 모집 - AI Quant",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106790",
+      "deadlineAt": "2026-11-09T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI Quant"
+    },
+    {
+      "companyName": "딜로이트 안진회계법인",
+      "title": "경영지원부문 IT AI 엔지니어 채용",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/358210",
+      "deadlineAt": "2026-11-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
