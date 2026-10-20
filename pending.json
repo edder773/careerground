@@ -1,93 +1,46 @@
 {
-  "date": "2026-10-19",
+  "date": "2026-10-20",
   "batches": [
-    "2026-10-19"
+    "2026-10-20"
   ],
-  "generatedAt": "2026-10-19T23:00:01.947Z",
-  "collectorCount": 5,
+  "generatedAt": "2026-10-20T13:08:38.932Z",
+  "collectorCount": 4,
   "skipped": {
     "notAlertable": 3,
     "restricted": 0,
-    "alreadySent": 36,
-    "duplicate": 1
+    "alreadySent": 19,
+    "duplicate": 0
   },
   "jobs": [
     {
-      "companyName": "KT is",
-      "title": "2026년 신입사원 공개채용 - IT기획",
-      "sourceName": "Jasoseol",
-      "sourceUrl": "https://jasoseol.com/recruit/106750",
-      "deadlineAt": "2026-10-25T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "IT기획"
-    },
-    {
       "companyName": "케이뱅크",
-      "title": "2026년 채용연계형 인턴십 - Tech",
-      "sourceName": "Linkareer",
-      "sourceUrl": "https://linkareer.com/activity/356637",
-      "deadlineAt": "2026-10-26T23:59:00+09:00",
+      "title": "2027 채용연계형 인턴십 (Biz · Marketing분야, Tech분야)",
+      "sourceName": "Catch",
+      "sourceUrl": "https://m.catch.co.kr/NCS/RecruitInfoDetails/575763",
+      "deadlineAt": "2026-10-26T17:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY",
       "itRole": "Tech"
     },
     {
-      "companyName": "NAVER",
-      "title": "[NAVER] World Models for Physical AI Research (체험형 인턴)",
+      "companyName": "KB캐피탈",
+      "title": "2027년 KB캐피탈 신입사원 공개채용",
       "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/409075",
-      "deadlineAt": "2026-10-27T18:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "유안타증권",
-      "title": "IT인프라운영팀 신입/경력직원 채용",
-      "sourceName": "Linkareer",
-      "sourceUrl": "https://linkareer.com/activity/357744",
-      "deadlineAt": "2026-10-29T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "메리츠증권",
-      "title": "2026년 대졸 신입사원 공개채용 - IT",
-      "sourceName": "Linkareer",
-      "sourceUrl": "https://linkareer.com/activity/357802",
-      "deadlineAt": "2026-10-30T17:00:00+09:00",
+      "sourceUrl": "https://inthiswork.com/archives/409414",
+      "deadlineAt": "2026-10-30T18:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "IT"
-    },
-    {
-      "companyName": "퍼포먼스바이티비더블유에이",
-      "title": "[퍼포먼스바이TBWA] IT 인프라 운영 담당(신입·경력)",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50185442",
-      "deadlineAt": "2026-11-01T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "롯데e커머스",
-      "title": "2026년 10월 롯데e커머스 신입사원 채용 (채용연계형 인턴십)",
-      "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/409155",
-      "deadlineAt": "2026-11-02T18:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "IT"
+      "itRole": "AI 사업, IT플랫폼기획"
     },
     {
       "companyName": "한국재정정보원",
-      "title": "2026년도 제5차 채용 - 일반직 5급(전산)",
-      "sourceName": "JOB-ALIO",
-      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=306106",
-      "deadlineAt": "2026-11-02T23:59:00+09:00",
+      "title": "한국재정정보원 제5차 채용(정규직)",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K120122610200008",
+      "deadlineAt": "2026-11-02T18:00:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "전산"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "일반직 5급 전산(시스템운영), 일반직 5급 전산(인프라시스템 운영)"
     }
   ]
 }
