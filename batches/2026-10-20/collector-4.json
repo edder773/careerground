@@ -1,0 +1,66 @@
+{
+  "kind": "collector",
+  "slot": 4,
+  "date": "2026-10-20",
+  "receivedAt": "2026-10-20T13:08:34.923Z",
+  "jobs": [
+    {
+      "companyName": "AK아이에스",
+      "title": "[애경그룹] AK아이에스 2027년 신입사원 공개 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://lab.incruit.com/jobs/2610120000378",
+      "deadlineAt": "2026-10-28T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT 서비스 시스템 운영 및 개발"
+    },
+    {
+      "companyName": "kt ds",
+      "title": "[kt ds] 2026년 신입사원 공개채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://lab.incruit.com/jobs/2610120001096",
+      "deadlineAt": "2026-10-22T16:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "SW Engineering, Cloud/Infra Engineering"
+    },
+    {
+      "companyName": "Fasoo AI",
+      "title": "2026년 3차 신입 공개 채용",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/2026%EB%85%84-3%EC%B0%A8-%EC%8B%A0%EC%9E%85-%EA%B3%B5%EA%B0%9C-%EC%B1%84%EC%9A%A9-at-fasoo-ai-4477290013",
+      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "SW개발(AI, 보안)"
+    },
+    {
+      "companyName": "FuriosaAI",
+      "title": "Algorithm - AI Research Engineer Intern",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/algorithm-ai-research-engineer-intern-at-furiosaai-4454160615",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Arm",
+      "title": "GPU Software Applications Engineer Intern (3 months)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/gpu-software-applications-engineer-intern-3-months-at-arm-4480225151",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "스캐터랩",
+      "title": "Machine Learning Research Intern",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/machine-learning-research-intern-at-scatter-lab-4479802352",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
