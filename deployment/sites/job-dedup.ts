@@ -133,7 +133,7 @@ const normalizedTitle = (value: string) =>
     .replace(/(^|\s)개발본부(?=\s|$)/gu, '$1개발자')
     .replace(/공개\s+채용/gu, '공개채용')
     .replace(/it\s*개발/gu, 'it 개발')
-    .replace(/([a-z0-9+#])부문/giu, '$1 부문')
+    .replace(/([a-z0-9+#])(?:부문|분야)/giu, '$1 부문')
     .replace(/s\s*\/\s*w/gu, 'sw');
 
 const rawTitleTokens = (value: string) =>
@@ -229,10 +229,23 @@ const campaignEditionTokens = (job: ComparableJob) => {
 const hasConflictingCampaignEdition = (left: ComparableJob, right: ComparableJob) => {
   const leftTokens = campaignEditionTokens(left);
   const rightTokens = campaignEditionTokens(right);
+  // Internship mirrors can name either the application year or the following activity year.
+  // Only that adjacent pair with the exact same closing day may share a campaign.
+  const deadline = dateKey(left.deadlineAt);
+  const deadlineYear = Number(deadline?.slice(0, 4));
+  const activityYearMirror =
+    Boolean(deadline && deadline === dateKey(right.deadlineAt)) &&
+    [left, right].every((job) => /채용\s*연계형\s*인턴(?:십)?/u.test(normalizedTitle(job.title))) &&
+    leftTokens.years.size === 1 &&
+    rightTokens.years.size === 1 &&
+    [...leftTokens.years, ...rightTokens.years].every(
+      (year) => Number(year) === deadlineYear || Number(year) === deadlineYear + 1,
+    );
   const yearConflict =
     leftTokens.years.size > 0 &&
     rightTokens.years.size > 0 &&
-    intersection(leftTokens.years, rightTokens.years).length === 0;
+    intersection(leftTokens.years, rightTokens.years).length === 0 &&
+    !activityYearMirror;
   const periodConflict =
     leftTokens.periods.size > 0 &&
     rightTokens.periods.size > 0 &&
