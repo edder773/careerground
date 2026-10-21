@@ -17,14 +17,6 @@
       "sentOn": "catalog"
     },
     {
-      "companyName": "(주)이카운트",
-      "title": "2026년 이카운트 신입 개발자 채용",
-      "sourceUrl": "https://www.saramin.co.kr/job-search/view?cn=curation&cns=list&rec_idx=55130970&referNonce=&t_category=m_curation&t_content=generic",
-      "deadlineAt": "2026-10-14T23:59:00+09:00",
-      "applicationStartAt": "2026-09-28T12:00:00+09:00",
-      "sentOn": "catalog"
-    },
-    {
       "companyName": "㈜이테크시스템",
       "title": "[에티버스이피에이] AI 데이터 엔지니어 (신입/경력)",
       "sourceUrl": "https://m.jobkorea.co.kr/Recruit/GI_Read/50040905",
@@ -978,14 +970,6 @@
       "sentOn": "2026-10-01"
     },
     {
-      "companyName": "이카운트",
-      "title": "개발본부 신입 채용",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=OEW&infoTypeGroup=tb_workinfoopen&wantedAuthNo=179802",
-      "deadlineAt": "2026-10-14T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-02"
-    },
-    {
       "companyName": "서울주택도시개발공사",
       "title": "2026년 하반기 사무·기술직 신입사원 직무중심 채용",
       "sourceUrl": "https://jasoseol.com/recruit/106464",
@@ -1045,22 +1029,6 @@
       "deadlineAt": "2026-10-20T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-06"
-    },
-    {
-      "companyName": "NAVER Cloud",
-      "title": "월드 모델 및 이미지 생성 모델 연구 (체험형 인턴)",
-      "sourceUrl": "https://inthiswork.com/archives/403845",
-      "deadlineAt": "2026-10-14T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-07"
-    },
-    {
-      "companyName": "NAVER Cloud",
-      "title": "클라우드 IaaS 운영 기획 (체험형 인턴)",
-      "sourceUrl": "https://inthiswork.com/archives/403852",
-      "deadlineAt": "2026-10-14T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-07"
     },
     {
       "companyName": "람다256",
@@ -1873,6 +1841,15 @@
       "deadlineAt": "2026-11-19T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-21"
+    },
+    {
+      "companyName": "제너럴모터스 (GM 한국사업장)",
+      "title": "[한국GM] Global Purchasing & Supply Chain 신입 - AI Tool Lead",
+      "sourceUrl": "https://jasoseol.com/recruit/106826",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-22",
+      "itRole": "AI Tool Lead"
     }
   ],
   "deliveries": {
@@ -2039,6 +2016,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-10-20"
+      ],
+      "status": "SENT"
+    },
+    "2026-10-22": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-10-21T23:00:01.296Z",
+      "jobCount": 1,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-10-21"
       ],
       "status": "SENT"
     }
