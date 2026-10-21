@@ -1,0 +1,10 @@
+{
+  "status": "READY",
+  "batchDate": "2026-10-21",
+  "fingerprint": "cc56c6bcac1fbaa41b5a6c2358932986a136fbc7c93e78e6a66b6a2cddac07ba",
+  "codeSha": "05908779e892962b0841ad70d3607ea4a7db5f26",
+  "testRunId": "39607902001",
+  "jobCount": 1,
+  "reviewCount": 3,
+  "approvedAt": "2026-10-21T13:27:23.584Z"
+}
