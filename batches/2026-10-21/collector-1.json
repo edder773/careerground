@@ -1,0 +1,29 @@
+{
+  "kind": "collector",
+  "slot": 1,
+  "date": "2026-10-21",
+  "receivedAt": "2026-10-21T13:15:42.622Z",
+  "jobs": [
+    {
+      "companyName": "파수에이아이",
+      "title": "2026년 3차 신입 공개채용 #공채",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/575185",
+      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "인공지능 딥러닝, 빅데이터 처리 시스템(백엔드), 서버/1.데이터 및 AI 보안솔루션(백엔드, 프론트엔드), 서버/2.데이터 관리 및 협업솔루션"
+    },
+    {
+      "companyName": "푸른저축은행",
+      "title": "2026년 신입직원 공개채용 (금융일반,IT전산) #공채",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/575343",
+      "deadlineAt": "2026-10-23T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT전산"
+    }
+  ],
+  "rejected": []
+}
