@@ -1,35 +1,15 @@
 {
-  "date": "2026-10-21",
+  "date": "2026-10-22",
   "batches": [
-    "2026-10-21"
+    "2026-10-22"
   ],
-  "generatedAt": "2026-10-21T23:00:01.296Z",
-  "collectorCount": 5,
+  "generatedAt": "2026-10-22T13:10:51.023Z",
+  "collectorCount": 1,
   "skipped": {
-    "notAlertable": 4,
+    "notAlertable": 0,
     "restricted": 0,
-    "alreadySent": 16,
+    "alreadySent": 3,
     "duplicate": 0
   },
-  "jobs": [
-    {
-      "companyName": "제너럴모터스 (GM 한국사업장)",
-      "title": "[한국GM] Global Purchasing & Supply Chain 신입 - AI Tool Lead",
-      "sourceName": "Jasoseol",
-      "sourceUrl": "https://jasoseol.com/recruit/106826",
-      "deadlineAt": "2026-11-01T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "AI Tool Lead"
-    },
-    {
-      "companyName": "푸본현대생명보험",
-      "title": "Data Analytics팀 인재 모집",
-      "sourceName": "Linkareer",
-      "sourceUrl": "https://linkareer.com/activity/358479",
-      "deadlineAt": "2026-11-03T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    }
-  ]
+  "jobs": []
 }

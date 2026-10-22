@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-22",
+  "batches": [
+    "2026-10-22"
+  ],
+  "generatedAt": "2026-10-22T13:10:51.023Z",
+  "collectorCount": 1,
+  "skipped": {
+    "notAlertable": 0,
+    "restricted": 0,
+    "alreadySent": 3,
+    "duplicate": 0
+  },
+  "jobs": []
+}
