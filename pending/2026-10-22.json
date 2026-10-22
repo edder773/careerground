@@ -3,13 +3,53 @@
   "batches": [
     "2026-10-22"
   ],
-  "generatedAt": "2026-10-22T13:10:51.023Z",
-  "collectorCount": 1,
+  "generatedAt": "2026-10-22T13:18:52.810Z",
+  "collectorCount": 2,
   "skipped": {
-    "notAlertable": 0,
+    "notAlertable": 1,
     "restricted": 0,
-    "alreadySent": 3,
+    "alreadySent": 4,
     "duplicate": 0
   },
-  "jobs": []
+  "jobs": [
+    {
+      "companyName": "다우데이타",
+      "title": "[신입] IT 상황실 운영(관제) 채용",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/358159",
+      "deadlineAt": "2026-11-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "롯데쇼핑",
+      "title": "2026년 10월 롯데e커머스 신입사원 채용 (채용연계형 인턴십) - IT",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/358066",
+      "deadlineAt": "2026-11-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "한국건강증진개발원",
+      "title": "2026년 하반기 직원(일반직) 채용 - 전산 및 개인정보보호",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/358113",
+      "deadlineAt": "2026-11-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산 및 개인정보보호"
+    },
+    {
+      "companyName": "한국전자기술연구원",
+      "title": "2026년 정규직 공개채용 - 정보전산",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/358815",
+      "deadlineAt": "2026-11-05T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "정보전산"
+    }
+  ]
 }
