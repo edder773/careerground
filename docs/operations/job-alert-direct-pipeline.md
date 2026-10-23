@@ -16,6 +16,7 @@
 
 - 운영: `SLACK_WEBHOOK_URL`, `job-alert-data/ledger.json`.
 - 테스트: **별도 채널에 연결한** `SLACK_TEST_WEBHOOK_URL`, `job-alert-test-data/ledger.json` 및 `results/<배치날짜>.json`. 운영 Webhook으로 대체하지 않는다.
+- 검증기 제출은 같은 날짜·시도의 수집 1~5 슬롯이 모두 저장된 뒤에만 접수한다. 수집이 빠졌을 때 제출한 빈 목록도 검증 완료로 저장하지 않으며, 누락 수집 복구 후 실제 원문을 검증해 다시 제출한다.
 - 수집/검증 Issue는 자기 제출 파일을 저장한 뒤 오늘의 pending만 갱신한다. Issue 도착 또는 `[send]` Issue로는 Slack을 보내지 않는다.
 - 테스트는 운영의 기발송 공고 기준선을 읽어 별도 임시 디렉터리에서 실행한다. 운영 원장과 운영 pending 파일을 수정하지 않는다. 테스트 중복 방지는 수집 배치별 `results/<배치날짜>.json`으로 판단하므로 오전 복구 테스트가 같은 날 저녁의 다른 배치 테스트를 막지 않는다.
 - 정상 테스트는 `SENT`, 검증 3개, 검증 대기 0건, 수집 배치 fingerprint, 코드 SHA, Actions run ID를 남긴다. 모의 전송과 미리보기는 운영 승인 근거가 될 수 없다.

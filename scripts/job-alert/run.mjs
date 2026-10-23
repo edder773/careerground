@@ -5,6 +5,7 @@ import { parseJobList, parseSubmissionTitle, kstDateKey } from './job-list.mjs';
 import { sendJobAlert } from './send.mjs';
 import {
   loadLedger,
+  loadSubmissions,
   isBatchClosed,
   mergeCatalogBaseline,
   openBatchDates,
@@ -52,6 +53,22 @@ export function receive({ env = process.env, now = new Date() } = {}) {
       : parsed.date;
   if (isBatchClosed(ledger, date))
     return { report: [`무시: 종료된 배치 ${date}는 수정하지 않습니다.`] };
+  if (parsed.kind === 'reviewer' && enabled(env.JOB_ALERT_STRICT_BATCH)) {
+    const collectors = loadSubmissions(dataDir, date, 'collector');
+    const complete =
+      collectors.length === 5 &&
+      collectors.every(
+        (submission, index) =>
+          submission.kind === 'collector' &&
+          submission.slot === index + 1 &&
+          submission.date === date &&
+          Array.isArray(submission.jobs),
+      );
+    if (!complete)
+      return {
+        report: [`❌ ${label} (${date}): 수집 배치 미완료 — 수집 5개가 모두 저장된 뒤 검증하세요.`],
+      };
+  }
   saveSubmission(dataDir, date, {
     kind: parsed.kind,
     slot: parsed.slot,
