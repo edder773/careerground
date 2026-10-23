@@ -1,0 +1,49 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-10-23",
+  "receivedAt": "2026-10-23T13:15:40.874Z",
+  "jobs": [
+    {
+      "companyName": "수협중앙회",
+      "title": "2026년 하반기 신입직원 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/410527",
+      "deadlineAt": "2026-11-06T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "공무원연금공단",
+      "title": "2026년 하반기 신입직원 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/410432",
+      "deadlineAt": "2026-11-05T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산"
+    },
+    {
+      "companyName": "롯데e커머스",
+      "title": "2026년 10월 롯데e커머스 신입사원 채용 (채용연계형 인턴십)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/409155",
+      "deadlineAt": "2026-11-02T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "AK아이에스",
+      "title": "[애경그룹] AK아이에스 2027년 신입사원 공개 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/406496",
+      "deadlineAt": "2026-10-28T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT 서비스 시스템 운영 및 개발 업무"
+    }
+  ],
+  "rejected": []
+}
