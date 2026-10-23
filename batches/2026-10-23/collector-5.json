@@ -1,0 +1,77 @@
+{
+  "kind": "collector",
+  "slot": 5,
+  "date": "2026-10-23",
+  "receivedAt": "2026-10-23T13:15:46.366Z",
+  "jobs": [
+    {
+      "companyName": "공무원연금공단",
+      "title": "2026년 하반기 신입직원 채용 - 5급 전산 (일반전형)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106842",
+      "deadlineAt": "2026-11-05T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "5급 전산 (일반전형)"
+    },
+    {
+      "companyName": "수협중앙회",
+      "title": "2026년 하반기 신입직원 채용 - IT",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106816",
+      "deadlineAt": "2026-11-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "푸른저축은행",
+      "title": "2026년 신입직원 공개채용 - IT전산",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/356326",
+      "deadlineAt": "2026-10-23T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT전산"
+    },
+    {
+      "companyName": "다날",
+      "title": "AI 개발자",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/358930",
+      "deadlineAt": "2026-11-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "스마일게이트",
+      "title": "[CROSSFIRE] 라이브 개발 클라이언트 담당 (시스템)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/358465",
+      "deadlineAt": "2026-10-31T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "한국산업기술진흥원",
+      "title": "2026년 하반기 전문분야 신규직원 공개채용 - AI정보화",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=306258",
+      "deadlineAt": "2026-11-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "AI정보화"
+    },
+    {
+      "companyName": "울산항만공사",
+      "title": "2026년 하반기 신입직원(채용형 인턴) - 정보기술(IT)",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=306272",
+      "deadlineAt": "2026-11-05T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "정보기술(IT)"
+    }
+  ],
+  "rejected": []
+}
