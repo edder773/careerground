@@ -3,12 +3,12 @@
   "batches": [
     "2026-10-22"
   ],
-  "generatedAt": "2026-10-23T00:11:34.944Z",
+  "generatedAt": "2026-10-23T00:37:57.037Z",
   "collectorCount": 5,
   "skipped": {
     "notAlertable": 8,
     "restricted": 0,
-    "alreadySent": 11,
+    "alreadySent": 12,
     "duplicate": 0
   },
   "jobs": [
@@ -20,16 +20,6 @@
       "deadlineAt": "2026-11-02T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "롯데쇼핑",
-      "title": "2026년 10월 롯데e커머스 신입사원 채용 (채용연계형 인턴십) - IT",
-      "sourceName": "Linkareer",
-      "sourceUrl": "https://linkareer.com/activity/358066",
-      "deadlineAt": "2026-11-02T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "IT"
     },
     {
       "companyName": "한국건강증진개발원",
