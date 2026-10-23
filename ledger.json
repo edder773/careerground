@@ -186,6 +186,23 @@
       "fingerprint": "cc56c6bcac1fbaa41b5a6c2358932986a136fbc7c93e78e6a66b6a2cddac07ba",
       "codeSha": "05908779e892962b0841ad70d3607ea4a7db5f26",
       "runId": "39607902001"
+    },
+    "2026-10-23": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-10-23T00:34:56.551Z",
+      "jobCount": 5,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-10-22"
+      ],
+      "status": "SENT",
+      "destination": "test",
+      "batchDate": "2026-10-22",
+      "fingerprint": "513f641f7715c8150e348da1d2fb64e616aef0e5af587c267d31a304eb2b91f8",
+      "codeSha": "14daa26dbd2f0ff3dead60f0511f85e6e4c0708e",
+      "runId": "39878947060"
     }
   }
 }
