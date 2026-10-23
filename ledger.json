@@ -190,19 +190,19 @@
     "2026-10-23": {
       "mode": "live",
       "trigger": "manual",
-      "at": "2026-10-23T00:34:56.551Z",
-      "jobCount": 5,
+      "at": "2026-10-23T13:42:09.273Z",
+      "jobCount": 8,
       "heldCount": 0,
       "reviewCount": 3,
       "batches": [
-        "2026-10-22"
+        "2026-10-23"
       ],
       "status": "SENT",
       "destination": "test",
-      "batchDate": "2026-10-22",
-      "fingerprint": "513f641f7715c8150e348da1d2fb64e616aef0e5af587c267d31a304eb2b91f8",
-      "codeSha": "14daa26dbd2f0ff3dead60f0511f85e6e4c0708e",
-      "runId": "39878947060"
+      "batchDate": "2026-10-23",
+      "fingerprint": "87c05ce79c6715e2c35fdba2c24c8a3ac7339fc95400920a889982c372184835",
+      "codeSha": "856cc35d6d62b4c55186558412b01484e8f2a763",
+      "runId": "39963368182"
     }
   }
 }
