@@ -1,0 +1,56 @@
+{
+  "kind": "collector",
+  "slot": 1,
+  "date": "2026-10-23",
+  "receivedAt": "2026-10-23T13:15:33.264Z",
+  "jobs": [
+    {
+      "companyName": "디딤(주)",
+      "title": "멀티 클라우드 구축 및 운영 엔지니어 채용 (신입)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50195285",
+      "deadlineAt": "2026-11-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)교림소프트",
+      "title": "기업부설연구소 개발자(신입)를 모십니다.",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50203374",
+      "deadlineAt": "2026-11-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)북틀",
+      "title": "(신입-3년) 주니어 프론트 앤드 개발자 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50210544",
+      "deadlineAt": "2026-11-20T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "파수에이아이",
+      "title": "2026년 3차 신입 공개채용 #공채",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/575185",
+      "deadlineAt": "2026-10-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "인공지능 딥러닝, 빅데이터 처리 시스템 (백엔드), 서버 / 1. 데이터 및 AI 보안 솔루션 (백엔드, 프론트엔드), 서버 / 2. 데이터 관"
+    },
+    {
+      "companyName": "케이뱅크",
+      "title": "2027 채용연계형 인턴십 (Biz · Marketing분야, Tech분야)",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/575763",
+      "deadlineAt": "2026-10-26T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "Tech"
+    }
+  ],
+  "rejected": []
+}
