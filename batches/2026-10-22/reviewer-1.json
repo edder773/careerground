@@ -1,0 +1,67 @@
+{
+  "kind": "reviewer",
+  "slot": 1,
+  "date": "2026-10-22",
+  "receivedAt": "2026-10-23T00:20:24.118Z",
+  "jobs": [
+    {
+      "companyName": "다우데이타",
+      "title": "[신입] IT 상황실 운영(관제) 채용",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/358159",
+      "deadlineAt": "2026-11-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "롯데쇼핑",
+      "title": "2026년 10월 롯데e커머스 신입사원 채용 (채용연계형 인턴십) - IT",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/358066",
+      "deadlineAt": "2026-11-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "한국건강증진개발원",
+      "title": "2026년 하반기 직원(일반직) 채용 - 전산 및 개인정보보호",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/358113",
+      "deadlineAt": "2026-11-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산 및 개인정보보호"
+    },
+    {
+      "companyName": "한국전자기술연구원",
+      "title": "2026년 정규직 공개채용 - 정보전산",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/358815",
+      "deadlineAt": "2026-11-05T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "정보전산"
+    },
+    {
+      "companyName": "수협중앙회",
+      "title": "2026년 하반기 신입직원 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/410527",
+      "deadlineAt": "2026-11-06T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "(주)에이큐넷",
+      "title": "[AQNET] AI·AdTech 프로덕트 엔지니어 채용 (신입/경력)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://www.saramin.co.kr/zf_user/jobs/view?rec_idx=55344542",
+      "deadlineAt": "2026-11-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
