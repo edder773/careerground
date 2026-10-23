@@ -3,12 +3,12 @@
   "batches": [
     "2026-10-22"
   ],
-  "generatedAt": "2026-10-22T13:20:56.439Z",
-  "collectorCount": 3,
+  "generatedAt": "2026-10-23T00:11:34.944Z",
+  "collectorCount": 5,
   "skipped": {
-    "notAlertable": 1,
+    "notAlertable": 8,
     "restricted": 0,
-    "alreadySent": 8,
+    "alreadySent": 11,
     "duplicate": 0
   },
   "jobs": [
@@ -50,6 +50,16 @@
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY",
       "itRole": "정보전산"
+    },
+    {
+      "companyName": "수협중앙회",
+      "title": "2026년 하반기 신입직원 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/410527",
+      "deadlineAt": "2026-11-06T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
     },
     {
       "companyName": "(주)에이큐넷",
