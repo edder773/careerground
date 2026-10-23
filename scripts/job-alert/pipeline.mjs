@@ -46,7 +46,18 @@ const namesHiringCompany = (listing, posting) => {
   const title = compact(listing.title);
   if (company.length < 4 || !title.includes(company)) return false;
   const role = compact(posting.title).replace(`[${company}]`, '').replace(company, '');
-  return role.length >= 6 && title.includes(role) && deadlineDay(listing) === deadlineDay(posting);
+  // Some boards insert the hiring company inside the campaign title and
+  // append a general IT field. Match that explicit detail without treating
+  // identical titles under distinct employer labels as an affiliation.
+  const listingRole = title.replace(`[${company}]`, '').replace(company, '');
+  const itDetail =
+    listingRole.startsWith(role) &&
+    /^[-_:·()[\]]*(?:it|it개발)[-_:·()[\]]*$/iu.test(listingRole.slice(role.length));
+  return (
+    role.length >= 6 &&
+    (title.includes(role) || itDetail) &&
+    deadlineDay(listing) === deadlineDay(posting)
+  );
 };
 
 const listedUnderParent = (left, right) =>
