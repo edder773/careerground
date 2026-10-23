@@ -1,0 +1,65 @@
+{
+  "kind": "collector",
+  "slot": 2,
+  "date": "2026-10-23",
+  "receivedAt": "2026-10-23T13:15:36.444Z",
+  "jobs": [
+    {
+      "companyName": "푸른저축은행",
+      "title": "푸른저축은행 2026년 신입직원 공개채용 (금융일반 / IT전산)",
+      "sourceName": "Superookie",
+      "sourceUrl": "https://www.superookie.com/jobs/6acc5d4c83b0342ab73922b4",
+      "deadlineAt": "2026-10-23T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT전산"
+    },
+    {
+      "companyName": "주식회사 인시스(INSYS)",
+      "title": "[신입/경력] AI 응용 S/W 연구 개발자 채용 공고",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K131132610130030",
+      "deadlineAt": "2026-10-27T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "주식회사 신성테크",
+      "title": "소프트웨어 개발자 채용",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K160042610130030",
+      "deadlineAt": "2026-10-23T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "한국재정정보원",
+      "title": "한국재정정보원 제5차 채용(정규직)",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K120122610200008",
+      "deadlineAt": "2026-11-02T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "일반직 5급 전산(시스템운영), 일반직 5급 전산(인프라시스템 운영)"
+    },
+    {
+      "companyName": "(주)에이큐넷",
+      "title": "[AQNET] AI·AdTech 프로덕트 엔지니어 채용 (신입/경력)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://www.saramin.co.kr/zf_user/jobs/view?rec_idx=55344542",
+      "deadlineAt": "2026-11-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)라이크코퍼레이션",
+      "title": "Unity · Web Full Stack 개발자",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55328890&searchword=%EB%9D%BC%EC%9D%B4%ED%81%AC&t_category=search&t_content=connect_recruit",
+      "deadlineAt": "2026-12-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
