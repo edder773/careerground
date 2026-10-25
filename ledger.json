@@ -65,14 +65,6 @@
       "sentOn": "catalog"
     },
     {
-      "companyName": "주식회사 엠에스피",
-      "title": "㈜엠에스피 AI 개발자 채용",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K172112609210039",
-      "deadlineAt": "2026-10-17T00:00:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "catalog"
-    },
-    {
       "companyName": "(주)팀로보틱스",
       "title": "착용로봇 AI 분야 연구원 채용 (신입/경력)",
       "sourceUrl": "https://www.saramin.co.kr/job-search/view?cn=job-industry&cns=recently-list&rec_idx=55077845&referNonce=&t_category=job_recruit&t_content=generic",
@@ -174,22 +166,6 @@
       "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K120312609100001",
       "deadlineAt": null,
       "applicationStartAt": "2026-09-10T08:49:04+09:00",
-      "sentOn": "catalog"
-    },
-    {
-      "companyName": "에이스정보시스템",
-      "title": "소프트웨어 개발자, 하드웨어 기술자 채용",
-      "sourceUrl": "https://www.work24.go.kr/empInfo/empInfoSrch/detail/empDetailAuthView.do?wantedAuthNo=K141212609140026",
-      "deadlineAt": "2026-10-17T23:59:59+09:00",
-      "applicationStartAt": null,
-      "sentOn": "catalog"
-    },
-    {
-      "companyName": "(주)길",
-      "title": "스마트팜 개발자 채용 공고",
-      "sourceUrl": "https://www.work24.go.kr/empInfo/empInfoSrch/detail/empDetailAuthView.do?wantedAuthNo=K180012609140023",
-      "deadlineAt": "2026-10-16T23:59:59+09:00",
-      "applicationStartAt": null,
       "sentOn": "catalog"
     },
     {
@@ -979,15 +955,6 @@
       "sentOn": "2026-10-02"
     },
     {
-      "companyName": "국립중앙의료원",
-      "title": "기술직 6급 전산행정(정보운영팀) 채용 공고",
-      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305641",
-      "deadlineAt": "2026-10-16T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-06",
-      "itRole": "기술직 6급 전산행정(정보운영팀)"
-    },
-    {
       "companyName": "한국농어촌공사",
       "title": "2026년도 직무중심 신입사원(5급, 6급) 채용 공고",
       "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305542",
@@ -1003,14 +970,6 @@
       "deadlineAt": "2026-10-20T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-06"
-    },
-    {
-      "companyName": "람다256",
-      "title": "[신입 크루 집중 모집] Blockchain Node Operations Specialist",
-      "sourceUrl": "https://inthiswork.com/archives/403976",
-      "deadlineAt": "2026-10-18T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-07"
     },
     {
       "companyName": "한국언론진흥재단",
@@ -1103,40 +1062,6 @@
       "sentOn": "2026-10-07"
     },
     {
-      "companyName": "인동에프엔",
-      "title": "2026 하반기 신입사원 채용",
-      "sourceUrl": "https://jasoseol.com/recruit/106521",
-      "deadlineAt": "2026-10-18T14:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-08",
-      "itRole": "전산"
-    },
-    {
-      "companyName": "한국화재보험협회",
-      "title": "2026년 하반기 신입/경력직 채용",
-      "sourceUrl": "https://jasoseol.com/recruit/106492",
-      "deadlineAt": "2026-10-18T14:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-08",
-      "itRole": "AI Engineer, Data Scientist, Data Engineer, Platform Developer"
-    },
-    {
-      "companyName": "(주)윈스테크넷",
-      "title": "2026년 10월 월간채용(신입/경력) - 개발",
-      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55193065",
-      "deadlineAt": "2026-10-18T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-08"
-    },
-    {
-      "companyName": "동광제약",
-      "title": "2026년 4분기 IT팀 신입/경력 채용",
-      "sourceUrl": "https://inthiswork.com/archives/404251",
-      "deadlineAt": "2026-10-18T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-08"
-    },
-    {
       "companyName": "충남대학교병원",
       "title": "[대전] 2026년 하반기 충남대학교병원 정규직(행정직, 보건직, 전산직, 간호조무직, 원무직) 공개채용 공고",
       "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305813",
@@ -1202,15 +1127,6 @@
       "sentOn": "2026-10-08"
     },
     {
-      "companyName": "BNK캐피탈",
-      "title": "2026년 신입직원 채용 - IT",
-      "sourceUrl": "https://linkareer.com/activity/355621",
-      "deadlineAt": "2026-10-18T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-12",
-      "itRole": "IT"
-    },
-    {
       "companyName": "한국수출입은행",
       "title": "한국수출입은행 2026년도 하반기 전문직행원(신입) 채용",
       "sourceUrl": "https://jlab.incruit.com/jobs/2610020002430",
@@ -1266,24 +1182,6 @@
       "deadlineAt": "2026-11-21T09:09:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-12"
-    },
-    {
-      "companyName": "행복나래",
-      "title": "2026년 하반기 신입/경력 채용 (신입 IT·RPA)",
-      "sourceUrl": "https://jasoseol.com/recruit/106620",
-      "deadlineAt": "2026-10-18T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-13",
-      "itRole": "IT, RPA 개발 및 운영"
-    },
-    {
-      "companyName": "HL만도",
-      "title": "2026년 하반기 월간 신입 채용(10월, SW PM)",
-      "sourceUrl": "https://linkareer.com/activity/355837",
-      "deadlineAt": "2026-10-18T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-13",
-      "itRole": "SW PM"
     },
     {
       "companyName": "원테크스탑",
@@ -1831,6 +1729,73 @@
       "deadlineAt": "2026-11-19T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-23"
+    },
+    {
+      "companyName": "스마일게이트",
+      "title": "[CROSSFIRE] 라이브 개발 클라이언트 담당 (시스템)",
+      "sourceUrl": "https://linkareer.com/activity/358465",
+      "deadlineAt": "2026-10-31T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-26"
+    },
+    {
+      "companyName": "한국재정정보원",
+      "title": "한국재정정보원 제5차 채용(정규직)",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K120122610200008",
+      "deadlineAt": "2026-11-02T18:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-26",
+      "itRole": "일반직 5급 전산(시스템운영), 일반직 5급 전산(인프라시스템 운영)"
+    },
+    {
+      "companyName": "공무원연금공단",
+      "title": "2026년 하반기 신입직원 채용",
+      "sourceUrl": "https://inthiswork.com/archives/410432",
+      "deadlineAt": "2026-11-05T18:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-26",
+      "itRole": "전산"
+    },
+    {
+      "companyName": "한국산업기술진흥원",
+      "title": "2026년 하반기 전문분야 신규직원 공개채용 - AI정보화",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=306258",
+      "deadlineAt": "2026-11-06T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-26",
+      "itRole": "AI정보화"
+    },
+    {
+      "companyName": "디딤(주)",
+      "title": "멀티 클라우드 구축 및 운영 엔지니어 채용 (신입)",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50195285",
+      "deadlineAt": "2026-11-18T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-26"
+    },
+    {
+      "companyName": "(주)교림소프트",
+      "title": "기업부설연구소 개발자(신입)를 모십니다.",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50203374",
+      "deadlineAt": "2026-11-19T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-26"
+    },
+    {
+      "companyName": "(주)북틀",
+      "title": "(신입-3년) 주니어 프론트 앤드 개발자 채용",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50210544",
+      "deadlineAt": "2026-11-20T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-26"
+    },
+    {
+      "companyName": "(주)라이크코퍼레이션",
+      "title": "Unity · Web Full Stack 개발자",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55328890&searchword=%EB%9D%BC%EC%9D%B4%ED%81%AC&t_category=search&t_content=connect_recruit",
+      "deadlineAt": "2026-12-18T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-26"
     }
   ],
   "deliveries": {
@@ -2021,6 +1986,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-10-22"
+      ],
+      "status": "SENT"
+    },
+    "2026-10-26": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-10-25T23:00:01.195Z",
+      "jobCount": 8,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-10-23"
       ],
       "status": "SENT"
     }
