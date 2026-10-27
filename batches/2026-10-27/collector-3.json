@@ -1,0 +1,48 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-10-27",
+  "receivedAt": "2026-10-27T13:21:52.583Z",
+  "jobs": [
+    {
+      "companyName": "BMW Financial Services Korea",
+      "title": "[BMW Financial Services Korea] IT Intern - Operation",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/412248",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "iM증권",
+      "title": "2026년 iM증권 신입사원 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/411684",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "KB손해보험",
+      "title": "2026년 하반기 4급 신입사원 공개채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/410966",
+      "deadlineAt": "2026-11-01T23:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI·데이터"
+    },
+    {
+      "companyName": "메리츠증권",
+      "title": "2026년 대졸 신입사원 공개채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/409014",
+      "deadlineAt": "2026-10-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    }
+  ],
+  "rejected": []
+}
