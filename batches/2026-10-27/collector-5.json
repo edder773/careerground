@@ -1,0 +1,39 @@
+{
+  "kind": "collector",
+  "slot": 5,
+  "date": "2026-10-27",
+  "receivedAt": "2026-10-27T13:21:59.811Z",
+  "jobs": [
+    {
+      "companyName": "자화전자",
+      "title": "2026년 하반기 신입 및 경력 채용 - IT 생산 PP 구축운영 (청주)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/career/106871",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT 생산 PP 구축운영 (청주)"
+    },
+    {
+      "companyName": "KB손해보험",
+      "title": "2026년 하반기 4급 신입사원 공개채용 - AI.데이터",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/359630",
+      "deadlineAt": "2026-11-01T23:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI.데이터"
+    },
+    {
+      "companyName": "하나저축은행",
+      "title": "2026 하반기 경력직원/채용형 인턴직원 모집 - IT기획/운영",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/359696",
+      "deadlineAt": "2026-11-09T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "IT기획/운영"
+    }
+  ],
+  "rejected": []
+}
