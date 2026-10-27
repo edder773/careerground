@@ -49,6 +49,15 @@ export function batchReadiness(dataDir, date) {
     ready: complete(collectors, 'collector', 5) && complete(reviewers, 'reviewer', 3),
   };
 }
+// A delayed weekday 21:00 schedule still tests that evening's batch. Keep
+// this separate from the actual send time, whose holiday/time guards remain.
+const scheduledTestDate = (now) => {
+  const slot = new Date(`${kstDateKey(now)}T21:00:00+09:00`);
+  while (slot > now || [0, 6].includes(new Date(slot.getTime() + 9 * 60 * 60_000).getUTCDay())) {
+    slot.setTime(slot.getTime() - 24 * 60 * 60_000);
+  }
+  return kstDateKey(slot);
+};
 const skip = (reason) => ({ status: 'skipped', reason });
 export async function dispatchAlert({
   env = process.env,
@@ -73,7 +82,9 @@ export async function dispatchAlert({
   const batchDate =
     env.JOB_ALERT_BATCH_DATE ||
     (destination === 'test'
-      ? today
+      ? env.GITHUB_EVENT_NAME === 'schedule'
+        ? scheduledTestDate(now)
+        : today
       : dates
           .filter(
             (batch) => parseBatchId(batch).date < today && batchReadiness(sourceDir, batch).ready,
