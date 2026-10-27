@@ -1,0 +1,92 @@
+{
+  "kind": "reviewer",
+  "slot": 1,
+  "date": "2026-10-26",
+  "receivedAt": "2026-10-27T00:08:32.276Z",
+  "jobs": [
+    {
+      "companyName": "한온시스템",
+      "title": "2026년 하반기 채용연계형 인턴십 - 차량용 Software 개발",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106810",
+      "deadlineAt": "2026-11-01T23:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "차량용 Software 개발"
+    },
+    {
+      "companyName": "네이버랩스",
+      "title": "Robot Manipulation Data Engineer",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/359500",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "KIS정보통신",
+      "title": "2026년 하반기 신입/경력 수시 채용 - 시스템 인프라 구축·운영",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/359179",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "선우이엔지(주)",
+      "title": "[개발부] 반도체 장비&가스분석 시스템 프로그램 개발 신입",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55390493",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "iM증권",
+      "title": "2026년 신입사원 채용 - IT",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/359459",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "(주)드림텍",
+      "title": "시스템운영팀 MES 시스템 설계, 개발, 운영 담당자 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/411199",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)디지털스퀘어",
+      "title": "디지털스퀘어 웹(Full stack)개발자 채용 (신입/경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50205855",
+      "deadlineAt": "2026-11-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "무월소프트",
+      "title": "[무월소프트] AI 버튜버 시스템·웹 풀스택 개발자 (신입·경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50225356",
+      "deadlineAt": "2026-11-21T23:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)텍크마린",
+      "title": "선박용 응용 소프트웨어 개발자 신입/경력",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50219118",
+      "deadlineAt": "2026-11-21T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
