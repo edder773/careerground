@@ -1,0 +1,37 @@
+{
+  "kind": "reviewer",
+  "slot": 2,
+  "date": "2026-10-28",
+  "receivedAt": "2026-10-28T13:27:12.017Z",
+  "jobs": [
+    {
+      "companyName": "한국카본",
+      "title": "2026년 하반기 공개채용 - P.I (신입/경력)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/360400",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "SK인텔릭스",
+      "title": "데이터 분석 체험형 인턴 채용",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/360373",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "IBK기업은행",
+      "title": "2027년 동계 체험형 청년인턴 채용 - 디지털·IT",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/360096",
+      "deadlineAt": "2026-11-16T10:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "디지털, IT"
+    }
+  ],
+  "rejected": []
+}
