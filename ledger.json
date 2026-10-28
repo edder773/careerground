@@ -25,14 +25,6 @@
       "sentOn": "catalog"
     },
     {
-      "companyName": "아이티에스시스템(주)",
-      "title": "[구미] 신입/경력 개발자 SI·SM 인원 모집",
-      "sourceUrl": "https://www.saramin.co.kr/job-search/view?rec_idx=55088303",
-      "deadlineAt": "2026-10-21T23:59:00+09:00",
-      "applicationStartAt": "2026-09-21T10:00:00+09:00",
-      "sentOn": "catalog"
-    },
-    {
       "companyName": "알트나인",
       "title": "[알트나인] [SOL: enchant] 서버 프로그래밍 (신입)",
       "sourceUrl": "https://linkareer.com/activity/352170",
@@ -1002,15 +994,6 @@
       "sentOn": "2026-10-07"
     },
     {
-      "companyName": "충남대학교병원",
-      "title": "[대전] 2026년 하반기 충남대학교병원 정규직(행정직, 보건직, 전산직, 간호조무직, 원무직) 공개채용 공고",
-      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305813",
-      "deadlineAt": "2026-10-21T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-08",
-      "itRole": "전산직(전산기사)"
-    },
-    {
       "companyName": "굿파트너스(주)",
       "title": "웹 프로그램 개발자 모집(신입)",
       "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=CSI&infoTypeGroup=tb_workinfogubun&wantedAuthNo=55189953",
@@ -1105,15 +1088,6 @@
       "deadlineAt": "2026-11-21T09:09:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-12"
-    },
-    {
-      "companyName": "한국항공대학교",
-      "title": "신규직원 정규직 전환형 채용 (전산정보)",
-      "sourceUrl": "https://jasoseol.com/recruit/106508",
-      "deadlineAt": "2026-10-21T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-13",
-      "itRole": "전산정보"
     },
     {
       "companyName": "kt ds",
@@ -1769,6 +1743,31 @@
       "deadlineAt": "2026-12-18T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-28"
+    },
+    {
+      "companyName": "한국카본",
+      "title": "2026년 하반기 공개채용 - P.I (신입/경력)",
+      "sourceUrl": "https://linkareer.com/activity/360400",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-29"
+    },
+    {
+      "companyName": "SK인텔릭스",
+      "title": "데이터 분석 체험형 인턴 채용",
+      "sourceUrl": "https://linkareer.com/activity/360373",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-29"
+    },
+    {
+      "companyName": "IBK기업은행",
+      "title": "2027년 동계 체험형 청년인턴 채용 - 디지털·IT",
+      "sourceUrl": "https://linkareer.com/activity/360096",
+      "deadlineAt": "2026-11-16T10:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-29",
+      "itRole": "디지털, IT"
     }
   ],
   "deliveries": {
@@ -1995,6 +1994,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-10-27"
+      ],
+      "status": "SENT"
+    },
+    "2026-10-29": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-10-28T23:00:02.509Z",
+      "jobCount": 3,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-10-28"
       ],
       "status": "SENT"
     }
