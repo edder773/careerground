@@ -1,0 +1,46 @@
+{
+  "kind": "collector",
+  "slot": 2,
+  "date": "2026-10-28",
+  "receivedAt": "2026-10-28T13:16:33.137Z",
+  "jobs": [
+    {
+      "companyName": "딜로이트 안진회계법인",
+      "title": "[딜로이트 안진회계법인] 경영지원부문 IT AI 엔지니어 채용",
+      "sourceName": "Superookie",
+      "sourceUrl": "https://www.superookie.com/jobs/6ad6ecedbeb49f5cf617de83",
+      "deadlineAt": "2026-11-19T16:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "한국재정정보원",
+      "title": "한국재정정보원 제5차 채용(정규직)",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K120122610200008",
+      "deadlineAt": "2026-11-02T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "일반직 5급 전산(시스템운영), 일반직 5급 전산(인프라시스템 운영)"
+    },
+    {
+      "companyName": "(주)라이크코퍼레이션",
+      "title": "Unity · Web Full Stack 개발자",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55328890&searchword=%EB%9D%BC%EC%9D%B4%ED%81%AC&t_category=search&t_content=connect_recruit",
+      "deadlineAt": "2026-12-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "선우이엔지(주)",
+      "title": "[개발부] 반도체 장비&가스분석 시스템 프로그램 개발 신입",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55390493",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    }
+  ],
+  "rejected": []
+}
