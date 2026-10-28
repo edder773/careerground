@@ -3,13 +3,23 @@
   "batches": [
     "2026-10-28"
   ],
-  "generatedAt": "2026-10-28T00:13:32.231Z",
-  "collectorCount": 0,
+  "generatedAt": "2026-10-28T09:07:41.252Z",
+  "collectorCount": 1,
   "skipped": {
-    "notAlertable": 0,
+    "notAlertable": 4,
     "restricted": 0,
-    "alreadySent": 0,
+    "alreadySent": 3,
     "duplicate": 0
   },
-  "jobs": []
+  "jobs": [
+    {
+      "companyName": "주식회사 체크팀",
+      "title": "[체크팀] 금융솔루션(온투업) 백엔드 개발자 채용 (Java/Spring/MySQL)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2610270000289",
+      "deadlineAt": "2026-11-26T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ]
 }
