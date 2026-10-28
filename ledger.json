@@ -1735,6 +1735,49 @@
       "deadlineAt": "2026-11-21T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-27"
+    },
+    {
+      "companyName": "KB손해보험",
+      "title": "2026년 하반기 4급 신입사원 공개채용 #설명회",
+      "sourceUrl": "https://m.catch.co.kr/NCS/RecruitInfoDetails/575361",
+      "deadlineAt": "2026-11-01T23:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-28",
+      "itRole": "AI·데이터"
+    },
+    {
+      "companyName": "자화전자",
+      "title": "2026년 하반기 신입 및 경력 채용 - IT 생산 PP 구축운영 (청주)",
+      "sourceUrl": "https://jasoseol.com/career/106871",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-28",
+      "itRole": "IT 생산 PP 구축운영 (청주)"
+    },
+    {
+      "companyName": "하나저축은행",
+      "title": "2026 하반기 경력직원/채용형 인턴직원 모집 - IT기획/운영",
+      "sourceUrl": "https://linkareer.com/activity/359696",
+      "deadlineAt": "2026-11-09T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-28",
+      "itRole": "IT기획/운영"
+    },
+    {
+      "companyName": "IT SEARCH(아이티서치)",
+      "title": "이통사 운용 관리 서버 개발",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2610180000065",
+      "deadlineAt": "2026-11-17T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-28"
+    },
+    {
+      "companyName": "(주)아이엘케이코리아",
+      "title": "백엔드 개발자 (신입/경력)",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50194971",
+      "deadlineAt": "2026-12-18T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-28"
     }
   ],
   "deliveries": {
@@ -1949,6 +1992,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-10-26"
+      ],
+      "status": "SENT"
+    },
+    "2026-10-28": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-10-28T00:17:41.092Z",
+      "jobCount": 5,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-10-27"
       ],
       "status": "SENT"
     }
