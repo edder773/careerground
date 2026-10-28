@@ -1,0 +1,82 @@
+{
+  "kind": "collector",
+  "slot": 4,
+  "date": "2026-10-28",
+  "receivedAt": "2026-10-28T09:07:21.529Z",
+  "jobs": [
+    {
+      "companyName": "한국전자기술연구원",
+      "title": "2026년 정규직 공개채용 공고",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2610210000297",
+      "deadlineAt": "2026-11-05T13:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "정보전산"
+    },
+    {
+      "companyName": "유안타증권",
+      "title": "IT인프라운영팀 신입/경력직원 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2610210001918",
+      "deadlineAt": "2026-10-29T23:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "주식회사 체크팀",
+      "title": "[체크팀] 금융솔루션(온투업) 백엔드 개발자 채용 (Java/Spring/MySQL)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2610270000289",
+      "deadlineAt": "2026-11-26T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "IT SEARCH(아이티서치)",
+      "title": "이통사 운용 관리 서버 개발",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2610180000065",
+      "deadlineAt": "2026-11-17T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Arm",
+      "title": "GPU Software Applications Engineer Intern (3 months)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/gpu-software-applications-engineer-intern-3-months-at-arm-4480225151",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Arm",
+      "title": "Graduate GPU Software Applications Engineer",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/graduate-gpu-software-applications-engineer-at-arm-4480219431",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "BMW Financial Services Korea",
+      "title": "[BMW Financial Services Korea] IT Intern -AI Engineering",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/bmw-financial-services-korea-it-intern-ai-engineering-at-bmw-group-4482850234",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "BMW Financial Services Korea",
+      "title": "[BMW Financial Services Korea] IT Intern - Operation",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/bmw-financial-services-korea-it-intern-operation-at-bmw-group-4482835958",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
