@@ -1,0 +1,110 @@
+{
+  "kind": "collector",
+  "slot": 1,
+  "date": "2026-10-29",
+  "receivedAt": "2026-10-29T13:15:18.271Z",
+  "jobs": [
+    {
+      "companyName": "(주)아이엘케이코리아",
+      "title": "백엔드 개발자 (신입/경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50194971",
+      "deadlineAt": "2026-12-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)디지털스퀘어",
+      "title": "디지털스퀘어 웹(Full stack)개발자 채용 (신입/경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50205855",
+      "deadlineAt": "2026-11-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "무월소프트",
+      "title": "[무월소프트] AI 버튜버 시스템·웹 풀스택 개발자 (신입·경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50225356",
+      "deadlineAt": "2026-11-21T23:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "디딤(주)",
+      "title": "멀티 클라우드 구축 및 운영 엔지니어 채용 (신입)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50195285",
+      "deadlineAt": "2026-11-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)교림소프트",
+      "title": "기업부설연구소 개발자(신입)를 모십니다.",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50203374",
+      "deadlineAt": "2026-11-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)북틀",
+      "title": "(신입-3년) 주니어 프론트 앤드 개발자 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50210544",
+      "deadlineAt": "2026-11-20T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)텍크마린",
+      "title": "선박용 응용 소프트웨어 개발자 신입/경력",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50219118",
+      "deadlineAt": "2026-11-21T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)오투",
+      "title": "클라우드 시스템 엔지니어 사원모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50238108",
+      "deadlineAt": "2026-12-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "에스케이쉴더스(주)",
+      "title": "OA 서비스 운영 및 유지보수 담당자 신입 및 경력직 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50248034",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "KB손해보험",
+      "title": "2026년 하반기 4급 신입사원 공개채용",
+      "sourceName": "Catch",
+      "sourceUrl": "https://m.catch.co.kr/NCS/RecruitInfoDetails/575361",
+      "deadlineAt": "2026-11-01T23:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI·데이터"
+    },
+    {
+      "companyName": "한온시스템",
+      "title": "2026년 하반기 채용연계형 인턴십 #공채",
+      "sourceName": "Catch",
+      "sourceUrl": "https://m.catch.co.kr/NCS/RecruitInfoDetails/576986",
+      "deadlineAt": "2026-11-01T23:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "소프트웨어 엔지니어"
+    }
+  ],
+  "rejected": []
+}
