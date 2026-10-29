@@ -1,0 +1,101 @@
+{
+  "date": "2026-10-29",
+  "batches": [
+    "2026-10-29"
+  ],
+  "generatedAt": "2026-10-29T13:15:35.588Z",
+  "collectorCount": 5,
+  "skipped": {
+    "notAlertable": 8,
+    "restricted": 0,
+    "alreadySent": 15,
+    "duplicate": 0
+  },
+  "jobs": [
+    {
+      "companyName": "중앙백신연구소",
+      "title": "IT 인프라 및 시스템 운영 부문",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=OEW&infoTypeGroup=tb_workinfoopen&wantedAuthNo=181662",
+      "deadlineAt": "2026-10-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "KIS자산평가",
+      "title": "금융컨설팅본부 솔루션실 신입/경력 채용 공고",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/412639",
+      "deadlineAt": "2026-11-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "아이엠증권",
+      "title": "2026년 신입사원 채용",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=OEW&infoTypeGroup=tb_workinfoopen&wantedAuthNo=182994",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "한국화낙",
+      "title": "2027년도 정규직 신입사원 모집 - IT",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106869",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "퍼스텍",
+      "title": "2027년도 후성그룹 대졸 신입사원 공개채용 - 퍼스텍 경영지원(전산)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106946",
+      "deadlineAt": "2026-11-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "[퍼스텍] 경영지원(전산)"
+    },
+    {
+      "companyName": "에스케이쉴더스(주)",
+      "title": "OA 서비스 운영 및 유지보수 담당자 신입 및 경력직 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50248034",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "나이스디앤알",
+      "title": "웹 서비스(Back-end, Front-end) 개발 및 운영(신입/경력)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/360576",
+      "deadlineAt": "2026-11-17T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "한국기계연구원",
+      "title": "2026년도 제3회 신입직원 공개채용 - 통합정보시스템 개발·구축 및 운영",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106920",
+      "deadlineAt": "2026-11-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "통합정보시스템 개발·구축 및 운영"
+    },
+    {
+      "companyName": "(주)오투",
+      "title": "클라우드 시스템 엔지니어 사원모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50238108",
+      "deadlineAt": "2026-12-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ]
+}
