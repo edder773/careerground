@@ -1,0 +1,37 @@
+{
+  "kind": "reviewer",
+  "slot": 1,
+  "date": "2026-10-29",
+  "receivedAt": "2026-10-29T13:24:16.686Z",
+  "jobs": [
+    {
+      "companyName": "KIS자산평가",
+      "title": "금융컨설팅본부 솔루션실 신입/경력 채용 공고",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/412639",
+      "deadlineAt": "2026-11-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "아이엠증권",
+      "title": "2026년 신입사원 채용",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=OEW&infoTypeGroup=tb_workinfoopen&wantedAuthNo=182994",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    },
+    {
+      "companyName": "에스케이쉴더스(주)",
+      "title": "OA 서비스 운영 및 유지보수 담당자 신입 및 경력직 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50248034",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
