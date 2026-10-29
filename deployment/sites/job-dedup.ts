@@ -94,6 +94,9 @@ const canonicalCompanyAliases = new Map<string, string>([
   ['wooribank', 'woori-bank'],
   ['농협은행', 'nh-bank'],
   ['nh농협은행', 'nh-bank'],
+  // Legal name and brand: https://www.imfnsec.com/company_info/ci.jsp
+  ['아이엠증권', 'im-securities'],
+  ['im증권', 'im-securities'],
   ['서울주택도시공사', 'sh-seoul-housing'],
   ['서울주택도시개발공사', 'sh-seoul-housing'],
   ['한솔피엔에스', 'hansol-pns'],
