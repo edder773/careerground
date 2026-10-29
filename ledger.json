@@ -865,14 +865,6 @@
       "sentOn": "catalog"
     },
     {
-      "companyName": "(주)지에프씨코리아",
-      "title": "[가산동] 추천모델 AI 개발자 (2-3개월)",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50041846",
-      "deadlineAt": "2026-10-22T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-01"
-    },
-    {
       "companyName": "(주)데이터스트림즈",
       "title": "데이터통합 솔루션 개발자 신입/경력 채용",
       "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55149046",
@@ -1330,14 +1322,6 @@
       "sentOn": "2026-10-14"
     },
     {
-      "companyName": "EY한영",
-      "title": "감사부문 Data Analytics – IT Specialist 인턴",
-      "sourceUrl": "https://inthiswork.com/archives/407318",
-      "deadlineAt": "2026-10-22T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-15"
-    },
-    {
       "companyName": "한국의약품안전관리원",
       "title": "2026년 3차 직원 채용 - 정규직 일반직(5급) 전산",
       "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305962",
@@ -1759,6 +1743,31 @@
       "applicationStartAt": null,
       "sentOn": "2026-10-29",
       "itRole": "디지털, IT"
+    },
+    {
+      "companyName": "KIS자산평가",
+      "title": "금융컨설팅본부 솔루션실 신입/경력 채용 공고",
+      "sourceUrl": "https://inthiswork.com/archives/412639",
+      "deadlineAt": "2026-11-06T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-30"
+    },
+    {
+      "companyName": "에스케이쉴더스(주)",
+      "title": "OA 서비스 운영 및 유지보수 담당자 신입 및 경력직 채용",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50248034",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-30"
+    },
+    {
+      "companyName": "한국기계연구원",
+      "title": "2026년도 제3회 신입직원 공개채용 - 통합정보시스템 개발·구축 및 운영",
+      "sourceUrl": "https://jasoseol.com/recruit/106920",
+      "deadlineAt": "2026-11-18T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-10-30",
+      "itRole": "통합정보시스템 개발·구축 및 운영"
     }
   ],
   "deliveries": {
@@ -1997,6 +2006,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-10-28"
+      ],
+      "status": "SENT"
+    },
+    "2026-10-30": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-10-29T23:00:01.642Z",
+      "jobCount": 3,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-10-29"
       ],
       "status": "SENT"
     }

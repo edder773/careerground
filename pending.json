@@ -3,24 +3,15 @@
   "batches": [
     "2026-10-29"
   ],
-  "generatedAt": "2026-10-29T13:38:33.065Z",
+  "generatedAt": "2026-10-29T23:00:01.642Z",
   "collectorCount": 5,
   "skipped": {
-    "notAlertable": 8,
+    "notAlertable": 9,
     "restricted": 0,
     "alreadySent": 16,
     "duplicate": 0
   },
   "jobs": [
-    {
-      "companyName": "중앙백신연구소",
-      "title": "IT 인프라 및 시스템 운영 부문",
-      "sourceName": "Work24",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=OEW&infoTypeGroup=tb_workinfoopen&wantedAuthNo=181662",
-      "deadlineAt": "2026-10-29T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
     {
       "companyName": "KIS자산평가",
       "title": "금융컨설팅본부 솔루션실 신입/경력 채용 공고",
