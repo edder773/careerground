@@ -1,0 +1,55 @@
+{
+  "kind": "reviewer",
+  "slot": 2,
+  "date": "2026-10-30",
+  "receivedAt": "2026-10-30T13:25:31.141Z",
+  "jobs": [
+    {
+      "companyName": "라이드플럭스",
+      "title": "[2026 겨울 방학인턴] 자율주행 SW Engineer 모집",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/411381",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "티에이케이정보시스템(주)",
+      "title": "[티에이케이정보시스템] 2026년 WEB개발자 신입 및 경력사원 모집",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=CIN&infoTypeGroup=tb_workinfogubun&wantedAuthNo=2610290002291",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "제주국제자유도시개발센터",
+      "title": "2026년 정규직 직원 등 모집 - 6급 전산(전국)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://secure.jasoseol.com/recruit/106958",
+      "deadlineAt": "2026-11-13T14:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산(전국)"
+    },
+    {
+      "companyName": "에스넷시스템(주)",
+      "title": "[기흥/화성] 네트워크 엔지니어 (신입)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50255868",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "에스넷시스템(주)",
+      "title": "[서울] 네트워크 엔지니어 (신입)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50255941",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    }
+  ],
+  "rejected": []
+}
