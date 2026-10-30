@@ -1,0 +1,117 @@
+{
+  "date": "2026-10-30",
+  "batches": [
+    "2026-10-30"
+  ],
+  "generatedAt": "2026-10-30T13:15:32.525Z",
+  "collectorCount": 5,
+  "skipped": {
+    "notAlertable": 16,
+    "restricted": 0,
+    "alreadySent": 17,
+    "duplicate": 1
+  },
+  "jobs": [
+    {
+      "companyName": "라이드플럭스",
+      "title": "[2026 겨울 방학인턴] 자율주행 SW Engineer 모집",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/411381",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "티에이케이정보시스템(주)",
+      "title": "[티에이케이정보시스템] 2026년 WEB개발자 신입 및 경력사원 모집",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=CIN&infoTypeGroup=tb_workinfogubun&wantedAuthNo=2610290002291",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "EY한영",
+      "title": "[EY한영] 컨설팅부문 수요예측 데이터 분석 인턴",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/360887",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "제주국제자유도시개발센터",
+      "title": "2026년 정규직 직원 등 모집 - 6급 전산(전국)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://secure.jasoseol.com/recruit/106958",
+      "deadlineAt": "2026-11-13T14:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "전산(전국)"
+    },
+    {
+      "companyName": "에스넷시스템(주)",
+      "title": "[기흥/화성] 네트워크 엔지니어 (신입)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50255868",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "에스넷시스템(주)",
+      "title": "[서울] 네트워크 엔지니어 (신입)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50255941",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)위지언",
+      "title": "웹 개발자 인턴 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50248222",
+      "deadlineAt": "2026-11-26T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)이노지스소프트",
+      "title": "[서울] 웹 개발자 (JSP/JavaScript/HTML) 신입 및 경력자채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50247929",
+      "deadlineAt": "2026-11-26T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "미래정보기술",
+      "title": "응용 S/W 개발자 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50250180",
+      "deadlineAt": "2026-11-26T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "모멘틱스",
+      "title": "사업계획 및 기술 개발 전문가를 모집합니다.",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K140112610290008",
+      "deadlineAt": "2026-11-28T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "소프트웨어 개발자(C, C++)"
+    },
+    {
+      "companyName": "(주)오투",
+      "title": "클라우드 시스템 엔지니어 사원모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50238108",
+      "deadlineAt": "2026-12-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ]
+}

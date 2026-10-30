@@ -1,73 +1,108 @@
 {
-  "date": "2026-10-29",
+  "date": "2026-10-30",
   "batches": [
-    "2026-10-29"
+    "2026-10-30"
   ],
-  "generatedAt": "2026-10-29T23:00:01.642Z",
+  "generatedAt": "2026-10-30T13:15:32.525Z",
   "collectorCount": 5,
   "skipped": {
-    "notAlertable": 9,
+    "notAlertable": 16,
     "restricted": 0,
-    "alreadySent": 16,
-    "duplicate": 0
+    "alreadySent": 17,
+    "duplicate": 1
   },
   "jobs": [
     {
-      "companyName": "KIS자산평가",
-      "title": "금융컨설팅본부 솔루션실 신입/경력 채용 공고",
+      "companyName": "라이드플럭스",
+      "title": "[2026 겨울 방학인턴] 자율주행 SW Engineer 모집",
       "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/412639",
-      "deadlineAt": "2026-11-06T23:59:00+09:00",
+      "sourceUrl": "https://inthiswork.com/archives/411381",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
-      "companyName": "한국화낙",
-      "title": "2027년도 정규직 신입사원 모집 - IT",
-      "sourceName": "Jasoseol",
-      "sourceUrl": "https://jasoseol.com/recruit/106869",
+      "companyName": "티에이케이정보시스템(주)",
+      "title": "[티에이케이정보시스템] 2026년 WEB개발자 신입 및 경력사원 모집",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=CIN&infoTypeGroup=tb_workinfogubun&wantedAuthNo=2610290002291",
       "deadlineAt": "2026-11-08T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "IT"
+      "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
-      "companyName": "퍼스텍",
-      "title": "2027년도 후성그룹 대졸 신입사원 공개채용 - 퍼스텍 경영지원(전산)",
+      "companyName": "EY한영",
+      "title": "[EY한영] 컨설팅부문 수요예측 데이터 분석 인턴",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/360887",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "제주국제자유도시개발센터",
+      "title": "2026년 정규직 직원 등 모집 - 6급 전산(전국)",
       "sourceName": "Jasoseol",
-      "sourceUrl": "https://jasoseol.com/recruit/106946",
-      "deadlineAt": "2026-11-11T23:59:00+09:00",
+      "sourceUrl": "https://secure.jasoseol.com/recruit/106958",
+      "deadlineAt": "2026-11-13T14:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "[퍼스텍] 경영지원(전산)"
+      "itRole": "전산(전국)"
     },
     {
-      "companyName": "에스케이쉴더스(주)",
-      "title": "OA 서비스 운영 및 유지보수 담당자 신입 및 경력직 채용",
+      "companyName": "에스넷시스템(주)",
+      "title": "[기흥/화성] 네트워크 엔지니어 (신입)",
       "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50248034",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50255868",
       "deadlineAt": "2026-11-15T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
+      "careerScope": "NEW_GRAD_ONLY"
     },
     {
-      "companyName": "나이스디앤알",
-      "title": "웹 서비스(Back-end, Front-end) 개발 및 운영(신입/경력)",
-      "sourceName": "Linkareer",
-      "sourceUrl": "https://linkareer.com/activity/360576",
-      "deadlineAt": "2026-11-17T23:59:00+09:00",
+      "companyName": "에스넷시스템(주)",
+      "title": "[서울] 네트워크 엔지니어 (신입)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50255941",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)위지언",
+      "title": "웹 개발자 인턴 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50248222",
+      "deadlineAt": "2026-11-26T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)이노지스소프트",
+      "title": "[서울] 웹 개발자 (JSP/JavaScript/HTML) 신입 및 경력자채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50247929",
+      "deadlineAt": "2026-11-26T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
-      "companyName": "한국기계연구원",
-      "title": "2026년도 제3회 신입직원 공개채용 - 통합정보시스템 개발·구축 및 운영",
-      "sourceName": "Jasoseol",
-      "sourceUrl": "https://jasoseol.com/recruit/106920",
-      "deadlineAt": "2026-11-18T23:59:00+09:00",
+      "companyName": "미래정보기술",
+      "title": "응용 S/W 개발자 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50250180",
+      "deadlineAt": "2026-11-26T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "모멘틱스",
+      "title": "사업계획 및 기술 개발 전문가를 모집합니다.",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K140112610290008",
+      "deadlineAt": "2026-11-28T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "통합정보시스템 개발·구축 및 운영"
+      "itRole": "소프트웨어 개발자(C, C++)"
     },
     {
       "companyName": "(주)오투",
