@@ -1,0 +1,118 @@
+{
+  "kind": "collector",
+  "slot": 4,
+  "date": "2026-10-30",
+  "receivedAt": "2026-10-30T13:15:18.008Z",
+  "jobs": [
+    {
+      "companyName": "한국전자기술연구원",
+      "title": "2026년 정규직 공개채용 공고",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2610210000297",
+      "deadlineAt": "2026-11-05T13:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "정보전산"
+    },
+    {
+      "companyName": "IT SEARCH(아이티서치)",
+      "title": "이통사 운용 관리 서버 개발",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2610180000065",
+      "deadlineAt": "2026-11-17T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주) 다우데이타",
+      "title": "[신입] IT 상황실 운영(관제) 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2610200003479",
+      "deadlineAt": "2026-11-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "Arm",
+      "title": "Graduate GPU Software Applications Engineer",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/graduate-gpu-software-applications-engineer-at-arm-4480219431",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "Arm",
+      "title": "GPU Software Applications Engineer Intern (3 months)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/gpu-software-applications-engineer-intern-3-months-at-arm-4480225151",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "BMW Financial Services Korea",
+      "title": "[BMW Financial Services Korea] IT Intern -AI Engineering",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/bmw-financial-services-korea-it-intern-ai-engineering-at-bmw-group-4482850234",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "BMW Financial Services Korea",
+      "title": "[BMW Financial Services Korea] IT Intern - Operation",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/bmw-financial-services-korea-it-intern-operation-at-bmw-group-4482835958",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Moloco",
+      "title": "Machine Learning Engineer Intern (3-month Internship)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/machine-learning-engineer-intern-3-month-internship-at-moloco-4483767765",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "KRAFTON Inc.",
+      "title": "[AI Research Div.] Research Scientist - World Action Models (경력무관 / 인턴)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/ai-research-div-research-scientist-world-action-models-%EA%B2%BD%EB%A0%A5%EB%AC%B4%EA%B4%80-%EC%9D%B8%ED%84%B4-at-krafton-inc-4483545209",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "FuriosaAI",
+      "title": "Systems Software Engineer (신입)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/systems-software-engineer-%EC%8B%A0%EC%9E%85-at-furiosaai-4482280273",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Cadence",
+      "title": "Software Engineer I",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/software-engineer-i-at-cadence-4479951627",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Ericsson",
+      "title": "Software developer | Early Career Program",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/software-developer-early-career-program-at-ericsson-4479358154",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
