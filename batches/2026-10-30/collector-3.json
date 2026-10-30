@@ -1,0 +1,54 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-10-30",
+  "receivedAt": "2026-10-30T13:15:12.388Z",
+  "jobs": [
+    {
+      "companyName": "에고이즘",
+      "title": "Front-end Engineer (채용연계형 인턴)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/411528",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "넥스트증권",
+      "title": "IT Admin*(1년 계약직/신입)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/411620",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "라이드플럭스",
+      "title": "[2026 겨울 방학인턴] 자율주행 SW Engineer 모집",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/411381",
+      "deadlineAt": "2026-11-01T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "에이스엔지니어링",
+      "title": "[신입/경력] IT 운영담당자 포지션",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/411378",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "NICE디앤알",
+      "title": "웹 서비스(Back-end, Front-end) 개발 및 운영(신입/경력)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/412984",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
