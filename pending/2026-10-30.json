@@ -3,24 +3,15 @@
   "batches": [
     "2026-10-30"
   ],
-  "generatedAt": "2026-10-30T13:31:01.708Z",
+  "generatedAt": "2026-11-01T23:00:01.318Z",
   "collectorCount": 5,
   "skipped": {
-    "notAlertable": 16,
+    "notAlertable": 19,
     "restricted": 0,
-    "alreadySent": 17,
+    "alreadySent": 15,
     "duplicate": 1
   },
   "jobs": [
-    {
-      "companyName": "라이드플럭스",
-      "title": "[2026 겨울 방학인턴] 자율주행 SW Engineer 모집",
-      "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/411381",
-      "deadlineAt": "2026-11-01T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
     {
       "companyName": "티에이케이정보시스템(주)",
       "title": "[티에이케이정보시스템] 2026년 WEB개발자 신입 및 경력사원 모집",
