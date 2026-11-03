@@ -1,53 +1,73 @@
 {
-  "date": "2026-11-02",
+  "date": "2026-11-03",
   "batches": [
-    "2026-11-02"
+    "2026-11-03"
   ],
-  "generatedAt": "2026-11-03T00:17:10.486Z",
+  "generatedAt": "2026-11-03T13:09:37.421Z",
   "collectorCount": 5,
   "skipped": {
     "notAlertable": 8,
     "restricted": 0,
-    "alreadySent": 12,
-    "duplicate": 1
+    "alreadySent": 9,
+    "duplicate": 2
   },
   "jobs": [
     {
-      "companyName": "(주)보령",
-      "title": "[보령] SAP ERP SD 담당자 (신입/경력)",
+      "companyName": "타인에이아이",
+      "title": "Model Engineer(LLM)",
       "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/414295",
+      "sourceUrl": "https://inthiswork.com/archives/414014",
+      "deadlineAt": "2026-11-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "하츠",
+      "title": "관리본부 DX· AX 기획 담당자 모집 공고(신입)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/413914",
       "deadlineAt": "2026-11-08T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
-      "companyName": "현대면세점",
-      "title": "2026년 하반기 현대백화점그룹 신입사원 채용 - [현대면세점] 디지털기획_일반전형",
-      "sourceName": "Jasoseol",
-      "sourceUrl": "https://jasoseol.com/recruit/106947",
-      "deadlineAt": "2026-11-12T23:59:00+09:00",
+      "companyName": "한국보훈복지의료공단(중앙보훈병원)",
+      "title": "2026년 하반기 정규직 채용 - 기술직5급(전산담당-통합정보개발부)",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=306556",
+      "deadlineAt": "2026-11-13T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "디지털기획"
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "기술직5급(전산담당-통합정보개발부)"
     },
     {
-      "companyName": "비즈테크아이",
-      "title": "26년 하반기 신입인턴 채용(전환형) - SAP 모듈 개발·운영",
-      "sourceName": "Jasoseol",
-      "sourceUrl": "https://jasoseol.com/recruit/106984",
-      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "companyName": "(주)비즈테크아이",
+      "title": "[LG CNS 자회사] 26년 하반기 신입 인턴 채용(전환형)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50262007",
+      "deadlineAt": "2026-11-15T23:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
     },
     {
-      "companyName": "토스",
-      "title": "Platform Engineer [인턴십]",
-      "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/414101",
-      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "companyName": "한국사회보장정보원",
+      "title": "2026년도 제4차 직원 채용공고",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611020000222",
+      "deadlineAt": "2026-11-16T16:00:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산초급(일반)"
+    },
+    {
+      "companyName": "신영증권",
+      "title": "2026년 하반기 신입사원 공개채용 - IT",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://secure.jasoseol.com/recruit/107026",
+      "deadlineAt": "2026-11-16T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
     },
     {
       "companyName": "(주)위지언",
