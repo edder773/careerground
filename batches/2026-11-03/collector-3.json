@@ -1,0 +1,45 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-11-03",
+  "receivedAt": "2026-11-03T13:09:21.263Z",
+  "jobs": [
+    {
+      "companyName": "크래프톤",
+      "title": "[Infra Div.] IT Engineer (경력 무관 / 계약직)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/414232",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "타인에이아이",
+      "title": "Frontend Engineer (경력 무관)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/414019",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "타인에이아이",
+      "title": "Model Engineer(LLM)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/414014",
+      "deadlineAt": "2026-11-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "하츠",
+      "title": "관리본부 DX· AX 기획 담당자 모집 공고(신입)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/413914",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
