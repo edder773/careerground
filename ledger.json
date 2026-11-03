@@ -1049,15 +1049,6 @@
       "sentOn": "2026-10-12"
     },
     {
-      "companyName": "한국전력공사",
-      "title": "2026년 하반기 한전 전력연구원 위촉연구원 (컴퓨터/전산 석사급)",
-      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=305874",
-      "deadlineAt": "2026-10-27T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-13",
-      "itRole": "컴퓨터/전산(석사급)"
-    },
-    {
       "companyName": "AK아이에스",
       "title": "2027년 신입사원 공개 채용 (IT 서비스 시스템 운영 및 개발)",
       "sourceUrl": "https://inthiswork.com/archives/406496",
@@ -1121,14 +1112,6 @@
       "deadlineAt": "2026-12-07T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-13"
-    },
-    {
-      "companyName": "주식회사 인시스(INSYS)",
-      "title": "[신입/경력] AI 응용 S/W 연구 개발자 채용 공고",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K131132610130030",
-      "deadlineAt": "2026-10-27T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-14"
     },
     {
       "companyName": "포항공과대학교",
@@ -1243,15 +1226,6 @@
       "deadlineAt": "2026-11-02T16:00:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-15"
-    },
-    {
-      "companyName": "한국전력공사(전력연구원)",
-      "title": "2026년 하반기 위촉연구원 채용 - 컴퓨터/전산(석사급)",
-      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=305874",
-      "deadlineAt": "2026-10-27T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-16",
-      "itRole": "컴퓨터/전산(석사급)"
     },
     {
       "companyName": "SK인텔릭스",
@@ -1681,6 +1655,41 @@
       "deadlineAt": "2026-11-15T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-11-03"
+    },
+    {
+      "companyName": "하츠",
+      "title": "관리본부 DX· AX 기획 담당자 모집 공고(신입)",
+      "sourceUrl": "https://inthiswork.com/archives/413914",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-04"
+    },
+    {
+      "companyName": "한국보훈복지의료공단(중앙보훈병원)",
+      "title": "2026년 하반기 정규직 채용 - 기술직5급(전산담당-통합정보개발부)",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=306556",
+      "deadlineAt": "2026-11-13T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-04",
+      "itRole": "기술직5급(전산담당-통합정보개발부)"
+    },
+    {
+      "companyName": "한국사회보장정보원",
+      "title": "2026년도 제4차 직원 채용공고",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611020000222",
+      "deadlineAt": "2026-11-16T16:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-04",
+      "itRole": "전산초급(일반)"
+    },
+    {
+      "companyName": "신영증권",
+      "title": "2026년 하반기 신입사원 공개채용 - IT",
+      "sourceUrl": "https://secure.jasoseol.com/recruit/107026",
+      "deadlineAt": "2026-11-16T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-04",
+      "itRole": "IT"
     }
   ],
   "deliveries": {
@@ -1955,6 +1964,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-11-02"
+      ],
+      "status": "SENT"
+    },
+    "2026-11-04": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-11-03T23:00:01.846Z",
+      "jobCount": 4,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-11-03"
       ],
       "status": "SENT"
     }
