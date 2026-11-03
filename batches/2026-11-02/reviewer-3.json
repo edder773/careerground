@@ -1,0 +1,37 @@
+{
+  "kind": "reviewer",
+  "slot": 3,
+  "date": "2026-11-02",
+  "receivedAt": "2026-11-03T00:14:30.507Z",
+  "jobs": [
+    {
+      "companyName": "(주)보령",
+      "title": "[보령] SAP ERP SD 담당자 (신입/경력)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/414295",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "현대면세점",
+      "title": "2026년 하반기 현대백화점그룹 신입사원 채용 - [현대면세점] 디지털기획_일반전형",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106947",
+      "deadlineAt": "2026-11-12T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "디지털기획"
+    },
+    {
+      "companyName": "토스",
+      "title": "Platform Engineer [인턴십]",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/414101",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
