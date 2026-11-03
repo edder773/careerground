@@ -1,0 +1,28 @@
+{
+  "kind": "collector",
+  "slot": 5,
+  "date": "2026-11-02",
+  "receivedAt": "2026-11-03T00:00:27.027Z",
+  "jobs": [
+    {
+      "companyName": "비즈테크아이",
+      "title": "26년 하반기 신입인턴 채용(전환형) - SAP 모듈 개발·운영",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106984",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "현대면세점",
+      "title": "2026년 하반기 현대백화점그룹 신입사원 채용 - [현대면세점] 디지털기획_일반전형",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106947",
+      "deadlineAt": "2026-11-12T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "디지털기획"
+    }
+  ],
+  "rejected": []
+}
