@@ -268,7 +268,7 @@ describe('staged job alert', () => {
     expect(readJson(join(source, 'batches', BATCH, 'reviewer-1.json')).jobs).toHaveLength(1);
     const result = await processAlert({ env: eventEnv, now: TEST_NOW, fetchImpl });
     expect(result.result.reason).toBe('submission-only');
-    expect(result.result.pending.batches).toEqual([BATCH]);
+    expect(result.result.pending.batches).toEqual(['2026-10-01']);
     expect(readJson(join(source, 'ledger.json')).deliveries).toEqual({});
     expect(posts).toHaveLength(0);
   });
