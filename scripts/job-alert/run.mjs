@@ -150,8 +150,8 @@ export async function processAlert({
   }
   const ledger = await prepareLedger({ dataDir, env, live, fetchImpl, now });
   if (enabled(env.JOB_ALERT_DEFER_SEND)) {
-    // Recovery is pinned to its declared attempt even if processing crosses midnight.
-    const batch = submittedBatch?.includes('-A') ? submittedBatch : kstDateKey(now);
+    // Keep every submission on its declared batch even if processing crosses midnight.
+    const batch = submittedBatch ?? kstDateKey(now);
     const pending = rebuildPending(dataDir, ledger, now, batch);
     return {
       report: ['발송 안 함: 제출 저장만 수행'],

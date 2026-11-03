@@ -141,6 +141,36 @@ describe('same-day recovery attempt isolation', () => {
     expect(response.report.join('\n')).toContain('종료된 배치');
     expect(readFileSync(join(source, 'batches', DAY, 'reviewer-1.json'), 'utf8')).toBe(old);
   });
+  it('rebuilds a late A1 submission for its own date without changing today’s pending', async () => {
+    writeJson(join(source, 'ledger.json'), {
+      sentJobs: [{ ...posting(90), sentOn: DAY }],
+      deliveries: {},
+    });
+    const today = join(source, 'pending', '2026-10-14.json');
+    writeJson(today, { date: '2026-10-14', jobs: [posting(99)] });
+    const before = readFileSync(today, 'utf8');
+    writeJson(eventPath, {
+      issue: {
+        title: `[JOB-ALERT][${DAY}][collector-1]`,
+        author_association: 'OWNER',
+        body: JSON.stringify({ jobs: [posting(1)] }),
+      },
+    });
+    const result = await processAlert({
+      env: {
+        ...env,
+        GITHUB_EVENT_NAME: 'issues',
+        GITHUB_EVENT_PATH: eventPath,
+        JOB_ALERT_DEFER_SEND: 'true',
+      },
+      now: new Date('2026-10-14T09:00:00+09:00'),
+      fetchImpl,
+    });
+    expect(result.result.pending.date).toBe(DAY);
+    expect(readJson(join(source, 'pending', `${DAY}.json`)).collectorCount).toBe(5);
+    expect(readFileSync(today, 'utf8')).toBe(before);
+    expect(posts).toHaveLength(0);
+  });
   it("rebuilds the declared recovery pending after midnight without changing tomorrow's list", async () => {
     const tomorrow = join(source, 'pending', '2026-10-14.json');
     writeJson(tomorrow, { date: '2026-10-14', jobs: [] });
