@@ -1,73 +1,34 @@
 {
-  "date": "2026-11-03",
+  "date": "2026-11-04",
   "batches": [
-    "2026-11-03"
+    "2026-11-04"
   ],
-  "generatedAt": "2026-11-03T23:00:01.846Z",
-  "collectorCount": 5,
+  "generatedAt": "2026-11-04T13:05:50.502Z",
+  "collectorCount": 2,
   "skipped": {
-    "notAlertable": 8,
+    "notAlertable": 6,
     "restricted": 0,
-    "alreadySent": 9,
-    "duplicate": 2
+    "alreadySent": 6,
+    "duplicate": 0
   },
   "jobs": [
     {
-      "companyName": "타인에이아이",
-      "title": "Model Engineer(LLM)",
+      "companyName": "올거나이즈",
+      "title": "[KR] Back-end Engineer Internship (3개월 / 정규직 전환형)",
       "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/414014",
-      "deadlineAt": "2026-11-06T23:59:00+09:00",
+      "sourceUrl": "https://inthiswork.com/archives/414397",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
-      "companyName": "하츠",
-      "title": "관리본부 DX· AX 기획 담당자 모집 공고(신입)",
+      "companyName": "GM Technical Center Korea",
+      "title": "[2027 GMAP 동계인턴십] Software and Electronics_Software Engineer",
       "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/413914",
-      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "sourceUrl": "https://inthiswork.com/archives/415173",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "한국보훈복지의료공단(중앙보훈병원)",
-      "title": "2026년 하반기 정규직 채용 - 기술직5급(전산담당-통합정보개발부)",
-      "sourceName": "JOB-ALIO",
-      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=306556",
-      "deadlineAt": "2026-11-13T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "기술직5급(전산담당-통합정보개발부)"
-    },
-    {
-      "companyName": "(주)비즈테크아이",
-      "title": "[LG CNS 자회사] 26년 하반기 신입 인턴 채용(전환형)",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50262007",
-      "deadlineAt": "2026-11-15T23:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "한국사회보장정보원",
-      "title": "2026년도 제4차 직원 채용공고",
-      "sourceName": "Incruit",
-      "sourceUrl": "https://jlab.incruit.com/jobs/2611020000222",
-      "deadlineAt": "2026-11-16T16:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "전산초급(일반)"
-    },
-    {
-      "companyName": "신영증권",
-      "title": "2026년 하반기 신입사원 공개채용 - IT",
-      "sourceName": "Jasoseol",
-      "sourceUrl": "https://secure.jasoseol.com/recruit/107026",
-      "deadlineAt": "2026-11-16T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "IT"
     },
     {
       "companyName": "(주)위지언",
@@ -88,21 +49,11 @@
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
-      "companyName": "모멘틱스",
-      "title": "사업계획 및 기술 개발 전문가를 모집합니다.",
-      "sourceName": "Work24",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K140112610290008",
-      "deadlineAt": "2026-11-28T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "소프트웨어 개발자(C, C++)"
-    },
-    {
-      "companyName": "주식회사 라온에이엔씨",
-      "title": "SW 개발자 모집",
-      "sourceName": "Work24",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K170052610300044",
-      "deadlineAt": "2026-11-30T18:00:00+09:00",
+      "companyName": "(주)리더스시스템즈",
+      "title": "DT 관제 플랫폼/백엔드 개발자 모집 (신입/경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50281523",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },

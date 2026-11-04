@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-04",
+  "batches": [
+    "2026-11-04"
+  ],
+  "generatedAt": "2026-11-04T13:05:50.502Z",
+  "collectorCount": 2,
+  "skipped": {
+    "notAlertable": 6,
+    "restricted": 0,
+    "alreadySent": 6,
+    "duplicate": 0
+  },
+  "jobs": [
+    {
+      "companyName": "올거나이즈",
+      "title": "[KR] Back-end Engineer Internship (3개월 / 정규직 전환형)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/414397",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "GM Technical Center Korea",
+      "title": "[2027 GMAP 동계인턴십] Software and Electronics_Software Engineer",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/415173",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)위지언",
+      "title": "웹 개발자 인턴 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50248222",
+      "deadlineAt": "2026-11-26T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)이노지스소프트",
+      "title": "[서울] 웹 개발자 (JSP/JavaScript/HTML) 신입 및 경력자채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50247929",
+      "deadlineAt": "2026-11-26T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)리더스시스템즈",
+      "title": "DT 관제 플랫폼/백엔드 개발자 모집 (신입/경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50281523",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "오픈마루(주)",
+      "title": "소프트웨어 엔지니어 신입채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50259107",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    }
+  ]
+}
