@@ -1,0 +1,28 @@
+{
+  "kind": "reviewer",
+  "slot": 1,
+  "date": "2026-11-04",
+  "receivedAt": "2026-11-04T13:10:10.699Z",
+  "jobs": [
+    {
+      "companyName": "가비아",
+      "title": "2026년 채용연계형 인턴 채용 - 클라우드 엔지니어(클라우드 시스템 구축/운영)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/106854",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "클라우드 엔지니어(클라우드 시스템 구축/운영)"
+    },
+    {
+      "companyName": "올거나이즈",
+      "title": "[KR] Back-end Engineer Internship (3개월 / 정규직 전환형)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/414397",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
