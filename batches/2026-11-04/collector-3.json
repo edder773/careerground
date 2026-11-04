@@ -1,0 +1,45 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-11-04",
+  "receivedAt": "2026-11-04T13:05:47.218Z",
+  "jobs": [
+    {
+      "companyName": "GM Technical Center Korea",
+      "title": "[2027 GMAP 동계인턴십] Software and Electronics_Software Engineer",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/415173",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "올거나이즈",
+      "title": "[KR] Back-end Engineer Internship (3개월 / 정규직 전환형)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/414397",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "삼일회계법인",
+      "title": "AI 연구소: AI & 데이터 엔지니어 인턴 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/414505",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "삼일회계법인",
+      "title": "AI 연구소: 풀스택 엔지니어 인턴 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/414502",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
