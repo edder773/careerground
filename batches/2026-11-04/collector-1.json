@@ -1,0 +1,136 @@
+{
+  "kind": "collector",
+  "slot": 1,
+  "date": "2026-11-04",
+  "receivedAt": "2026-11-04T13:05:33.403Z",
+  "jobs": [
+    {
+      "companyName": "(주)제타모빌리티",
+      "title": "임베디드 소프트웨어 개발자 채용 (C / ARM / DSP) - 신입/경력",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50285981",
+      "deadlineAt": "2026-11-13T23:59:00+09:00",
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)제타모빌리티",
+      "title": "소프트웨어 개발자 채용 (신입/경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50285702",
+      "deadlineAt": "2026-11-13T23:59:00+09:00",
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)리더스시스템즈",
+      "title": "DT 관제 플랫폼/백엔드 개발자 모집 (신입/경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50281523",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "오픈마루(주)",
+      "title": "소프트웨어 엔지니어 신입채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50259107",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "에스넷시스템(주)",
+      "title": "[서울] 네트워크 엔지니어 (신입)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50255941",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "에스넷시스템(주)",
+      "title": "[기흥/화성] 네트워크 엔지니어 (신입)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50255868",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "미래정보기술",
+      "title": "응용 S/W 개발자 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50250180",
+      "deadlineAt": "2026-11-26T23:59:00+09:00",
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)이노지스소프트",
+      "title": "[서울] 웹 개발자 (JSP/JavaScript/HTML) 신입 및 경력자채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50247929",
+      "deadlineAt": "2026-11-26T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)위지언",
+      "title": "웹 개발자 인턴 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50248222",
+      "deadlineAt": "2026-11-26T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)오투",
+      "title": "클라우드 시스템 엔지니어 사원모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50238108",
+      "deadlineAt": "2026-12-25T23:59:00+09:00",
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "에스케이쉴더스(주)",
+      "title": "OA 서비스 운영 및 유지보수 담당자 신입 및 경력직 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50248034",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "무월소프트",
+      "title": "[무월소프트] AI 버튜버 시스템·웹 풀스택 개발자 (신입·경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50225356",
+      "deadlineAt": "2026-11-21T23:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)텍크마린",
+      "title": "선박용 응용 소프트웨어 개발자 신입/경력",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50219118",
+      "deadlineAt": "2026-11-21T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "아이엠증권",
+      "title": "iM증권 2026년 신입사원 채용 #공채",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/577664",
+      "deadlineAt": "2026-11-08T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "IT"
+    }
+  ],
+  "rejected": []
+}
