@@ -1,0 +1,48 @@
+{
+  "kind": "reviewer",
+  "slot": 2,
+  "date": "2026-11-05",
+  "receivedAt": "2026-11-05T13:12:51.884Z",
+  "jobs": [
+    {
+      "companyName": "NAVER",
+      "title": "[NAVER] 음성번역 품질 평가/멀티모달 번역 연구 (인턴)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/416111",
+      "deadlineAt": "2026-11-13T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "고영테크놀러지",
+      "title": "2026 하반기 신입사원 채용 - SW 개발",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/107049",
+      "deadlineAt": "2026-11-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "SW 개발"
+    },
+    {
+      "companyName": "한양사이버대학교",
+      "title": "한양사이버대학교 계약직원 채용 공고(정보인프라혁신팀)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611040000265",
+      "deadlineAt": "2026-11-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "정보시스템 운영 지원"
+    },
+    {
+      "companyName": "안랩",
+      "title": "2026년 전직군 대규모 공개채용 - OS기반 SW개발",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/107053",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "OS기반 SW개발"
+    }
+  ],
+  "rejected": []
+}
