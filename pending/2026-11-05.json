@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-05",
+  "batches": [
+    "2026-11-05"
+  ],
+  "generatedAt": "2026-11-05T09:11:56.548Z",
+  "collectorCount": 1,
+  "skipped": {
+    "notAlertable": 5,
+    "restricted": 0,
+    "alreadySent": 1,
+    "duplicate": 0
+  },
+  "jobs": [
+    {
+      "companyName": "한양사이버대학교",
+      "title": "한양사이버대학교 계약직원 채용 공고(정보인프라혁신팀)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611040000265",
+      "deadlineAt": "2026-11-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "정보시스템 운영 지원"
+    }
+  ]
+}
