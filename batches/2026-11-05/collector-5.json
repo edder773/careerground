@@ -1,0 +1,48 @@
+{
+  "kind": "collector",
+  "slot": 5,
+  "date": "2026-11-05",
+  "receivedAt": "2026-11-05T13:02:16.641Z",
+  "jobs": [
+    {
+      "companyName": "한국GM (GM Asia Pacific)",
+      "title": "[2027 GMAP 동계인턴십] Software and Electronics_Software Engineer",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://secure.jasoseol.com/recruit/107050",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "Software Engineer (SW)"
+    },
+    {
+      "companyName": "안랩",
+      "title": "2026년 전직군 대규모 공개채용 - OS기반 SW개발",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/107053",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "OS기반 SW개발"
+    },
+    {
+      "companyName": "고영테크놀러지",
+      "title": "2026 하반기 신입사원 채용 - SW 개발",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/107049",
+      "deadlineAt": "2026-11-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "SW 개발"
+    },
+    {
+      "companyName": "커넥트웨이브 (메이크샵)",
+      "title": "[메이크샵] 프라이빗 클라우드 엔지니어 (신입)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/362172",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ONLY"
+    }
+  ],
+  "rejected": []
+}
