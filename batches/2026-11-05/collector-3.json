@@ -1,0 +1,36 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-11-05",
+  "receivedAt": "2026-11-05T13:02:13.606Z",
+  "jobs": [
+    {
+      "companyName": "NAVER",
+      "title": "[NAVER] 음성번역 품질 평가/멀티모달 번역 연구 (인턴)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/416111",
+      "deadlineAt": "2026-11-13T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "힐링페이퍼",
+      "title": "[강남언니] AI Research Engineer – Agent Evaluation 인턴 (체험형)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/415766",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "커넥트웨이브",
+      "title": "[메이크샵] 프라이빗 클라우드 엔지니어 (신입)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/415598",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ONLY"
+    }
+  ],
+  "rejected": []
+}
