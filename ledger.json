@@ -825,44 +825,12 @@
       "sentOn": "catalog"
     },
     {
-      "companyName": "(주)데이터스트림즈",
-      "title": "데이터통합 솔루션 개발자 신입/경력 채용",
-      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55149046",
-      "deadlineAt": "2026-10-29T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-01"
-    },
-    {
-      "companyName": "(주)크리스아이티",
-      "title": "AI/웹개발자(경력/신입) 모집",
-      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55143276",
-      "deadlineAt": "2026-10-29T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-01"
-    },
-    {
-      "companyName": "(주)펨트론",
-      "title": "[펨트론] AI 비전·딥러닝 알고리즘 개발자 채용",
-      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55150489",
-      "deadlineAt": "2026-10-29T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-01"
-    },
-    {
       "companyName": "키키코드(주)(KeykyCode",
       "title": "신입 백엔드 개발자 채용",
       "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50040504",
       "deadlineAt": "2026-11-20T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-01"
-    },
-    {
-      "companyName": "카이트로닉스",
-      "title": "소프트웨어 신입 개발자 모집",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50067762",
-      "deadlineAt": "2026-10-29T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-07"
     },
     {
       "companyName": "(주)세나테크놀로지",
@@ -1185,14 +1153,6 @@
       "deadlineAt": "2026-11-01T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-19"
-    },
-    {
-      "companyName": "유안타증권",
-      "title": "IT인프라운영팀 신입/경력직원 채용",
-      "sourceUrl": "https://linkareer.com/activity/357744",
-      "deadlineAt": "2026-10-29T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-20"
     },
     {
       "companyName": "메리츠증권",
@@ -1658,6 +1618,32 @@
       "deadlineAt": "2026-11-15T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-11-05"
+    },
+    {
+      "companyName": "NAVER",
+      "title": "[NAVER] 음성번역 품질 평가/멀티모달 번역 연구 (인턴)",
+      "sourceUrl": "https://inthiswork.com/archives/416111",
+      "deadlineAt": "2026-11-13T18:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-06"
+    },
+    {
+      "companyName": "고영테크놀러지",
+      "title": "2026 하반기 신입사원 채용 - SW 개발",
+      "sourceUrl": "https://jasoseol.com/recruit/107049",
+      "deadlineAt": "2026-11-18T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-06",
+      "itRole": "SW 개발"
+    },
+    {
+      "companyName": "한양사이버대학교",
+      "title": "한양사이버대학교 계약직원 채용 공고(정보인프라혁신팀)",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611040000265",
+      "deadlineAt": "2026-11-19T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-06",
+      "itRole": "정보시스템 운영 지원"
     }
   ],
   "deliveries": {
@@ -1956,6 +1942,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-11-04"
+      ],
+      "status": "SENT"
+    },
+    "2026-11-06": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-11-05T23:00:01.247Z",
+      "jobCount": 3,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-11-05"
       ],
       "status": "SENT"
     }
