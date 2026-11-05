@@ -1,0 +1,74 @@
+{
+  "kind": "collector",
+  "slot": 4,
+  "date": "2026-11-05",
+  "receivedAt": "2026-11-05T09:11:28.922Z",
+  "jobs": [
+    {
+      "companyName": "한국사회보장정보원",
+      "title": "2026년도 제4차 직원 채용공고",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611020000222",
+      "deadlineAt": "2026-11-16T16:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산초급(일반)"
+    },
+    {
+      "companyName": "한양사이버대학교",
+      "title": "한양사이버대학교 계약직원 채용 공고(정보인프라혁신팀)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611040000265",
+      "deadlineAt": "2026-11-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "정보시스템 운영 지원"
+    },
+    {
+      "companyName": "BMW Financial Services Korea",
+      "title": "[BMW Financial Services Korea] IT Intern -AI Engineering",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/bmw-financial-services-korea-it-intern-ai-engineering-at-bmw-group-4482850234",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "BMW Financial Services Korea",
+      "title": "[BMW Financial Services Korea] IT Intern - Operation",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/bmw-financial-services-korea-it-intern-operation-at-bmw-group-4482835958",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Moloco",
+      "title": "Machine Learning Engineer Intern (3-month Internship)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/machine-learning-engineer-intern-3-month-internship-at-moloco-4483767765",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "FuriosaAI",
+      "title": "Systems Software Engineer (신입)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/systems-software-engineer-%EC%8B%A0%EC%9E%85-at-furiosaai-4482280273",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Qualcomm",
+      "title": "Intern - Generative AI model personalization and efficient fine-tuning",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/intern-generative-ai-model-personalization-and-efficient-fine-tuning-at-qualcomm-4432928554",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
