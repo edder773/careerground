@@ -1,45 +1,17 @@
 {
-  "date": "2026-11-05",
+  "date": "2026-11-06",
   "batches": [
-    "2026-11-05"
+    "2026-11-06"
   ],
-  "generatedAt": "2026-11-05T23:00:01.247Z",
-  "collectorCount": 5,
+  "generatedAt": "2026-11-06T13:22:50.661Z",
+  "collectorCount": 2,
   "skipped": {
-    "notAlertable": 13,
+    "notAlertable": 6,
     "restricted": 0,
-    "alreadySent": 8,
+    "alreadySent": 7,
     "duplicate": 1
   },
   "jobs": [
-    {
-      "companyName": "NAVER",
-      "title": "[NAVER] 음성번역 품질 평가/멀티모달 번역 연구 (인턴)",
-      "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/416111",
-      "deadlineAt": "2026-11-13T18:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "비즈테크아이",
-      "title": "26년 하반기 신입 인턴 채용(전환형) #공채",
-      "sourceName": "Catch",
-      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/578691",
-      "deadlineAt": "2026-11-15T23:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "한국GM (GM Asia Pacific)",
-      "title": "[2027 GMAP 동계인턴십] Software and Electronics_Software Engineer",
-      "sourceName": "Jasoseol",
-      "sourceUrl": "https://secure.jasoseol.com/recruit/107050",
-      "deadlineAt": "2026-11-15T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "Software Engineer (SW)"
-    },
     {
       "companyName": "우양에이치씨(주)",
       "title": "2026년 하반기 신입/경력 채용(전산팀, 조달팀, 에너지팀, 생산부문, 품질관리팀, 생산부, 용접, 창고관리)",
@@ -49,26 +21,6 @@
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE",
       "itRole": "전산팀"
-    },
-    {
-      "companyName": "고영테크놀러지",
-      "title": "2026 하반기 신입사원 채용 - SW 개발",
-      "sourceName": "Jasoseol",
-      "sourceUrl": "https://jasoseol.com/recruit/107049",
-      "deadlineAt": "2026-11-18T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "SW 개발"
-    },
-    {
-      "companyName": "한양사이버대학교",
-      "title": "한양사이버대학교 계약직원 채용 공고(정보인프라혁신팀)",
-      "sourceName": "Incruit",
-      "sourceUrl": "https://jlab.incruit.com/jobs/2611040000265",
-      "deadlineAt": "2026-11-19T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "정보시스템 운영 지원"
     },
     {
       "companyName": "(주)위지언",
@@ -97,16 +49,6 @@
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY",
       "itRole": "소프트웨어 개발자(C, C++)"
-    },
-    {
-      "companyName": "안랩",
-      "title": "2026년 전직군 대규모 공개채용 - OS기반 SW개발",
-      "sourceName": "Jasoseol",
-      "sourceUrl": "https://jasoseol.com/recruit/107053",
-      "deadlineAt": "2026-11-29T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "OS기반 SW개발"
     },
     {
       "companyName": "주식회사 라온에이엔씨",
