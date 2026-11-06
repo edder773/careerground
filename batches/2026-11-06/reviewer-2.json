@@ -1,0 +1,18 @@
+{
+  "kind": "reviewer",
+  "slot": 2,
+  "date": "2026-11-06",
+  "receivedAt": "2026-11-06T13:36:39.543Z",
+  "jobs": [
+    {
+      "companyName": "다날",
+      "title": "AI 개발자 (경력 무관)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/416266",
+      "deadlineAt": "2026-11-22T23:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
