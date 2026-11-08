@@ -3,12 +3,12 @@
   "batches": [
     "2026-11-06"
   ],
-  "generatedAt": "2026-11-06T13:43:02.172Z",
+  "generatedAt": "2026-11-08T23:00:01.469Z",
   "collectorCount": 5,
   "skipped": {
-    "notAlertable": 11,
+    "notAlertable": 16,
     "restricted": 0,
-    "alreadySent": 10,
+    "alreadySent": 5,
     "duplicate": 1
   },
   "jobs": [
