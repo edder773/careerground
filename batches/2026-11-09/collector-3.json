@@ -1,0 +1,27 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-11-09",
+  "receivedAt": "2026-11-09T11:44:28.981Z",
+  "jobs": [
+    {
+      "companyName": "다우데이타",
+      "title": "[신입] IT 상황실 운영(관제) 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/417919",
+      "deadlineAt": "2026-11-27T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "EY한영",
+      "title": "감사부문 Data Analytics – IT Specialist 동계인턴",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/417828",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
