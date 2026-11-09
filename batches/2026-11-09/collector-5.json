@@ -1,0 +1,48 @@
+{
+  "kind": "collector",
+  "slot": 5,
+  "date": "2026-11-09",
+  "receivedAt": "2026-11-09T11:44:49.907Z",
+  "jobs": [
+    {
+      "companyName": "한국무역정보통신",
+      "title": "2026년 신규직원 모집 - ICT 부문(인프라 운영)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://secure.jasoseol.com/recruit/107033",
+      "deadlineAt": "2026-11-16T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "ICT 부문(인프라 운영)"
+    },
+    {
+      "companyName": "교원프라퍼티",
+      "title": "[교원그룹] SCM 모듈 개발 직무 모집 (신입/경력)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/107121",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "드림라인",
+      "title": "2026 하반기 신입/경력 공개채용 - [드림라인] IP기술",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/107131",
+      "deadlineAt": "2026-11-16T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "[드림라인] IP기술"
+    },
+    {
+      "companyName": "제너시스BBQ",
+      "title": "2026년 신입 및 경력사원 그룹 공채 - AI, IT개발",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/363053",
+      "deadlineAt": "2026-11-22T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "AI, IT개발"
+    }
+  ],
+  "rejected": []
+}
