@@ -1,0 +1,67 @@
+{
+  "kind": "reviewer",
+  "slot": 1,
+  "date": "2026-11-09",
+  "receivedAt": "2026-11-09T11:51:54.959Z",
+  "jobs": [
+    {
+      "companyName": "EY한영",
+      "title": "감사부문 Data Analytics – IT Specialist 동계인턴",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/417828",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "한국무역정보통신",
+      "title": "2026년 신규직원 채용 #공채",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/579776",
+      "deadlineAt": "2026-11-16T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "ICT 부문(인프라 운영)"
+    },
+    {
+      "companyName": "드림라인",
+      "title": "2026 하반기 신입/경력 공개채용 - [드림라인] IP기술",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/107131",
+      "deadlineAt": "2026-11-16T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "[드림라인] IP기술"
+    },
+    {
+      "companyName": "지방공기업평가원",
+      "title": "2026년 하반기 일반직 신규직원 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611050000888",
+      "deadlineAt": "2026-11-20T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "정보기술(IT)"
+    },
+    {
+      "companyName": "제너시스BBQ",
+      "title": "2026년 신입 및 경력사원 그룹 공채 - AI, IT개발",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/363053",
+      "deadlineAt": "2026-11-22T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "AI, IT개발"
+    },
+    {
+      "companyName": "다우데이타",
+      "title": "[신입] IT 상황실 운영(관제) 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/417919",
+      "deadlineAt": "2026-11-27T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    }
+  ],
+  "rejected": []
+}
