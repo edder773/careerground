@@ -1,44 +1,26 @@
 {
-  "date": "2026-11-06",
+  "date": "2026-11-09",
   "batches": [
-    "2026-11-06"
+    "2026-11-09"
   ],
-  "generatedAt": "2026-11-08T23:00:01.469Z",
-  "collectorCount": 5,
+  "generatedAt": "2026-11-09T09:31:47.653Z",
+  "collectorCount": 1,
   "skipped": {
-    "notAlertable": 16,
+    "notAlertable": 3,
     "restricted": 0,
-    "alreadySent": 5,
-    "duplicate": 1
+    "alreadySent": 4,
+    "duplicate": 0
   },
   "jobs": [
     {
-      "companyName": "우양에이치씨(주)",
-      "title": "2026년 하반기 신입/경력 채용(전산팀, 조달팀, 에너지팀, 생산부문, 품질관리팀, 생산부, 용접, 창고관리)",
-      "sourceName": "Saramin",
-      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55465859",
-      "deadlineAt": "2026-11-17T23:59:00+09:00",
+      "companyName": "한국무역정보통신",
+      "title": "2026년 신규직원 채용 #공채",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/579776",
+      "deadlineAt": "2026-11-16T18:00:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "전산팀"
-    },
-    {
-      "companyName": "다날",
-      "title": "AI 개발자 (경력 무관)",
-      "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/416266",
-      "deadlineAt": "2026-11-22T23:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "조광페인트",
-      "title": "[음성] IT 직무 신입 및 경력사원 채용 - 전산",
-      "sourceName": "Linkareer",
-      "sourceUrl": "https://linkareer.com/activity/362657",
-      "deadlineAt": "2026-11-22T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "ICT 부문(인프라 운영)"
     },
     {
       "companyName": "(주)위지언",
@@ -55,25 +37,6 @@
       "sourceName": "JobKorea",
       "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50247929",
       "deadlineAt": "2026-11-26T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "모멘틱스",
-      "title": "사업계획 및 기술 개발 전문가를 모집합니다.",
-      "sourceName": "Work24",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K140112610290008",
-      "deadlineAt": "2026-11-28T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "소프트웨어 개발자(C, C++)"
-    },
-    {
-      "companyName": "주식회사 라온에이엔씨",
-      "title": "SW 개발자 모집",
-      "sourceName": "Work24",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K170052610300044",
-      "deadlineAt": "2026-11-30T18:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
@@ -101,6 +64,15 @@
       "sourceName": "JobKorea",
       "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50300971",
       "deadlineAt": "2026-12-04T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "데브랩(주)",
+      "title": "신입 및 경력직 웹 개발자 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50320575",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     }
