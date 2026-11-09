@@ -3,15 +3,24 @@
   "batches": [
     "2026-11-09"
   ],
-  "generatedAt": "2026-11-09T11:04:56.782Z",
-  "collectorCount": 1,
+  "generatedAt": "2026-11-09T11:44:37.960Z",
+  "collectorCount": 3,
   "skipped": {
-    "notAlertable": 3,
+    "notAlertable": 4,
     "restricted": 0,
     "alreadySent": 4,
-    "duplicate": 0
+    "duplicate": 1
   },
   "jobs": [
+    {
+      "companyName": "EY한영",
+      "title": "감사부문 Data Analytics – IT Specialist 동계인턴",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/417828",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
     {
       "companyName": "한국무역정보통신",
       "title": "2026년 신규직원 채용 #공채",
@@ -21,6 +30,16 @@
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY",
       "itRole": "ICT 부문(인프라 운영)"
+    },
+    {
+      "companyName": "우양에이치씨(주)",
+      "title": "2026년 하반기 신입/경력 채용(전산팀, 조달팀, 에너지팀, 생산부문, 품질관리팀, 영업팀, 생산부, 용접, 창고관리)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55465859",
+      "deadlineAt": "2026-11-17T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산팀"
     },
     {
       "companyName": "(주)위지언",
@@ -37,6 +56,34 @@
       "sourceName": "JobKorea",
       "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50247929",
       "deadlineAt": "2026-11-26T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "다우데이타",
+      "title": "[신입] IT 상황실 운영(관제) 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/417919",
+      "deadlineAt": "2026-11-27T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "모멘틱스",
+      "title": "사업계획 및 기술 개발 전문가를 모집합니다.",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K140112610290008",
+      "deadlineAt": "2026-11-28T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "소프트웨어 개발자(C, C++)"
+    },
+    {
+      "companyName": "주식회사 라온에이엔씨",
+      "title": "SW 개발자 모집",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K170052610300044",
+      "deadlineAt": "2026-11-30T18:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
