@@ -1026,23 +1026,6 @@
       "sentOn": "2026-10-14"
     },
     {
-      "companyName": "에스엘",
-      "title": "2026 하반기 신입사원 공개채용 - IT 시스템개발",
-      "sourceUrl": "https://jasoseol.com/career/106764",
-      "deadlineAt": "2026-11-02T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-21",
-      "itRole": "IT 시스템개발"
-    },
-    {
-      "companyName": "카카오뱅크",
-      "title": "인증 플랫폼 기획 담당자 (채용연계형 인턴) 채용",
-      "sourceUrl": "https://jasoseol.com/recruit/106804",
-      "deadlineAt": "2026-11-02T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-21"
-    },
-    {
       "companyName": "하나금융티아이",
       "title": "2027년 상반기 하나금융융합기술원 AI 박사 신입 연구원 모집 - AI Quant",
       "sourceUrl": "https://jasoseol.com/recruit/106790",
@@ -1058,23 +1041,6 @@
       "deadlineAt": "2026-11-19T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-21"
-    },
-    {
-      "companyName": "다우데이타",
-      "title": "[신입] IT 상황실 운영(관제) 채용",
-      "sourceUrl": "https://linkareer.com/activity/358159",
-      "deadlineAt": "2026-11-02T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-23"
-    },
-    {
-      "companyName": "한국건강증진개발원",
-      "title": "2026년 하반기 직원(일반직) 채용 - 전산 및 개인정보보호",
-      "sourceUrl": "https://linkareer.com/activity/358113",
-      "deadlineAt": "2026-11-02T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-23",
-      "itRole": "전산 및 개인정보보호"
     },
     {
       "companyName": "한국전자기술연구원",
@@ -1419,6 +1385,66 @@
       "deadlineAt": "2026-11-22T23:00:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-11-09"
+    },
+    {
+      "companyName": "교원프라퍼티",
+      "title": "[교원그룹] SCM 모듈 개발 직무 모집 (신입/경력)",
+      "sourceUrl": "https://jasoseol.com/recruit/107121",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-10"
+    },
+    {
+      "companyName": "EY한영",
+      "title": "감사부문 Data Analytics – IT Specialist 동계인턴",
+      "sourceUrl": "https://inthiswork.com/archives/417828",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-10"
+    },
+    {
+      "companyName": "한국무역정보통신",
+      "title": "2026년 신규직원 채용 #공채",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/579776",
+      "deadlineAt": "2026-11-16T18:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-10",
+      "itRole": "ICT 부문(인프라 운영)"
+    },
+    {
+      "companyName": "드림라인",
+      "title": "2026 하반기 신입/경력 공개채용 - [드림라인] IP기술",
+      "sourceUrl": "https://jasoseol.com/recruit/107131",
+      "deadlineAt": "2026-11-16T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-10",
+      "itRole": "[드림라인] IP기술"
+    },
+    {
+      "companyName": "지방공기업평가원",
+      "title": "2026년 하반기 일반직 신규직원 채용",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611050000888",
+      "deadlineAt": "2026-11-20T18:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-10",
+      "itRole": "정보기술(IT)"
+    },
+    {
+      "companyName": "제너시스BBQ",
+      "title": "2026년 신입 및 경력사원 그룹 공채 - AI, IT개발",
+      "sourceUrl": "https://linkareer.com/activity/363053",
+      "deadlineAt": "2026-11-22T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-10",
+      "itRole": "AI, IT개발"
+    },
+    {
+      "companyName": "다우데이타",
+      "title": "[신입] IT 상황실 운영(관제) 채용",
+      "sourceUrl": "https://inthiswork.com/archives/417919",
+      "deadlineAt": "2026-11-27T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-10"
     }
   ],
   "deliveries": {
@@ -1741,6 +1767,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-11-06"
+      ],
+      "status": "SENT"
+    },
+    "2026-11-10": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-11-09T23:00:01.276Z",
+      "jobCount": 7,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-11-09"
       ],
       "status": "SENT"
     }
