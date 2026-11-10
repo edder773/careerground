@@ -3,33 +3,15 @@
   "batches": [
     "2026-11-10"
   ],
-  "generatedAt": "2026-11-10T13:16:12.873Z",
+  "generatedAt": "2026-11-10T23:09:11.301Z",
   "collectorCount": 5,
   "skipped": {
-    "notAlertable": 11,
+    "notAlertable": 13,
     "restricted": 0,
     "alreadySent": 6,
     "duplicate": 1
   },
   "jobs": [
-    {
-      "companyName": "한국리스크관리(주)",
-      "title": "[한국리스크관리] 금융 IT 개발자 및 유지보수 신입/경력 모집",
-      "sourceName": "Saramin",
-      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55480075",
-      "deadlineAt": "2026-11-10T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "한국리스크관리(주)",
-      "title": "[한국에이아이사이언스] AI 솔루션 개발자 신입/경력 모집",
-      "sourceName": "Saramin",
-      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55480158",
-      "deadlineAt": "2026-11-10T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
     {
       "companyName": "EY한영",
       "title": "금융컨설팅본부 IT컨설팅 (AXIS팀) 인턴",
