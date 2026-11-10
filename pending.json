@@ -1,166 +1,26 @@
 {
-  "date": "2026-11-09",
+  "date": "2026-11-10",
   "batches": [
-    "2026-11-09"
+    "2026-11-10"
   ],
-  "generatedAt": "2026-11-09T23:00:01.276Z",
-  "collectorCount": 5,
+  "generatedAt": "2026-11-10T09:13:57.755Z",
+  "collectorCount": 1,
   "skipped": {
-    "notAlertable": 10,
+    "notAlertable": 5,
     "restricted": 0,
-    "alreadySent": 6,
-    "duplicate": 2
+    "alreadySent": 3,
+    "duplicate": 0
   },
   "jobs": [
     {
-      "companyName": "교원프라퍼티",
-      "title": "[교원그룹] SCM 모듈 개발 직무 모집 (신입/경력)",
-      "sourceName": "Jasoseol",
-      "sourceUrl": "https://jasoseol.com/recruit/107121",
-      "deadlineAt": "2026-11-15T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "EY한영",
-      "title": "감사부문 Data Analytics – IT Specialist 동계인턴",
-      "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/417828",
-      "deadlineAt": "2026-11-15T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "한국무역정보통신",
-      "title": "2026년 신규직원 채용 #공채",
-      "sourceName": "Catch",
-      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/579776",
-      "deadlineAt": "2026-11-16T18:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "ICT 부문(인프라 운영)"
-    },
-    {
-      "companyName": "드림라인",
-      "title": "2026 하반기 신입/경력 공개채용 - [드림라인] IP기술",
-      "sourceName": "Jasoseol",
-      "sourceUrl": "https://jasoseol.com/recruit/107131",
-      "deadlineAt": "2026-11-16T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "[드림라인] IP기술"
-    },
-    {
-      "companyName": "우양에이치씨(주)",
-      "title": "2026년 하반기 신입/경력 채용(전산팀, 조달팀, 에너지팀, 생산부문, 품질관리팀, 영업팀, 생산부, 용접, 창고관리)",
-      "sourceName": "Saramin",
-      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55465859",
-      "deadlineAt": "2026-11-17T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "전산팀"
-    },
-    {
-      "companyName": "지방공기업평가원",
-      "title": "2026년 하반기 일반직 신규직원 채용",
+      "companyName": "제주연구원",
+      "title": "제주연구원 직원(전문직) 채용 공고",
       "sourceName": "Incruit",
-      "sourceUrl": "https://jlab.incruit.com/jobs/2611050000888",
-      "deadlineAt": "2026-11-20T18:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "정보기술(IT)"
-    },
-    {
-      "companyName": "제너시스BBQ",
-      "title": "2026년 신입 및 경력사원 그룹 공채 - AI, IT개발",
-      "sourceName": "Linkareer",
-      "sourceUrl": "https://linkareer.com/activity/363053",
-      "deadlineAt": "2026-11-22T23:59:00+09:00",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611090000752",
+      "deadlineAt": "2026-11-19T17:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "AI, IT개발"
-    },
-    {
-      "companyName": "(주)위지언",
-      "title": "웹 개발자 인턴 채용",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50248222",
-      "deadlineAt": "2026-11-26T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "(주)이노지스소프트",
-      "title": "[서울] 웹 개발자 (JSP/JavaScript/HTML) 신입 및 경력자채용",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50247929",
-      "deadlineAt": "2026-11-26T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "다우데이타",
-      "title": "[신입] IT 상황실 운영(관제) 채용",
-      "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/417919",
-      "deadlineAt": "2026-11-27T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "모멘틱스",
-      "title": "사업계획 및 기술 개발 전문가를 모집합니다.",
-      "sourceName": "Work24",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K140112610290008",
-      "deadlineAt": "2026-11-28T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "소프트웨어 개발자(C, C++)"
-    },
-    {
-      "companyName": "주식회사 라온에이엔씨",
-      "title": "SW 개발자 모집",
-      "sourceName": "Work24",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K170052610300044",
-      "deadlineAt": "2026-11-30T18:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "(주)리더스시스템즈",
-      "title": "DT 관제 플랫폼/백엔드 개발자 모집 (신입/경력)",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50281523",
-      "deadlineAt": "2026-11-30T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "오픈마루(주)",
-      "title": "소프트웨어 엔지니어 신입채용",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50259107",
-      "deadlineAt": "2026-11-30T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "(주)메가웍스",
-      "title": "(주)메가웍스 개발 신입/경력 모집",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50300971",
-      "deadlineAt": "2026-12-04T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "데브랩(주)",
-      "title": "신입 및 경력직 웹 개발자 채용",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50320575",
-      "deadlineAt": "2026-12-06T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
+      "itRole": "전산/DB"
     }
   ]
 }
