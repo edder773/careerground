@@ -1,0 +1,75 @@
+{
+  "kind": "collector",
+  "slot": 5,
+  "date": "2026-11-10",
+  "receivedAt": "2026-11-10T13:05:02.234Z",
+  "jobs": [
+    {
+      "companyName": "삼성메디슨",
+      "title": "2026년 하반기 3급 신입사원 채용 - SW개발",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/107152",
+      "deadlineAt": "2026-11-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "SW개발"
+    },
+    {
+      "companyName": "세메스",
+      "title": "2026 하반기 신입사원 채용 - SW설계",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/107147",
+      "deadlineAt": "2026-11-17T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "SW설계"
+    },
+    {
+      "companyName": "에코마케팅",
+      "title": "Data Engineer(Platform) 신입 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/107160",
+      "deadlineAt": "2026-11-22T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "카카오뱅크",
+      "title": "DevOps 엔지니어링팀 정규직 전환형 인턴 채용",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/107145",
+      "deadlineAt": "2026-11-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "EY한영",
+      "title": "감사부문 Data Analytics – IT Specialist 동계인턴",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/363145",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "EY한영",
+      "title": "금융컨설팅본부 IT컨설팅 (AXIS팀) 인턴",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/363146",
+      "deadlineAt": "2026-11-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "신한카드",
+      "title": "2026년 B2사원 채용 - ICT 개발",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/363137",
+      "deadlineAt": "2026-11-16T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "ICT 개발"
+    }
+  ],
+  "rejected": []
+}
