@@ -3,15 +3,43 @@
   "batches": [
     "2026-11-10"
   ],
-  "generatedAt": "2026-11-10T09:13:57.755Z",
-  "collectorCount": 1,
+  "generatedAt": "2026-11-10T13:04:53.401Z",
+  "collectorCount": 3,
   "skipped": {
-    "notAlertable": 5,
+    "notAlertable": 9,
     "restricted": 0,
-    "alreadySent": 3,
+    "alreadySent": 5,
     "duplicate": 0
   },
   "jobs": [
+    {
+      "companyName": "한국리스크관리(주)",
+      "title": "[한국리스크관리] 금융 IT 개발자 및 유지보수 신입/경력 모집",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55480075",
+      "deadlineAt": "2026-11-10T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "한국리스크관리(주)",
+      "title": "[한국에이아이사이언스] AI 솔루션 개발자 신입/경력 모집",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55480158",
+      "deadlineAt": "2026-11-10T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "우양에이치씨(주)",
+      "title": "2026년 하반기 신입/경력 채용(전산팀, 조달팀, 에너지팀, 생산부문, 품질관리팀, 영업팀, 생산부, 용접, 창고관리)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55465859",
+      "deadlineAt": "2026-11-17T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산팀"
+    },
     {
       "companyName": "제주연구원",
       "title": "제주연구원 직원(전문직) 채용 공고",
@@ -21,6 +49,97 @@
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE",
       "itRole": "전산/DB"
+    },
+    {
+      "companyName": "모멘틱스",
+      "title": "사업계획 및 기술 개발 전문가를 모집합니다.",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K140112610290008",
+      "deadlineAt": "2026-11-28T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "소프트웨어 개발자(C, C++)"
+    },
+    {
+      "companyName": "주식회사 라온에이엔씨",
+      "title": "SW 개발자 모집",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K170052610300044",
+      "deadlineAt": "2026-11-30T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)리더스시스템즈",
+      "title": "[본사 근무] 시스템 엔지니어 채용 (신입/경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50281569",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)리더스시스템즈",
+      "title": "AI 인프라 플랫폼 개발/운영 엔지니어 채용 (신입/경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50281495",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)리더스시스템즈",
+      "title": "DT 관제 플랫폼/백엔드 개발자 모집 (신입/경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50281523",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)인브레인",
+      "title": "스마트팩토리 응용프로그램 개발자 - 신입",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=CIN&infoTypeGroup=tb_workinfogubun&wantedAuthNo=2611090000706",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "오픈마루(주)",
+      "title": "소프트웨어 엔지니어 신입채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50259107",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)메가웍스",
+      "title": "(주)메가웍스 개발 신입/경력 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50300971",
+      "deadlineAt": "2026-12-04T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "에스지랩(주)",
+      "title": "[에스지랩 주식회사] 백엔드 신입/경력 개발자 채용",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55523271",
+      "deadlineAt": "2026-12-09T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)네비웍스",
+      "title": "시뮬레이터 SW개발(C++, C#) 신입~초급개발자 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50318502",
+      "deadlineAt": "2027-01-05T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
     }
   ]
 }
