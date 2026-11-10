@@ -1,0 +1,45 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-11-10",
+  "receivedAt": "2026-11-10T13:04:54.090Z",
+  "jobs": [
+    {
+      "companyName": "카카오뱅크",
+      "title": "DevOps 엔지니어 (채용연계형 인턴)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/417877",
+      "deadlineAt": "2026-11-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "에코마케팅",
+      "title": "Data Engineer(Platform) 신입 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/418202",
+      "deadlineAt": "2026-11-22T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "McKinsey & Company",
+      "title": "Data Engineer – QuantumBlack, AI by McKinsey",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/418504",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Amazon Web Services Korea",
+      "title": "Associate Solutions Architect, APJ ECT SA (Field Tech)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/418453",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
