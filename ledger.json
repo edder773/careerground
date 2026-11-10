@@ -1437,6 +1437,58 @@
       "deadlineAt": "2026-11-27T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-11-10"
+    },
+    {
+      "companyName": "EY한영",
+      "title": "금융컨설팅본부 IT컨설팅 (AXIS팀) 인턴",
+      "sourceUrl": "https://linkareer.com/activity/363146",
+      "deadlineAt": "2026-11-11T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-11"
+    },
+    {
+      "companyName": "신한카드",
+      "title": "2026년 B2사원 채용 - ICT 개발",
+      "sourceUrl": "https://linkareer.com/activity/363137",
+      "deadlineAt": "2026-11-16T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-11",
+      "itRole": "ICT 개발"
+    },
+    {
+      "companyName": "세메스",
+      "title": "2026 하반기 신입사원 채용 - SW설계",
+      "sourceUrl": "https://jasoseol.com/recruit/107147",
+      "deadlineAt": "2026-11-17T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-11",
+      "itRole": "SW설계"
+    },
+    {
+      "companyName": "우양에이치씨(주)",
+      "title": "2026년 하반기 신입/경력 채용(전산팀, 조달팀, 에너지팀, 생산부문, 품질관리팀, 영업팀, 생산부, 용접, 창고관리)",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55465859",
+      "deadlineAt": "2026-11-17T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-11",
+      "itRole": "전산팀"
+    },
+    {
+      "companyName": "삼성메디슨",
+      "title": "2026년 하반기 3급 신입사원 채용 - SW개발",
+      "sourceUrl": "https://jasoseol.com/recruit/107152",
+      "deadlineAt": "2026-11-19T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-11",
+      "itRole": "SW개발"
+    },
+    {
+      "companyName": "카카오뱅크",
+      "title": "DevOps 엔지니어 (채용연계형 인턴)",
+      "sourceUrl": "https://inthiswork.com/archives/417877",
+      "deadlineAt": "2026-11-25T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-11"
     }
   ],
   "deliveries": {
@@ -1771,6 +1823,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-11-09"
+      ],
+      "status": "SENT"
+    },
+    "2026-11-11": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-11-10T23:34:46.922Z",
+      "jobCount": 6,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-11-10"
       ],
       "status": "SENT"
     }
