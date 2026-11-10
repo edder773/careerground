@@ -1,0 +1,92 @@
+{
+  "kind": "collector",
+  "slot": 2,
+  "date": "2026-11-10",
+  "receivedAt": "2026-11-10T13:04:42.851Z",
+  "jobs": [
+    {
+      "companyName": "이너플러스그룹 주식회사",
+      "title": "[신입]정보시스템 진단 및 분석, PI/BPR, ISP/ISMP 컨설턴트",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K120312611090004",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)인브레인",
+      "title": "스마트팩토리 응용프로그램 개발자 - 신입",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=CIN&infoTypeGroup=tb_workinfogubun&wantedAuthNo=2611090000706",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)라임",
+      "title": "IT 웸/AI 프로그래머모집(신입)",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K140022611040032",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "주식회사 라온에이엔씨",
+      "title": "SW 개발자 모집",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K170052610300044",
+      "deadlineAt": "2026-11-30T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "모멘틱스",
+      "title": "사업계획 및 기술 개발 전문가를 모집합니다.",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K140112610290008",
+      "deadlineAt": "2026-11-28T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "소프트웨어 개발자(C, C++)"
+    },
+    {
+      "companyName": "우양에이치씨(주)",
+      "title": "2026년 하반기 신입/경력 채용(전산팀, 조달팀, 에너지팀, 생산부문, 품질관리팀, 영업팀, 생산부, 용접, 창고관리)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55465859",
+      "deadlineAt": "2026-11-17T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산팀"
+    },
+    {
+      "companyName": "에스지랩(주)",
+      "title": "[에스지랩 주식회사] 백엔드 신입/경력 개발자 채용",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55523271",
+      "deadlineAt": "2026-12-09T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "한국리스크관리(주)",
+      "title": "[한국리스크관리] 금융 IT 개발자 및 유지보수 신입/경력 모집",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55480075",
+      "deadlineAt": "2026-11-10T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "한국리스크관리(주)",
+      "title": "[한국에이아이사이언스] AI 솔루션 개발자 신입/경력 모집",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55480158",
+      "deadlineAt": "2026-11-10T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
