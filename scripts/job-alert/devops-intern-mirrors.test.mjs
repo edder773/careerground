@@ -23,6 +23,11 @@ describe('DevOps internship mirrors', () => {
     ));
   it('keeps a different specialist role', () =>
     assert.equal(duplicateJobReason(a, job('백엔드 엔지니어링팀 정규직 전환형 인턴 채용')), null));
+  it('keeps a specific role within the DevOps team', () => {
+    const specific = job('DevOps 엔지니어링팀 백엔드 정규직 전환형 인턴 채용');
+    assert.equal(duplicateJobReason(a, specific), null);
+    assert.equal(duplicateJobReason(specific, a), null);
+  });
   it('keeps conflicting recruitment years', () =>
     assert.equal(
       duplicateJobReason(
