@@ -111,6 +111,13 @@ test('keeps the searchable and sortable list view', async ({ page }, testInfo) =
 test('opens crowded dates, rolling jobs, and job details in dialogs', async ({
   page,
 }, testInfo) => {
+  await page.route('**/jobs/bootstrap?*', async (route) => {
+    const response = await route.fetch();
+    const payload = await response.json();
+    const today = new Date().toISOString();
+    payload.data[0] = { ...payload.data[0], rolling: false, deadlineAt: today };
+    await route.fulfill({ response, json: payload });
+  });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
   await expect(page.locator('.job-calendar-legend')).not.toContainText('등록일');

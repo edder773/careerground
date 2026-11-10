@@ -137,6 +137,10 @@ const normalizedTitle = (value: string) =>
     .replace(/공개\s+채용/gu, '공개채용')
     .replace(/it\s*개발/gu, 'it 개발')
     .replace(/([a-z0-9+#])(?:부문|분야)/giu, '$1 부문')
+    .replace(
+      /(devops)\s*엔지니어링팀(?=\s+정규직\s*전환형\s*인턴(?:십)?(?:\s*(?:채용|모집))?\s*$)/giu,
+      '$1 엔지니어',
+    )
     .replace(/s\s*\/\s*w/gu, 'sw');
 
 const rawTitleTokens = (value: string) =>
