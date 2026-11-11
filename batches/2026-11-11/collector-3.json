@@ -1,0 +1,18 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-11-11",
+  "receivedAt": "2026-11-11T13:11:28.569Z",
+  "jobs": [
+    {
+      "companyName": "AMD",
+      "title": "AI Software Development Engineer",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/418937",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
