@@ -1489,6 +1489,31 @@
       "deadlineAt": "2026-11-25T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-11-11"
+    },
+    {
+      "companyName": "현대이지웰",
+      "title": "현대이지웰 개발직 채용 - 서비스 개발",
+      "sourceUrl": "https://linkareer.com/activity/363670",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-12"
+    },
+    {
+      "companyName": "넷마블네오",
+      "title": "2026 넷마블네오 AI 인턴십 - AI Game Maker",
+      "sourceUrl": "https://jasoseol.com/recruit/107061",
+      "deadlineAt": "2026-11-24T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-12",
+      "itRole": "게임 프로그래밍(서버, 클라이언트)"
+    },
+    {
+      "companyName": "(주)에이스피지",
+      "title": "27년 상반기 신입사원 정규직 채용 - (자바 프로그래머)",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50331128",
+      "deadlineAt": "2026-12-09T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-12"
     }
   ],
   "deliveries": {
@@ -1835,6 +1860,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-11-10"
+      ],
+      "status": "SENT"
+    },
+    "2026-11-12": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-11-11T23:00:02.318Z",
+      "jobCount": 3,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-11-11"
       ],
       "status": "SENT"
     }
