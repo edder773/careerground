@@ -1,0 +1,28 @@
+{
+  "kind": "reviewer",
+  "slot": 1,
+  "date": "2026-11-11",
+  "receivedAt": "2026-11-11T13:18:10.785Z",
+  "jobs": [
+    {
+      "companyName": "현대이지웰",
+      "title": "현대이지웰 개발직 채용 - 서비스 개발",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/363670",
+      "deadlineAt": "2026-11-15T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "넷마블네오",
+      "title": "2026 넷마블네오 AI 인턴십 - AI Game Maker",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/107061",
+      "deadlineAt": "2026-11-24T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "게임 프로그래밍(서버, 클라이언트)"
+    }
+  ],
+  "rejected": []
+}
