@@ -1,0 +1,28 @@
+{
+  "kind": "reviewer",
+  "slot": 2,
+  "date": "2026-11-12",
+  "receivedAt": "2026-11-12T13:10:20.292Z",
+  "jobs": [
+    {
+      "companyName": "(재)한국보건의료정보원",
+      "title": "2026년 제6차 직원채용 - 전산전문요원 초급기술자(공공기관 정보화 사업기획 및 시스템 개발·운영)",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=306965",
+      "deadlineAt": "2026-11-26T14:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산전문요원_초급기술자(공공기관 정보화 사업기획 및 시스템 개발·운영)"
+    },
+    {
+      "companyName": "망고카(주)",
+      "title": "중고차 수출 플랫폼 망고카 백엔드 개발자 채용",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55545937",
+      "deadlineAt": "2026-12-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
