@@ -3,10 +3,10 @@
   "batches": [
     "2026-11-12"
   ],
-  "generatedAt": "2026-11-12T13:03:03.255Z",
-  "collectorCount": 4,
+  "generatedAt": "2026-11-12T13:03:17.879Z",
+  "collectorCount": 5,
   "skipped": {
-    "notAlertable": 14,
+    "notAlertable": 17,
     "restricted": 0,
     "alreadySent": 5,
     "duplicate": 1
@@ -20,6 +20,16 @@
       "deadlineAt": "2026-11-13T18:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(재)한국보건의료정보원",
+      "title": "2026년 제6차 직원채용 - 전산전문요원 초급기술자(공공기관 정보화 사업기획 및 시스템 개발·운영)",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=306965",
+      "deadlineAt": "2026-11-26T14:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산전문요원_초급기술자(공공기관 정보화 사업기획 및 시스템 개발·운영)"
     },
     {
       "companyName": "주식회사 라온에이엔씨",
