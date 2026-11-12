@@ -833,30 +833,6 @@
       "sentOn": "2026-10-07"
     },
     {
-      "companyName": "(주)다원아이텍",
-      "title": "AI 영상분석·IoT 스마트안전 솔루션 개발자 채용",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50117887",
-      "deadlineAt": "2026-11-05T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-08"
-    },
-    {
-      "companyName": "(주)테나아이",
-      "title": "AI 서비스 백엔드(Java/Spring) 개발자 모집 (신입)",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50118670",
-      "deadlineAt": "2026-11-05T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-08"
-    },
-    {
-      "companyName": "에프원소프트(주)",
-      "title": "[IT기업] AI 소프트웨어 개발자 채용(정규직)",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50117696",
-      "deadlineAt": "2026-11-05T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-08"
-    },
-    {
       "companyName": "(주)씨앤피에스",
       "title": "2026년 CNPS [C#(WinForm) 개발자] 채용",
       "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50118471",
@@ -879,14 +855,6 @@
       "deadlineAt": "2026-11-21T09:09:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-12"
-    },
-    {
-      "companyName": "(주)링캠",
-      "title": "IT지원 - 시스템 및 RFID 엔지니어 신입/경력직 채용 공고",
-      "sourceUrl": "https://www.saramin.co.kr/zf_user/jobs/view?rec_idx=55205800",
-      "deadlineAt": "2026-11-05T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-13"
     },
     {
       "companyName": "(유)시원",
@@ -1033,15 +1001,6 @@
       "deadlineAt": "2026-11-19T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-10-21"
-    },
-    {
-      "companyName": "한국전자기술연구원",
-      "title": "2026년 정규직 공개채용 - 정보전산",
-      "sourceUrl": "https://linkareer.com/activity/358815",
-      "deadlineAt": "2026-11-05T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-23",
-      "itRole": "정보전산"
     },
     {
       "companyName": "수협중앙회",
@@ -1505,6 +1464,23 @@
       "deadlineAt": "2026-12-09T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-11-12"
+    },
+    {
+      "companyName": "(재)한국보건의료정보원",
+      "title": "2026년 제6차 직원채용 - 전산전문요원 초급기술자(공공기관 정보화 사업기획 및 시스템 개발·운영)",
+      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=306965",
+      "deadlineAt": "2026-11-26T14:00:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-13",
+      "itRole": "전산전문요원_초급기술자(공공기관 정보화 사업기획 및 시스템 개발·운영)"
+    },
+    {
+      "companyName": "망고카(주)",
+      "title": "중고차 수출 플랫폼 망고카 백엔드 개발자 채용",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55545937",
+      "deadlineAt": "2026-12-11T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-13"
     }
   ],
   "deliveries": {
@@ -1863,6 +1839,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-11-11"
+      ],
+      "status": "SENT"
+    },
+    "2026-11-13": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-11-12T23:00:01.905Z",
+      "jobCount": 2,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-11-12"
       ],
       "status": "SENT"
     }
