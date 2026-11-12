@@ -1,0 +1,81 @@
+{
+  "kind": "collector",
+  "slot": 2,
+  "date": "2026-11-12",
+  "receivedAt": "2026-11-12T13:02:48.957Z",
+  "jobs": [
+    {
+      "companyName": "이너플러스그룹 주식회사",
+      "title": "[신입]정보시스템 진단 및 분석, PI/BPR, ISP/ISMP 컨설턴트",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K120312611090004",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)인브레인",
+      "title": "스마트팩토리 응용프로그램 개발자 - 신입",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=CIN&infoTypeGroup=tb_workinfogubun&wantedAuthNo=2611090000706",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)라임",
+      "title": "웹 프로그래머 모집(PHP, JAVA, Python)",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K140022611040032",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "주식회사 라온에이엔씨",
+      "title": "SW 개발자 모집",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K170052610300044",
+      "deadlineAt": "2026-11-30T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)플리",
+      "title": "Go lang 서버 개발자 채용(신입/경력)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55536651",
+      "deadlineAt": "2026-12-10T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)솔앤비즈",
+      "title": "[신입] Azure,Power Platform 기반 클라우드 솔루션 개발자 채용",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55533116",
+      "deadlineAt": "2026-11-13T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)모비핀테크놀러지",
+      "title": "신입, 경력 자동차 전장 S/W 개발자 모집합니다 (AUTOSAR)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55517261",
+      "deadlineAt": "2026-12-09T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "망고카(주)",
+      "title": "중고차 수출 플랫폼 망고카 백엔드 개발자 채용",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55545937",
+      "deadlineAt": "2026-12-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
