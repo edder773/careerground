@@ -15,6 +15,21 @@ const slackUrl = (value, label) => {
 const kstLabel = (value, options) =>
   new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', ...options }).format(new Date(value));
 
+// Midnight is the end of the preceding calendar day as well. Show 24:00
+// explicitly so a deadline described that way by a posting is unambiguous.
+const deadlineLabel = (value) => {
+  const instant = new Date(value);
+  const kst = new Date(instant.getTime() + 9 * 60 * 60_000);
+  const midnight =
+    kst.getUTCHours() === 0 &&
+    kst.getUTCMinutes() === 0 &&
+    kst.getUTCSeconds() === 0 &&
+    kst.getUTCMilliseconds() === 0;
+  return midnight
+    ? `${kstLabel(new Date(instant.getTime() - 1), { month: 'long', day: 'numeric' })} 24:00`
+    : kstLabel(instant, { month: 'long', day: 'numeric' });
+};
+
 const challengeText = (challenge) => {
   const track = challenge.track === 'SQL' ? 'SQL' : '알고리즘';
   const title = challenge.isChallenge ? `(도전 문제) ${challenge.title}` : challenge.title;
@@ -28,7 +43,7 @@ const jobText = (job) =>
   [
     `• *${slackUrl(job.sourceUrl, `${job.companyName} — ${job.title}`)}*`,
     ...(job.itRole ? [`  IT 분야: ${escapeSlackText(job.itRole)}`] : []),
-    `  마감 ${kstLabel(job.deadlineAt, { month: 'long', day: 'numeric' })} · ${escapeSlackText(job.sourceName)}`,
+    `  마감 ${deadlineLabel(job.deadlineAt)} · ${escapeSlackText(job.sourceName)}`,
   ].join('\n');
 
 const packSectionText = (entries) => {
