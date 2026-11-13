@@ -1,0 +1,118 @@
+{
+  "kind": "collector",
+  "slot": 1,
+  "date": "2026-11-13",
+  "receivedAt": "2026-11-13T09:06:12.564Z",
+  "jobs": [
+    {
+      "companyName": "(주)펄어비스",
+      "title": "[겨울 인턴십] 엔지니어링-웹개발(백엔드)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50346221",
+      "deadlineAt": "2026-11-23T11:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "에스지랩(주)(SG Lab Inc.)",
+      "title": "[에스지랩 주식회사] 백엔드 신입/경력 개발자 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50332265",
+      "deadlineAt": "2026-12-09T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)더씬",
+      "title": "(주)더씬 엔지니어(신입 및 경력) 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50340619",
+      "deadlineAt": "2026-12-10T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)앰진",
+      "title": "(주)앰진 백엔드 신입·경력 채용공고",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50326231",
+      "deadlineAt": "2026-11-16T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "망고카(주)",
+      "title": "중고차 수출 플랫폼 망고카 백엔드 개발자 채용 / 신입, 5년 미만",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50348110",
+      "deadlineAt": "2026-12-11T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)카이시스템",
+      "title": "JAVA 개발자 신입 사원 모집 공고",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50332049",
+      "deadlineAt": "2026-12-09T23:59:00+09:00",
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)리더스시스템즈",
+      "title": "DT 관제 플랫폼/백엔드 개발자 모집 (신입/경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50281523",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)리더스시스템즈",
+      "title": "[본사 근무] 시스템 엔지니어 채용 (신입/경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50281569",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)리더스시스템즈",
+      "title": "AI 인프라 플랫폼 개발/운영 엔지니어 채용 (신입/경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50281495",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)네비웍스",
+      "title": "시뮬레이터 SW개발(C++, C#) 신입~초급개발자 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50318502",
+      "deadlineAt": "2027-01-05T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)메가웍스",
+      "title": "(주)메가웍스 개발 신입/경력 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50300971",
+      "deadlineAt": "2026-12-04T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "세메스",
+      "title": "2026년 하반기 신입사원 채용",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/580326",
+      "deadlineAt": "2026-11-17T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "SW설계"
+    }
+  ],
+  "rejected": []
+}
