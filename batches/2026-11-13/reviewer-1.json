@@ -1,0 +1,66 @@
+{
+  "kind": "reviewer",
+  "slot": 1,
+  "date": "2026-11-13",
+  "receivedAt": "2026-11-13T13:47:37.557Z",
+  "jobs": [
+    {
+      "companyName": "피에스케이",
+      "title": "[PSK그룹] 11월 직무별 수시모집 - PSK/PSKH-S/W개발-인턴",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/107182",
+      "deadlineAt": "2026-11-17T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "PSK/PSKH-S/W개발-인턴"
+    },
+    {
+      "companyName": "KLA",
+      "title": "2026년 11월 신입 정규직 채용 - Algorithm Engineer",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/364103",
+      "deadlineAt": "2026-11-22T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "Algorithm Engineer"
+    },
+    {
+      "companyName": "(주)펄어비스",
+      "title": "[겨울 인턴십] 엔지니어링-웹개발(백엔드)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50346221",
+      "deadlineAt": "2026-11-23T11:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "우리금융캐피탈",
+      "title": "2027년 정규직 신입사원 채용 - 디지털/IT",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/107205",
+      "deadlineAt": "2026-11-24T00:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "디지털/IT"
+    },
+    {
+      "companyName": "AUMOVIO",
+      "title": "AUMOVIO star Internship_Software Engineer_Architecture and Networking Solutions (Body & Actuator Control) | AUMOVIO Korea",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/aumovio-star-internship-software-engineer-architecture-and-networking-solutions-body-actuator-control-aumovio-korea-at-aumovio-4489969699",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "씨엔티테크(주)",
+      "title": "씨엔티테크(주) 개발2팀 개발자(신입/경력) 모집",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?cn=curation&cns=list&rec_idx=55558819&referNonce=&t_category=m_curation&t_content=generic",
+      "deadlineAt": "2026-12-12T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
