@@ -1,0 +1,102 @@
+{
+  "kind": "collector",
+  "slot": 4,
+  "date": "2026-11-13",
+  "receivedAt": "2026-11-13T09:13:20.831Z",
+  "jobs": [
+    {
+      "companyName": "한국사회보장정보원",
+      "title": "2026년도 제4차 직원 채용공고",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611020000222",
+      "deadlineAt": "2026-11-16T16:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산초급(일반)"
+    },
+    {
+      "companyName": "한양사이버대학교",
+      "title": "계약직원 채용 공고(정보인프라혁신팀)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611040000265",
+      "deadlineAt": "2026-11-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "정보시스템 운영 지원"
+    },
+    {
+      "companyName": "지방공기업평가원",
+      "title": "2026년 하반기 일반직 신규직원 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611050000888",
+      "deadlineAt": "2026-11-20T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "정보기술(IT)"
+    },
+    {
+      "companyName": "FuriosaAI",
+      "title": "Solution Architect (Junior)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/solution-architect-junior-at-furiosaai-4476020846",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Qualcomm",
+      "title": "Intern - GenAI Benchmarking (MLE) / On-Device Model Deployment (SWE)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/intern-genai-benchmarking-mle-on-device-model-deployment-swe-at-qualcomm-4442076645",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Qualcomm",
+      "title": "Intern – AI Model Efficiency (Quantization) System/Research Engineer",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/intern-%E2%80%93-ai-model-efficiency-quantization-system-research-engineer-at-qualcomm-4442069839",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Infineon Technologies",
+      "title": "Internship - Engineering (AI & Embedded Solutions)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/internship-engineering-ai-embedded-solutions-at-infineon-technologies-4480996823",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Infineon Technologies",
+      "title": "Internship - Edge AI",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/internship-edge-ai-at-infineon-technologies-4480999644",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "delight.ai",
+      "title": "AI Agent Engineer, Intern",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/ai-agent-engineer-intern-at-delight-ai-4450475844",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "AUMOVIO",
+      "title": "AUMOVIO star Internship_Software Engineer_Architecture and Networking Solutions (Body & Actuator Control) | AUMOVIO Korea",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/aumovio-star-internship-software-engineer-architecture-and-networking-solutions-body-actuator-control-aumovio-korea-at-aumovio-4489969699",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
