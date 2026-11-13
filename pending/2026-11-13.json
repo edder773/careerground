@@ -3,13 +3,13 @@
   "batches": [
     "2026-11-13"
   ],
-  "generatedAt": "2026-11-13T13:18:48.180Z",
-  "collectorCount": 4,
+  "generatedAt": "2026-11-13T13:37:07.525Z",
+  "collectorCount": 5,
   "skipped": {
-    "notAlertable": 10,
+    "notAlertable": 13,
     "restricted": 0,
-    "alreadySent": 5,
-    "duplicate": 0
+    "alreadySent": 6,
+    "duplicate": 1
   },
   "jobs": [
     {
@@ -30,6 +30,15 @@
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE",
       "itRole": "PSK/PSKH-S/W개발-인턴"
+    },
+    {
+      "companyName": "주식회사 캡픽",
+      "title": "[신입/경력 무관] 스포츠 테크 스타트업 APP 개발자 채용",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K131612611100022",
+      "deadlineAt": "2026-11-20T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
       "companyName": "KLA",
@@ -70,6 +79,15 @@
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
+      "companyName": "한국 AI 아카데미협회",
+      "title": "[n8n/Make/AI] 기업 맞춤형 AI 워크플로우 자동화 구축 전문가 모집",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K160012611130015",
+      "deadlineAt": "2026-11-30T16:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
       "companyName": "(주)리더스시스템즈",
       "title": "[본사 근무] 시스템 엔지니어 채용 (신입/경력)",
       "sourceName": "JobKorea",
@@ -97,6 +115,15 @@
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
+      "companyName": "(주)인브레인",
+      "title": "스마트팩토리 응용프로그램 개발자 - 신입",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=CIN&infoTypeGroup=tb_workinfogubun&wantedAuthNo=2611090000706",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
       "companyName": "SK에코플랜트 머티리얼즈",
       "title": "[AI/DT담당] 스마트팩토리개발팀 신입 채용",
       "sourceName": "Inthiswork",
@@ -115,6 +142,15 @@
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
+      "companyName": "(주)모비핀테크놀러지",
+      "title": "신입, 경력 자동차 전장 S/W 개발자 모집합니다 (AUTOSAR)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55517261&referNonce=6d166de4a4aa573a7cd9&t_category=job_recruit&t_content=SRI_M_050_2LV-JOB_MIX_RCT_NONMEM",
+      "deadlineAt": "2026-12-09T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
       "companyName": "에스지랩(주)(SG Lab Inc.)",
       "title": "[에스지랩 주식회사] 백엔드 신입/경력 개발자 채용",
       "sourceName": "JobKorea",
@@ -129,6 +165,24 @@
       "sourceName": "JobKorea",
       "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50340619",
       "deadlineAt": "2026-12-10T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)플리",
+      "title": "Go lang 서버 개발자 채용(신입/경력)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55536651&referNonce=47e179f2d528808e5641&t_category=job_recruit&t_content=SRI_M_050_2LV-JOB_MIX_RCT_NONMEM",
+      "deadlineAt": "2026-12-10T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "씨엔티테크(주)",
+      "title": "씨엔티테크(주) 개발2팀 개발자(신입/경력) 모집",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?cn=curation&cns=list&rec_idx=55558819&referNonce=&t_category=m_curation&t_content=generic",
+      "deadlineAt": "2026-12-12T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
