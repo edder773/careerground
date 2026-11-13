@@ -1,44 +1,34 @@
 {
-  "date": "2026-11-12",
+  "date": "2026-11-13",
   "batches": [
-    "2026-11-12"
+    "2026-11-13"
   ],
-  "generatedAt": "2026-11-12T23:00:01.905Z",
-  "collectorCount": 5,
+  "generatedAt": "2026-11-13T09:06:31.097Z",
+  "collectorCount": 1,
   "skipped": {
-    "notAlertable": 17,
+    "notAlertable": 1,
     "restricted": 0,
-    "alreadySent": 5,
-    "duplicate": 1
+    "alreadySent": 2,
+    "duplicate": 0
   },
   "jobs": [
     {
-      "companyName": "(주)솔앤비즈",
-      "title": "[신입] Azure,Power Platform 기반 클라우드 솔루션 개발자 채용",
-      "sourceName": "Saramin",
-      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55533116",
-      "deadlineAt": "2026-11-13T18:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "(재)한국보건의료정보원",
-      "title": "2026년 제6차 직원채용 - 전산전문요원 초급기술자(공공기관 정보화 사업기획 및 시스템 개발·운영)",
-      "sourceName": "JOB-ALIO",
-      "sourceUrl": "https://job.alio.go.kr/recruitview.do?idx=306965",
-      "deadlineAt": "2026-11-26T14:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "전산전문요원_초급기술자(공공기관 정보화 사업기획 및 시스템 개발·운영)"
-    },
-    {
-      "companyName": "주식회사 라온에이엔씨",
-      "title": "SW 개발자 모집",
-      "sourceName": "Work24",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K170052610300044",
-      "deadlineAt": "2026-11-30T18:00:00+09:00",
+      "companyName": "(주)앰진",
+      "title": "(주)앰진 백엔드 신입·경력 채용공고",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50326231",
+      "deadlineAt": "2026-11-16T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)펄어비스",
+      "title": "[겨울 인턴십] 엔지니어링-웹개발(백엔드)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50346221",
+      "deadlineAt": "2026-11-23T11:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
     },
     {
       "companyName": "(주)리더스시스템즈",
@@ -68,24 +58,6 @@
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
-      "companyName": "(주)이피에스이앤이",
-      "title": "[신입·경력] 웹 개발 및 프로젝트 관리 담당자 채용",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50334332",
-      "deadlineAt": "2026-11-30T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "(주)인브레인",
-      "title": "스마트팩토리 응용프로그램 개발자 - 신입",
-      "sourceName": "Work24",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=CIN&infoTypeGroup=tb_workinfogubun&wantedAuthNo=2611090000706",
-      "deadlineAt": "2026-11-30T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
       "companyName": "(주)메가웍스",
       "title": "(주)메가웍스 개발 신입/경력 모집",
       "sourceName": "JobKorea",
@@ -95,29 +67,20 @@
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
-      "companyName": "(주)모비핀테크놀러지",
-      "title": "신입, 경력 자동차 전장 S/W 개발자 모집합니다 (AUTOSAR)",
-      "sourceName": "Saramin",
-      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55517261",
+      "companyName": "에스지랩(주)(SG Lab Inc.)",
+      "title": "[에스지랩 주식회사] 백엔드 신입/경력 개발자 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50332265",
       "deadlineAt": "2026-12-09T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
-      "companyName": "(주)플리",
-      "title": "Go lang 서버 개발자 모집(신입/경력)",
+      "companyName": "(주)더씬",
+      "title": "(주)더씬 엔지니어(신입 및 경력) 모집",
       "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50342566",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50340619",
       "deadlineAt": "2026-12-10T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "망고카(주)",
-      "title": "중고차 수출 플랫폼 망고카 백엔드 개발자 채용",
-      "sourceName": "Saramin",
-      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55545937",
-      "deadlineAt": "2026-12-11T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
