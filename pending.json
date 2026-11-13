@@ -3,12 +3,12 @@
   "batches": [
     "2026-11-13"
   ],
-  "generatedAt": "2026-11-13T09:06:31.097Z",
-  "collectorCount": 1,
+  "generatedAt": "2026-11-13T09:13:40.382Z",
+  "collectorCount": 2,
   "skipped": {
-    "notAlertable": 1,
+    "notAlertable": 7,
     "restricted": 0,
-    "alreadySent": 2,
+    "alreadySent": 5,
     "duplicate": 0
   },
   "jobs": [
@@ -29,6 +29,15 @@
       "deadlineAt": "2026-11-23T11:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "AUMOVIO",
+      "title": "AUMOVIO star Internship_Software Engineer_Architecture and Networking Solutions (Body & Actuator Control) | AUMOVIO Korea",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/aumovio-star-internship-software-engineer-architecture-and-networking-solutions-body-actuator-control-aumovio-korea-at-aumovio-4489969699",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
       "companyName": "(주)리더스시스템즈",
