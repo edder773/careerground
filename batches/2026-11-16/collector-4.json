@@ -1,0 +1,93 @@
+{
+  "kind": "collector",
+  "slot": 4,
+  "date": "2026-11-16",
+  "receivedAt": "2026-11-16T09:53:28.041Z",
+  "jobs": [
+    {
+      "companyName": "한양사이버대학교",
+      "title": "계약직원 채용 공고(정보인프라혁신팀)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611040000265",
+      "deadlineAt": "2026-11-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "정보시스템 운영 지원"
+    },
+    {
+      "companyName": "지방공기업평가원",
+      "title": "2026년 하반기 일반직 신규직원 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611050000888",
+      "deadlineAt": "2026-11-20T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "정보기술(IT)"
+    },
+    {
+      "companyName": "제주연구원",
+      "title": "제주연구원 직원(전문직) 채용 공고",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611090000752",
+      "deadlineAt": "2026-11-19T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산/DB"
+    },
+    {
+      "companyName": "(주)라임",
+      "title": "IT 웸/AI 프로그래머모집(신입)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611040002546",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "AUMOVIO",
+      "title": "AUMOVIO star Internship_IT | AUMOVIO Korea",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://jobs.smartrecruiters.com/Aumovio/744000161096899-aumovio-star-internship-it-aumovio-korea",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "AUMOVIO",
+      "title": "AUMOVIO star Internship_Software Engineer_User Experience",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://jobs.smartrecruiters.com/aumovio/744000160991378-aumovio-star-internshipsoftware-engineeruser-experience",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Infineon Technologies",
+      "title": "Internship - Edge AI",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/internship-edge-ai-at-infineon-technologies-4480999644",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Infineon Technologies",
+      "title": "Internship - Engineering (AI & Embedded Solutions)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/internship-engineering-ai-embedded-solutions-at-infineon-technologies-4480996823",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "delight.ai",
+      "title": "AI Agent Engineer, Intern",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/ai-agent-engineer-intern-at-delight-ai-4450475844",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
