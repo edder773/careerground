@@ -3,8 +3,8 @@
   "batches": [
     "2026-11-16"
   ],
-  "generatedAt": "2026-11-16T13:05:24.464Z",
-  "collectorCount": 4,
+  "generatedAt": "2026-11-16T13:20:15.977Z",
+  "collectorCount": 5,
   "skipped": {
     "notAlertable": 8,
     "restricted": 0,
@@ -89,6 +89,15 @@
       "itRole": "정보화 전문인력(정보화 제한경쟁)"
     },
     {
+      "companyName": "위볼린",
+      "title": "개발자 채용[신입]",
+      "sourceName": "Jumpit",
+      "sourceUrl": "https://jumpit.saramin.co.kr/positions",
+      "deadlineAt": "2026-12-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
       "companyName": "(주)메가웍스",
       "title": "(주)메가웍스 개발 신입/경력 모집",
       "sourceName": "JobKorea",
@@ -96,6 +105,15 @@
       "deadlineAt": "2026-12-04T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "네이버웹툰",
+      "title": "[2027 상반기 채용연계형 인턴십] 네이버웹툰 백엔드 서버 개발 (Backend Software Development)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/category/%EC%8B%A0%EC%9E%85-%EC%9D%B8%ED%84%B4",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
     },
     {
       "companyName": "(주)케이원",
