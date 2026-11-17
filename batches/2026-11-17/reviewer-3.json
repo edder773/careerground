@@ -1,0 +1,47 @@
+{
+  "kind": "reviewer",
+  "slot": 3,
+  "date": "2026-11-17",
+  "receivedAt": "2026-11-17T13:04:57.855Z",
+  "jobs": [
+    {
+      "companyName": "엘에스아이티씨(주)",
+      "title": "2027 LS ITC 채용연계형 인턴 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50376620",
+      "deadlineAt": "2026-11-29T23:50:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "개발/운영, 클라우드 어플리케이션 아키텍트 및 개발, AI 개발자"
+    },
+    {
+      "companyName": "보스반도체",
+      "title": "26년 하반기 보스반도체 신입 엔지니어 채용(HW·SW·AI)",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/581144",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI SW, Core System SW"
+    },
+    {
+      "companyName": "네이버웹툰",
+      "title": "[2027 상반기 채용연계형 인턴십] 네이버웹툰 백엔드 서버 개발 (Backend Software Development)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/364883",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "당근",
+      "title": "[2027 당근 프로덕트 빌더 인턴십] Software Engineer, Backend (채용전환형) - 피드 인프라",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/2027-%EB%8B%B9%EA%B7%BC-%ED%94%84%EB%A1%9C%EB%8D%95%ED%8A%B8-%EB%B9%8C%EB%8D%94-%EC%9D%B8%ED%84%B4%EC%8B%AD-software-engineer-backend-%EC%B1%84%EC%9A%A9%EC%A0%84%ED%99%98%ED%98%95-%ED%94%BC%EB%93%9C-%EC%9D%B8%ED%94%84%EB%9D%BC-at-karrot-4489758835",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
