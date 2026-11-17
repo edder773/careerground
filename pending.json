@@ -3,15 +3,24 @@
   "batches": [
     "2026-11-17"
   ],
-  "generatedAt": "2026-11-17T09:04:23.824Z",
-  "collectorCount": 1,
+  "generatedAt": "2026-11-17T09:10:59.151Z",
+  "collectorCount": 2,
   "skipped": {
-    "notAlertable": 1,
+    "notAlertable": 2,
     "restricted": 0,
     "alreadySent": 2,
     "duplicate": 2
   },
   "jobs": [
+    {
+      "companyName": "주식회사 오니온에이아이",
+      "title": "AI SaaS 플랫폼 풀스택(Full-Stack) 개발자 채용(신입)",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=KJ20652611090001",
+      "deadlineAt": "2026-11-20T00:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
     {
       "companyName": "AUMOVIO Korea",
       "title": "AUMOVIO star Internship_IT | AUMOVIO Korea",
@@ -27,6 +36,15 @@
       "sourceName": "LinkedIn Korea",
       "sourceUrl": "https://kr.linkedin.com/jobs/view/2027-%EB%8B%B9%EA%B7%BC-%ED%94%84%EB%A1%9C%EB%8D%95%ED%8A%B8-%EB%B9%8C%EB%8D%94-%EC%9D%B8%ED%84%B4%EC%8B%AD-software-engineer-backend-%EC%B1%84%EC%9A%A9%EC%A0%84%ED%99%98%ED%98%95-%ED%94%BC%EB%93%9C-%EC%9D%B8%ED%94%84%EB%9D%BC-at-karrot-4489758835",
       "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)모노커뮤니케이션즈",
+      "title": "[모노커뮤니케이션즈] AI 활용 JAVA개발 신입 및 경력",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?cn=curation&cns=list&rec_idx=55535808&referNonce=&t_category=m_curation&t_content=generic",
+      "deadlineAt": "2026-12-10T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     }
