@@ -1,0 +1,29 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-11-17",
+  "receivedAt": "2026-11-17T13:00:10.510Z",
+  "jobs": [
+    {
+      "companyName": "NAVER",
+      "title": "2027 NAVER 동계 인턴십 : Product 트랙",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/420034",
+      "deadlineAt": "2026-11-23T10:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "Tech"
+    },
+    {
+      "companyName": "NAVER",
+      "title": "NAVER Global Internship, Summer 2027",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/419990",
+      "deadlineAt": "2027-01-18T10:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "Product Engineering, AI/Data, Infra Engineering"
+    }
+  ],
+  "rejected": []
+}
