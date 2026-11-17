@@ -3,12 +3,12 @@
   "batches": [
     "2026-11-17"
   ],
-  "generatedAt": "2026-11-17T10:58:28.608Z",
-  "collectorCount": 2,
+  "generatedAt": "2026-11-17T13:00:23.791Z",
+  "collectorCount": 5,
   "skipped": {
-    "notAlertable": 2,
+    "notAlertable": 5,
     "restricted": 0,
-    "alreadySent": 2,
+    "alreadySent": 5,
     "duplicate": 2
   },
   "jobs": [
@@ -22,6 +22,36 @@
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
+      "companyName": "NAVER",
+      "title": "2027 NAVER 동계 인턴십 : Product 트랙",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/420034",
+      "deadlineAt": "2026-11-23T10:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "Tech"
+    },
+    {
+      "companyName": "엘에스아이티씨(주)",
+      "title": "2027 LS ITC 채용연계형 인턴 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50376620",
+      "deadlineAt": "2026-11-29T23:50:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "개발/운영, 클라우드 어플리케이션 아키텍트 및 개발, AI 개발자"
+    },
+    {
+      "companyName": "보스반도체",
+      "title": "26년 하반기 보스반도체 신입 엔지니어 채용(HW·SW·AI)",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/581144",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AI SW, Core System SW"
+    },
+    {
       "companyName": "AUMOVIO Korea",
       "title": "AUMOVIO star Internship_IT | AUMOVIO Korea",
       "sourceName": "LinkedIn Korea",
@@ -29,6 +59,33 @@
       "deadlineAt": "2026-11-29T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)메가웍스",
+      "title": "(주)메가웍스 개발 신입/경력 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50300971",
+      "deadlineAt": "2026-12-04T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "엔컴(주)",
+      "title": "java 신입 개발자 채용 공고",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50371231",
+      "deadlineAt": "2026-12-04T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "네이버웹툰",
+      "title": "[2027 상반기 채용연계형 인턴십] 네이버웹툰 백엔드 서버 개발 (Backend Software Development)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/364883",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
     },
     {
       "companyName": "당근",
@@ -47,6 +104,61 @@
       "deadlineAt": "2026-12-10T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)지구소프트",
+      "title": "Java 웹 개발자 신입/경력 계약직 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50356304",
+      "deadlineAt": "2026-12-12T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)케이텍",
+      "title": "프로그램 개발자 모집(Machine Vision, AI(Python), C, C#, C++)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50355377",
+      "deadlineAt": "2026-12-12T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "카이트로닉스",
+      "title": "소프트웨어 신입 개발자 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50363219",
+      "deadlineAt": "2026-12-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)아이티네이드",
+      "title": "프론트엔드 / 백엔드, Java·JSP, Ajax 外 (신입 채용)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50369864",
+      "deadlineAt": "2026-12-16T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)네비웍스",
+      "title": "시뮬레이터 SW개발(C++, C#) 신입~초급개발자 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50318502",
+      "deadlineAt": "2027-01-05T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "NAVER",
+      "title": "NAVER Global Internship, Summer 2027",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/419990",
+      "deadlineAt": "2027-01-18T10:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "Product Engineering, AI/Data, Infra Engineering"
     }
   ]
 }
