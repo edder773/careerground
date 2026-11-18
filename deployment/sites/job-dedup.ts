@@ -426,6 +426,7 @@ export function duplicateJobReason(
   if (
     candidateBuilderTeam !== undefined &&
     existingBuilderTeam !== undefined &&
+    Boolean(dateKey(candidate.deadlineAt)) &&
     dateKey(candidate.deadlineAt) === dateKey(existing.deadlineAt)
   ) {
     if (candidateBuilderTeam && existingBuilderTeam && candidateBuilderTeam !== existingBuilderTeam)
