@@ -117,6 +117,9 @@ const canonicalCompanyAliases = new Map<string, string>([
   ['기업은행', 'ibk-bank'],
   ['중소기업은행', 'ibk-bank'],
   ['중소기업은행ibk기업은행', 'ibk-bank'],
+  // Korean and English company names: https://englishdart.fss.or.kr/dsbc001/selectPopup.ax?selectKey=01528327
+  ['엘에스아이티씨', 'ls-itc'],
+  ['lsitc', 'ls-itc'],
 ]);
 
 export function jobCompanyKey(value: string) {
