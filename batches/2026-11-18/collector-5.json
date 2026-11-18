@@ -1,0 +1,37 @@
+{
+  "kind": "collector",
+  "slot": 5,
+  "date": "2026-11-18",
+  "receivedAt": "2026-11-18T13:09:10.098Z",
+  "jobs": [
+    {
+      "companyName": "LS ITC",
+      "title": "2027 채용연계형 인턴 모집 - 시스템 개발 및 운영",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/365229",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "시스템 개발 및 운영"
+    },
+    {
+      "companyName": "EY한영",
+      "title": "금융감사부문 IT 시스템 및 규제 프로젝트 인턴",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/365469",
+      "deadlineAt": "2026-11-26T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "당근마켓",
+      "title": "Software Engineer, Backend(인턴) - 숏폼",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/365314",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
