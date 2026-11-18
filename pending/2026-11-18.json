@@ -3,15 +3,24 @@
   "batches": [
     "2026-11-18"
   ],
-  "generatedAt": "2026-11-18T11:00:52.841Z",
-  "collectorCount": 2,
+  "generatedAt": "2026-11-18T13:09:20.838Z",
+  "collectorCount": 5,
   "skipped": {
-    "notAlertable": 5,
+    "notAlertable": 8,
     "restricted": 0,
-    "alreadySent": 5,
-    "duplicate": 0
+    "alreadySent": 8,
+    "duplicate": 1
   },
   "jobs": [
+    {
+      "companyName": "EY한영",
+      "title": "금융감사부문 IT 시스템 및 규제 프로젝트 인턴",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/365469",
+      "deadlineAt": "2026-11-26T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
     {
       "companyName": "롯데이노베이트",
       "title": "2026년 11월 롯데이노베이트 월드IS팀 JA Grade채용",
@@ -20,6 +29,15 @@
       "deadlineAt": "2026-11-27T18:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "당근마켓",
+      "title": "Software Engineer, Backend(인턴) - 숏폼",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/365314",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
       "companyName": "AUMOVIO Korea",
@@ -31,6 +49,16 @@
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
+      "companyName": "LS ITC",
+      "title": "2027 LS ITC 채용연계형 인턴 모집",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/it",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "시스템 개발 및 운영, 네트워크 운영 및 구축, 클라우드 인프라, AI 서비스 기획 및 개발, AI 서비스 시스템 운영"
+    },
+    {
       "companyName": "주식회사 인시스(INSYS)",
       "title": "[신입/경력] AI 응용 S/W 연구 개발자 채용 공고",
       "sourceName": "Work24",
@@ -38,6 +66,15 @@
       "deadlineAt": "2026-12-03T00:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "엔컴(주)",
+      "title": "java 신입 개발자 채용 공고",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50371231",
+      "deadlineAt": "2026-12-04T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
     },
     {
       "companyName": "당근",
@@ -58,6 +95,42 @@
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
+      "companyName": "(주)지구소프트",
+      "title": "Java 웹 개발자 신입/경력 계약직 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50356304",
+      "deadlineAt": "2026-12-12T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)케이텍",
+      "title": "프로그램 개발자 모집(Machine Vision, AI(Python), C, C#, C++)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50355377",
+      "deadlineAt": "2026-12-12T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "카이트로닉스",
+      "title": "소프트웨어 신입 개발자 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50363219",
+      "deadlineAt": "2026-12-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)아이티네이드",
+      "title": "프론트엔드 / 백엔드, Java·JSP, Ajax 外 (신입 채용)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50369864",
+      "deadlineAt": "2026-12-16T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
       "companyName": "바보들이만든회사(주)",
       "title": "웹 개발자·자동화 개발자 채용",
       "sourceName": "Saramin",
@@ -72,6 +145,15 @@
       "sourceName": "Saramin",
       "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55604816",
       "deadlineAt": "2026-12-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)네비웍스",
+      "title": "시뮬레이터 SW개발(C++, C#) 신입~초급개발자 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50318502",
+      "deadlineAt": "2027-01-05T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
     },
