@@ -29,8 +29,13 @@ export const isRestricted = (job) =>
   RESTRICTED_ELIGIBILITY.test(job.title.replace(VETERANS_HOSPITAL_LABEL, ''));
 
 // Same URL, or the same posting mirrored on another job board.
-const samePosting = (left, right) =>
-  jobKey(left) === jobKey(right) || Boolean(duplicateJobReason(left, right));
+const samePosting = (left, right, forReview = false) => {
+  if (jobKey(left) === jobKey(right)) return true;
+  const reason = duplicateJobReason(left, right);
+  // A campaign delivery can cover its teams, but review of the umbrella
+  // must not approve a team object that reviewers did not actually pass.
+  return Boolean(reason && !(forReview && reason === 'daangn-builder-campaign'));
+};
 
 const compact = (value) =>
   String(value ?? '')
@@ -68,8 +73,10 @@ class JobIndex {
   #keys = new Set();
   #byCompany = new Map();
   #all = [];
+  #forReview;
 
-  constructor(jobs = []) {
+  constructor(jobs = [], forReview = false) {
+    this.#forReview = forReview;
     for (const job of jobs) this.add(job);
   }
 
@@ -85,7 +92,7 @@ class JobIndex {
     if (this.#keys.has(jobKey(job))) return true;
     const sameCompany = this.#byCompany.get(jobCompanyKey(job.companyName)) ?? [];
     return (
-      sameCompany.some((other) => samePosting(job, other)) ||
+      sameCompany.some((other) => samePosting(job, other, this.#forReview)) ||
       this.#all.some((other) => listedUnderParent(job, other))
     );
   }
@@ -121,7 +128,7 @@ export function buildFinal({ pending, reviews, now }) {
   if (quorum === 0) {
     return { jobs: [], heldCount: pending.jobs.length, quorum, reviewCount: 0, notPassed: 0 };
   }
-  const reviewIndexes = reviews.map((review) => new JobIndex(review.jobs));
+  const reviewIndexes = reviews.map((review) => new JobIndex(review.jobs, true));
   const jobs = pending.jobs.filter(
     (job) =>
       isAlertable(job, now) && reviewIndexes.filter((index) => index.has(job)).length >= quorum,

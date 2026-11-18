@@ -8,7 +8,11 @@ export type ComparableJob = {
 };
 
 export type JobDuplicateReason =
-  'same-source' | 'equivalent-title' | 'shared-campaign-role' | 'umbrella-campaign';
+  | 'same-source'
+  | 'equivalent-title'
+  | 'shared-campaign-role'
+  | 'umbrella-campaign'
+  | 'daangn-builder-campaign';
 
 export type JobDigestIdentity = {
   companyKey: string;
@@ -431,7 +435,7 @@ export function duplicateJobReason(
   ) {
     if (candidateBuilderTeam && existingBuilderTeam && candidateBuilderTeam !== existingBuilderTeam)
       return null;
-    return 'umbrella-campaign';
+    return 'daangn-builder-campaign';
   }
   if (equivalentTitles(candidate, existing)) return 'equivalent-title';
   const candidateIdentity = jobDigestIdentity(candidate);
