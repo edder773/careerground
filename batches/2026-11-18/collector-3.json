@@ -1,0 +1,19 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-11-18",
+  "receivedAt": "2026-11-18T13:09:05.364Z",
+  "jobs": [
+    {
+      "companyName": "LS ITC",
+      "title": "2027 LS ITC 채용연계형 인턴 모집",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/it",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "시스템 개발 및 운영, 네트워크 운영 및 구축, 클라우드 인프라, AI 서비스 기획 및 개발, AI 서비스 시스템 운영"
+    }
+  ],
+  "rejected": []
+}
