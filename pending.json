@@ -3,13 +3,13 @@
   "batches": [
     "2026-11-18"
   ],
-  "generatedAt": "2026-11-18T13:16:43.940Z",
+  "generatedAt": "2026-11-18T23:00:02.407Z",
   "collectorCount": 5,
   "skipped": {
     "notAlertable": 8,
     "restricted": 0,
     "alreadySent": 8,
-    "duplicate": 1
+    "duplicate": 0
   },
   "jobs": [
     {
@@ -50,13 +50,13 @@
     },
     {
       "companyName": "LS ITC",
-      "title": "2027 LS ITC 채용연계형 인턴 모집",
-      "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/it",
+      "title": "2027 채용연계형 인턴 모집 - 시스템 개발 및 운영",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/365229",
       "deadlineAt": "2026-11-29T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "시스템 개발 및 운영, 네트워크 운영 및 구축, 클라우드 인프라, AI 서비스 기획 및 개발, AI 서비스 시스템 운영"
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "시스템 개발 및 운영"
     },
     {
       "companyName": "주식회사 인시스(INSYS)",
@@ -78,9 +78,18 @@
     },
     {
       "companyName": "당근",
-      "title": "[2027 당근 프로덕트 빌더 인턴십] Software Engineer Intern, Backend (채용전환형)",
-      "sourceName": "Superookie",
-      "sourceUrl": "https://www.superookie.com/jobs/6afac7acebfac27e8c12ef82",
+      "title": "[2027 당근 프로덕트 빌더 인턴십] Software Engineer, Backend (채용전환형) - 나의당근",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/2027-%EB%8B%B9%EA%B7%BC-%ED%94%84%EB%A1%9C%EB%8D%95%ED%8A%B8-%EB%B9%8C%EB%8D%94-%EC%9D%B8%ED%84%B4%EC%8B%AD-software-engineer-backend-%EC%B1%84%EC%9A%A9%EC%A0%84%ED%99%98%ED%98%95-%EB%82%98%EC%9D%98%EB%8B%B9%EA%B7%BC-at-karrot-4489761810",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "당근",
+      "title": "[2027 당근 프로덕트 빌더 인턴십] Software Engineer, Backend (채용전환형) - 커뮤니티",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/2027-%EB%8B%B9%EA%B7%BC-%ED%94%84%EB%A1%9C%EB%8D%95%ED%8A%B8-%EB%B9%8C%EB%8D%94-%EC%9D%B8%ED%84%B4%EC%8B%AD-software-engineer-backend-%EC%B1%84%EC%9A%A9%EC%A0%84%ED%99%98%ED%98%95-%EC%BB%A4%EB%AE%A4%EB%8B%88%ED%8B%B0-at-karrot-4489773108",
       "deadlineAt": "2026-12-06T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
