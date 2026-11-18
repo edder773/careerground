@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-18",
+  "batches": [
+    "2026-11-18"
+  ],
+  "generatedAt": "2026-11-18T09:15:24.723Z",
+  "collectorCount": 1,
+  "skipped": {
+    "notAlertable": 4,
+    "restricted": 0,
+    "alreadySent": 5,
+    "duplicate": 0
+  },
+  "jobs": [
+    {
+      "companyName": "롯데이노베이트",
+      "title": "2026년 11월 롯데이노베이트 월드IS팀 JA Grade채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611170004694",
+      "deadlineAt": "2026-11-27T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "AUMOVIO Korea",
+      "title": "AUMOVIO star Internship_IT | AUMOVIO Korea",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/aumovio-star-internship-it-aumovio-korea-at-aumovio-4489962868",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ]
+}
