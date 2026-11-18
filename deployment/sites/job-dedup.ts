@@ -389,6 +389,22 @@ const sameRole = (left: JobDigestIdentity, right: JobDigestIdentity) => {
   return smaller > 0 && shared / smaller >= 0.8;
 };
 
+// The broad posting links to a campaign containing three independently listed teams.
+// https://careers.daangn.com/2027-product-builder-internship/
+const daangnBuilderTeam = (job: ComparableJob): string | null | undefined => {
+  const title = normalizedTitle(job.title);
+  if (
+    jobCompanyKey(job.companyName) !== '당근' ||
+    !/2027\s*당근\s*프로덕트\s*빌더\s*인턴십/u.test(title) ||
+    !/software\s+engineer/u.test(title) ||
+    !/backend/u.test(title)
+  )
+    return undefined;
+  const team = title.match(/[-–]\s*(피드\s*인프라|커뮤니티|나의\s*당근)\s*$/u)?.[1];
+  if (team) return team.replace(/\s/g, '');
+  return /backend\s*\(채용전환형\)\s*$/u.test(title) ? null : undefined;
+};
+
 export function duplicateJobReason(
   candidate: ComparableJob,
   existing: ComparableJob,
@@ -405,6 +421,17 @@ export function duplicateJobReason(
   const existingUrl = normalizedSourceUrl(existing.sourceUrl);
   if (candidateUrl && candidateUrl === existingUrl) return 'same-source';
   if (!sameRecruitmentWindow(candidate, existing)) return null;
+  const candidateBuilderTeam = daangnBuilderTeam(candidate);
+  const existingBuilderTeam = daangnBuilderTeam(existing);
+  if (
+    candidateBuilderTeam !== undefined &&
+    existingBuilderTeam !== undefined &&
+    dateKey(candidate.deadlineAt) === dateKey(existing.deadlineAt)
+  ) {
+    if (candidateBuilderTeam && existingBuilderTeam && candidateBuilderTeam !== existingBuilderTeam)
+      return null;
+    return 'umbrella-campaign';
+  }
   if (equivalentTitles(candidate, existing)) return 'equivalent-title';
   const candidateIdentity = jobDigestIdentity(candidate);
   const existingIdentity = jobDigestIdentity(existing);
