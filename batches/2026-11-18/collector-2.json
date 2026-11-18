@@ -1,0 +1,72 @@
+{
+  "kind": "collector",
+  "slot": 2,
+  "date": "2026-11-18",
+  "receivedAt": "2026-11-18T09:15:42.744Z",
+  "jobs": [
+    {
+      "companyName": "당근",
+      "title": "[2027 당근 프로덕트 빌더 인턴십] Software Engineer Intern, Backend (채용전환형)",
+      "sourceName": "Superookie",
+      "sourceUrl": "https://www.superookie.com/jobs/6afac7acebfac27e8c12ef82",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "주식회사 인시스(INSYS)",
+      "title": "[신입/경력] AI 응용 S/W 연구 개발자 채용 공고",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K131132611180062",
+      "deadlineAt": "2026-12-03T00:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "주식회사 애자일소프트웨어",
+      "title": "응용소프트웨어 개발자 채용",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K170052611180012",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)아이티네이드",
+      "title": "프론트엔드 / 백엔드, Java·JSP, Ajax 外 신입 채용",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55604816",
+      "deadlineAt": "2026-12-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "주식회사프랜즈도사",
+      "title": "주식회사프랜즈도사 AI 바이브코딩 및 서버 운영관리 채용 공고",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55597144",
+      "deadlineAt": "2027-01-16T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "바보들이만든회사(주)",
+      "title": "웹 개발자·자동화 개발자 채용",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55599573",
+      "deadlineAt": "2026-12-17T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)에이아이로직스",
+      "title": "AI 기반 물류 시스템 R&D 개발자 0명 모집",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55534078",
+      "deadlineAt": "2026-12-10T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
