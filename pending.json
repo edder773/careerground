@@ -3,10 +3,10 @@
   "batches": [
     "2026-11-19"
   ],
-  "generatedAt": "2026-11-19T13:06:30.553Z",
-  "collectorCount": 3,
+  "generatedAt": "2026-11-19T13:07:05.249Z",
+  "collectorCount": 4,
   "skipped": {
-    "notAlertable": 5,
+    "notAlertable": 8,
     "restricted": 0,
     "alreadySent": 5,
     "duplicate": 0
