@@ -3,12 +3,12 @@
   "batches": [
     "2026-11-19"
   ],
-  "generatedAt": "2026-11-19T11:03:41.023Z",
-  "collectorCount": 2,
+  "generatedAt": "2026-11-19T13:06:30.553Z",
+  "collectorCount": 3,
   "skipped": {
-    "notAlertable": 3,
+    "notAlertable": 5,
     "restricted": 0,
-    "alreadySent": 1,
+    "alreadySent": 5,
     "duplicate": 0
   },
   "jobs": [
@@ -20,6 +20,16 @@
       "deadlineAt": "2026-11-27T18:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "안랩",
+      "title": "2026 전직군 대규모 공개채용",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/578126",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "[SW 개발] OS기반 SW개발, [SW 개발] Web 개발, [AI/ML] AI/ML 개발, [엔지니어] DevOps"
     },
     {
       "companyName": "AUMOVIO",
@@ -67,6 +77,42 @@
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
+      "companyName": "(주)지구소프트",
+      "title": "Java 웹 개발자 신입/경력 계약직 채용",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50356304",
+      "deadlineAt": "2026-12-12T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)케이텍",
+      "title": "프로그램 개발자 모집(Machine Vision, AI(Python), C, C#, C++)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50355377",
+      "deadlineAt": "2026-12-12T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "카이트로닉스",
+      "title": "소프트웨어 신입 개발자 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50363219",
+      "deadlineAt": "2026-12-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)아이티네이드",
+      "title": "프론트엔드 / 백엔드, Java·JSP, Ajax 外 (신입 채용)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50369864",
+      "deadlineAt": "2026-12-16T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
       "companyName": "주식회사 애드스퀘어",
       "title": "풀스택 개발자 채용 (신입/경력 · AI 실무 교육 지원)",
       "sourceName": "Saramin",
@@ -74,6 +120,15 @@
       "deadlineAt": "2026-12-19T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)네비웍스",
+      "title": "시뮬레이터 SW개발(C++, C#) 신입~초급개발자 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50318502",
+      "deadlineAt": "2027-01-05T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
     },
     {
       "companyName": "(주)미래시스템",
