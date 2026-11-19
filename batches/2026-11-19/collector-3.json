@@ -1,0 +1,36 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-11-19",
+  "receivedAt": "2026-11-19T13:06:46.585Z",
+  "jobs": [
+    {
+      "companyName": "더파운더즈",
+      "title": "[ANUA] BI & Data Engineer 채용전환형 인턴",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/421991",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "DeepAuto.ai",
+      "title": "[전환형 인턴] AI Engineer",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/421356",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Palantir",
+      "title": "Forward Deployed Software Engineer, Internship – Commercial",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/421174",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
