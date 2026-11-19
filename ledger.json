@@ -857,14 +857,6 @@
       "sentOn": "2026-10-13"
     },
     {
-      "companyName": "(주)인컴즈",
-      "title": "IT 솔루션 엔지니어 신입 채용합니다.",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50155106",
-      "deadlineAt": "2026-11-12T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-10-14"
-    },
-    {
       "companyName": "(주)신우이엔지",
       "title": "SW 엔지니어 현장 대응 및 시스템 개발",
       "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50150560",
@@ -1026,15 +1018,6 @@
       "deadlineAt": "2026-11-15T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-11-02"
-    },
-    {
-      "companyName": "현대면세점",
-      "title": "2026년 하반기 현대백화점그룹 신입사원 채용 - [현대면세점] 디지털기획_일반전형",
-      "sourceUrl": "https://jasoseol.com/recruit/106947",
-      "deadlineAt": "2026-11-12T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-11-03",
-      "itRole": "디지털기획"
     },
     {
       "companyName": "토스",
@@ -1410,6 +1393,30 @@
       "deadlineAt": "2026-11-29T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-11-19"
+    },
+    {
+      "companyName": "EY한영",
+      "title": "금융감사부문 디지털 감사 & AI 리스크 분석 인턴",
+      "sourceUrl": "https://linkareer.com/activity/365555",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-20"
+    },
+    {
+      "companyName": "당근",
+      "title": "[2027 당근 프로덕트 빌더 인턴십] Software Engineer, Backend (채용전환형) - 나의당근",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/2027-%EB%8B%B9%EA%B7%BC-%ED%94%84%EB%A1%9C%EB%8D%95%ED%8A%B8-%EB%B9%8C%EB%8D%94-%EC%9D%B8%ED%84%B4%EC%8B%AD-software-engineer-backend-%EC%B1%84%EC%9A%A9%EC%A0%84%ED%99%98%ED%98%95-%EB%82%98%EC%9D%98%EB%8B%B9%EA%B7%BC-at-karrot-4489761810",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-20"
+    },
+    {
+      "companyName": "당근",
+      "title": "[2027 당근 프로덕트 빌더 인턴십] Software Engineer, Backend (채용전환형) - 커뮤니티",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/2027-%EB%8B%B9%EA%B7%BC-%ED%94%84%EB%A1%9C%EB%8D%95%ED%8A%B8-%EB%B9%8C%EB%8D%94-%EC%9D%B8%ED%84%B4%EC%8B%AD-software-engineer-backend-%EC%B1%84%EC%9A%A9%EC%A0%84%ED%99%98%ED%98%95-%EC%BB%A4%EB%AE%A4%EB%8B%88%ED%8B%B0-at-karrot-4489773108",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-20"
     }
   ],
   "deliveries": {
@@ -1828,6 +1835,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-11-18"
+      ],
+      "status": "SENT"
+    },
+    "2026-11-20": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-11-19T23:00:01.433Z",
+      "jobCount": 3,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-11-19"
       ],
       "status": "SENT"
     }
