@@ -81,6 +81,9 @@ const compact = (value: string) =>
     .replace(/[^0-9a-z가-힣]/g, '');
 
 const canonicalCompanyAliases = new Map<string, string>([
+  // Brand and legal employer shown together on the campaign listings.
+  // https://linkareer.com/company-info/67/recruit
+  ['당근마켓', '당근'],
   // Korean legal name and English brand: https://www.fasoo.ai/about-us
   ['파수에이아이', 'fasoo-ai'],
   ['파수ai', 'fasoo-ai'],
@@ -399,14 +402,18 @@ const daangnBuilderTeam = (job: ComparableJob): string | null | undefined => {
   const title = normalizedTitle(job.title);
   if (
     jobCompanyKey(job.companyName) !== '당근' ||
-    !/2027\s*당근\s*프로덕트\s*빌더\s*인턴십/u.test(title) ||
     !/software\s+engineer/u.test(title) ||
     !/backend/u.test(title)
   )
     return undefined;
-  const team = title.match(/[-–]\s*(피드\s*인프라|커뮤니티|나의\s*당근)\s*$/u)?.[1];
+  const team = title.match(
+    /backend\s*\(채용전환형\)\s*[-–]\s*(피드\s*인프라|커뮤니티|나의\s*당근)\s*$/u,
+  )?.[1];
   if (team) return team.replace(/\s/g, '');
-  return /backend\s*\(채용전환형\)\s*$/u.test(title) ? null : undefined;
+  return /2027\s*당근\s*프로덕트\s*빌더\s*인턴십/u.test(title) &&
+    /backend\s*\(채용전환형\)\s*$/u.test(title)
+    ? null
+    : undefined;
 };
 
 export function duplicateJobReason(
@@ -430,7 +437,10 @@ export function duplicateJobReason(
   if (
     candidateBuilderTeam !== undefined &&
     existingBuilderTeam !== undefined &&
-    Boolean(dateKey(candidate.deadlineAt)) &&
+    dateKey(candidate.deadlineAt) === '2026-12-06' &&
+    /2027\s*당근\s*프로덕트\s*빌더\s*인턴십/u.test(
+      normalizedTitle(candidate.title) + ' ' + normalizedTitle(existing.title),
+    ) &&
     dateKey(candidate.deadlineAt) === dateKey(existing.deadlineAt)
   ) {
     if (candidateBuilderTeam && existingBuilderTeam && candidateBuilderTeam !== existingBuilderTeam)
