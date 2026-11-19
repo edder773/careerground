@@ -2,18 +2,8 @@
   "kind": "reviewer",
   "slot": 1,
   "date": "2026-11-19",
-  "receivedAt": "2026-11-19T13:11:23.473Z",
+  "receivedAt": "2026-11-19T13:16:20.493Z",
   "jobs": [
-    {
-      "companyName": "안랩",
-      "title": "2026 전직군 대규모 공개채용",
-      "sourceName": "Catch",
-      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/578126",
-      "deadlineAt": "2026-11-29T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "[SW 개발] OS기반 SW개발, [SW 개발] Web 개발, [AI/ML] AI/ML 개발, [엔지니어] DevOps"
-    },
     {
       "companyName": "EY한영",
       "title": "금융감사부문 디지털 감사 & AI 리스크 분석 인턴",
