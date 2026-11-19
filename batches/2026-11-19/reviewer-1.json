@@ -1,0 +1,55 @@
+{
+  "kind": "reviewer",
+  "slot": 1,
+  "date": "2026-11-19",
+  "receivedAt": "2026-11-19T13:11:23.473Z",
+  "jobs": [
+    {
+      "companyName": "안랩",
+      "title": "2026 전직군 대규모 공개채용",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/578126",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "[SW 개발] OS기반 SW개발, [SW 개발] Web 개발, [AI/ML] AI/ML 개발, [엔지니어] DevOps"
+    },
+    {
+      "companyName": "EY한영",
+      "title": "금융감사부문 디지털 감사 & AI 리스크 분석 인턴",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/365555",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "당근",
+      "title": "[2027 당근 프로덕트 빌더 인턴십] Software Engineer, Backend (채용전환형) - 나의당근",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/2027-%EB%8B%B9%EA%B7%BC-%ED%94%84%EB%A1%9C%EB%8D%95%ED%8A%B8-%EB%B9%8C%EB%8D%94-%EC%9D%B8%ED%84%B4%EC%8B%AD-software-engineer-backend-%EC%B1%84%EC%9A%A9%EC%A0%84%ED%99%98%ED%98%95-%EB%82%98%EC%9D%98%EB%8B%B9%EA%B7%BC-at-karrot-4489761810",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "당근",
+      "title": "[2027 당근 프로덕트 빌더 인턴십] Software Engineer, Backend (채용전환형) - 커뮤니티",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/2027-%EB%8B%B9%EA%B7%BC-%ED%94%84%EB%A1%9C%EB%8D%95%ED%8A%B8-%EB%B9%8C%EB%8D%94-%EC%9D%B8%ED%84%B4%EC%8B%AD-software-engineer-backend-%EC%B1%84%EC%9A%A9%EC%A0%84%ED%99%98%ED%98%95-%EC%BB%A4%EB%AE%A4%EB%8B%88%ED%8B%B0-at-karrot-4489773108",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "주식회사 당근마켓",
+      "title": "Software Engineer, Backend (채용전환형) - 피드 인프라",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/365376",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
