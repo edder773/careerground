@@ -3,15 +3,42 @@
   "batches": [
     "2026-11-19"
   ],
-  "generatedAt": "2026-11-19T09:10:44.246Z",
-  "collectorCount": 1,
+  "generatedAt": "2026-11-19T09:11:31.528Z",
+  "collectorCount": 2,
   "skipped": {
-    "notAlertable": 1,
+    "notAlertable": 3,
     "restricted": 0,
-    "alreadySent": 0,
+    "alreadySent": 1,
     "duplicate": 0
   },
   "jobs": [
+    {
+      "companyName": "롯데이노베이트",
+      "title": "2026년 11월 롯데이노베이트 월드IS팀 JA Grade채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611170004694",
+      "deadlineAt": "2026-11-27T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "AUMOVIO",
+      "title": "AUMOVIO star Internship_IT | AUMOVIO Korea",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/aumovio-star-internship-it-aumovio-korea-at-aumovio-4489962868",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "AUMOVIO",
+      "title": "AUMOVIO star Internship_Software Engineer_User Experience",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/aumovio-star-internship-software-engineer-user-experience-at-aumovio-4489904128",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
     {
       "companyName": "스위치 주식회사",
       "title": "다양한 프로젝트에 참여하며 경험을 쌓을 개발자를 스위치 주식회사에 초대합니다.",
@@ -20,6 +47,24 @@
       "deadlineAt": "2026-11-30T19:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "당근",
+      "title": "[2027 당근 프로덕트 빌더 인턴십] Software Engineer, Backend (채용전환형) - 나의당근",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/2027-%EB%8B%B9%EA%B7%BC-%ED%94%84%EB%A1%9C%EB%8D%95%ED%8A%B8-%EB%B9%8C%EB%8D%94-%EC%9D%B8%ED%84%B4%EC%8B%AD-software-engineer-backend-%EC%B1%84%EC%9A%A9%EC%A0%84%ED%99%98%ED%98%95-%EB%82%98%EC%9D%98%EB%8B%B9%EA%B7%BC-at-karrot-4489761810",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "당근",
+      "title": "[2027 당근 프로덕트 빌더 인턴십] Software Engineer, Backend (채용전환형) - 커뮤니티",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/2027-%EB%8B%B9%EA%B7%BC-%ED%94%84%EB%A1%9C%EB%8D%95%ED%8A%B8-%EB%B9%8C%EB%8D%94-%EC%9D%B8%ED%84%B4%EC%8B%AD-software-engineer-backend-%EC%B1%84%EC%9A%A9%EC%A0%84%ED%99%98%ED%98%95-%EC%BB%A4%EB%AE%A4%EB%8B%88%ED%8B%B0-at-karrot-4489773108",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
       "companyName": "주식회사 애드스퀘어",
