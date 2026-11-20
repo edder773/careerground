@@ -1,0 +1,37 @@
+{
+  "kind": "collector",
+  "slot": 5,
+  "date": "2026-11-20",
+  "receivedAt": "2026-11-20T13:00:43.363Z",
+  "jobs": [
+    {
+      "companyName": "안랩",
+      "title": "2027 상반기 체험형 인턴십 - 모바일 서버 개발",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://secure.jasoseol.com/recruit/107306",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "모바일 서버 개발"
+    },
+    {
+      "companyName": "(주)힐링페이퍼",
+      "title": "[병원 운영 솔루션] 백엔드 개발자 인턴 (체험형)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/365888",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "에이티커니코리아",
+      "title": "[Kearney Korea] RA(인턴) 모집 공고 (백엔드 개발 및 데이터베이스 관리)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/365945",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
