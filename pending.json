@@ -3,12 +3,12 @@
   "batches": [
     "2026-11-20"
   ],
-  "generatedAt": "2026-11-20T09:13:07.149Z",
-  "collectorCount": 1,
+  "generatedAt": "2026-11-20T09:20:18.893Z",
+  "collectorCount": 2,
   "skipped": {
-    "notAlertable": 0,
+    "notAlertable": 3,
     "restricted": 0,
-    "alreadySent": 4,
+    "alreadySent": 8,
     "duplicate": 0
   },
   "jobs": [
@@ -23,6 +23,42 @@
       "itRole": "앱 개발자 (iOS · Android), 백엔드 개발자, AI 엔지니어 (Vision · On-device)"
     },
     {
+      "companyName": "롯데이노베이트",
+      "title": "2026년 11월 롯데이노베이트 월드IS팀 JA Grade채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611170004694",
+      "deadlineAt": "2026-11-27T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "주식회사 비트망고",
+      "title": "[비트망고] 서버 프로그래머 (Data engineer)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611190000149",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "AUMOVIO",
+      "title": "AUMOVIO star Internship_IT | AUMOVIO Korea",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/aumovio-star-internship-it-aumovio-korea-at-aumovio-4489962868",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "AUMOVIO",
+      "title": "AUMOVIO star Internship_Software Engineer_User Experience",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/aumovio-star-internship-software-engineer-user-experience-at-aumovio-4489904128",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
       "companyName": "삼미정보시스템(주)",
       "title": "MES/WMS/SCS 신입/경력 개발자",
       "sourceName": "Saramin",
@@ -30,6 +66,15 @@
       "deadlineAt": "2026-11-30T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "현대퓨처넷",
+      "title": "2027년 상반기 신입사원 채용(어플리케이션 및 ERP 운영)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611200000022",
+      "deadlineAt": "2026-12-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
     },
     {
       "companyName": "(주)누리앱",
