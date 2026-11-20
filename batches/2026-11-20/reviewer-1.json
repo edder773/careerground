@@ -1,0 +1,18 @@
+{
+  "kind": "reviewer",
+  "slot": 1,
+  "date": "2026-11-20",
+  "receivedAt": "2026-11-20T13:05:44.164Z",
+  "jobs": [
+    {
+      "companyName": "현대퓨처넷",
+      "title": "2027년 상반기 신입사원 채용(어플리케이션 및 ERP 운영)",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611200000022",
+      "deadlineAt": "2026-12-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    }
+  ],
+  "rejected": []
+}
