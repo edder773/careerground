@@ -1,170 +1,44 @@
 {
-  "date": "2026-11-19",
+  "date": "2026-11-20",
   "batches": [
-    "2026-11-19"
+    "2026-11-20"
   ],
-  "generatedAt": "2026-11-19T23:00:01.433Z",
-  "collectorCount": 5,
+  "generatedAt": "2026-11-20T09:13:07.149Z",
+  "collectorCount": 1,
   "skipped": {
-    "notAlertable": 9,
+    "notAlertable": 0,
     "restricted": 0,
-    "alreadySent": 6,
-    "duplicate": 2
+    "alreadySent": 4,
+    "duplicate": 0
   },
   "jobs": [
     {
-      "companyName": "롯데이노베이트",
-      "title": "2026년 11월 롯데이노베이트 월드IS팀 JA Grade채용",
-      "sourceName": "Incruit",
-      "sourceUrl": "https://jlab.incruit.com/jobs/2611170004694",
-      "deadlineAt": "2026-11-27T18:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "안랩",
-      "title": "2026 전직군 대규모 공개채용",
-      "sourceName": "Catch",
-      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/578126",
-      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "companyName": "주식회사 캡픽",
+      "title": "[신입/경력 무관] 스포츠 테크 스타트업 APP 개발자 채용",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K131612611100022",
+      "deadlineAt": "2026-11-21T00:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "[SW 개발] OS기반 SW개발, [SW 개발] Web 개발, [AI/ML] AI/ML 개발, [엔지니어] DevOps"
+      "itRole": "앱 개발자 (iOS · Android), 백엔드 개발자, AI 엔지니어 (Vision · On-device)"
     },
     {
-      "companyName": "토스증권",
-      "title": "IT Assistant(단기계약직) 채용",
-      "sourceName": "Jasoseol",
-      "sourceUrl": "https://jasoseol.com/recruit/107308",
-      "deadlineAt": "2026-11-29T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "AUMOVIO",
-      "title": "AUMOVIO star Internship_IT | AUMOVIO Korea",
-      "sourceName": "LinkedIn Korea",
-      "sourceUrl": "https://kr.linkedin.com/jobs/view/aumovio-star-internship-it-aumovio-korea-at-aumovio-4489962868",
-      "deadlineAt": "2026-11-29T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "AUMOVIO",
-      "title": "AUMOVIO star Internship_Software Engineer_User Experience",
-      "sourceName": "LinkedIn Korea",
-      "sourceUrl": "https://kr.linkedin.com/jobs/view/aumovio-star-internship-software-engineer-user-experience-at-aumovio-4489904128",
-      "deadlineAt": "2026-11-29T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "EY한영",
-      "title": "금융감사부문 디지털 감사 & AI 리스크 분석 인턴",
-      "sourceName": "Linkareer",
-      "sourceUrl": "https://linkareer.com/activity/365555",
-      "deadlineAt": "2026-11-29T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "스위치 주식회사",
-      "title": "다양한 프로젝트에 참여하며 경험을 쌓을 개발자를 스위치 주식회사에 초대합니다.",
-      "sourceName": "Work24",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K140112611190002",
-      "deadlineAt": "2026-11-30T19:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "당근",
-      "title": "[2027 당근 프로덕트 빌더 인턴십] Software Engineer, Backend (채용전환형) - 나의당근",
-      "sourceName": "LinkedIn Korea",
-      "sourceUrl": "https://kr.linkedin.com/jobs/view/2027-%EB%8B%B9%EA%B7%BC-%ED%94%84%EB%A1%9C%EB%8D%95%ED%8A%B8-%EB%B9%8C%EB%8D%94-%EC%9D%B8%ED%84%B4%EC%8B%AD-software-engineer-backend-%EC%B1%84%EC%9A%A9%EC%A0%84%ED%99%98%ED%98%95-%EB%82%98%EC%9D%98%EB%8B%B9%EA%B7%BC-at-karrot-4489761810",
-      "deadlineAt": "2026-12-06T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "당근",
-      "title": "[2027 당근 프로덕트 빌더 인턴십] Software Engineer, Backend (채용전환형) - 커뮤니티",
-      "sourceName": "LinkedIn Korea",
-      "sourceUrl": "https://kr.linkedin.com/jobs/view/2027-%EB%8B%B9%EA%B7%BC-%ED%94%84%EB%A1%9C%EB%8D%95%ED%8A%B8-%EB%B9%8C%EB%8D%94-%EC%9D%B8%ED%84%B4%EC%8B%AD-software-engineer-backend-%EC%B1%84%EC%9A%A9%EC%A0%84%ED%99%98%ED%98%95-%EC%BB%A4%EB%AE%A4%EB%8B%88%ED%8B%B0-at-karrot-4489773108",
-      "deadlineAt": "2026-12-06T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "(주)지구소프트",
-      "title": "Java 웹 개발자 신입/경력 계약직 채용",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50356304",
-      "deadlineAt": "2026-12-12T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "(주)케이텍",
-      "title": "프로그램 개발자 모집(Machine Vision, AI(Python), C, C#, C++)",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50355377",
-      "deadlineAt": "2026-12-12T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "카이트로닉스",
-      "title": "소프트웨어 신입 개발자 모집",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50363219",
-      "deadlineAt": "2026-12-13T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "(주)아이티네이드",
-      "title": "프론트엔드 / 백엔드, Java·JSP, Ajax 外 (신입 채용)",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50369864",
-      "deadlineAt": "2026-12-16T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "주식회사 애드스퀘어",
-      "title": "풀스택 개발자 채용 (신입/경력 · AI 실무 교육 지원)",
+      "companyName": "삼미정보시스템(주)",
+      "title": "MES/WMS/SCS 신입/경력 개발자",
       "sourceName": "Saramin",
-      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55615207",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55611947",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)누리앱",
+      "title": "[웹개발] JAVA 신입 개발자 ( SI/SM)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55619868",
       "deadlineAt": "2026-12-19T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "(주)네비웍스",
-      "title": "시뮬레이터 SW개발(C++, C#) 신입~초급개발자 모집",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50318502",
-      "deadlineAt": "2027-01-05T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "(주)미래시스템",
-      "title": "[응용 소프트웨어] S/W 개발 신입 채용공고",
-      "sourceName": "Saramin",
-      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55616890",
-      "deadlineAt": "2027-01-18T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "(주)미래시스템",
-      "title": "S/W개발 신입 채용공고(지역-판교·용인)",
-      "sourceName": "Saramin",
-      "sourceUrl": "https://m.saramin.co.kr/job-search/view?rec_idx=55616820",
-      "deadlineAt": "2027-01-18T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
     }
   ]
 }
