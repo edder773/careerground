@@ -1,0 +1,27 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-11-20",
+  "receivedAt": "2026-11-20T13:00:17.200Z",
+  "jobs": [
+    {
+      "companyName": "트레져러",
+      "title": "[인턴 모집] AI 개발자를 찾습니다!",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/422358",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "기어세컨드",
+      "title": "게임 클라이언트 개발자 (경력 무관)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/422456",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
