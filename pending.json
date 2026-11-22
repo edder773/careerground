@@ -3,25 +3,15 @@
   "batches": [
     "2026-11-20"
   ],
-  "generatedAt": "2026-11-20T13:16:46.507Z",
+  "generatedAt": "2026-11-22T23:00:01.530Z",
   "collectorCount": 5,
   "skipped": {
-    "notAlertable": 9,
+    "notAlertable": 10,
     "restricted": 0,
     "alreadySent": 12,
     "duplicate": 0
   },
   "jobs": [
-    {
-      "companyName": "주식회사 캡픽",
-      "title": "[신입/경력 무관] 스포츠 테크 스타트업 APP 개발자 채용",
-      "sourceName": "Work24",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K131612611100022",
-      "deadlineAt": "2026-11-21T00:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "앱 개발자 (iOS · Android), 백엔드 개발자, AI 엔지니어 (Vision · On-device)"
-    },
     {
       "companyName": "롯데이노베이트",
       "title": "2026년 11월 롯데이노베이트 월드IS팀 JA Grade채용",
