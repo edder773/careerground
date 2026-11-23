@@ -3,15 +3,35 @@
   "batches": [
     "2026-11-23"
   ],
-  "generatedAt": "2026-11-23T09:03:39.164Z",
-  "collectorCount": 1,
+  "generatedAt": "2026-11-23T09:05:50.548Z",
+  "collectorCount": 2,
   "skipped": {
-    "notAlertable": 0,
+    "notAlertable": 2,
     "restricted": 0,
-    "alreadySent": 0,
+    "alreadySent": 1,
     "duplicate": 0
   },
   "jobs": [
+    {
+      "companyName": "(주)모아저축은행",
+      "title": "2027년 상반기 모아저축은행 채용연계형 인턴 및 경력직 모집",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611230000854",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "정보기술, 금융데이터분석"
+    },
+    {
+      "companyName": "(주)연합인포맥스",
+      "title": "IT·AI 개발 부문 신입/경력 사원 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611230000692",
+      "deadlineAt": "2026-12-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "채권 서비스 개발 및 운영, 서버/풀스택 개발 및 운영, AI 서비스 개발 (LLM 응용·백엔드/풀스택)"
+    },
     {
       "companyName": "주식회사 화정기술",
       "title": "(주)화정기술 소프트웨어 개발 직원 모집",
