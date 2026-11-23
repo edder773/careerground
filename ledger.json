@@ -970,15 +970,6 @@
       "itRole": "통합정보시스템 개발·구축 및 운영"
     },
     {
-      "companyName": "신영증권",
-      "title": "2026년 하반기 신입사원 공개채용 - IT",
-      "sourceUrl": "https://secure.jasoseol.com/recruit/107026",
-      "deadlineAt": "2026-11-16T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-11-04",
-      "itRole": "IT"
-    },
-    {
       "companyName": "고영테크놀러지",
       "title": "2026 하반기 신입사원 채용 - SW 개발",
       "sourceUrl": "https://jasoseol.com/recruit/107049",
@@ -1005,15 +996,6 @@
       "sentOn": "2026-11-09"
     },
     {
-      "companyName": "드림라인",
-      "title": "2026 하반기 신입/경력 공개채용 - [드림라인] IP기술",
-      "sourceUrl": "https://jasoseol.com/recruit/107131",
-      "deadlineAt": "2026-11-16T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-11-10",
-      "itRole": "[드림라인] IP기술"
-    },
-    {
       "companyName": "지방공기업평가원",
       "title": "2026년 하반기 일반직 신규직원 채용",
       "sourceUrl": "https://jlab.incruit.com/jobs/2611050000888",
@@ -1038,15 +1020,6 @@
       "deadlineAt": "2026-11-27T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-11-10"
-    },
-    {
-      "companyName": "신한카드",
-      "title": "2026년 B2사원 채용 - ICT 개발",
-      "sourceUrl": "https://linkareer.com/activity/363137",
-      "deadlineAt": "2026-11-16T23:59:00+09:00",
-      "applicationStartAt": null,
-      "sentOn": "2026-11-11",
-      "itRole": "ICT 개발"
     },
     {
       "companyName": "세메스",
@@ -1291,6 +1264,15 @@
       "deadlineAt": "2026-12-02T23:59:00+09:00",
       "applicationStartAt": null,
       "sentOn": "2026-11-23"
+    },
+    {
+      "companyName": "(주)연합인포맥스",
+      "title": "IT·AI 개발 부문 신입/경력 사원 채용",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611230000692",
+      "deadlineAt": "2026-12-02T23:59:00+09:00",
+      "applicationStartAt": null,
+      "sentOn": "2026-11-24",
+      "itRole": "채권 서비스 개발 및 운영, 서버/풀스택 개발 및 운영, AI 서비스 개발 (LLM 응용·백엔드/풀스택)"
     }
   ],
   "deliveries": {
@@ -1733,6 +1715,18 @@
       "reviewCount": 3,
       "batches": [
         "2026-11-20"
+      ],
+      "status": "SENT"
+    },
+    "2026-11-24": {
+      "mode": "live",
+      "trigger": "manual",
+      "at": "2026-11-23T23:00:02.412Z",
+      "jobCount": 1,
+      "heldCount": 0,
+      "reviewCount": 3,
+      "batches": [
+        "2026-11-23"
       ],
       "status": "SENT"
     }
