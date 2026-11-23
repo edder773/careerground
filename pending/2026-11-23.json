@@ -3,12 +3,12 @@
   "batches": [
     "2026-11-23"
   ],
-  "generatedAt": "2026-11-23T11:07:38.810Z",
-  "collectorCount": 2,
+  "generatedAt": "2026-11-23T13:10:24.290Z",
+  "collectorCount": 3,
   "skipped": {
-    "notAlertable": 2,
+    "notAlertable": 3,
     "restricted": 0,
-    "alreadySent": 1,
+    "alreadySent": 3,
     "duplicate": 0
   },
   "jobs": [
@@ -21,6 +21,35 @@
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE",
       "itRole": "정보기술, 금융데이터분석"
+    },
+    {
+      "companyName": "(주)코쿤",
+      "title": "AI Platform & Applied AI Engineer(기획·설계 포함) 신입/경력사원 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50370677",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "노아에이티에스(주)",
+      "title": "노아에이티에스 2027년 공채 16기 신입사원 채용(개발자, 컨설턴트)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50394279",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "개발자(JAVA / ABAP)"
+    },
+    {
+      "companyName": "지엘엔인터내셔널",
+      "title": "[하나금융그룹][GLN] 채용연계형 인턴 모집(2027)",
+      "sourceName": "Catch",
+      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/582685",
+      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "프론트엔드 개발자"
     },
     {
       "companyName": "(주)연합인포맥스",
@@ -49,6 +78,61 @@
       "deadlineAt": "2026-12-06T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)케이텍",
+      "title": "프로그램 개발자 모집(Machine Vision, AI(Python), C, C#, C++)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50355377",
+      "deadlineAt": "2026-12-12T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "카이트로닉스",
+      "title": "소프트웨어 신입 개발자 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50363219",
+      "deadlineAt": "2026-12-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "(주)아이티네이드",
+      "title": "프론트엔드 / 백엔드, Java·JSP, Ajax 外 (신입 채용)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50369864",
+      "deadlineAt": "2026-12-16T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "주식회사 긴트",
+      "title": "[자율주행/고속성장/스타트업] 임베디드 SW(신입/경력)",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50376847",
+      "deadlineAt": "2026-12-16T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)아임온",
+      "title": "Python DB 개발자 모집",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50387050",
+      "deadlineAt": "2026-12-18T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "(주)지에스디랩",
+      "title": "함께 일 할 서버 엔지니어, 시스템H/W 엔지니어",
+      "sourceName": "JobKorea",
+      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50397481",
+      "deadlineAt": "2026-12-19T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "시스템 엔지니어"
     }
   ]
 }
