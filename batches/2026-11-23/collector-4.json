@@ -1,0 +1,57 @@
+{
+  "kind": "collector",
+  "slot": 4,
+  "date": "2026-11-23",
+  "receivedAt": "2026-11-23T09:05:31.889Z",
+  "jobs": [
+    {
+      "companyName": "엘에스아이티씨",
+      "title": "2027 LS ITC 채용연계형 인턴 모집",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611180000008",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "시스템 개발 및 운영, 네트워크 운영 및 구축, 클라우드 인프라, AI 서비스 기획 및 개발, AI 서비스 시스템 운영"
+    },
+    {
+      "companyName": "(주)모아저축은행",
+      "title": "2027년 상반기 모아저축은행 채용연계형 인턴 및 경력직 모집",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611230000854",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "정보기술, 금융데이터분석"
+    },
+    {
+      "companyName": "(주)연합인포맥스",
+      "title": "IT·AI 개발 부문 신입/경력 사원 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611230000692",
+      "deadlineAt": "2026-12-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "채권 서비스 개발 및 운영, 서버/풀스택 개발 및 운영, AI 서비스 개발 (LLM 응용·백엔드/풀스택)"
+    },
+    {
+      "companyName": "Sendbird",
+      "title": "AI Agent Engineer, Intern",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/ai-agent-engineer-intern-at-sendbird-4336838608",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "Arm",
+      "title": "GPU Software Applications Engineer Intern (3 months)",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/gpu-software-applications-engineer-intern-3-months-at-arm-4480225151",
+      "deadlineAt": null,
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
