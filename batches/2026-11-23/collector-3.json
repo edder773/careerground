@@ -1,0 +1,19 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-11-23",
+  "receivedAt": "2026-11-23T13:10:31.078Z",
+  "jobs": [
+    {
+      "companyName": "OK금융그룹",
+      "title": "2026년 OK금융그룹 채용형 인턴 공개모집",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/author/inthiswork",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AX기획, AX개발(AI Agent 개발), 금융데이터 분석, 신용평가모형(CSS) 개발·운영"
+    }
+  ],
+  "rejected": []
+}
