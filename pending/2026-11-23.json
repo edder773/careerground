@@ -3,8 +3,8 @@
   "batches": [
     "2026-11-23"
   ],
-  "generatedAt": "2026-11-23T13:10:24.290Z",
-  "collectorCount": 3,
+  "generatedAt": "2026-11-23T13:10:49.065Z",
+  "collectorCount": 4,
   "skipped": {
     "notAlertable": 3,
     "restricted": 0,
@@ -78,6 +78,16 @@
       "deadlineAt": "2026-12-06T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "OK금융그룹",
+      "title": "2026년 OK금융그룹 채용형 인턴 공개모집",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/author/inthiswork",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "AX기획, AX개발(AI Agent 개발), 금융데이터 분석, 신용평가모형(CSS) 개발·운영"
     },
     {
       "companyName": "(주)케이텍",
