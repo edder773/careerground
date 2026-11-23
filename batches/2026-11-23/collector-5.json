@@ -1,0 +1,37 @@
+{
+  "kind": "collector",
+  "slot": 5,
+  "date": "2026-11-23",
+  "receivedAt": "2026-11-23T13:10:51.870Z",
+  "jobs": [
+    {
+      "companyName": "연합인포맥스",
+      "title": "IT·AI 개발 부문 신입/경력 사원 채용 - 채권 서비스 개발 및 운영",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://secure.jasoseol.com/recruit/107346",
+      "deadlineAt": "2026-12-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "연세대학교",
+      "title": "정규직원(8급, 시설기술) 채용 공고 - 8급 전문<전산>",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://secure.jasoseol.com/recruit/107313",
+      "deadlineAt": "2026-12-01T17:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "8급 전문<전산>"
+    },
+    {
+      "companyName": "주식회사 당근마켓",
+      "title": "Software Engineer, Backend (인턴) - 서비스 운영 (운영개발)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/365947",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
