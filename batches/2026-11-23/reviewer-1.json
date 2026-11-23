@@ -1,0 +1,28 @@
+{
+  "kind": "reviewer",
+  "slot": 1,
+  "date": "2026-11-23",
+  "receivedAt": "2026-11-23T13:14:42.307Z",
+  "jobs": [
+    {
+      "companyName": "(주)연합인포맥스",
+      "title": "IT·AI 개발 부문 신입/경력 사원 채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611230000692",
+      "deadlineAt": "2026-12-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "채권 서비스 개발 및 운영, 서버/풀스택 개발 및 운영, AI 서비스 개발 (LLM 응용·백엔드/풀스택)"
+    },
+    {
+      "companyName": "네이버웹툰(유)",
+      "title": "[2027 상반기 채용연계형 인턴십] 네이버웹툰 백엔드 서버 개발 (Backend Software Development)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://www.saramin.co.kr/zf_user/jobs/relay/view?rec_idx=55617458&view_type=public-recruit",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    }
+  ],
+  "rejected": []
+}
