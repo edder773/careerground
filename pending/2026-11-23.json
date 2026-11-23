@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-23",
+  "batches": [
+    "2026-11-23"
+  ],
+  "generatedAt": "2026-11-23T09:03:39.164Z",
+  "collectorCount": 1,
+  "skipped": {
+    "notAlertable": 0,
+    "restricted": 0,
+    "alreadySent": 0,
+    "duplicate": 0
+  },
+  "jobs": [
+    {
+      "companyName": "주식회사 화정기술",
+      "title": "(주)화정기술 소프트웨어 개발 직원 모집",
+      "sourceName": "Work24",
+      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K120312611200013",
+      "deadlineAt": "2026-12-03T00:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "네이버웹툰(유)",
+      "title": "[2027 상반기 채용연계형 인턴십] 네이버웹툰 백엔드 서버 개발 (Backend Software Development)",
+      "sourceName": "Saramin",
+      "sourceUrl": "https://www.saramin.co.kr/zf_user/jobs/relay/view?rec_idx=55617458&view_type=public-recruit",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    }
+  ]
+}
