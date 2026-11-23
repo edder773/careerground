@@ -81,6 +81,9 @@ const compact = (value: string) =>
     .replace(/[^0-9a-z가-힣]/g, '');
 
 const canonicalCompanyAliases = new Map<string, string>([
+  // Corporate form shown on the Saramin mirror of the same recruiting campaign.
+  ['네이버웹툰', 'naver-webtoon'],
+  ['네이버웹툰유', 'naver-webtoon'],
   // Brand and legal employer shown together on the campaign listings.
   // https://linkareer.com/company-info/67/recruit
   ['당근마켓', '당근'],
