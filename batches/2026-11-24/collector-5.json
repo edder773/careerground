@@ -1,0 +1,37 @@
+{
+  "kind": "collector",
+  "slot": 5,
+  "date": "2026-11-24",
+  "receivedAt": "2026-11-24T13:08:16.577Z",
+  "jobs": [
+    {
+      "companyName": "한국석유공업",
+      "title": "정보운영팀 채용 (신입)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://secure.jasoseol.com/recruit/107352",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "OK금융그룹",
+      "title": "2026 AI Native 채용형 인턴 공개모집",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://secure.jasoseol.com/recruit/107333",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "AX/데이터"
+    },
+    {
+      "companyName": "EY한영",
+      "title": "AI Center 인턴 (정규전환형)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/366295",
+      "deadlineAt": "2026-11-26T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
