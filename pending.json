@@ -1,149 +1,53 @@
 {
-  "date": "2026-11-23",
+  "date": "2026-11-24",
   "batches": [
-    "2026-11-23"
+    "2026-11-24"
   ],
-  "generatedAt": "2026-11-23T23:00:02.412Z",
-  "collectorCount": 5,
+  "generatedAt": "2026-11-24T13:08:24.729Z",
+  "collectorCount": 2,
   "skipped": {
-    "notAlertable": 3,
+    "notAlertable": 2,
     "restricted": 0,
-    "alreadySent": 5,
+    "alreadySent": 0,
     "duplicate": 1
   },
   "jobs": [
     {
-      "companyName": "(주)모아저축은행",
-      "title": "2027년 상반기 모아저축은행 채용연계형 인턴 및 경력직 모집",
-      "sourceName": "Incruit",
-      "sourceUrl": "https://jlab.incruit.com/jobs/2611230000854",
-      "deadlineAt": "2026-11-29T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "정보기술, 금융데이터분석"
-    },
-    {
-      "companyName": "(주)코쿤",
-      "title": "AI Platform & Applied AI Engineer(기획·설계 포함) 신입/경력사원 모집",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50370677",
-      "deadlineAt": "2026-11-30T23:59:00+09:00",
+      "companyName": "EY한영",
+      "title": "AI Center 인턴 (정규전환형)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/423191",
+      "deadlineAt": "2026-11-26T12:00:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
     {
-      "companyName": "노아에이티에스(주)",
-      "title": "노아에이티에스 2027년 공채 16기 신입사원 채용(개발자, 컨설턴트)",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50394279",
-      "deadlineAt": "2026-11-30T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "개발자(JAVA / ABAP)"
-    },
-    {
-      "companyName": "지엘엔인터내셔널",
-      "title": "[하나금융그룹][GLN] 채용연계형 인턴 모집(2027)",
-      "sourceName": "Catch",
-      "sourceUrl": "https://www.catch.co.kr/NCS/RecruitInfoDetails/582685",
-      "deadlineAt": "2026-11-30T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "프론트엔드 개발자"
-    },
-    {
-      "companyName": "연세대학교",
-      "title": "정규직원(8급, 시설기술) 채용 공고 - 8급 전문<전산>",
+      "companyName": "한국석유공업",
+      "title": "정보운영팀 채용 (신입)",
       "sourceName": "Jasoseol",
-      "sourceUrl": "https://secure.jasoseol.com/recruit/107313",
-      "deadlineAt": "2026-12-01T17:00:00+09:00",
+      "sourceUrl": "https://secure.jasoseol.com/recruit/107352",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "8급 전문<전산>"
-    },
-    {
-      "companyName": "(주)연합인포맥스",
-      "title": "IT·AI 개발 부문 신입/경력 사원 채용",
-      "sourceName": "Incruit",
-      "sourceUrl": "https://jlab.incruit.com/jobs/2611230000692",
-      "deadlineAt": "2026-12-02T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE",
-      "itRole": "채권 서비스 개발 및 운영, 서버/풀스택 개발 및 운영, AI 서비스 개발 (LLM 응용·백엔드/풀스택)"
-    },
-    {
-      "companyName": "주식회사 화정기술",
-      "title": "(주)화정기술 소프트웨어 개발 직원 모집",
-      "sourceName": "Work24",
-      "sourceUrl": "https://www.work24.go.kr/wk/a/b/1500/empDetailAuthView.do?infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&wantedAuthNo=K120312611200013",
-      "deadlineAt": "2026-12-03T00:00:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
+      "careerScope": "NEW_GRAD_ONLY"
     },
     {
       "companyName": "OK금융그룹",
-      "title": "2026년 OK금융그룹 채용형 인턴 공개모집",
-      "sourceName": "Inthiswork",
-      "sourceUrl": "https://inthiswork.com/archives/author/inthiswork",
+      "title": "2026 AI Native 채용형 인턴 공개모집",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://secure.jasoseol.com/recruit/107333",
       "deadlineAt": "2026-12-06T23:59:00+09:00",
       "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "AX기획, AX개발(AI Agent 개발), 금융데이터 분석, 신용평가모형(CSS) 개발·운영"
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "AX/데이터"
     },
     {
-      "companyName": "(주)케이텍",
-      "title": "프로그램 개발자 모집(Machine Vision, AI(Python), C, C#, C++)",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50355377",
-      "deadlineAt": "2026-12-12T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "카이트로닉스",
-      "title": "소프트웨어 신입 개발자 모집",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50363219",
-      "deadlineAt": "2026-12-13T23:59:00+09:00",
+      "companyName": "브이엠에스 솔루션스",
+      "title": "APS 솔루션 개발",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/423302",
+      "deadlineAt": "2027-01-22T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "(주)아이티네이드",
-      "title": "프론트엔드 / 백엔드, Java·JSP, Ajax 外 (신입 채용)",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50369864",
-      "deadlineAt": "2026-12-16T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY"
-    },
-    {
-      "companyName": "주식회사 긴트",
-      "title": "[자율주행/고속성장/스타트업] 임베디드 SW(신입/경력)",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50376847",
-      "deadlineAt": "2026-12-16T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "(주)아임온",
-      "title": "Python DB 개발자 모집",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50387050",
-      "deadlineAt": "2026-12-18T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
-    {
-      "companyName": "(주)지에스디랩",
-      "title": "함께 일 할 서버 엔지니어, 시스템H/W 엔지니어",
-      "sourceName": "JobKorea",
-      "sourceUrl": "https://www.jobkorea.co.kr/Recruit/GI_Read/50397481",
-      "deadlineAt": "2026-12-19T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ONLY",
-      "itRole": "시스템 엔지니어"
     }
   ]
 }
