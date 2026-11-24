@@ -1,0 +1,45 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-11-24",
+  "receivedAt": "2026-11-24T13:08:09.068Z",
+  "jobs": [
+    {
+      "companyName": "NIT Service",
+      "title": "네이버 플랫폼 서비스 운영",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/423454",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "바인드",
+      "title": "[인턴/신입] AI Native Engineer (AX·FDE)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/423247",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "EY한영",
+      "title": "AI Center 인턴 (정규전환형)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/423191",
+      "deadlineAt": "2026-11-26T12:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "브이엠에스 솔루션스",
+      "title": "APS 솔루션 개발",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/423302",
+      "deadlineAt": "2027-01-22T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    }
+  ],
+  "rejected": []
+}
