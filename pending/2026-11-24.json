@@ -3,12 +3,12 @@
   "batches": [
     "2026-11-24"
   ],
-  "generatedAt": "2026-11-24T13:08:38.254Z",
-  "collectorCount": 2,
+  "generatedAt": "2026-11-24T13:19:12.926Z",
+  "collectorCount": 3,
   "skipped": {
     "notAlertable": 2,
     "restricted": 0,
-    "alreadySent": 0,
+    "alreadySent": 4,
     "duplicate": 1
   },
   "jobs": [
@@ -18,6 +18,34 @@
       "sourceName": "Inthiswork",
       "sourceUrl": "https://inthiswork.com/archives/423191",
       "deadlineAt": "2026-11-26T12:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "롯데이노베이트",
+      "title": "2026년 11월 롯데이노베이트 월드IS팀 JA Grade채용",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://lab.incruit.com/jobs/2611170004694",
+      "deadlineAt": "2026-11-27T18:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "모아저축은행",
+      "title": "2027년 상반기 채용연계형 인턴 공개 모집",
+      "sourceName": "Incruit",
+      "sourceUrl": "https://jlab.incruit.com/jobs/2611230000003",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "정보기술, 금융데이터분석"
+    },
+    {
+      "companyName": "AUMOVIO Korea",
+      "title": "AUMOVIO star Internship_IT | AUMOVIO Korea",
+      "sourceName": "LinkedIn Korea",
+      "sourceUrl": "https://kr.linkedin.com/jobs/view/aumovio-star-internship-it-aumovio-korea-at-aumovio-4489962868",
+      "deadlineAt": "2026-11-29T23:59:00+09:00",
       "rolling": false,
       "careerScope": "NEW_GRAD_ELIGIBLE"
     },
