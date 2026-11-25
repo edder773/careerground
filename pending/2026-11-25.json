@@ -3,24 +3,15 @@
   "batches": [
     "2026-11-25"
   ],
-  "generatedAt": "2026-11-25T13:19:05.254Z",
+  "generatedAt": "2026-11-25T23:00:01.368Z",
   "collectorCount": 5,
   "skipped": {
-    "notAlertable": 7,
+    "notAlertable": 8,
     "restricted": 0,
     "alreadySent": 20,
     "duplicate": 0
   },
   "jobs": [
-    {
-      "companyName": "네이버랩스",
-      "title": "Indoor Robot Mobility Engineer",
-      "sourceName": "Linkareer",
-      "sourceUrl": "https://linkareer.com/activity/365538",
-      "deadlineAt": "2026-11-25T23:59:00+09:00",
-      "rolling": false,
-      "careerScope": "NEW_GRAD_ELIGIBLE"
-    },
     {
       "companyName": "AUMOVIO",
       "title": "AUMOVIO star Internship_Software Engineer_User Experience",
