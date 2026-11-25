@@ -1,0 +1,130 @@
+{
+  "kind": "collector",
+  "slot": 5,
+  "date": "2026-11-25",
+  "receivedAt": "2026-11-25T13:12:24.319Z",
+  "jobs": [
+    {
+      "companyName": "프로텍",
+      "title": "2027년도 신입/경력사원 공개채용 - 자동화 장비 제어 Software 개발 (신입)",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/107282",
+      "deadlineAt": "2026-12-01T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "자동화 장비 제어 Software 개발"
+    },
+    {
+      "companyName": "와이씨",
+      "title": "2026년 하반기 신입사원 공개채용 - EXICON - S/W개발",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/107189",
+      "deadlineAt": "2026-12-04T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "EXICON - S/W개발"
+    },
+    {
+      "companyName": "한림대학교의료원",
+      "title": "2026년도 하반기 직원 공채 - 전산관리",
+      "sourceName": "Jasoseol",
+      "sourceUrl": "https://jasoseol.com/recruit/107369",
+      "deadlineAt": "2026-12-09T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE",
+      "itRole": "전산관리"
+    },
+    {
+      "companyName": "네이버랩스",
+      "title": "Robot Software Engineer (Platform & Operations)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/366826",
+      "deadlineAt": "2026-12-01T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "네이버랩스",
+      "title": "Indoor Robot Mobility Engineer",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/365538",
+      "deadlineAt": "2026-11-25T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "네이버웹툰",
+      "title": "AI Engineer (체험형 인턴)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/366170",
+      "deadlineAt": "2026-12-13T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "삼양라운드스퀘어",
+      "title": "Popow - AI Analytics Builder",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/366825",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "삼양라운드스퀘어",
+      "title": "Popow - AI Agent Builder",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/366829",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "아정네트웍스",
+      "title": "AI Engineer (Data Science) (서울)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/366961",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "삼일회계법인",
+      "title": "AX Node Backend Engineer (AI-Native Application & Platform)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/365132",
+      "deadlineAt": "2026-12-04T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "삼일회계법인",
+      "title": "AX Node Product Design Engineer",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/365127",
+      "deadlineAt": "2026-12-04T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "트레이스포스",
+      "title": "백엔드 엔지니어 인턴 모집 (AI 보안)",
+      "sourceName": "Linkareer",
+      "sourceUrl": "https://linkareer.com/activity/366472",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "한국원자력안전기술원",
+      "title": "2027년도 상반기 정규직 직원 채용 - 연구직 정보기술(일반전형)",
+      "sourceName": "JOB-ALIO",
+      "sourceUrl": "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=307238",
+      "deadlineAt": "2026-12-04T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY",
+      "itRole": "정보기술"
+    }
+  ],
+  "rejected": []
+}
