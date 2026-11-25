@@ -1,0 +1,54 @@
+{
+  "kind": "collector",
+  "slot": 3,
+  "date": "2026-11-25",
+  "receivedAt": "2026-11-25T13:08:53.301Z",
+  "jobs": [
+    {
+      "companyName": "라피치",
+      "title": "시스템 엔지니어",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/author/inthiswork",
+      "deadlineAt": "2026-12-11T21:00:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "NAVER LABS",
+      "title": "Robot Software Engineer (Platform & Operations)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/category/%EC%8B%A0%EC%9E%85-%EC%9D%B8%ED%84%B4/page/2",
+      "deadlineAt": "2026-12-01T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "삼양라운드스퀘어",
+      "title": "Popow - AI Agent Builder",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/tag/%EA%B8%B0%ED%95%9C%EC%9E%88%EC%9D%8C",
+      "deadlineAt": null,
+      "rolling": true,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    },
+    {
+      "companyName": "한국석유공업",
+      "title": "정보운영팀 채용(신입)",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/423250",
+      "deadlineAt": "2026-12-06T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ONLY"
+    },
+    {
+      "companyName": "연합인포맥스",
+      "title": "IT/AI 개발 부문 신입/경력 사원 채용",
+      "sourceName": "Inthiswork",
+      "sourceUrl": "https://inthiswork.com/archives/423153",
+      "deadlineAt": "2026-12-02T23:59:00+09:00",
+      "rolling": false,
+      "careerScope": "NEW_GRAD_ELIGIBLE"
+    }
+  ],
+  "rejected": []
+}
